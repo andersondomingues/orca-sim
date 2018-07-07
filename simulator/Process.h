@@ -10,6 +10,7 @@ class Process{
 	public:
 		Process(string name);
 		string name;
+		
 		/** runs current process and return what time the next run must be scheduled */
 		virtual unsigned long long Run() = 0;
 		virtual ~Process() = 0;

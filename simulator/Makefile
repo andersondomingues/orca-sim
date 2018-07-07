@@ -1,12 +1,12 @@
 SOURCEDIR :=./src
-HEADERDIR :=./include
+HEADERDIR :=./
 OUTPUTDIR :=./bin
 
 #ar rcs sim-lib.a Process.o Event.o Simulator.o Buffer.o
 
-CPPFLAGS := -g -c -O3 -Iinclude
+CPPFLAGS := -g -c -O3 -I.
 ARFLAGS :=
-LIBNAME := udes.a 
+LIBNAME := libsim.a 
  
 all:$(OUTPUTDIR)/Buffer.o \
 	$(OUTPUTDIR)/Event.o \
@@ -14,6 +14,8 @@ all:$(OUTPUTDIR)/Buffer.o \
 	$(OUTPUTDIR)/Simulator.o
 	
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
+
+	cp $(OUTPUTDIR)/$(LIBNAME) ../bin/$(LIBNAME)
 
 #compile all classes into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp 

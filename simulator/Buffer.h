@@ -21,6 +21,4 @@ class Buffer{
         uint32_t size();
 };
 
-//typedef std::queue<uint32_t> Buffer;
-
 #endif
