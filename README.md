@@ -10,7 +10,7 @@ Ursa is composed of the following modules:
 
 a) A discrete event simulator, which is called "UDES" (means Ursa's Discrete Time Simulator). UDES is the software behind the simulation of platforms. More documentation on UDES will be added soon.
 
-b) Platforms, which are made of peripherals, busses, processors and other hardware. We are currently wokring on integrating the HF-RISCV processor with the peripherals from the HEMPS project. More information on HF-RISCV and HEMPS projects can be found in the [external contribution]() section.
+b) Platforms, which are made of peripherals, busses, processors and other hardware. We are currently wokring on integrating the HF-RISCV processor with the peripherals from the HEMPS project. More information on HF-RISCV and HEMPS projects can be found in the [external contribution](#external-contribution) section.
 
 c) Software, which is loaded into processors;
 
