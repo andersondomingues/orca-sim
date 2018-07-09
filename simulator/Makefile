@@ -15,8 +15,6 @@ all:$(OUTPUTDIR)/Buffer.o \
 	
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
 
-	cp $(OUTPUTDIR)/$(LIBNAME) ../bin/$(LIBNAME)
-
 #compile all classes into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp 
 	g++ $(CPPFLAGS) $< -o $@ 

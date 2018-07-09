@@ -1,11 +1,14 @@
 GCCFLAGS  := -O3 -g -I../simulator -I../models 
-LDFLAGS   := -L../bin -lmodels -lsim
+LDFLAGS   := -L../models/bin -L../simulator/bin -lmodels -lsim
 OUTPUTDIR :=./bin
 LIBNAME := teste
 
-all: teste
-	mv $(LIBNAME) ../$(OUTPUTDIR)/$(LIBNAME)
+LIBS:= ../models/bin/libmodels.a ../simulator/bin/libsim.a
 
+all: teste
+	$(OUTPUTDIR)/$(LIBNAME)
+	
 teste: main.cpp 
-	g++ main.cpp $(GCCFLAGS) -o $(LIBNAME) ../$(OUTPUTDIR)/*.a
+	g++ main.cpp $(GCCFLAGS) -o  $(OUTPUTDIR)/$(LIBNAME) $(LIBS)
+
 

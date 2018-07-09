@@ -6,6 +6,9 @@
 
 int main(int argc, char** argv){
 
+	
+
+
 	HFRiscv hfr = HFRiscv("teste", ".");
 	
 	Simulator s = Simulator(10000);
