@@ -42,9 +42,9 @@ Any of the contributors of this repository.
 
 This projects uses software (and hardware) from other projects. This projects
 
-- *HF-RISCV*. The hf-riscv processor is maintained by Sergio Johann (sjohann81). More information on his work can be found at [his repository](https://github.com/sjohann81/hf-risc).
+- *HF-RISCV*. The hf-riscv processor is maintained by Sergio Johann (sjohann81). More information on his work can be found at [his repository](https://github.com/sjohann81/hf-risc). 
 
-- *HEMPS*. The HEMPS project is maintened by the GAPH group. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html).
+- *HEMPS*. The HEMPS project is maintened by the GAPH group. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html). Content used within URSA project comes from [their repository](https://github.com/GaphGroup/hemps).
 
 ## Licensing
 
