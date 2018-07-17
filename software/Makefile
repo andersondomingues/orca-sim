@@ -1,26 +1,30 @@
-TOOLCHAIN_DIR :=riscv32-unknown-elf/gcc-7.1.0/bin/
-
-ARCH_GCC :=$(TOOLCHAIN_DIR)/riscv32-unknown-elf-gcc
-ARCH_LD  :=$(TOOLCHAIN_DIR)/riscv32-unknown-elf-ld
-ARCH_OBJ :=$(TOOLCHAIN_DIR)/riscv32-unknown-elf-objcopy
+ARCH_GCC :=riscv32-unknown-elf-gcc
+ARCH_LD  :=riscv32-unknown-elf-ld
+ARCH_OBJ :=riscv32-unknown-elf-objcopy
 
 GCCFLAGS := -march=rv32i -mabi=ilp32 -Wall -O2 -c -ffreestanding -nostdlib -ffixed-s10 -ffixed-s11 -DLITTLE_ENDIAN -fdata-sections -ffunction-sections
 
-LDFLAGS :=
+LDFLAGS := -melf32lriscv --gc-sections
 
-libc.o: 
-	$(ARCH_ELF) $(GCCFLAGS) libc.c -o libc.o -DCPU_SPEED=1
 
-crt0.o:
-	$(ARCH_ELF) $(GCCFLAGS) crt0.s -o crt0.o
+all: sort.bin
+	cp sort.bin ../platform/bin/sort.bin
+	@echo "done."
 
-sort.o:
-	$(ARCH_ELF) $(GCCFLAGS) sort.c -o sort.o
+libc.o: libc.c 
+	$(ARCH_GCC) $(GCCFLAGS) libc.c -o libc.o -DCPU_SPEED=1
+
+crt0.o: crt0.s
+	$(ARCH_GCC) $(GCCFLAGS) crt0.s -o crt0.o
+
+sort.o: sort/sort.c
+	$(ARCH_GCC) $(GCCFLAGS) sort/sort.c -o sort.o
 	
-sort.elf:
-	$(ARCH_ELF) -melf32lriscv --gc-sections risc-v.ld -Map sort.map -N -o sort.elf sort.o crt0.o libc.o
+sort.elf: sort.o crt0.o libc.o
+	$(ARCH_LD) $(LDFLAGS) risc-v.ld -Map sort.map -N -o sort.elf sort.o crt0.o libc.o
 
-sort.bin:
-	$(ARCH_OBJ) ARCH_OBJ -O binary sort.elf sort.bin --pad-to 4096
-	mv sort.bin ../output/sort.bin
-	rm -rf *.o *.elf *.map
+sort.bin: sort.elf
+	$(ARCH_OBJ) -O binary sort.elf sort.bin --pad-to 4096
+
+clean:
+	rm -rf *.o *.elf *.map *.bin

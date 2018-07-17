@@ -45,14 +45,17 @@
 typedef struct {
 	int32_t r[32];
 	uint32_t pc, pc_next;
-	int8_t *mem;
+	int8_t* mem;
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
+	
+	
 } risc_v_state;
 
 class HFRiscv : public Process{
 
 	private:
+		
 		int8_t sram[MEM_SIZE];
 		FILE *fptr;
 		int32_t log_enabled = 0;
@@ -60,7 +63,9 @@ class HFRiscv : public Process{
 		risc_v_state *s;
 		FILE *in;
 		int bytes, i;
+		
 	public:
+	
 		void dumpregs(risc_v_state *s);
 		void bp(risc_v_state *s, uint32_t ir);
 		int32_t mem_fetch(risc_v_state *s, uint32_t address);
@@ -68,7 +73,7 @@ class HFRiscv : public Process{
 		void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 		void cycle(risc_v_state *s);
 
-		HFRiscv(string name, string filename);
+		HFRiscv(string name, int8_t* mptr, uint32_t size);
 		unsigned long long Run();
 		~HFRiscv();
 };

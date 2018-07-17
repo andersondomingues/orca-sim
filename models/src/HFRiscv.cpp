@@ -90,13 +90,10 @@ void HFRiscv::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_
 		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
 		case EXIT_TRAP:
 			fflush(stdout);
-			if (log_enabled)
-				fclose(fptr);
 			printf("end of simulation - %ld cycles.\n", s->cycles);
 			exit(0);
 		case DEBUG_ADDR:
-			if (log_enabled)
-				fprintf(fptr, "%c", (int8_t)(value & 0xff));
+			printf("%c", (int8_t)(value & 0xff));
 			return;
 		case UART_WRITE:
 			fprintf(stderr, "%c", (int8_t)(value & 0xff));
@@ -282,21 +279,14 @@ fail:
 	exit(0);
 }
 
-HFRiscv::HFRiscv(string name, string program) : Process(name) {
+HFRiscv::HFRiscv(string name, int8_t* mptr, uint32_t size) : Process(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
-	memset(sram, 0xff, sizeof(MEM_SIZE));
-
-	in = fopen(program.c_str(), "rb");
-	if(in != NULL){
-		bytes = fread(&sram, 1, MEM_SIZE, in);
-		fclose(in);
-	}
-
+	
 	s->pc = SRAM_BASE;
 	s->pc_next = s->pc + 4;
-	s->mem = &sram[0];
+
 	s->vector = 0;
 	s->cause = 0;
 	s->mask = 0;
@@ -308,6 +298,9 @@ HFRiscv::HFRiscv(string name, string program) : Process(name) {
 	s->compare = 0;
 	s->compare2 = 0;
 	s->cycles = 0;
+	
+	//set addr from external mem
+	s->mem = mptr;
 }
 
 
