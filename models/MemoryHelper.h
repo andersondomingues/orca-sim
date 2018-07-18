@@ -73,6 +73,13 @@ class MemoryHelper{
       * @param base: Starting address of the region to be wiped.
       * @param length: Number of memory positions to be overwritten. */
 	static void Wipe(MemoryType mem, uint32_t base, uint32_t length);
+	
+	
+	/** Push the content of a memory are into sdtout.
+	  * @param mem: Area of memory to be dumped.
+	  * @param base: Initial address to start reading.
+	  * @param size: Total length to be dumped. */
+	static void Dump(MemoryType mem, uint32_t base, uint32_t length);
 };
 
 #endif

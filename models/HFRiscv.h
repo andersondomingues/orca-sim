@@ -20,7 +20,6 @@
 #include <Process.h>
 
 #define MEM_SIZE			0x00100000
-#define SRAM_BASE			0x40000000
 #define EXIT_TRAP			0xe0000000
 #define IRQ_VECTOR			0xf0000000
 #define IRQ_CAUSE			0xf0000010
@@ -55,15 +54,9 @@ typedef struct {
 class HFRiscv : public Process{
 
 	private:
-		
-		int8_t sram[MEM_SIZE];
-		FILE *fptr;
-		int32_t log_enabled = 0;
 		risc_v_state context;
 		risc_v_state *s;
-		FILE *in;
-		int bytes, i;
-		
+		int i;		
 	public:
 	
 		void dumpregs(risc_v_state *s);
@@ -73,7 +66,7 @@ class HFRiscv : public Process{
 		void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 		void cycle(risc_v_state *s);
 
-		HFRiscv(string name, int8_t* mptr, uint32_t size);
+		HFRiscv(string name, int8_t* mptr, uint32_t size, uint32_t base);
 		unsigned long long Run();
 		~HFRiscv();
 };

@@ -1,3 +1,28 @@
+/** 
+ * This file is part of project URSA. More information on the project
+ * can be found at 
+ *
+ * URSA's repository at GitHub: http://https://github.com/andersondomingues/ursa
+ *
+ * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
+ * 
+ * This file is adapted from HF-RISC SoC project, which can be found at johanns' 
+ * repoisitory at GitHub: https://github.com/sjohann81/hf-risc
+ *-------------------------------------------------------------------------------
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
+ *---------------------------------------------------------------------------- */
 #include <HFRiscv.h>
 #include <cstdlib>
 
@@ -139,6 +164,7 @@ unsigned long long HFRiscv::Run(){
 }
 
 void HFRiscv::cycle(risc_v_state *s){
+	
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;
 	int32_t *r = s->r;
@@ -279,13 +305,18 @@ fail:
 	exit(0);
 }
 
-HFRiscv::HFRiscv(string name, int8_t* mptr, uint32_t size) : Process(name) {
+HFRiscv::HFRiscv(string name, int8_t* mptr, uint32_t size, uint32_t base) : Process(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
 	
-	s->pc = SRAM_BASE;
+	s->pc = base;
+	s->pc = 0;
 	s->pc_next = s->pc + 4;
+
+	//set addr from external mem
+	//s->mem = &sram[0];
+	s->mem = &mptr[0];
 
 	s->vector = 0;
 	s->cause = 0;
@@ -298,9 +329,6 @@ HFRiscv::HFRiscv(string name, int8_t* mptr, uint32_t size) : Process(name) {
 	s->compare = 0;
 	s->compare2 = 0;
 	s->cycles = 0;
-	
-	//set addr from external mem
-	s->mem = mptr;
 }
 
 

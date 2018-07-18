@@ -20,16 +20,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <MemoryHelper.h>
-
+#include <inttypes.h>
 
 MemoryType MemoryHelper::Create(uint32_t size, bool wipe){
 
-    MemoryType mem;
-    mem = new int8_t[size];
+    //TODO: abstract the underlying type    
+    MemoryType mem = new int8_t[size];
 
     if(wipe) MemoryHelper::Wipe(mem, 0, size);
     
-    //TODO: abstract the underlying type    
+
     return mem;
 }
 
@@ -60,18 +60,32 @@ void MemoryHelper::Wipe(MemoryType mem, uint32_t base, uint32_t size){
 	
 }
 
-void MemoryHelper::LoadBin(MemoryType mem, std::string filename, uint32_t size, uint32_t base){
+void MemoryHelper::LoadBin(MemoryType mem, std::string filename, uint32_t base, uint32_t size){
 
     //TODO: not sure it is the best performatic way
 	std::ifstream f(filename, std::ios::binary | std::ios::in | std::ios::out);
 	
 	if(f.is_open()){
 	
-		f.read((char*)&mem[base], size);
+		f.read((char*)&mem[base], sizeof(mem[0]) * size);
 		f.close();
 	}else{
 	    //TODO: surround with try-catch instead of printing
 		std::cout << "Unable to load '" << filename << "'." << std::endl;
 	}
+}
+
+void MemoryHelper::Dump(MemoryType mem, uint32_t base, uint32_t length){
+	
+	printf("--- mem dump:\n");
+	
+	for(int i = base; i < length; i+= 4){
+	
+		if(mem[i] + mem[i+1] + mem[i+2] + mem[i+3] != 0)
+			printf("0x%08X\t0x%04x 0x%04x 0x%04x 0x%04x\n",i, (char)mem[i], (char)mem[i+1], (char)mem[i+2], (char)mem[i+3]);
+			
+	}
+	
+	printf("--- eod:\n");
 }
 

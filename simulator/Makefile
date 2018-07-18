@@ -19,4 +19,4 @@ $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp
 	g++ $(CPPFLAGS) $< -o $@ 
 	
 clean:
-	rm -rf $(OUTPUTDIR)/*
+	rm -rf $(OUTPUTDIR)/*.o $(OUTPUTDIR)/*.a

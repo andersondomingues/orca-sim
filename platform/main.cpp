@@ -16,12 +16,16 @@ int main(int argc, char** argv){
 	}
 
     //creates a new memory and loads a program into it
-	MemoryType mem1 = MemoryHelper::Create(MEM_SIZE);
-	MemoryHelper::LoadBin(mem1, argv[1], 0, true);	
+	MemoryType mem1 = MemoryHelper::Create(MEM_SIZE, true);
+	MemoryHelper::LoadBin(mem1, argv[1], 0, MEM_SIZE);
+
+	//dump mem on screen		
+	MemoryHelper::Dump(mem1, 0, MEM_SIZE);
 		
-	//instantiate a new processor
-	HFRiscv hfr = HFRiscv("hf001", mem1, MEM_SIZE);	
+	//new processor
+	HFRiscv hfr = HFRiscv("hf001", mem1, MEM_SIZE, SRAM_BASE);	
 	
+	//start simulation
 	Simulator s = Simulator(100000);
 	s.Schedule(Event(0, &hfr));
 	
