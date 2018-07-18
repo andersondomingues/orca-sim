@@ -3,7 +3,7 @@
 
 #include <HFRiscv.h>
 #include <MemoryModel.h>
-#include <DmniModel.h>
+//#include <DmniModel.h>
 
 #define MEM_SIZE  0x00100000
 #define SRAM_BASE 0x40000000
@@ -24,12 +24,12 @@ int main(int argc, char** argv){
 	HFRiscv hfr = HFRiscv("hf001", mem1, MEM_SIZE, SRAM_BASE);	
 	
 	//new dmni
-	DmniModel dmni = DmniModel("dmni001");
+	//DmniModel dmni = DmniModel("dmni001");
 	
 	//start simulation
 	Simulator s = Simulator(CYCLES_TO_SIM);
 	s.Schedule(Event(0, &hfr));
-	s.Schedule(Event(0, &dmni));
+//s.Schedule(Event(0, &dmni));
 	
 	s.Run();
 	
