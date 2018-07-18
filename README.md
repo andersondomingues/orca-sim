@@ -4,6 +4,10 @@ Welcome to Ursa's repository. Ursa is an environment for creating, building and 
 
 The following sections may serve you as tour on the projet. Note that the project is in constant evolution! So, feel free to contact us regarding the development of Ursa.
 
+
+![Components of URSA and their interaction.](https://github.com/andersondomingues/ursa/blob/master/web-client/figs/URSA.png?raw=true)
+
+
 ## The Anatomy of Project Ursa
 
 Ursa is composed of some subprojects. Each of these subprojects generate a component to the environment. 
