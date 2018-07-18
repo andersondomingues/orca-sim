@@ -16,7 +16,7 @@ void Simulator::Run(){
 	cout << "Simulation started" << endl;
 
 	while(this->queue.size() > 0 && this->globalTime < this->timeout){
-		cout << this->globalTime << ": " << this->queue.top().process->name << endl;
+		//cout << this->globalTime << ": " << this->queue.top().process->name << endl;
 		this->executeNext();
 	}
 

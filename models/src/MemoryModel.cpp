@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#include <MemoryHelper.h>
+#include <MemoryModel.h>
 #include <inttypes.h>
 
 MemoryType MemoryHelper::Create(uint32_t size, bool wipe){
@@ -28,7 +28,6 @@ MemoryType MemoryHelper::Create(uint32_t size, bool wipe){
     MemoryType mem = new int8_t[size];
 
     if(wipe) MemoryHelper::Wipe(mem, 0, size);
-    
 
     return mem;
 }
@@ -79,11 +78,22 @@ void MemoryHelper::Dump(MemoryType mem, uint32_t base, uint32_t length){
 	
 	printf("--- mem dump:\n");
 	
-	for(int i = base; i < length; i+= 4){
+	//fix for printing only 4-digit values
+	int mask = 0x000000FF;
 	
-		if(mem[i] + mem[i+1] + mem[i+2] + mem[i+3] != 0)
-			printf("0x%08X\t0x%04x 0x%04x 0x%04x 0x%04x\n",i, (char)mem[i], (char)mem[i+1], (char)mem[i+2], (char)mem[i+3]);
-			
+	for(int i = base; i < length; i+= 16){
+
+		//TODO: fix check on unaligned files
+		if(mem[i+1]  + mem[i  ]  + mem[i+3]  + mem[i+2] 
+		 + mem[i+5]  + mem[i+4]  + mem[i+7]  + mem[i+6]
+ 		 + mem[i+9]  + mem[i+8]  + mem[i+11] + mem[i+10]
+ 		 + mem[i+13] + mem[i+12] + mem[i+15] + mem[i+14] != 0){
+
+	
+			printf("%07x ", i);	
+			for(int j = 0; j < 16; j+= 2) printf("%02x%02x ", mem[i+j+1]  & mask, mem[i+j] & mask);
+			printf("\n");
+		}
 	}
 	
 	printf("--- eod:\n");

@@ -6,9 +6,10 @@ GCCFLAGS := -march=rv32i -mabi=ilp32 -Wall -O2 -c -ffreestanding -nostdlib -ffix
 
 LDFLAGS := -melf32lriscv --gc-sections
 
+OUTPUTDIR :=bin
 
-all: sort.bin
-	cp sort.bin ../platform/bin/sort.bin
+
+all: $(OUTPUTDIR)/sort.bin
 	@echo "done."
 
 libc.o: libc.c 
@@ -23,8 +24,9 @@ sort.o: sort/sort.c
 sort.elf: sort.o crt0.o libc.o
 	$(ARCH_LD) $(LDFLAGS) risc-v.ld -Map sort.map -N -o sort.elf sort.o crt0.o libc.o
 
-sort.bin: sort.elf
+$(OUTPUTDIR)/sort.bin: sort.elf
 	$(ARCH_OBJ) -O binary sort.elf sort.bin --pad-to 4096
+	mv sort.bin $(OUTPUTDIR)/sort.bin
 
 clean:
 	rm -rf *.o *.elf *.map *.bin

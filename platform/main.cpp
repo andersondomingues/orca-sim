@@ -2,7 +2,7 @@
 #include <Simulator.h>
 
 #include <HFRiscv.h>
-#include <MemoryHelper.h>
+#include <MemoryModel.h>
 
 #define MEM_SIZE  0x00100000
 #define SRAM_BASE 0x40000000
@@ -30,4 +30,7 @@ int main(int argc, char** argv){
 	s.Schedule(Event(0, &hfr));
 	
 	s.Run();
+	
+	//dump mem on screen		
+	MemoryHelper::Dump(mem1, 0, MEM_SIZE);
 }

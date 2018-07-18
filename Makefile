@@ -8,7 +8,7 @@ all:
 	@echo "$'\e[036mPlatform... \e[0m"
 	make -C platform
 	@echo "$'\e[036mSimulation Started! \e[0m"
-	./platform/bin/teste ./platform/bin/sort.bin
+	./platform/bin/teste ./software/bin/code.bin
 
 clean:
 	@echo "$'\e[036mSimulator... \e[0m"

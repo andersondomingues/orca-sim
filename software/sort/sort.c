@@ -2,6 +2,7 @@
 #define ELEMENTS 128
 
 int sort(int v[], int e){
+
 	int i, j, k;
 
 	for(i=0; i<e-1; i++){
