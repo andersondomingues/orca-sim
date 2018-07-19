@@ -20,19 +20,46 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <DmniModel.h>
+#include <Buffer.h>
+
 #include <cstdlib>
 
-DmniModel::DmniModel(string name, MemoryModel* m, MemoryAddr intr, MemoryAddr mmr) : Process(name){
+DmniModel::DmniModel(std::string name, MemoryModel* m, MemoryAddr intr, MemoryAddr mmr) : Process(name){
 	
 	this->mem = m;     //memory model ptr
 	this->intr = intr; //interrupt addr
 	this->mmr = mmr;   //mmr addr
+	
+	//clean buffers
+	this->ib = nullptr;
+	this->ob = new Buffer();
 }
+
+//getters and setters for buffers
+void DmniModel::SetOutputBuffer(Buffer* b){
+	this->ob = b;
+}
+
+void DmniModel::SetInputBuffer(Buffer* b){
+	this->ib = b;
+}
+
+Buffer* DmniModel::GetOutputBuffer(Buffer* b){
+	return this->ob;
+}
+
+Buffer* DmniModel::GetInputBuffer(Buffer* b){
+	return this->ib;
+}
+
+
+
 
 unsigned long long DmniModel::Run(){
 	
 
 }
+
 
 void DmniModel::proc_arbiter(){
 

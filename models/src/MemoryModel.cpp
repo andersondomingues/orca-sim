@@ -20,15 +20,28 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <MemoryModel.h>
+#include <string>
 #include <inttypes.h>
 
-//CTOR.
-MemoryModel::MemoryModel(uint32_t size, bool wipe){
+//CTOR. TODO:merge duplicated code merge both ctors.
+MemoryModel::MemoryModel(std::string name, uint32_t size, bool wipe){
 
+	this->name = name;
+	this->mem = new MemoryType[size];
+  
+    if(wipe) 
+    	this->Wipe(0, size);
+}
+
+MemoryModel::MemoryModel(std::string name, uint32_t size, bool wipe, std::string binname){
+				
+	this->name = name;
 	this->mem = new MemoryType[size];
 
     if(wipe) 
-    	this->Wipe(0, size);
+	   	this->Wipe(0, size);
+
+	this->LoadBin(binname, 0, size);
 }
 
 void MemoryModel::Write(uint32_t addr, MemoryType* data, uint32_t length){

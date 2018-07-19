@@ -30,12 +30,7 @@
 
 //Remeber: a memory is an arrays of int8_t...
 #define MemoryType int8_t
-
-//This struct represent a area somewhere in memory
-typedef struct {
-	MemoryType* addr; //the starting address of the are
-	uint32_t length;  //are length
-} MemoryAddr; 
+#define MemoryAddr uint32_t
 
 // For performance reasons, a memory is implemented as   
 // a vector of bytes (uint8_t). So, we opt for do not    
@@ -46,6 +41,7 @@ class MemoryModel{
 
   private:
   	MemoryType* mem;
+  	std::string name;
   	uint32_t length;
   
   public: //<<-------------- all methods here are public
@@ -53,7 +49,8 @@ class MemoryModel{
 	/** Creates a new memory area.	
      * @param size: Total length of the memory are to be created.
      * @param wipe (optional): If <true> is passed, wipes the are after creating. */
-    MemoryModel(uint32_t size, bool wipe = false);
+    MemoryModel(std::string name, 	uint32_t size, bool wipe = false);
+    MemoryModel(std::string name, uint32_t size, bool wipe, std::string binname);
 
     /** Writes data to a given memory location.
      * @param addr: Location to write to.

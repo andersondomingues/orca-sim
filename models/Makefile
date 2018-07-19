@@ -1,11 +1,12 @@
 SOURCEDIR :=./src
 OUTPUTDIR :=./bin
 
-GCCFLAGS  :=-I. -I../simulator
+CPP:=g++
+
+CPPFLAGS  :=-I. -I../simulator -c -g
 LDFLAGS   :=-l:libudes.a
 
 LIBNAME   :=libmodels.a
-
 
 all: $(OUTPUTDIR)/$(LIBNAME)
 	@echo "done."
@@ -13,14 +14,9 @@ all: $(OUTPUTDIR)/$(LIBNAME)
 $(OUTPUTDIR)/$(LIBNAME): $(OUTPUTDIR)/HFRiscv.o $(OUTPUTDIR)/MemoryModel.o $(OUTPUTDIR)/DmniModel.o
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
 
-$(OUTPUTDIR)/HFRiscv.o: $(SOURCEDIR)/HFRiscv.cpp HFRiscv.h
-	gcc -c $(SOURCEDIR)/HFRiscv.cpp $(GCCFLAGS) -o $(OUTPUTDIR)/HFRiscv.o $(LDFLAGS)
-
-$(OUTPUTDIR)/MemoryModel.o: $(SOURCEDIR)/MemoryModel.cpp MemoryModel.h
-	gcc -c $(SOURCEDIR)/MemoryModel.cpp $(GCCFLAGS) -o $(OUTPUTDIR)/MemoryModel.o $(LDFLAGS)
-	
-$(OUTPUTDIR)/DmniModel.o: $(SOURCEDIR)/DmniModel.cpp DmniModel.h
-	gcc -c $(SOURCEDIR)/DmniModel.cpp $(GCCFLAGS) -o $(OUTPUTDIR)/DmniModel.o $(LDFLAGS)
+#compile all classes into %.o files
+$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp 
+	$(CPP) $(CPPFLAGS) $< -o $@ 
 
 clean:
 	rm -rf bin/*.a 	rm -rf bin/*.o

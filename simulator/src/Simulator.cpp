@@ -13,14 +13,10 @@ Simulator::Simulator(unsigned long long  timeout){
  * be scheduled in constructor */
 void Simulator::Run(){
 
-	cout << "Simulation started" << endl;
-
 	while(this->queue.size() > 0 && this->globalTime < this->timeout){
 		//cout << this->globalTime << ": " << this->queue.top().process->name << endl;
 		this->executeNext();
 	}
-
-	cout << "Simulation finished at " << this->globalTime << endl;
 }
 
 /**
@@ -37,15 +33,13 @@ void Simulator::executeNext(){
 	Event e = this->queue.top();
 	this->globalTime = e.time;
 
-	//cout << this->globalTime << ": " << e.process->name << endl;
-
 	//process it
 	long long int interval = e.process->Run();
 	this->queue.push(Event(this->globalTime + interval, e.process));
 
 	//remove it from the top of the queue
 	this->queue.pop();
-}	
+}
 
 Simulator::~Simulator(){
 

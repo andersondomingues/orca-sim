@@ -75,6 +75,12 @@ class DmniModel : public Process {
 		/** Dtor. */
 		~DmniModel();
 		
+		//getters and setters for buffers
+		void SetOutputBuffer(Buffer* b);
+		void SetInputBuffer(Buffer* b);
+		Buffer* GetOutputBuffer(Buffer* b);
+		Buffer* GetInputBuffer(Buffer* b);
+		
 		//DMNI specific
 		void proc_arbiter();
 		void proc_receive();
