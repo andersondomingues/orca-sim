@@ -10,8 +10,7 @@ LIBNAME   :=libmodels.a
 all: $(OUTPUTDIR)/$(LIBNAME)
 	@echo "done."
 
-$(OUTPUTDIR)/$(LIBNAME): $(OUTPUTDIR)/HFRiscv.o $(OUTPUTDIR)/MemoryModel.o 
-	#$(OUTPUTDIR)/DmniModel.o <<= add to enable DMNI compiilation
+$(OUTPUTDIR)/$(LIBNAME): $(OUTPUTDIR)/HFRiscv.o $(OUTPUTDIR)/MemoryModel.o $(OUTPUTDIR)/DmniModel.o
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
 
 $(OUTPUTDIR)/HFRiscv.o: $(SOURCEDIR)/HFRiscv.cpp HFRiscv.h

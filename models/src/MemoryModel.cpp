@@ -22,35 +22,35 @@
 #include <MemoryModel.h>
 #include <inttypes.h>
 
-MemoryType MemoryHelper::Create(uint32_t size, bool wipe){
+//CTOR.
+MemoryModel::MemoryModel(uint32_t size, bool wipe){
 
-    //TODO: abstract the underlying type    
-    MemoryType mem = new int8_t[size];
+	this->mem = new MemoryType[size];
 
-    if(wipe) MemoryHelper::Wipe(mem, 0, size);
-
-    return mem;
+    if(wipe) 
+    	this->Wipe(0, size);
 }
 
-void MemoryHelper::Write(MemoryType mem, uint32_t addr, uint8_t* data, uint32_t length){
+void MemoryModel::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
     //TODO: investigate memcpy performance
 	for(int i = 0; i < length; i++){
-		mem[addr] = data[i];
+		this->mem[addr] = data[i];
 		addr++;		
 	}
 }
 
-void MemoryHelper::Read (MemoryType mem, uint32_t addr, uint8_t* buffer, uint32_t length){
+void MemoryModel::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	
 	//TODO: investigate memcpy performance
 	for(int i = 0; i < length; i++){
-		buffer[i] = mem[addr];
+		buffer[i] = this->mem[addr];
 		addr++;		
 	}
 }
+
 		
-void MemoryHelper::Wipe(MemoryType mem, uint32_t base, uint32_t size){
+void MemoryModel::Wipe(uint32_t base, uint32_t size){
 	
     //TODO: investigate memcpy, zero fill and other methods
     //for filling the memory with zeroes.
@@ -59,7 +59,7 @@ void MemoryHelper::Wipe(MemoryType mem, uint32_t base, uint32_t size){
 	
 }
 
-void MemoryHelper::LoadBin(MemoryType mem, std::string filename, uint32_t base, uint32_t size){
+void MemoryModel::LoadBin(std::string filename, uint32_t base, uint32_t size){
 
     //TODO: not sure it is the best performatic way
 	std::ifstream f(filename, std::ios::binary | std::ios::in | std::ios::out);
@@ -74,7 +74,7 @@ void MemoryHelper::LoadBin(MemoryType mem, std::string filename, uint32_t base, 
 	}
 }
 
-void MemoryHelper::Dump(MemoryType mem, uint32_t base, uint32_t length){
+void MemoryModel::Dump(uint32_t base, uint32_t length){
 	
 	printf("--- mem dump:\n");
 	
@@ -99,3 +99,7 @@ void MemoryHelper::Dump(MemoryType mem, uint32_t base, uint32_t length){
 	printf("--- eod:\n");
 }
 
+//TODO:remove it as soon as possible
+MemoryType* MemoryModel::GetMemPtr(){
+	return this->mem;
+}

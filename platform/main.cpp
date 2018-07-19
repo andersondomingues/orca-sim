@@ -16,15 +16,14 @@ int main(int argc, char** argv){
 		exit(0);
 	}
 
-    //creates a new memory and loads a program into it
-	MemoryType mem1 = MemoryHelper::Create(MEM_SIZE, true);
-	MemoryHelper::LoadBin(mem1, argv[1], 0, MEM_SIZE);
-
-	//new processor
-	HFRiscv hfr = HFRiscv("hf001", mem1, MEM_SIZE, SRAM_BASE);	
+    //creates a new memory
+	MemoryModel mem1 = MemoryModel(MEM_SIZE, true);
 	
-	//new dmni
-	//DmniModel dmni = DmniModel("dmni001");
+	//a program into it
+	mem1.LoadBin(argv[1], 0, MEM_SIZE);
+
+	//creates a new processor
+	HFRiscv hfr = HFRiscv("hf001", mem1.GetMemPtr(), MEM_SIZE, SRAM_BASE);	
 	
 	//start simulation
 	Simulator s = Simulator(CYCLES_TO_SIM);

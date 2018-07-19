@@ -12,12 +12,18 @@
  * author:        Sergio Johann Filho <sergio.filho@pucrs.br>
  */
 
+
+//STD libraries
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
 
+//simulator libs
 #include <Process.h>
+
+//models libs
+#include <MemoryModel.h>
 
 #define MEM_SIZE			0x00100000
 #define EXIT_TRAP			0xe0000000
@@ -44,7 +50,8 @@
 typedef struct {
 	int32_t r[32];
 	uint32_t pc, pc_next;
-	int8_t* mem;
+	//int8_t* mem;
+	MemoryType* mem;
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
 	
@@ -66,7 +73,7 @@ class HFRiscv : public Process{
 		void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 		void cycle(risc_v_state *s);
 
-		HFRiscv(string name, int8_t* mptr, uint32_t size, uint32_t base);
+		HFRiscv(string name, MemoryType* mptr, uint32_t size, uint32_t base);
 		unsigned long long Run();
 		~HFRiscv();
 };

@@ -22,14 +22,8 @@
 #ifndef __DMNI_H
 #define __DMNI_H
 
-//std API
 #include <iostream>
-
-//simulator API
 #include <Process.h>
-#include <Buffer.h>
-//model API
-#include <MemoryModel.h>
 
 #define TAM_BUFFER_DMNI 
 #define DMNI_TIMER 32
@@ -40,39 +34,58 @@ enum SendState { WAIT, LOAD, COPY, COPY_FROM_MEM, COPY_TO_MEM, FINISH };
 enum NocState { HEADER, PAYLOAD, DATA};
 enum ArbiterState { ROUND, SEND, RECEIVE };
 
+typedef struct{
+	
+	signal bufferr: buff_dmni := (others=>(others=>'0'));
+	subtype buffsizebool is std_logic_vector(0 to (TAM_BUFFER_DMNI-1)); 
+
+	signal is_header: buffsizebool := (others=> '0');
+	signal first,last: pointer := (others=>'0');
+	signal payload_size      : regflit;
+
+
+	uint32_t timer, intr_count, intr_counter_temp;
+
+	uint32_t address, address_2, size, size_2, send_address, send_address_2,
+		send_size, send_size_2, recv_address, recv_size;
+
+	//0 - copy from memory
+	//1 - copy to memory
+	bool operation;
+	
+	bool prio, read_av, slot_available, add_buffer;
+
+	bool write_enable, read_enable;
+	bool send_active_2, receive_active_2;
+
+} DmniState;
 
 class DmniModel : public Process {
 
 	private:
+		//internal state of modules
 		SendState sendState, recvState;
 		
 		NocState nocState;
 		ArbiterState arbState;
 		
-		MemoryModel* mem; //memory to attach the dmni
+		//config interface
+		bool set_address, set_address_2;
+		bool set_size, set_size_2;
+		bool set_op, start, 
 		
-		//memory mapped
-		MemoryAddr intr; //interruption addr
-		MemoryAddr mmr;  //mmr addresss
+		uint32_t config_data;
 		
-		//I/O buffers
-		Buffer* ib;
-		Buffer* ob;
-
+		//status
+		bool intr, send_active, receive_active;
+		
+		DmniState s;
+		
 	public:  
 
-		/** Implementation of the Process' interface
-		  * @return time taken for perming next cycle */
+		//Process impl
 		unsigned long long Run();
-		
-		/** Ctor.
-		  * @param name: name for this instance of Process
-		  * @param mem: memory model to attach the dmni to
-		  * @param intr: interrupt address
-		  * @param mmr: mmr address */
-		DmniModel(string name, MemoryModel* m, MemoryAddr intr, MemoryAddr mmr);
-	
-		/** Dtor. */
+		DmniModel(string name);
 		~DmniModel();
 		
 		//DMNI specific
