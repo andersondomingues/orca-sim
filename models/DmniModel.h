@@ -44,20 +44,27 @@ enum ArbiterState { ROUND, SEND, RECEIVE };
 class DmniModel : public Process {
 
 	private:
-		SendState sendState, recvState;
+	
+		//memory to attach the dmni
+		MemoryModel* mem; 
 		
-		NocState nocState;
-		ArbiterState arbState;
-		
-		MemoryModel* mem; //memory to attach the dmni
-		
-		//memory mapped
+		//memory mapped 
 		MemoryAddr intr; //interruption addr
 		MemoryAddr mmr;  //mmr addresss
 		
 		//I/O buffers
 		Buffer* ib;
 		Buffer* ob;
+		
+		//state variables (signals)
+		bool read_enable, write_enable, prio;
+		bool send_active_2, receive_active_2;
+		uint32_t timer;
+		
+		//internal module states
+		ArbiterState arbState;
+		SendState sendState, recvState;
+		NocState nocState;
 
 	public:  
 
@@ -86,6 +93,9 @@ class DmniModel : public Process {
 		void proc_receive();
 		void proc_send();
 		void proc_config();
+		
+		//reset
+		void reset();
 };
 
 

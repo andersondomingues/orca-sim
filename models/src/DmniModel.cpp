@@ -53,19 +53,100 @@ Buffer* DmniModel::GetInputBuffer(Buffer* b){
 }
 
 
+void DmniModel::reset(){
 
+	//arbiter reset
+	this->read_enable  = false;
+	this->write_enable = false;
+	this->prio = false;
+	this->timer = 0;
+	
+	this->arbState = ArbiterState::ROUND;
+	
+	//
 
-unsigned long long DmniModel::Run(){
+}
+
+void DmniModel::proc_receive(){
 	
 
+}
+
+unsigned long long DmniModel::Run(){
+
+	//TODO:parallel for?
+	proc_arbiter();
+	proc_receive();
+	proc_send();
+	proc_config();
+	
+	//TODO: after cycling commit
+	//reason: state changes at the end of cycle, so we
+	//cannot allow, for example, the arbiter to commit
+	//changes to shared signals until the end cycle, 
+	//because it would make receiver, send and config
+	//to assume future values instead of current values 
+	//for these shared signals.
 }
 
 
 void DmniModel::proc_arbiter(){
 
-}
-void DmniModel::proc_receive(){
+	//arbiter state machine
+	switch(this->arbState){
 	
+		//ROUND STATE (means "whatever comes first")
+		case ArbiterState::ROUND:
+		
+			if(this->prio == false){
+				if(this->recvState == SendState::COPY_TO_MEM){
+					this->arbState = ArbiterState::RECEIVE;
+					this->read_enable = true;
+				}else if(send_active_2 = true){
+					this->arbState = ArbiterState::SEND;
+					this->write_enable = true;
+				}
+			}else{
+				if(send_active_2 = true){
+					this->arbState = ArbiterState::SEND;
+					this->write_enable = true;
+				}else if(this->recvState == SendState::COPY_TO_MEM){
+					this->arbState = ArbiterState::RECEIVE;
+					this->read_enable = true;				
+				}
+			}	
+			break;
+	
+		//SEND STATE
+		case ArbiterState::SEND:
+			if(sendState == SendState::FINISH || (this->timer == DMNI_TIMER && receive_active_2 == true)){
+				this->timer = 0;
+				this->arbState = ArbiterState::ROUND;
+				this->read_enable = false;
+				this->prio = !this->prio;	
+			}else{
+				this->timer++;
+			}		
+			break;
+	
+		//RECV STATE
+		case ArbiterState::RECEIVE:
+			if(recvState == SendState::FINISH || (this->timer == DMNI_TIMER && send_active_2 == true)){
+				this->timer = 0;
+				this->arbState = ArbiterState::ROUND;
+				this->read_enable = false;
+				this->prio = !this->prio;
+			}else{
+				this->timer++;
+			}
+	
+		break;
+	
+	}
+
+}
+
+void DmniModel::proc_config(){
 
 }
 
