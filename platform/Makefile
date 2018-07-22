@@ -1,4 +1,4 @@
-GCCFLAGS  := -g -I../simulator -I../models 
+GCCFLAGS  := -g -I../simulator -I../models -Wall -O3 
 LDFLAGS   := -L../models/bin -L../simulator/bin -lmodels -lsim
 OUTPUTDIR :=./bin
 LIBNAME := teste

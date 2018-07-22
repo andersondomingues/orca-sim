@@ -4,7 +4,7 @@ OUTPUTDIR :=./bin
 
 #ar rcs sim-lib.a Process.o Event.o Simulator.o Buffer.o
 CPP :=g++
-CPPFLAGS := -g -c -O3 -I.
+CPPFLAGS := -g -c -O3 -I. -Wall
 ARFLAGS :=
 LIBNAME := libsim.a 
 

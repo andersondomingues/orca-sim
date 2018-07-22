@@ -47,7 +47,7 @@ MemoryModel::MemoryModel(std::string name, uint32_t size, bool wipe, std::string
 void MemoryModel::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
     //TODO: investigate memcpy performance
-	for(int i = 0; i < length; i++){
+	for(uint32_t i = 0; i < length; i++){
 		this->mem[addr] = data[i];
 		addr++;		
 	}
@@ -56,7 +56,7 @@ void MemoryModel::Write(uint32_t addr, MemoryType* data, uint32_t length){
 void MemoryModel::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	
 	//TODO: investigate memcpy performance
-	for(int i = 0; i < length; i++){
+	for(uint32_t i = 0; i < length; i++){
 		buffer[i] = this->mem[addr];
 		addr++;		
 	}
@@ -67,7 +67,7 @@ void MemoryModel::Wipe(uint32_t base, uint32_t size){
 	
     //TODO: investigate memcpy, zero fill and other methods
     //for filling the memory with zeroes.
-	for(int i = base; i < size; i++)	
+	for(uint32_t i = base; i < size; i++)	
 		mem[i] = 0x00;
 	
 }
@@ -94,7 +94,7 @@ void MemoryModel::Dump(uint32_t base, uint32_t length){
 	//fix for printing only 4-digit values
 	int mask = 0x000000FF;
 	
-	for(int i = base; i < length; i+= 16){
+	for(uint32_t i = base; i < length; i+= 16){
 
 		//TODO: fix check on unaligned files
 		if(mem[i+1]  + mem[i  ]  + mem[i+3]  + mem[i+2] 

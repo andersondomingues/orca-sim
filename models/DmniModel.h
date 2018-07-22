@@ -31,21 +31,27 @@
 //model API
 #include <MemoryModel.h>
 
-#define TAM_BUFFER_DMNI 
+#define TAM_BUFFER_DMNI 32 
 #define DMNI_TIMER 32
 #define WORD_SIZE 8
 
-enum SendState { WAIT, LOAD, COPY, COPY_FROM_MEM, COPY_TO_MEM, FINISH };
+#define BUFFERR_LENGTH 32
+#define IS_HEADER_LENGTH 32
 
-enum NocState { HEADER, PAYLOAD, DATA};
-enum ArbiterState { ROUND, SEND, RECEIVE };
-
+enum class SendState { 
+    WAIT, LOAD, COPY, COPY_FROM_MEM, COPY_TO_MEM, FINISH };
+enum class RecvState {
+    WAIT, COPY_TO_MEM, FINISH }; 
+enum class NocState { 
+    HEADER, PAYLOAD, DATA};
+enum class ArbiterState { 
+    ROUND, SEND, RECEIVE };
 
 class DmniModel : public Process {
 
 	private:
 	
-		//memory to attach the dmni
+		//memory to attach the dmni to
 		MemoryModel* mem; 
 		
 		//memory mapped 
@@ -56,15 +62,36 @@ class DmniModel : public Process {
 		Buffer* ib;
 		Buffer* ob;
 		
-		//state variables (signals)
-		bool read_enable, write_enable, prio;
-		bool send_active_2, receive_active_2;
+        //internal module states
+		ArbiterState arbState;
+		SendState sendState;
+        RecvState recvState;
+		NocState nocState;
+        
+        
+        //state variables (signals)
+        bool read_enable, write_enable, prio;
+		bool send_active_2;
+        uint32_t send_address, send_address_2, send_size, send_size_2;
+        
+        bool read_active_2;
+        bool recv_active_2;
+        uint32_t recv_address, recv_size;
 		uint32_t timer;
 		
-		//internal module states
-		ArbiterState arbState;
-		SendState sendState, recvState;
-		NocState nocState;
+        bool rx, tx;
+        
+		uint32_t first, last, payload_size, size, address, intr_counter_temp;
+        
+        uint32_t data_in, data_out;
+        
+        uint32_t bufferr[BUFFERR_LENGTH], mem_data_write;
+        
+        bool add_buffer, read_av, start, operation, slot_available;
+        uint8_t mem_byte_we; // "XXXX"
+        
+        bool is_header[IS_HEADER_LENGTH]; 
+        
 
 	public:  
 

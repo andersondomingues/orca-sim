@@ -3,7 +3,7 @@ OUTPUTDIR :=./bin
 
 CPP:=g++
 
-CPPFLAGS  :=-I. -I../simulator -c -g
+CPPFLAGS  :=-I. -I../simulator -c -g -O3 -Wall
 LDFLAGS   :=-l:libudes.a
 
 LIBNAME   :=libmodels.a

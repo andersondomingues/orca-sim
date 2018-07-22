@@ -305,7 +305,8 @@ fail:
 	exit(0);
 }
 
-HFRiscv::HFRiscv(string name, MemoryType* mptr, uint32_t size, uint32_t base) : Process(name) {
+HFRiscv::HFRiscv(string name, MemoryType* mptr, 
+		uint32_t size, uint32_t base) : Process(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
@@ -317,7 +318,8 @@ HFRiscv::HFRiscv(string name, MemoryType* mptr, uint32_t size, uint32_t base) : 
 	//set addr from external mem
 	//s->mem = &sram[0];
 
-	//TODO: deprecate it and make memory accessible only through [] operator
+	//TODO: deprecate it and make memory accessible only
+	//through [] operator
 	s->mem = &mptr[0];
 
 	s->vector = 0;
@@ -333,6 +335,5 @@ HFRiscv::HFRiscv(string name, MemoryType* mptr, uint32_t size, uint32_t base) : 
 	s->cycles = 0;
 }
 
-HFRiscv::~HFRiscv(){
-	int x = 1 + 1;
-}
+//TODO: clear allocated memory if any
+HFRiscv::~HFRiscv(){}
