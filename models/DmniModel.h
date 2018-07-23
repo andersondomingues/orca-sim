@@ -28,73 +28,123 @@
 //simulator API
 #include <Process.h>
 #include <Buffer.h>
+
 //model API
 #include <MemoryModel.h>
 
 #define TAM_BUFFER_DMNI 32 
-#define DMNI_TIMER 32
-#define WORD_SIZE 8
+#define DMNI_TIMER 32  /*std_logic_vector(4 downto 0):="10000"*/
+#define WORD_SIZE  4   /*std_logic_vector(4 downto 0):="00100"*/
 
-#define BUFFERR_LENGTH 32
-#define IS_HEADER_LENGTH 32
+/*
+ * The RegFlit type affects both routers from Hermes and 
+ * the DMNI modules. Before changing it, make sure that 
+ * the change will correcly propagate to all involved 
+ * modules*/
+typedef uint32_t RegFlit;
 
-enum class SendState { 
-    WAIT, LOAD, COPY, COPY_FROM_MEM, COPY_TO_MEM, FINISH };
-enum class RecvState {
-    WAIT, COPY_TO_MEM, FINISH }; 
-enum class NocState { 
-    HEADER, PAYLOAD, DATA};
-enum class ArbiterState { 
-    ROUND, SEND, RECEIVE };
+//States for internal state machines
+enum class SendState {WAIT, LOAD, COPY_FROM_MEM, FINISH};
+enum class RecvState {WAIT, COPY_TO_MEM, FINISH}; 
+enum class NocState {HEADER, PAYLOAD, DATA};
+enum class ArbiterState {ROUND, SEND, RECEIVE};
 
+/**
+ * @class DmniModel
+ * @author Anderson Domingues
+ * @date 07/22/18
+ * @file DmniModel.h
+ * @brief This class implements the behaviour of the DMNI module
+ * from HeMPS project (see URSA documentation regarding HeMPS). The
+ * DMNI module has both roles of NI (network interface) and DMA (
+ * direct memory access) modules. */
 class DmniModel : public Process {
 
 	private:
-	
-		//memory to attach the dmni to
-		MemoryModel* mem; 
-		
-		//memory mapped 
-		MemoryAddr intr; //interruption addr
-		MemoryAddr mmr;  //mmr addresss
-		
-		//I/O buffers
-		Buffer* ib;
-		Buffer* ob;
-		
         //internal module states
-		ArbiterState arbState;
-		SendState sendState;
-        RecvState recvState;
-		NocState nocState;
+		ArbiterState _arbState;
+		SendState    _sendState;
+        RecvState    _recvState;
+        NocState     _nocState;
         
+        //signals
+        uint32_t _bufferr[TAM_BUFFER_DMNI], _intr_count;
+        bool _is_header[TAM_BUFFER_DMNI];
         
-        //state variables (signals)
-        bool read_enable, write_enable, prio;
-		bool send_active_2;
-        uint32_t send_address, send_address_2, send_size, send_size_2;
+        uint32_t _first, _last;
+        bool _add_buffer;
         
-        bool read_active_2;
-        bool recv_active_2;
-        uint32_t recv_address, recv_size;
-		uint32_t timer;
-		
-        bool rx, tx;
+        uint32_t _payload_size;
         
-		uint32_t first, last, payload_size, size, address, intr_counter_temp;
+        uint32_t _timer;
+        uint32_t _send_address, _send_address_2, _send_size, _send_size_2;
+        uint32_t _recv_address, _recv_size;
+        bool _prio, _operation, _read_av, _slot_available;
+        bool _read_enable, _write_enable;
         
-        uint32_t data_in, data_out;
+        bool _send_active_2, _receive_active_2;
+        uint32_t _intr_counter_temp;
         
-        uint32_t bufferr[BUFFERR_LENGTH], mem_data_write;
+        uint32_t _size, _size_2;
+        uint32_t _address, _address_2;
         
-        bool add_buffer, read_av, start, operation, slot_available;
-        uint8_t mem_byte_we; // "XXXX"
+        //configuration interface (IN)
+        bool _set_address, _set_address_2, 
+              _set_size, _set_size_2, 
+              _set_op, _start;
+        uint32_t* _config_data;
         
-        bool is_header[IS_HEADER_LENGTH]; 
+        //status outputs (OUT)
+        bool _intr, _send_active, _receive_active;
         
-
-	public:  
-
+        //memory interface
+        uint32_t _mem_address, _mem_data_write;
+        
+        uint32_t* _mem_data_read;
+        uint8_t  _mem_byte_we; //should be std_logic_vector(3 downto 0);
+        
+        //noc interface (local port)        
+        bool _tx, _credit_o; //(OUT)
+        bool* _rx;
+        bool* _credit_i; //(IN)
+        RegFlit _data_out;  //(OUT)
+        RegFlit* _data_in;    //(IN)
+        
+public: 
+        /**
+         * @brief 
+         * @param set_address
+         * @param set_address_2
+         * @param set_size
+         * @param set_size_2
+         * @param set_op
+         * @param start
+         * @param config_data
+         * @param mem_data_read
+         * @param credit_i
+         * @param rx
+         * @param data_in
+         */
+        void PortMap(
+        
+            //configuration if
+            bool* set_address,
+            bool* set_address_2,
+            bool* set_size,
+            bool* set_size_2,
+            bool* set_op,
+            bool* start,
+            uint32_t* config_data,
+            
+            //memory if
+            uint32_t* mem_data_read,
+            
+            //noc if (local port)
+            bool* credit_i,
+            bool* rx,
+            RegFlit* data_in
+        );
+        
 		/** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */
 		unsigned long long Run();
@@ -104,25 +154,29 @@ class DmniModel : public Process {
 		  * @param mem: memory model to attach the dmni to
 		  * @param intr: interrupt address
 		  * @param mmr: mmr address */
-		DmniModel(string name, MemoryModel* m, MemoryAddr intr, MemoryAddr mmr);
+		DmniModel(string name);
 	
 		/** Dtor. */
 		~DmniModel();
 		
-		//getters and setters for buffers
-		void SetOutputBuffer(Buffer* b);
-		void SetInputBuffer(Buffer* b);
-		Buffer* GetOutputBuffer(Buffer* b);
-		Buffer* GetInputBuffer(Buffer* b);
+        //Abstraction of inernal processes
+		void CycleArbiter();
+		void CycleReceive();
+		void CycleSend();
+        
+        /**
+         * @brief Configure operation, affect only input of current 
+         * state. We opt for placing configure here so that it could
+         * be called externally. */
+		void CycleConfigure();
 		
-		//DMNI specific
-		void proc_arbiter();
-		void proc_receive();
-		void proc_send();
-		void proc_config();
-		
-		//reset
-		void reset();
+		/**
+		 * @brief Reset operation, affects all internal state machines. We opt for
+         * placing reset here so that the model would not check for the reset flag
+         * at each cycle. Therefore, the DMNI must be reseted from elsewhere in the 
+         * simulation. Since we found no use for reseting it but at the beggining, 
+         * we call this function during object construction. */
+		void Reset();
 };
 
 

@@ -41,19 +41,29 @@ int main(int argc, char** argv){
 		mem1.GetMemPtr(), //pointer to memory TODO: fix API for using [] override
 		MEM_SIZE,         //total size (in words)
 		SRAM_BASE         //pc starting location
-	);	
+	);
 
 	//creates a dmni and attaches to the memory module	
-	DmniModel dmni1 = DmniModel(
-		"dmni1",   //instance name
-		&mem1,      //memory model
-		DMNI_INTR, //interrupt addr
-		DMNI_CONF //configuration addr
-	);
-	
+	DmniModel dmni1 = DmniModel("dmni1");
+    dmni1.Reset();
+    dmni1.PortMap(
+        0, //set_address
+        0, //set_address_2
+        0, //set_size
+        0, //set_size_2
+        0, //set_op
+        0, //start
+        0, //config_data
+        0, //mem_data_read
+        0, //credit_i
+        0, //rx
+        0  //data_in
+    );
+
+    //s.Schedule(Event(0, &mem1));
 	s.Schedule(Event(0, &dmni1));
 	s.Schedule(Event(0, &hfr1));
-	
+
 	s.Run();
 
 	cout << "\nSimulation ended" << endl;
