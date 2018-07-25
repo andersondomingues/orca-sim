@@ -39,14 +39,30 @@
 // MemoryHelper class.
 class MemoryModel{
 
-  private:
-  	MemoryType* mem;
-  	std::string name;
-  	uint32_t length;
+private:
   
-  public: //<<-------------- all methods here are public
-		
-	/** Creates a new memory area.	
+    MemoryType* mem;
+    std::string name;
+    uint32_t length;
+  
+    //out ports
+    uint32_t _data_read_a;
+    uint32_t _data_read_b;
+  
+    //in ports
+    uint32_t* _address_a;    //port A info
+    bool*     _enable_a;
+    uint8_t*  _wbe_a;
+    uint32_t* _data_write_a;
+    
+    uint32_t* _address_b;    //port B info
+    bool*     _enable_b;
+    uint8_t*  _wbe_b;
+    uint32_t* _data_write_b;
+    
+public:
+    
+    /** Creates a new memory area.	
      * @param size: Total length of the memory are to be created.
      * @param wipe (optional): If <true> is passed, wipes the are after creating. */
     MemoryModel(std::string name, 	uint32_t size, bool wipe = false);
@@ -93,6 +109,25 @@ class MemoryModel{
 	
 	//TODO:remove it as soon as possible
 	MemoryType* GetMemPtr();
+    
+    //getters
+    uint32_t* GetDataReadA();
+    uint32_t* GetDataReadB();
+    
+    //portmap for memory ports
+    void PortMapA(
+        uint32_t* address_a, //port A info
+        bool*     enable_a,
+        uint8_t*   wbe_a,
+        uint32_t* data_write_a
+    );
+    void PortMapB(
+        uint32_t* address_b, //port B info
+        bool*     enable_b,
+        uint8_t*   wbe_b,
+        uint32_t* data_write_b
+    );
+    
 };
 
 #endif

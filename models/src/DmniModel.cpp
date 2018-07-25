@@ -380,3 +380,18 @@ void DmniModel::PortMap(
     _rx = rx;
     _data_in = data_in;
 }
+
+//getters
+bool* DmniModel::GetIntr(){ return &_intr; }
+bool* DmniModel::GetSendActive(){ return &_send_active;}
+bool* DmniModel::GetReceiveActive(){ return &_receive_active;}
+
+//memory
+uint32_t* DmniModel::GetMemAddress(){ return &_mem_address;}
+uint32_t* DmniModel::GetMemDataWrite(){ return &_mem_data_write;}
+uint8_t*  DmniModel::GetMemByteWe(){ return &_mem_byte_we;}
+
+//noc interface
+bool* DmniModel::GetTx(){ return &_tx;}
+RegFlit* DmniModel::GetDataOut(){ return &_data_out;}
+bool* DmniModel::GetCreditO(){ return &_credit_o;}

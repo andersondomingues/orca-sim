@@ -116,3 +116,34 @@ void MemoryModel::Dump(uint32_t base, uint32_t length){
 MemoryType* MemoryModel::GetMemPtr(){
 	return this->mem;
 }
+
+//getters
+uint32_t* MemoryModel::GetDataReadA(){
+    return &_data_read_a;
+}
+uint32_t* MemoryModel::GetDataReadB(){
+    return &_data_read_b;
+}
+
+//portmap for memory ports
+void MemoryModel::PortMapA(
+    uint32_t* address_a, //port A info
+    bool*     enable_a,
+    uint8_t*   wbe_a,
+    uint32_t* data_write_a){
+        _address_a = address_a;
+        _enable_a  = enable_a;
+        _wbe_a = wbe_a;
+        _data_write_a = data_write_a;
+    }
+
+void MemoryModel::PortMapB(
+    uint32_t* address_b, //port B info
+    bool*     enable_b,
+    uint8_t*   wbe_b,
+    uint32_t* data_write_b){            
+        _address_b = address_b;
+        _enable_b  = enable_b;
+        _wbe_b = wbe_b;
+        _data_write_b = data_write_b;
+    }

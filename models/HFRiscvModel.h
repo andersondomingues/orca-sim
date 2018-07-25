@@ -58,14 +58,27 @@ typedef struct {
 	
 } risc_v_state;
 
-class HFRiscv : public Process{
+class HFRiscvModel : public Process{
 
 	private:
 		risc_v_state context;
 		risc_v_state *s;
 		int i;		
-	public:
+
+        //out wires
+        uint32_t _mem_address; 
+        uint32_t _mem_data_write;
+        bool _mem_pause;
+        uint8_t _current_page; //can be ignored for riscv        
+        
+        //in wires
+        bool* _intr_in;
+        uint32_t* _mem_data_read;
+        uint8_t * _byte_we;
+
+public:
 	
+        
 		void dumpregs(risc_v_state *s);
 		void bp(risc_v_state *s, uint32_t ir);
 		int32_t mem_fetch(risc_v_state *s, uint32_t address);
@@ -73,9 +86,26 @@ class HFRiscv : public Process{
 		void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 		void cycle(risc_v_state *s);
 
-		HFRiscv(string name, MemoryType* mptr, uint32_t size, uint32_t base);
+		HFRiscvModel(string name, MemoryType* mptr, uint32_t size, uint32_t base);
 		unsigned long long Run();
-		~HFRiscv();
+		~HFRiscvModel();
+    
+        /**
+         * @brief Processor reset.*/
+        void Reset();
+
+        void PortMap(
+            bool* intr_in,
+			uint32_t* mem_data_read,  
+			uint8_t * byte_we
+        );
+        
+        //getters and setters for out wires
+        uint8_t* GetCurrentPage();
+        bool* GetMemoryPause();
+        uint32_t* GetMemDataWrite();
+        uint32_t* GetMemAddress();
+        
 };
 
 #endif /* __RISC_V_H */

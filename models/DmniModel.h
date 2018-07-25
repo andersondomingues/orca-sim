@@ -111,6 +111,21 @@ class DmniModel : public Process {
         RegFlit* _data_in;    //(IN)
         
 public: 
+        //status
+        bool* GetIntr();
+        bool* GetSendActive();
+        bool* GetReceiveActive();
+        
+        //memory
+        uint32_t* GetMemAddress();
+        uint32_t* GetMemDataWrite();
+        uint8_t*  GetMemByteWe();
+        
+        //noc interface
+        bool* GetTx();
+        RegFlit* GetDataOut();
+        bool* GetCreditO();
+        
         /**
          * @brief 
          * @param set_address

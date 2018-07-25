@@ -11,7 +11,7 @@ LIBNAME   :=libmodels.a
 all: $(OUTPUTDIR)/$(LIBNAME)
 	@echo "done."
 
-$(OUTPUTDIR)/$(LIBNAME): $(OUTPUTDIR)/HFRiscv.o $(OUTPUTDIR)/MemoryModel.o $(OUTPUTDIR)/DmniModel.o
+$(OUTPUTDIR)/$(LIBNAME): $(OUTPUTDIR)/HFRiscvModel.o $(OUTPUTDIR)/MemoryModel.o $(OUTPUTDIR)/DmniModel.o $(OUTPUTDIR)/NocRouterModel.o
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
 
 #compile all classes into %.o files
