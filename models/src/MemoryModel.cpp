@@ -147,3 +147,14 @@ void MemoryModel::PortMapB(
         _wbe_b = wbe_b;
         _data_write_b = data_write_b;
     }
+    
+    
+    
+//process impl
+unsigned long long MemoryModel::Run(){
+    return 1;
+}
+    
+void MemoryModel::Reset(){
+    return;
+}

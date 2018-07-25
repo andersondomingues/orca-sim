@@ -132,10 +132,10 @@ public:
     );
     
     //process impl
-    unsigned long long Run(){
-        //TODO: to be implemented
-        return 1;
-    }
+    unsigned long long Run();
+    
+    void Reset();
+    
 };
 
 #endif
