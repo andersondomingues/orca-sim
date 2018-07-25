@@ -49,7 +49,7 @@ int main(int argc, char** argv){
     //reset all hardware
     hfr1.Reset();
     dmni1.Reset();
-    //mem1.Reset();
+    mem1.Reset();
     
     hfr1.PortMap(
         dmni1.GetIntr(), //intr_in
@@ -71,9 +71,12 @@ int main(int argc, char** argv){
         0  //data_in
     );
 
+    //mem1.PortMap();
+
     //s.Schedule(Event(0, &mem1));
 	s.Schedule(Event(0, &dmni1));
 	s.Schedule(Event(0, &hfr1));
+    s.Schedule(Event(0, &mem1));
 
 	s.Run();
 

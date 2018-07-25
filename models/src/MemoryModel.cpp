@@ -24,7 +24,7 @@
 #include <inttypes.h>
 
 //CTOR. TODO:merge duplicated code merge both ctors.
-MemoryModel::MemoryModel(std::string name, uint32_t size, bool wipe){
+MemoryModel::MemoryModel(std::string name, uint32_t size, bool wipe) : Process(name){
 
 	this->name = name;
 	this->mem = new MemoryType[size];
@@ -33,7 +33,7 @@ MemoryModel::MemoryModel(std::string name, uint32_t size, bool wipe){
     	this->Wipe(0, size);
 }
 
-MemoryModel::MemoryModel(std::string name, uint32_t size, bool wipe, std::string binname){
+MemoryModel::MemoryModel(std::string name, uint32_t size, bool wipe, std::string binname): Process(name){
 				
 	this->name = name;
 	this->mem = new MemoryType[size];

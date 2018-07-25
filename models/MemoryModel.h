@@ -22,6 +22,9 @@
 #ifndef __GENERIC_RAM_H
 #define __GENERIC_RAM_H
 
+//simulation API
+#include <Process.h>
+
 #include <iostream>
 #include <fstream>
 
@@ -37,7 +40,7 @@
 // encapsulate it inside a class. Thus, memory manipu-   
 // lation is done through the static methods of the
 // MemoryHelper class.
-class MemoryModel{
+class MemoryModel: public Process{
 
 private:
   
@@ -128,6 +131,11 @@ public:
         uint32_t* data_write_b
     );
     
+    //process impl
+    unsigned long long Run(){
+        //TODO: to be implemented
+        return 1;
+    }
 };
 
 #endif
