@@ -32,32 +32,58 @@
 //model API
 #include <MemoryModel.h>
 
-#define TAM_BUFFER_DMNI 32 
-#define DMNI_TIMER 32  /*std_logic_vector(4 downto 0):="10000"*/
-#define WORD_SIZE  4   /*std_logic_vector(4 downto 0):="00100"*/
+enum class RouterState{
+    WORMHOLE, ROUNDROBIN
+};
 
-/*
- * The RegFlit type affects both routers from Hermes and 
- * the DMNI modules. Before changing it, make sure that 
- * the change will correcly propagate to all involved 
- * modules*/
-typedef uint32_t RegFlit;
-
-
+//routing ports
+#define SOUTH 3
+#define NORTH 1
+#define WEST  2
+#define EAST  4
+#define LOCAL 0
 
 class NocRouterModel: public Process {
 
 private:
+        uint32_t _round_robin;
+        uint32_t _packets_to_send;
+        uint32_t _target_port, _source_port;
         
+        //address of the router
+        uint32_t _x;
+        uint32_t _y;
+        
+        //state
+        RouterState _state;
+        
+        //output buffers
+        Buffer _ob[5];
+        
+        //input buffers
+        Buffer* _ib[5];        
 public: 
-        void PortMap();
+        /**
+         * @brief Get a pointer to one of the output buffers.
+         * @param p The port to where the pointer will be pointing.
+         * @return The pointer to the respective buffer. */
+        Buffer* GetOutputBuffer(uint32_t p);
+        
+        //port map
+        void PortMap(
+            Buffer* ib_south, 
+            Buffer* ib_north, 
+            Buffer* ib_local, 
+            Buffer* ib_west, 
+            Buffer* ib_east
+        );
         
 		/** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */
 		unsigned long long Run();
 		
 		
-		NocRouterModel(string name);
+		NocRouterModel(string name, uint32_t x_pos, uint32_t y_pos);
 	
 		/** Dtor. */
 		~NocRouterModel();
