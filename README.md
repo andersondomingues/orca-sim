@@ -32,23 +32,25 @@ Available documentation should be deployed to the ``/docs`` directory. Documenta
 
 First release dated to "just after we integrate the HF-RISCV processor and peripherals from the HEMPS project onto a single platform". Until them, all commits will be pushed to the main branch without any warrant of being stable. In other words, the code may not work properly, or not even work at all.
 
+![#1589F0](https://placehold.it/15/00ee15/000000?text=+) `For now, the model for Hermes' Network Router is stable. The routing algorithm is XY, with Wormhole. The hardware is modeled using buffers so that the credit-based and handshake procotols can be simulated. Unlimited buffers are also supported and can be used for bypassing network congestion.`
+
 ## Versioning
 
 Releases will be tagged and branched/forked and should be referenced as ``URSA ver. MAJOR.MINOR DATE COMMIT_ID``. An example should be ``URSA ver. 1.01 July 28 51375aa``.
-
-## Contact
-
-Any of the contributors of this repository.
 
 ## External contribution
 
 This projects uses software (and hardware) from other projects. 
 
-- *HF-RISCV*. The hf-riscv processor is maintained by Sergio Johann (sjohann81). More information on his work can be found at [his repository](https://github.com/sjohann81/hf-risc). 
+- HF-RISCV. The hf-riscv processor is maintained by Sergio Johann (sjohann81). More information on his work can be found at [his repository](https://github.com/sjohann81/hf-risc). 
 
-- *HEMPS*. The HEMPS project is maintened by the GAPH group. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html). Content used within URSA project comes from [their repository](https://github.com/GaphGroup/hemps).
+- HEMPS (and HERMES). The HEMPS project is maintened by the GAPH group. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html). Content used within URSA project comes from [their repository](https://github.com/GaphGroup/hemps). Note that HERMES is part of the HEMPS projects and should be available at the same repository.
 
 ## Licensing
 
 See ``LICENSE.MD`` for details. 
 
+
+## Contact
+
+Any of the contributors of this repository. For now, I ([andersondomingues](https://github.com/andersondomingues)) am the only contributor to this project. Feel free to [mail me](mailto:ti.andersondomingues@gmail.com).
