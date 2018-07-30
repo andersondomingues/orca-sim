@@ -10,7 +10,7 @@ all: $(SIMLIB) $(MODLIB) $(SOFTBIN) $(PLATEXE)
 
 $(PLATEXE):
 	@echo "$'\e[036mPlatform... \e[0m"
-	make -C platform
+	make -C platforms
 
 $(SOFTBIN):
 	@echo "$'\e[036mBuilding Software BIN... \e[0m"
@@ -32,6 +32,6 @@ clean:
 	@echo "$'\e[036mSoftware... \e[0m"
 	make -C software clean
 	@echo "$'\e[036mPlatform... \e[0m"
-	make -C platform clean
+	make -C platforms clean
 
 
