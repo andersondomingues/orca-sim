@@ -4,11 +4,11 @@ Welcome to the repository of the URSA project. URSA is an environment for creati
 
 The following sections may serve you as tour on the project. Note that the project is in constant evolution! So, feel free to contact us regarding the development of URSA.
 
-![Components of URSA and their interaction.](https://github.com/andersondomingues/ursa/blob/master/web-client/figs/URSA.png?raw=true)
-
 ## The Anatomy of URSA
 
 The URSA environment is composed of some subprojects. Each of these subprojects generate a component to the environment. 
+
+![Components of URSA and their interaction.](https://github.com/andersondomingues/ursa/blob/master/web-client/figs/URSA.png?raw=true)
 
 - BUILDER: The builder project aims to deliver an automated way to build platforms. In short words, you can create new platforms by declaring hardware and how they interact. The builder tool then glues everything, generate the necessary source code and build a ready-to-use platform.
 
@@ -38,7 +38,7 @@ Available documentation should be deployed to the ``/docs`` directory. Documenta
 
 First release dated to "just after we integrate the HF-RISCV processor and peripherals from the HEMPS project onto a single platform". Until them, all commits will be pushed to the main branch without any warrant of being stable. In other words, the code may not work properly, or not even work at all.
 
-![#1589F0](https://placehold.it/15/00ee15/000000?text=+) `For now, the model for Hermes' Network Router is stable. The routing algorithm is XY, with Wormhole. The hardware is modeled using buffers so that the credit-based and handshake procotols can be simulated. Unlimited buffers are also supported and can be used for bypassing network congestion.`
+![#1589F0](https://placehold.it/15/00ee15/000000?text=+) `For now, the model for Hermes' Network Router is stable. The routing algorithm is XY, with Wormhole. The hardware is modeled using buffers so that both credit-based and handshake procotols can be simulated. Unlimited buffers are also supported and can be used for bypassing network congestion.`
 
 ## Versioning
 
