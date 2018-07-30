@@ -24,6 +24,12 @@ The URSA environment is composed of some subprojects. Each of these subprojects 
 
 - WEB-CLIENT: Real-time monitoring system that allows the visualization of models through a web browser. For instance, one may want to watch registers changing their values during systems' execution, just for fun. Also, it is possible to control the simulation through the interface.
 
+## Requirements and Running an Example
+
+- Tested with ``GNU Make 4.1`` and ``gcc version 6.3.0``, with ``Debian 6.3.0-18+deb9u1``. Additional compilers (or configuration) for targeting simulated CPUs are also required. 
+
+- Example are available at ``platforms`` directory. You can specify which example to run by editing ``./platforms/Makefile``. Then, call ``make`` from projects' root directory.
+
 ## Documentation
 
 Available documentation should be deployed to the ``/docs`` directory. Documentation is intentionally deployed in PDF. No needs to explain why. No documentation will be available until the first release to avoid rewriting.
