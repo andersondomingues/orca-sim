@@ -30,11 +30,20 @@
 NocRouterModel::NocRouterModel(std::string name, uint32_t x_pos, uint32_t y_pos) : Process(name){
     _x = x_pos;
     _y = y_pos;
+    
+    for(int i = 0; i < 5; i++){
+        std::string bname = "(" + std::to_string(_x) + "," + std::to_string(_y) + ").OUT" + std::to_string(i);
+        _ob[i] = new Buffer(bname);
+        _ib[i] = nullptr;
+    }
+    
     this->Reset();
 }
 
 void NocRouterModel::Reset(){
     _round_robin = LOCAL; //starts checking on local port
+    _state = RouterState::ROUNDROBIN;
+    _packets_to_send = 0;
 }
 
 /**
@@ -50,35 +59,44 @@ unsigned long long NocRouterModel::Run(){
         case RouterState::WORMHOLE:
         {
             //if packets to be sent, 
-            if(_packets_to_send > 0){
-                _ob[_target_port].push(
-                    (_ib[_source_port])->pop());
-                _packets_to_send--;
+            Buffer* ob = _ob[_target_port];
+            Buffer* ib = _ib[_source_port];
             
-            }else{ //if no packet to be sent, change state
+            std::cout << "sent from (" << _x << "," << _y << ") at (" << _target_port << ")"<< std::endl;
+            
+            ob->push(ib->top());
+            ib->pop();
+            
+            _packets_to_send--;
+            
+            if(_packets_to_send == 0)
                 _state = RouterState::ROUNDROBIN;
-            }
-            
+
             break;
         }
         case RouterState::ROUNDROBIN:
         {
-            _round_robin = (_round_robin % 5); //get next port
-            
             Buffer* tb = _ib[_round_robin];
-            
-            
-            if(tb->size() > 0){  //if has packet to send
-                _state = RouterState::WORMHOLE;
-                _source_port = _round_robin;
-                _target_port = this->GetRoute(
-                    tb->top());
-                _packets_to_send = _ib[_round_robin].size();
+
+            //prevent from serving unconnected ports (e.g. border)
+            if(tb != nullptr){
+                if(tb->size() > 0){  //if has packet to send
+                    _state = RouterState::WORMHOLE;
+                    _source_port = _round_robin;
+                    _target_port = this->GetRoute(tb->top()); 
+                    _packets_to_send = tb->size();
+                }
             }
+            //std::cout << "rr";
+            _round_robin++;
+            _round_robin = _round_robin % 5; //get next port
+            
             break;
         }   
             
     }
+    
+    return 1;
 }
 
 /**
@@ -87,18 +105,18 @@ unsigned long long NocRouterModel::Run(){
  * @return the port to where te packet must go*/
 uint32_t NocRouterModel::GetRoute(uint32_t flit){
     
-    uint32_t tx = (flit | 0xFF000000) >> 24;
-    uint32_t ty = (flit | 0x00FF0000) >> 16;
-    
-    //then route "vertically" (Y)
-    if(_x == tx){ 
+    uint32_t tx = (flit & 0xFF000000) >> 24;
+    uint32_t ty = (flit & 0x00FF0000) >> 16;
+
+    //if X=0, then route "vertically" (Y)
+    if(_x == tx){
     
         return (_y == ty)
             ? LOCAL
             : (_y > ty)
-                ? NORTH
-                : SOUTH;      
-    //route X      
+                ? SOUTH
+                : NORTH;      
+    //else route X
     }else{
 
         return (_x > tx)
@@ -110,7 +128,9 @@ uint32_t NocRouterModel::GetRoute(uint32_t flit){
 /**
  * @brief Free allocated memory if any
  */
-NocRouterModel::~NocRouterModel(){}
+NocRouterModel::~NocRouterModel(){
+    //nothing to do here
+}
 
 
 /**
@@ -118,27 +138,13 @@ NocRouterModel::~NocRouterModel(){}
  * @param r The port from which get the pointer.
  * @return A pointer to the buffer.*/
 Buffer* NocRouterModel::GetOutputBuffer(uint32_t r){
-    return &(_ob[r]);
+    return _ob[r];
 }
 
-/**
- * @brief Set the input buffers by informing their pointers. Note
- * that these buffers are initialized elsewhere.
- * @param ib_south South input buffer
- * @param ib_north North ...
- * @param ib_local Local ...
- * @param ib_west  West ...
- * @param ib_east  East ... */
-void NocRouterModel::PortMap(
-    Buffer* ib_south, 
-    Buffer* ib_north, 
-    Buffer* ib_local, 
-    Buffer* ib_west, 
-    Buffer* ib_east
-){
-    _ib[SOUTH] = ib_south;
-    _ib[NORTH] = ib_north;
-    _ib[LOCAL] = ib_local;
-    _ib[WEST]  = ib_west;
-    _ib[EAST]  = ib_east;
+Buffer* NocRouterModel::GetInputBuffer(uint32_t r){
+    return _ib[r];
+}
+
+void NocRouterModel::SetInputBuffer(Buffer* b, uint32_t port){
+    _ib[port] = b;
 }

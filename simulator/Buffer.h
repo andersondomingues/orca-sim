@@ -7,12 +7,12 @@
 
 class Buffer{
 
-    private:
-        std::queue<uint32_t> queue;
+private:
+        std::string _name;
+        std::queue<uint32_t>* _queue;
 
     public:
-
-        Buffer();
+        Buffer(std::string name = "");
         ~Buffer();
 
         uint32_t top();

@@ -37,11 +37,12 @@ enum class RouterState{
 };
 
 //routing ports
-#define SOUTH 3
-#define NORTH 1
-#define WEST  2
-#define EAST  4
-#define LOCAL 0
+#define NORTH 0
+#define WEST  1
+#define SOUTH 2
+#define EAST  3
+
+#define LOCAL 4
 
 class NocRouterModel: public Process {
 
@@ -58,7 +59,7 @@ private:
         RouterState _state;
         
         //output buffers
-        Buffer _ob[5];
+        Buffer* _ob[5];
         
         //input buffers
         Buffer* _ib[5];        
@@ -68,24 +69,20 @@ public:
          * @param p The port to where the pointer will be pointing.
          * @return The pointer to the respective buffer. */
         Buffer* GetOutputBuffer(uint32_t p);
-        
-        //port map
-        void PortMap(
-            Buffer* ib_south, 
-            Buffer* ib_north, 
-            Buffer* ib_local, 
-            Buffer* ib_west, 
-            Buffer* ib_east
-        );
+        Buffer* GetInputBuffer(uint32_t p);
+        void SetInputBuffer(Buffer* b, uint32_t port);
         
 		/** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */
 		unsigned long long Run();
 		
-		
+        /** return this **/
+		uint32_t GetRoute(uint32_t flit);
+        
+        /** Ctor. **/
 		NocRouterModel(string name, uint32_t x_pos, uint32_t y_pos);
 	
-		/** Dtor. */
+		/** Dtor. **/
 		~NocRouterModel();
 		
 		void Reset();
