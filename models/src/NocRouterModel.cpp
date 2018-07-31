@@ -33,7 +33,7 @@ NocRouterModel::NocRouterModel(std::string name, uint32_t x_pos, uint32_t y_pos)
     
     for(int i = 0; i < 5; i++){
         std::string bname = "(" + std::to_string(_x) + "," + std::to_string(_y) + ").OUT" + std::to_string(i);
-        _ob[i] = new Buffer(bname);
+        _ob[i] = new Buffer<FlitType>(bname);
         _ib[i] = nullptr;
     }
     
@@ -59,8 +59,8 @@ unsigned long long NocRouterModel::Run(){
         case RouterState::WORMHOLE:
         {
             //if packets to be sent, 
-            Buffer* ob = _ob[_target_port];
-            Buffer* ib = _ib[_source_port];
+            Buffer<FlitType>* ob = _ob[_target_port];
+            Buffer<FlitType>* ib = _ib[_source_port];
             
             std::cout << "sent from (" << _x << "," << _y << ") at (" << _target_port << ")"<< std::endl;
             
@@ -76,7 +76,7 @@ unsigned long long NocRouterModel::Run(){
         }
         case RouterState::ROUNDROBIN:
         {
-            Buffer* tb = _ib[_round_robin];
+            Buffer<FlitType>* tb = _ib[_round_robin];
 
             //prevent from serving unconnected ports (e.g. border)
             if(tb != nullptr){
@@ -141,14 +141,14 @@ NocRouterModel::~NocRouterModel(){
  * @brief Get a pointer to one of the output buffers.
  * @param r The port from which get the pointer.
  * @return A pointer to the buffer.*/
-Buffer* NocRouterModel::GetOutputBuffer(uint32_t r){
+Buffer<FlitType>* NocRouterModel::GetOutputBuffer(uint32_t r){
     return _ob[r];
 }
 
-Buffer* NocRouterModel::GetInputBuffer(uint32_t r){
+Buffer<FlitType>* NocRouterModel::GetInputBuffer(uint32_t r){
     return _ib[r];
 }
 
-void NocRouterModel::SetInputBuffer(Buffer* b, uint32_t port){
+void NocRouterModel::SetInputBuffer(Buffer<FlitType>* b, uint32_t port){
     _ib[port] = b;
 }

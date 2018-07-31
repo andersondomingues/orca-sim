@@ -58,7 +58,7 @@ void MemoryModel::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	//TODO: investigate memcpy performance
 	for(uint32_t i = 0; i < length; i++){
 		buffer[i] = this->mem[addr];
-		addr++;		
+		addr++;
 	}
 }
 

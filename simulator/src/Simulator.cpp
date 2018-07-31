@@ -5,7 +5,11 @@ using namespace std;
 Simulator::Simulator(unsigned long long  timeout){
 
 	this->timeout = timeout;
-	this->globalTime = 0;
+	Reset();
+}
+
+void Simulator::Reset(){
+    this->globalTime = 0;
 }
 
 /**

@@ -29,6 +29,8 @@
 #include <Process.h>
 #include <Buffer.h>
 
+typedef uint16_t FlitType;
+
 //model API
 #include <MemoryModel.h>
 
@@ -59,18 +61,18 @@ private:
         RouterState _state;
         
         //output buffers
-        Buffer* _ob[5];
+        Buffer<FlitType>* _ob[5];
         
         //input buffers
-        Buffer* _ib[5];        
+        Buffer<FlitType>* _ib[5];        
 public: 
         /**
          * @brief Get a pointer to one of the output buffers.
          * @param p The port to where the pointer will be pointing.
          * @return The pointer to the respective buffer. */
-        Buffer* GetOutputBuffer(uint32_t p);
-        Buffer* GetInputBuffer(uint32_t p);
-        void SetInputBuffer(Buffer* b, uint32_t port);
+        Buffer<FlitType>* GetOutputBuffer(uint32_t p);
+        Buffer<FlitType>* GetInputBuffer(uint32_t p);
+        void SetInputBuffer(Buffer<FlitType>* b, uint32_t port);
         
 		/** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */

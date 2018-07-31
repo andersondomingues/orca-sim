@@ -41,7 +41,7 @@
  * the DMNI modules. Before changing it, make sure that 
  * the change will correcly propagate to all involved 
  * modules*/
-typedef uint32_t RegFlit;
+typedef uint16_t FlitType;
 
 #define OP_SEND 4
 #define OP_RECV 8
@@ -75,8 +75,8 @@ private:
         MemoryModel* _mem;
         
         //noc interface (local port)        
-        Buffer* _ib;
-        Buffer* _ob; 
+        Buffer<FlitType>* _ib;
+        Buffer<FlitType>* _ob; 
         
         bool _start;
         
@@ -110,9 +110,9 @@ public:
         uint32_t* GetOperation();
         
         //Noc IO
-        Buffer* GetOutputBuffer();
-        Buffer* GetInputBuffer();
-        void SetInputBuffer(Buffer*);
+        Buffer<FlitType>* GetOutputBuffer();
+        Buffer<FlitType>* GetInputBuffer();
+        void SetInputBuffer(Buffer<FlitType>*);
         
         //memory
         void SetMemoryModel(MemoryModel* mem);

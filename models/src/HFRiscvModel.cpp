@@ -7,7 +7,7 @@
  * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
  * 
  * This file is adapted from HF-RISC SoC project, which can be found at johanns' 
- * repoisitory at GitHub: https://github.com/sjohann81/hf-risc
+ * reposiitory at GitHub: https://github.com/sjohann81/hf-risc
  *-------------------------------------------------------------------------------
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

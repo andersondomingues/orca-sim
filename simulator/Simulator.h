@@ -28,6 +28,8 @@ class Simulator{
 
 	/** starts simulation */
 	void Run();
+    
+    void Reset();
 
 	/** schedules a event */
 	void Schedule(const Event& e);
