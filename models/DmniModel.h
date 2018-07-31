@@ -43,12 +43,14 @@
  * modules*/
 typedef uint32_t RegFlit;
 
-//States for internal state machines
-enum class SendState {WAIT, LOAD, COPY_FROM_MEM, FINISH};
-enum class RecvState {WAIT, COPY_TO_MEM, FINISH}; 
-enum class NocState {HEADER, PAYLOAD, DATA};
-enum class ArbiterState {ROUND, SEND, RECEIVE};
+#define OP_SEND 4
+#define OP_RECV 8
+#define OP_NONE 0
 
+//States for internal state machines
+enum class SendState {WAIT, FINISH, COPY_FROM_MEM};
+enum class RecvState {WAIT, FINISH, COPY_TO_MEM};
+enum class ArbiterState {SEND, RECV, ROUND}; //ok
 /**
  * @class DmniModel
  * @author Anderson Domingues
@@ -60,109 +62,68 @@ enum class ArbiterState {ROUND, SEND, RECEIVE};
  * direct memory access) modules. */
 class DmniModel : public Process {
 
-	private:
-        //internal module states
-		ArbiterState _arbState;
-		SendState    _sendState;
-        RecvState    _recvState;
-        NocState     _nocState;
+private:
+        //dmin->proc interface
+        bool* _intr;
         
-        //signals
-        uint32_t _bufferr[TAM_BUFFER_DMNI], _intr_count;
-        bool _is_header[TAM_BUFFER_DMNI];
-        
-        uint32_t _first, _last;
-        bool _add_buffer;
-        
-        uint32_t _payload_size;
-        
-        uint32_t _timer;
-        uint32_t _send_address, _send_address_2, _send_size, _send_size_2;
-        uint32_t _recv_address, _recv_size;
-        bool _prio, _operation, _read_av, _slot_available;
-        bool _read_enable, _write_enable;
-        
-        bool _send_active_2, _receive_active_2;
-        uint32_t _intr_counter_temp;
-        
-        uint32_t _size, _size_2;
-        uint32_t _address, _address_2;
-        
-        //configuration interface (IN)
-        bool _set_address, _set_address_2, 
-              _set_size, _set_size_2, 
-              _set_op, _start;
-        uint32_t* _config_data;
-        
-        //status outputs (OUT)
-        bool _intr, _send_active, _receive_active;
+        //proc->dmni interface
+        uint32_t* _mma_addr; //addr to start copying from
+        uint32_t* _mma_len;  //length of data
+        uint32_t* _mma_op;
         
         //memory interface
-        uint32_t _mem_address, _mem_data_write;
-        
-        uint32_t* _mem_data_read;
-        uint8_t  _mem_byte_we; //should be std_logic_vector(3 downto 0);
+        MemoryModel* _mem;
         
         //noc interface (local port)        
-        bool _tx, _credit_o; //(OUT)
-        bool* _rx;
-        bool* _credit_i; //(IN)
-        RegFlit _data_out;  //(OUT)
-        RegFlit* _data_in;    //(IN)
+        Buffer* _ib;
+        Buffer* _ob; 
+        
+        bool _start;
+        
+        //private aux
+        RecvState _recv_state;
+        uint32_t _recv_addr;
+        uint32_t _recv_len;
+        
+        SendState _send_state;
+        uint32_t _send_addr;
+        uint32_t _send_len;
+        
+        ArbiterState _arb_state;
+        
+        //--
+        bool _read_enable, _write_enable, _prio;
+        bool _send_active, _recv_active;
+        uint32_t _timer;
         
 public: 
-        //status
+        //processor interface
         bool* GetIntr();
-        bool* GetSendActive();
-        bool* GetReceiveActive();
+        void SetIntr(bool*);
+        
+        //mma 
+        void SetAddress(uint32_t* addr);
+        uint32_t* GetAddress();
+        void SetLength(uint32_t* len);
+        uint32_t* GetLength();
+        void SetOperation(uint32_t* op);
+        uint32_t* GetOperation();
+        
+        //Noc IO
+        Buffer* GetOutputBuffer();
+        Buffer* GetInputBuffer();
+        void SetInputBuffer(Buffer*);
         
         //memory
-        uint32_t* GetMemAddress();
-        uint32_t* GetMemDataWrite();
-        uint8_t*  GetMemByteWe();
+        void SetMemoryModel(MemoryModel* mem);
+        MemoryModel* GetMemoryModel();
         
-        //noc interface
-        bool* GetTx();
-        RegFlit* GetDataOut();
-        bool* GetCreditO();
-        
-        /**
-         * @brief 
-         * @param set_address
-         * @param set_address_2
-         * @param set_size
-         * @param set_size_2
-         * @param set_op
-         * @param start
-         * @param config_data
-         * @param mem_data_read
-         * @param credit_i
-         * @param rx
-         * @param data_in
-         */
-        void PortMap(
-        
-            //configuration if
-            bool* set_address,
-            bool* set_address_2,
-            bool* set_size,
-            bool* set_size_2,
-            bool* set_op,
-            bool* start,
-            uint32_t* config_data,
-            
-            //memory if
-            uint32_t* mem_data_read,
-            
-            //noc if (local port)
-            bool* credit_i,
-            bool* rx,
-            RegFlit* data_in
-        );
-        
-		/** Implementation of the Process' interface
+        /** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */
 		unsigned long long Run();
+        void CycleSend();
+        void CycleReceive();
+        void CycleArbiter();
 		
 		/** Ctor.
 		  * @param name: name for this instance of Process
@@ -173,18 +134,7 @@ public:
 	
 		/** Dtor. */
 		~DmniModel();
-		
-        //Abstraction of inernal processes
-		void CycleArbiter();
-		void CycleReceive();
-		void CycleSend();
-        
-        /**
-         * @brief Configure operation, affect only input of current 
-         * state. We opt for placing configure here so that it could
-         * be called externally. */
-		void CycleConfigure();
-		
+
 		/**
 		 * @brief Reset operation, affects all internal state machines. We opt for
          * placing reset here so that the model would not check for the reset flag
@@ -193,6 +143,5 @@ public:
          * we call this function during object construction. */
 		void Reset();
 };
-
 
 #endif /* DMNI */

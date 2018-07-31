@@ -84,7 +84,11 @@ unsigned long long NocRouterModel::Run(){
                     _state = RouterState::WORMHOLE;
                     _source_port = _round_robin;
                     _target_port = this->GetRoute(tb->top()); 
-                    _packets_to_send = tb->size();
+                    
+                    
+                    //alternativelly:
+                    //_packets_to_send = tb->size(); 
+                    _packets_to_send = tb->top() & 0x0000FFFF;
                 }
             }
             //std::cout << "rr";

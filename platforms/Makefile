@@ -6,7 +6,8 @@ LIBNAME := teste
 #platform to compile
 
 #PLATFORM :=main.cpp
-PLATFORM :=ft_NocRouterModel.cpp
+#PLATFORM :=example_noc3x3.cpp
+PLATFORM :=example_dmni.cpp
 
 LIBS:= ../models/bin/libmodels.a ../simulator/bin/libsim.a
 

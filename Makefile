@@ -2,7 +2,7 @@ SIMLIB:=simulator/bin/libsim.a
 MODLIB:=models/bin/libmodels.a
 
 SOFTBIN:=software/bin/code.bin
-PLATEXE:=platform/bin/teste
+PLATEXE:=platforms/bin/teste
 
 all: $(SIMLIB) $(MODLIB) $(SOFTBIN) $(PLATEXE)
 	@echo "$'\e[036mSimulation Started! \e[0m"
