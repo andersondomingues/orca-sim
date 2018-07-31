@@ -60,6 +60,7 @@ int main(int argc, char** argv){
     
     
     //----- TEST CASE 1: read from memory and write into the output buffer 
+    std::cout << "------- mem to dmni (sending)" << std::endl;
     _addr = 0x20;  //arbitrary memory address
     _op = OP_SEND; //configure dmni to send intead of receiving
     _length = 8;   //read 4 words from _addr and put then into output buffer
@@ -89,11 +90,12 @@ int main(int argc, char** argv){
     }
     std::cout << std::endl;
     
-    //-------- dmni -> mem -------------------------------
+    //----TEST CASE 2---- dmni -> mem -------------------------------
+    std::cout << "------- dmni to mem (receiving)" << std::endl;
     _addr = 0x100;
-    //_op = OP_RECV;
+    _op = OP_RECV;
     
-    uint32_t res;
+    uint16_t res[4];
     
     dmni.GetInputBuffer()->push(1);
     dmni.GetInputBuffer()->push(2);
@@ -101,12 +103,11 @@ int main(int argc, char** argv){
     dmni.GetInputBuffer()->push(4);
 
     s.Reset();
-    //s.Run();
+    s.Run();
     
     mem.Read(_addr, (int8_t*)&res, 4);
-    
-    int8_t* ptr = (int8_t*)&res;
-    std::cout << ptr[0] << " " << ptr[1] << " " << ptr[2] << " " << ptr[3] << std::endl;
+
+    std::cout << res[0] << " " << res[1] << " " << res[2] << " " << res[3] << std::endl;
     //----------------------------------------------------
     
 	cout << "\nSimulation ended" << endl;

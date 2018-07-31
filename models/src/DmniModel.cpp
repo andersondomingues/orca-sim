@@ -73,8 +73,6 @@ void DmniModel::Reset(){
     _arb_state = ArbiterState::ROUND;
     _send_state = SendState::WAIT;
     _recv_state = RecvState::WAIT;
-    
-    
 }
 
 /**
@@ -90,11 +88,17 @@ unsigned long long DmniModel::Run(){
 
 void DmniModel::CycleArbiter(){
     
+    if(_arb_state != ArbiterState::ROUND){
+        std::string msg = (_arb_state == ArbiterState::SEND) ? "SEND" : "RECV";
+        std::cout << msg << std::endl;
+    }
+    
     switch(_arb_state){
         case ArbiterState::ROUND:{
-            
-            if(_prio == true){ //RECV
+
+            if(_prio){ //RECV
                 if(_recv_state == RecvState::COPY_TO_MEM){
+                    std::cout << "sss";
                     _arb_state = ArbiterState::RECV;
                     _read_enable = true;
                 }else if(_send_state == SendState::COPY_FROM_MEM){
@@ -126,7 +130,7 @@ void DmniModel::CycleArbiter(){
         }
         case ArbiterState::RECV:{
         
-            if(_send_active == true || ((_timer >= DMNI_TIMER) && _send_active == true)){
+            if(_recv_state == RecvState::FINISH || ((_timer >= DMNI_TIMER) && _send_active == true)){
                 _timer = 0;
                 _arb_state = ArbiterState::ROUND;
                 _read_enable = false;
@@ -155,6 +159,8 @@ void DmniModel::CycleSend(){
                 _send_len  = *_mma_len;
                 *_mma_op = OP_NONE;
                 _send_state = SendState::COPY_FROM_MEM;
+                //_send_active = true;
+                _write_enable = true;
             }
             break;
         }
@@ -163,29 +169,31 @@ void DmniModel::CycleSend(){
         //is, in most cases, connected to a router)
         case SendState::COPY_FROM_MEM:{
             
-            //DMNI operates over FlitType (curretly uint16_t),
-            //but memory operates over MemoryType (curently uint8_t).
-            //So, we must read 2 bytes at each time. The number of 
-            //bytes for the payload must be correctly set from software
-            //1st flit) destination and packet length (number of flits)
-            //2nd flit) source, service, payload size
-            //3rd flit) data ...
-            //[x][y][length] [x][y][s][p] [------][------] [------]...
-            
-            
-            //[][][][][][][][] 32
-            //[][][][] 16 << flit
-            //[][] 8 << mem word
-            FlitType flit;
-            
-            _mem->Read(_send_addr, (int8_t*)(&flit), 2);
-            _ob->push(flit);
+            if(_write_enable == true){
+                //DMNI operates over FlitType (curretly uint16_t),
+                //but memory operates over MemoryType (curently uint8_t).
+                //So, we must read 2 bytes at each time. The number of 
+                //bytes for the payload must be correctly set from software
+                //1st flit) destination and packet length (number of flits)
+                //2nd flit) source, service, payload size
+                //3rd flit) data ...
+                //[x][y][length] [x][y][s][p] [------][------] [------]...
+                
+                
+                //[][][][][][][][] 32
+                //[][][][] 16 << flit
+                //[][] 8 << mem word
+                FlitType flit;
+                
+                _mem->Read(_send_addr, (int8_t*)(&flit), 2);
+                _ob->push(flit);
 
-            _send_addr += 2; //skip 2 positions 
-            _send_len--;     //1 less slot to be sent
-            
-            if(_send_len == 0)
-                _send_state = SendState::FINISH;
+                _send_addr += 2; //skip 2 positions 
+                _send_len--;     //1 less slot to be sent
+                
+                if(_send_len == 0)
+                    _send_state = SendState::FINISH;
+            }
             break;
         }
         //Clean wires and go back to the wait state.This
@@ -195,6 +203,8 @@ void DmniModel::CycleSend(){
             _send_addr = 0;
             _send_len = 0;
             _send_state = SendState::WAIT;
+            //_send_active = false;
+            _write_enable = false;
             break;
         }
     }
@@ -212,21 +222,23 @@ void DmniModel::CycleReceive(){
                 _recv_len  = *_mma_len;
                 _recv_state = RecvState::COPY_TO_MEM;
                 *_mma_op = OP_NONE;
-
+                //_recv_active = true;
+                _read_enable = true;
+                
                 std::cout << "WAIT" << std::endl;
                 
             //if operation is other than receive from
             //noc, keep raise the interrupt signal
-            }else if(_ib->size() > 0){
-                *_intr = true;
             }
             
             break;
         }
         
         case RecvState::COPY_TO_MEM:{
-            std::cout << "COPY" << std::endl;
+            
             if(_read_enable == true){
+                
+                std::cout << "COPY" << std::endl;
                 
                 //FlitType is a 2-byte type, so we
                 //need to write twice.
@@ -242,8 +254,14 @@ void DmniModel::CycleReceive(){
         }
         
         case RecvState::FINISH:{
+            
             std::cout << "FINISH" << std::endl;
+            //_recv_active = false;
+            _read_enable = false;
             _recv_state = RecvState::WAIT;
+            
+            *_intr = true; //<<-- raise signal to inform CPU for collecting data
+            
             break;
         }
     }        

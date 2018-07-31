@@ -32,7 +32,6 @@
 //model API
 #include <MemoryModel.h>
 
-#define TAM_BUFFER_DMNI 32 
 #define DMNI_TIMER 32  /*std_logic_vector(4 downto 0):="10000"*/
 #define WORD_SIZE  4   /*std_logic_vector(4 downto 0):="00100"*/
 
