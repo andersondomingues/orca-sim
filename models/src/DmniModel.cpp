@@ -63,7 +63,6 @@ void DmniModel::Reset(){
     *_mma_addr = 0;
     *_mma_len  = 0;
     
-    
     //arbiter reset
     _read_enable  = false;
     _write_enable = false;
@@ -118,7 +117,7 @@ void DmniModel::CycleArbiter(){
         }
         case ArbiterState::SEND:{
             
-            if(_send_state == SendState::FINISH || ((_timer >= DMNI_TIMER) && _recv_active == true)){
+            if(_send_state == SendState::FINISH || ((_timer >= DMNI_TIMER) && (_recv_active == true))){
                 _timer = 0;
                 _arb_state = ArbiterState::ROUND;
                 _write_enable = false;
@@ -129,8 +128,8 @@ void DmniModel::CycleArbiter(){
             break;
         }
         case ArbiterState::RECV:{
-        
-            if(_recv_state == RecvState::FINISH || ((_timer >= DMNI_TIMER) && _send_active == true)){
+
+            if(_recv_state == RecvState::FINISH || ((_timer >= DMNI_TIMER) && (_send_active == true))){
                 _timer = 0;
                 _arb_state = ArbiterState::ROUND;
                 _read_enable = false;
@@ -155,9 +154,11 @@ void DmniModel::CycleSend(){
         //cpu (wires _mma_op, _mma_addr, _mma_len).
         case SendState::WAIT:{
             if(*_mma_op == OP_SEND){
+                
                 _send_addr = *_mma_addr;
                 _send_len  = *_mma_len;
                 *_mma_op = OP_NONE;
+                
                 _send_state = SendState::COPY_FROM_MEM;
                 //_send_active = true;
                 _write_enable = true;
@@ -216,29 +217,28 @@ void DmniModel::CycleReceive(){
 
     switch(_recv_state){
         case RecvState::WAIT:{
-            
+
             if(*_mma_op == OP_RECV){
-                _recv_addr = *_mma_addr;
-                _recv_len  = *_mma_len;
-                _recv_state = RecvState::COPY_TO_MEM;
-                *_mma_op = OP_NONE;
-                //_recv_active = true;
-                _read_enable = true;
+                
                 
                 std::cout << "WAIT" << std::endl;
                 
-            //if operation is other than receive from
-            //noc, keep raise the interrupt signal
+                _recv_addr = *_mma_addr;
+                _recv_len  = *_mma_len;
+                
+                *_mma_op = OP_NONE;
+                
+                _read_enable = true;
+                //_recv_active = true;
+                _recv_state = RecvState::COPY_TO_MEM;
             }
-            
             break;
         }
         
         case RecvState::COPY_TO_MEM:{
             
+            std::cout << "COPY" << std::endl;
             if(_read_enable == true){
-                
-                std::cout << "COPY" << std::endl;
                 
                 //FlitType is a 2-byte type, so we
                 //need to write twice.
@@ -256,8 +256,7 @@ void DmniModel::CycleReceive(){
         case RecvState::FINISH:{
             
             std::cout << "FINISH" << std::endl;
-            //_recv_active = false;
-            _read_enable = false;
+            _recv_active = false;
             _recv_state = RecvState::WAIT;
             
             *_intr = true; //<<-- raise signal to inform CPU for collecting data
