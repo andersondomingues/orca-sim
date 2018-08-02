@@ -7,7 +7,8 @@ LIBNAME := teste
 
 #PLATFORM :=main.cpp
 #PLATFORM :=example_noc3x3.cpp
-PLATFORM :=example_dmni.cpp
+#PLATFORM :=example_dmni.cpp
+PLATFORM :=3x3-FULL-MPSOC.cpp
 
 LIBS:= ../models/bin/libmodels.a ../simulator/bin/libsim.a
 
