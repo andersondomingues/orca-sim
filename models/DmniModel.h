@@ -101,9 +101,9 @@ public:
         Buffer<FlitType>* GetInputBuffer();
         
 		void SetInputBuffer(Buffer<FlitType>*);
-        
 		void SetIntr(bool* b);
 		
+				
 		//MMA ABSTRACTION ------------------------------
 		
 		/**

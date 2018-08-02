@@ -74,18 +74,12 @@ unsigned long long DmniModel::Run(){
 }
 
 void DmniModel::CycleArbiter(){
-    
-    //if(_arb_state != ArbiterState::ROUND){
-    //    std::string msg = (_arb_state == ArbiterState::SEND) ? "SEND" : "RECV";
-    //    std::cout << msg << std::endl;
-    //}
-    
+
     switch(_arb_state){
         case ArbiterState::ROUND:{
 
             if(_prio){ //RECV
                 if(_recv_state == RecvState::COPY_TO_MEM){
-                    std::cout << "sss";
                     _arb_state = ArbiterState::RECV;
                     _read_enable = true;
                 }else if(_send_state == SendState::COPY_FROM_MEM){
@@ -142,13 +136,9 @@ void DmniModel::CycleSend(){
         //cpu (wires _mma_op, _mma_addr, _mma_len).
         case SendState::WAIT:{
             if(_mma_op == OP_SEND){
-                
                 _send_addr = _mma_addr;
                 _send_len  = _mma_len;
-                
-                
                 _send_state = SendState::COPY_FROM_MEM;
-                //_send_active = true;
                 _write_enable = true;
             }
             break;
@@ -160,6 +150,7 @@ void DmniModel::CycleSend(){
             
 			_mma_op = OP_NONE;
             if(_arb_state == ArbiterState::SEND){
+				
                 //DMNI operates over FlitType (curretly uint16_t),
                 //but memory operates over MemoryType (curently uint8_t).
                 //So, we must read 2 bytes at each time. The number of 
@@ -193,7 +184,6 @@ void DmniModel::CycleSend(){
             _send_addr = 0;
             _send_len = 0;
             _send_state = SendState::WAIT;
-            //_send_active = false;
             _write_enable = false;
             break;
         }
@@ -212,9 +202,6 @@ void DmniModel::CycleReceive(){
         case RecvState::WAIT:{
 			
             if(_mma_op == OP_RECV){
-                
-                std::cout << "OP_IS_RECV" << std::endl;
-                
                 _recv_addr = _mma_addr;
                 _recv_len  = _mma_len;                
                 _recv_state = RecvState::COPY_TO_MEM;
@@ -225,7 +212,6 @@ void DmniModel::CycleReceive(){
 		//copies to memory only when the arbiter state is RECV
         case RecvState::COPY_TO_MEM:{
             _mma_op = OP_NONE;
-            std::cout << "COPY" << std::endl;
 			
             if(_arb_state == ArbiterState::RECV){
                 
@@ -245,10 +231,7 @@ void DmniModel::CycleReceive(){
         }
         
         case RecvState::FINISH:{
-            
-            std::cout << "FINISH" << std::endl;
             _recv_state = RecvState::WAIT;
-            
             break;
         }
     }        

@@ -55,7 +55,7 @@ int main(int argc, char** argv){
     s.Schedule(Event(0, &dmni));
     
     
-    /***********----- TEST CASE 1: read from memory and write into the output buffer **********
+    /***********----- TEST CASE 1: read from memory and write into the output buffer **********/
     std::cout << "------- mem to dmni (sending)" << std::endl;
 	
 	dmni.CopyFrom(0x20, 8);
@@ -84,8 +84,8 @@ int main(int argc, char** argv){
         dmni.GetOutputBuffer()->pop();
     }
     std::cout << std::endl;
-    */
-    //----TEST CASE 2---- dmni -> mem -------------------------------
+    
+    /***********----- TEST CASE 2: read from buffer and write into memory **********/
     std::cout << "------- dmni to mem (receiving)" << std::endl;
     
 	//push 4 words into dmni's input buffer
