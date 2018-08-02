@@ -52,10 +52,43 @@ void NocRouterModel::Reset(){
  * @return The next time to schedule the event.*/
 unsigned long long NocRouterModel::Run(){
     
-    //LOGIC: if in wormhole mode, keep sending 
-    //packets until (or skiping) until the wormhole
-    //goes off. If not in wormwhole mode, route.
     switch(_state){
+		
+		//In ROUNDROBIN state, the router wait for some of the 
+		//input ports to have packages to be sent. The order is, 
+		//of course, defined by the RR algorithm. When some of the 
+		//ports have packages to be sent, the router changes to 
+		//WHORMHOLE state.
+		case RouterState::ROUNDROBIN:
+        {
+            Buffer<FlitType>* tb = _ib[_round_robin];
+
+            //prevent from serving unconnected ports (e.g. border)
+            if(tb != nullptr){
+				
+				//if has packet to send
+                if(tb->size() > 0){  
+					
+                    _state = RouterState::WORMHOLE;
+                    _source_port = _round_robin;
+                    _target_port = this->GetRoute(tb->top()); 
+                    
+                    //alternativelly:
+					//_packets_to_send = tb->size(); 
+                    _packets_to_send = tb->top() & 0x0000FFFF;
+                }
+            }
+			
+			//get next port
+            _round_robin++;
+            _round_robin = _round_robin % 5; 
+            
+            break;
+        } 
+  
+		//in WORMHOLE state, the router keeps sending flits until there
+		//is no more flits to be sent. When the last flit is sent, the 
+		//router returns to ROUNDROBIN state.
         case RouterState::WORMHOLE:
         {
             //if packets to be sent, 
@@ -74,33 +107,15 @@ unsigned long long NocRouterModel::Run(){
 
             break;
         }
-        case RouterState::ROUNDROBIN:
-        {
-            Buffer<FlitType>* tb = _ib[_round_robin];
-
-            //prevent from serving unconnected ports (e.g. border)
-            if(tb != nullptr){
-                if(tb->size() > 0){  //if has packet to send
-                    _state = RouterState::WORMHOLE;
-                    _source_port = _round_robin;
-                    _target_port = this->GetRoute(tb->top()); 
-                    
-                    
-                    //alternativelly:
-                    //_packets_to_send = tb->size(); 
-                    _packets_to_send = tb->top() & 0x0000FFFF;
-                }
-            }
-            //std::cout << "rr";
-            _round_robin++;
-            _round_robin = _round_robin % 5; //get next port
-            
-            break;
-        }   
+        
             
     }
-    
-    return 1;
+	
+	//First flit takes 4 cycles to be sent due the time consumed 
+	//by the routing algorithm. When the rr finds no canditate to
+	//send flits or the flit is other than the first, it takes only
+	//one cycle to happen.
+	return (_is_first_flit) ? 4 : 1;
 }
 
 /**
