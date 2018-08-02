@@ -32,7 +32,7 @@
 //model API
 #include <MemoryModel.h>
 
-#define DMNI_TIMER 32  /*std_logic_vector(4 downto 0):="10000"*/
+#define DMNI_TIMER 10  /*std_logic_vector(4 downto 0):="10000"*/
 #define WORD_SIZE  4   /*std_logic_vector(4 downto 0):="00100"*/
 
 /*
@@ -66,9 +66,9 @@ private:
         bool* _intr;
         
         //proc->dmni interface
-        uint32_t* _mma_addr; //addr to start copying from
-        uint32_t* _mma_len;  //length of data
-        uint32_t* _mma_op;
+        uint32_t _mma_addr; //addr to start copying from
+        uint32_t _mma_len;  //length of data
+        uint32_t _mma_op;
         
         //memory interface
         MemoryModel* _mem;
@@ -95,28 +95,38 @@ private:
         bool _send_active, _recv_active;
         uint32_t _timer;
         
-public: 
-        //processor interface
-        bool* GetIntr();
-        void SetIntr(bool*);
-        
-        //mma 
-        void SetAddress(uint32_t* addr);
-        uint32_t* GetAddress();
-        void SetLength(uint32_t* len);
-        uint32_t* GetLength();
-        void SetOperation(uint32_t* op);
-        uint32_t* GetOperation();
-        
+public:       
         //Noc IO
         Buffer<FlitType>* GetOutputBuffer();
         Buffer<FlitType>* GetInputBuffer();
-        void SetInputBuffer(Buffer<FlitType>*);
         
+		void SetInputBuffer(Buffer<FlitType>*);
+        
+		void SetIntr(bool* b);
+		
+		//MMA ABSTRACTION ------------------------------
+		
+		/**
+		 * @brief Sends data from the memory to the 
+		 * network router. Data is identified by a
+		 * starting address and size.
+		 * @param addr Address in which data begins.
+		 * @param size Total length o data (size of FlitType) */
+		void CopyFrom(uint32_t addr, uint32_t size);
+		
+		/**
+		 * @brief Receives data from the network router and 
+		 * stores it into the memory. 
+		 * @param addr Address to start the writing.
+		 * @param size Size of data to be written.*/
+		void CopyTo(uint32_t addr, uint32_t size);
+		
+		
         //memory
         void SetMemoryModel(MemoryModel* mem);
         MemoryModel* GetMemoryModel();
         
+		
         /** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */
 		unsigned long long Run();

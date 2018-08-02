@@ -32,22 +32,12 @@ DmniModel::DmniModel(std::string name) : Process(name){
 bool send_active;
 bool recv_active;
 
-//getters
-uint32_t* DmniModel::GetAddress(){ return _mma_addr; }
-uint32_t* DmniModel::GetLength() { return _mma_len;  }
-uint32_t* DmniModel::GetOperation(){ return _mma_op; }
-bool* DmniModel::GetIntr(){ return _intr; }
-
 MemoryModel* DmniModel::GetMemoryModel(){ return _mem; }
 Buffer<FlitType>* DmniModel::GetOutputBuffer(){ return _ob; }
 Buffer<FlitType>* DmniModel::GetInputBuffer(){ return _ib; }
 
 //setters
-void DmniModel::SetAddress(uint32_t* add){ _mma_addr = add; }
-void DmniModel::SetLength(uint32_t* add){ _mma_len  = add; }
-void DmniModel::SetOperation(uint32_t* v){ _mma_op = v; }
 void DmniModel::SetIntr(bool* b){ _intr = b;}
-
 void DmniModel::SetMemoryModel(MemoryModel* m){ _mem = m; }
 void DmniModel::SetInputBuffer(Buffer<FlitType>* b){ _ib = b; }
 
@@ -55,13 +45,11 @@ void DmniModel::SetInputBuffer(Buffer<FlitType>* b){ _ib = b; }
  * @brief reset state
  */
 void DmniModel::Reset(){
-
-    //dmni -> proc IF
-    *_intr = false;
-    
+   
     //proc -> dmni IF
-    *_mma_addr = 0;
-    *_mma_len  = 0;
+    _mma_addr = 0;
+    _mma_len  = 0;
+	_mma_op   = OP_NONE;
     
     //arbiter reset
     _read_enable  = false;
@@ -87,10 +75,10 @@ unsigned long long DmniModel::Run(){
 
 void DmniModel::CycleArbiter(){
     
-    if(_arb_state != ArbiterState::ROUND){
-        std::string msg = (_arb_state == ArbiterState::SEND) ? "SEND" : "RECV";
-        std::cout << msg << std::endl;
-    }
+    //if(_arb_state != ArbiterState::ROUND){
+    //    std::string msg = (_arb_state == ArbiterState::SEND) ? "SEND" : "RECV";
+    //    std::cout << msg << std::endl;
+    //}
     
     switch(_arb_state){
         case ArbiterState::ROUND:{
@@ -117,7 +105,7 @@ void DmniModel::CycleArbiter(){
         }
         case ArbiterState::SEND:{
             
-            if(_send_state == SendState::FINISH || ((_timer >= DMNI_TIMER) && (_recv_active == true))){
+            if(_send_state == SendState::FINISH || ((_timer >= DMNI_TIMER) && (_recv_state == RecvState::COPY_TO_MEM))){
                 _timer = 0;
                 _arb_state = ArbiterState::ROUND;
                 _write_enable = false;
@@ -129,7 +117,7 @@ void DmniModel::CycleArbiter(){
         }
         case ArbiterState::RECV:{
 
-            if(_recv_state == RecvState::FINISH || ((_timer >= DMNI_TIMER) && (_send_active == true))){
+            if(_recv_state == RecvState::FINISH || ((_timer >= DMNI_TIMER) && (_send_state == SendState::COPY_FROM_MEM))){
                 _timer = 0;
                 _arb_state = ArbiterState::ROUND;
                 _read_enable = false;
@@ -153,11 +141,11 @@ void DmniModel::CycleSend(){
         //wait to be configured through the
         //cpu (wires _mma_op, _mma_addr, _mma_len).
         case SendState::WAIT:{
-            if(*_mma_op == OP_SEND){
+            if(_mma_op == OP_SEND){
                 
-                _send_addr = *_mma_addr;
-                _send_len  = *_mma_len;
-                *_mma_op = OP_NONE;
+                _send_addr = _mma_addr;
+                _send_len  = _mma_len;
+                
                 
                 _send_state = SendState::COPY_FROM_MEM;
                 //_send_active = true;
@@ -170,7 +158,8 @@ void DmniModel::CycleSend(){
         //is, in most cases, connected to a router)
         case SendState::COPY_FROM_MEM:{
             
-            if(_write_enable == true){
+			_mma_op = OP_NONE;
+            if(_arb_state == ArbiterState::SEND){
                 //DMNI operates over FlitType (curretly uint16_t),
                 //but memory operates over MemoryType (curently uint8_t).
                 //So, we must read 2 bytes at each time. The number of 
@@ -216,39 +205,41 @@ void DmniModel::CycleSend(){
 void DmniModel::CycleReceive(){
 
     switch(_recv_state){
+		
+		//if configured to copy to memory, the 
+		//dmni change states and wait for next cycle,
+		//otherwise stays stuck in wait state.
         case RecvState::WAIT:{
-
-            if(*_mma_op == OP_RECV){
+			
+            if(_mma_op == OP_RECV){
                 
+                std::cout << "OP_IS_RECV" << std::endl;
                 
-                std::cout << "WAIT" << std::endl;
-                
-                _recv_addr = *_mma_addr;
-                _recv_len  = *_mma_len;
-                
-                *_mma_op = OP_NONE;
-                
-                _read_enable = true;
-                //_recv_active = true;
+                _recv_addr = _mma_addr;
+                _recv_len  = _mma_len;                
                 _recv_state = RecvState::COPY_TO_MEM;
             }
             break;
         }
         
+		//copies to memory only when the arbiter state is RECV
         case RecvState::COPY_TO_MEM:{
-            
+            _mma_op = OP_NONE;
             std::cout << "COPY" << std::endl;
-            if(_read_enable == true){
+			
+            if(_arb_state == ArbiterState::RECV){
                 
-                //FlitType is a 2-byte type, so we
-                //need to write twice.
+                //2-byte type, so we need to write twice.
                 FlitType flit = _ib->top();
-                _mem->Write(_recv_addr, (int8_t*)&flit, 2);
+							
+				_mem->Write(_recv_addr, (int8_t*)&flit, 2);
+				
                 _ib->pop();
+				
+				_recv_addr += 2;
                 _recv_len--;
                 
-                if(_recv_len == 0) 
-                    _recv_state = RecvState::FINISH;
+                if(_recv_len == 0) _recv_state = RecvState::FINISH;
             }
             break;
         }
@@ -256,14 +247,35 @@ void DmniModel::CycleReceive(){
         case RecvState::FINISH:{
             
             std::cout << "FINISH" << std::endl;
-            _recv_active = false;
             _recv_state = RecvState::WAIT;
-            
-            *_intr = true; //<<-- raise signal to inform CPU for collecting data
             
             break;
         }
     }        
+}
+
+
+/**
+ * @brief Sends data from the memory to the 
+ * network router. Data is identified by a
+ * starting address and size.
+ * @param addr Address in which data begins.
+ * @param size Total length o data (size of FlitType) */
+void DmniModel::CopyFrom(uint32_t addr, uint32_t size){
+	_mma_addr = addr;
+	_mma_len  = size;
+	_mma_op = OP_SEND;
+}
+
+/**
+ * @brief Receives data from the network router and 
+ * stores it into the memory. 
+ * @param addr Address to start the writing.
+ * @param size Size of data to be written.*/
+void DmniModel::CopyTo(uint32_t addr, uint32_t size){
+	_mma_addr = addr;
+	_mma_len  = size;
+	_mma_op   = OP_RECV;
 }
 
 /**

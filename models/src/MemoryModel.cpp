@@ -46,7 +46,7 @@ MemoryModel::MemoryModel(std::string name, uint32_t size, bool wipe, std::string
 
 void MemoryModel::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
-    //TODO: investigate memcpy performance
+    //same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
 		this->mem[addr] = data[i];
 		addr++;		
@@ -55,7 +55,7 @@ void MemoryModel::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
 void MemoryModel::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	
-	//TODO: investigate memcpy performance
+	//same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
 		buffer[i] = this->mem[addr];
 		addr++;

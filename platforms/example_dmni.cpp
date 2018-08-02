@@ -37,7 +37,6 @@ int main(int argc, char** argv){
 	
     //bind DMNI wires to variables
     bool _intr = false;
-    uint32_t _addr, _length, _op = OP_NONE;
     
     //instatiates a new memory module 
     MemoryModel mem = MemoryModel("mem1", MEM_SIZE, true);
@@ -46,27 +45,23 @@ int main(int argc, char** argv){
     //instantiates a new dmni module
     DmniModel dmni = DmniModel("dmni1");
     dmni.SetIntr(&_intr);
-    dmni.SetAddress(&_addr);
     dmni.SetInputBuffer(new Buffer<FlitType>("dmnibuf"));
-    dmni.SetLength(&_length);
     dmni.SetMemoryModel(&mem);
-    dmni.SetOperation(&_op);
     dmni.Reset();
     
    	//creates a new simulator and register modules
-	Simulator s = Simulator(CYCLES_TO_SIM);
+	Simulator s = Simulator();
     s.Schedule(Event(0, &mem));
     s.Schedule(Event(0, &dmni));
     
     
-    //----- TEST CASE 1: read from memory and write into the output buffer 
+    /***********----- TEST CASE 1: read from memory and write into the output buffer **********
     std::cout << "------- mem to dmni (sending)" << std::endl;
-    _addr = 0x20;  //arbitrary memory address
-    _op = OP_SEND; //configure dmni to send intead of receiving
-    _length = 8;   //read 4 words from _addr and put then into output buffer
-    
+	
+	dmni.CopyFrom(0x20, 8);
+	
     uint16_t _data[8] = {22, 23, 24, 25, 36, 47, 67, 99}; //dummy data to be sent
-    mem.Write(_addr, (int8_t*)_data, 16);  //write 8 words (16x2 bytes) to the memory
+    mem.Write(0x20, (int8_t*)_data, 16);  //write 8 words (16x2 bytes) to the memory
     
     //buffer is empty at startup
     std::cout << "output buffer size: " << dmni.GetOutputBuffer()->size() << std::endl;
@@ -77,7 +72,7 @@ int main(int argc, char** argv){
     for(int i = 0; i < 16; i+=2) std::cout << (int16_t)_d2[i] << " ";
     std::cout << endl;
     
-    s.Run();
+    s.Run(CYCLES_TO_SIM);
     
     //buffer should now have 4 words 
     std::cout << "output buffer size: " << dmni.GetOutputBuffer()->size() << std::endl;
@@ -89,26 +84,34 @@ int main(int argc, char** argv){
         dmni.GetOutputBuffer()->pop();
     }
     std::cout << std::endl;
-    
+    */
     //----TEST CASE 2---- dmni -> mem -------------------------------
     std::cout << "------- dmni to mem (receiving)" << std::endl;
-    _addr = 0x100;
-    _op = OP_RECV;
     
-    uint16_t res[4];
-    
+	//push 4 words into dmni's input buffer
     dmni.GetInputBuffer()->push(1);
     dmni.GetInputBuffer()->push(2);
     dmni.GetInputBuffer()->push(3);
     dmni.GetInputBuffer()->push(4);
-
-    s.Reset();
-    s.Run();
-    
-    mem.Read(_addr, (int8_t*)&res, 4);
-
-    std::cout << res[0] << " " << res[1] << " " << res[2] << " " << res[3] << std::endl;
-    //----------------------------------------------------
+	
+	//configure dmni to copy from buffer into memory
+	mem.Dump(0, 100);
+	dmni.CopyTo(8, 4);
+	
+	
+    s.Run(CYCLES_TO_SIM);
+    mem.Dump(0, 100);
+	FlitType flit;
+	
+	//read copied values
+	for(int i = 0; i < 8; i = i + 2){
+		mem.Read(8 + i, (int8_t*)&flit, 2);
+		std::cout << (FlitType)flit;
+	
+	}
+    std::cout << std::endl;
     
 	cout << "\nSimulation ended" << endl;
+	
+	
 }
