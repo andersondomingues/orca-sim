@@ -9,25 +9,25 @@
 
 class Simulator{
 
-    private:
+private:
 
-        /** queue that stores all events */
-	std::priority_queue<Event> queue;
+	/** queue that stores all events */
+	std::priority_queue<Event> _queue;
 
 	/** current simulated time */
-	unsigned long long globalTime;
+	unsigned long long _globalTime;
 
 	/** max time the simulation can reach */
-	unsigned long long timeout;
+	unsigned long long _timeout;
 		
 	/** execute event at top of event queue */
 	void executeNext();
 
-    public:
-	Simulator(unsigned long long timeout);
+public:
 
-	/** starts simulation */
-	void Run();
+	Simulator();
+
+	unsigned long long Run(unsigned long long time = 100000);
     
     void Reset();
 

@@ -2,49 +2,55 @@
 
 using namespace std;
 
-Simulator::Simulator(unsigned long long  timeout){
-
-	this->timeout = timeout;
+Simulator::Simulator(){
 	Reset();
 }
 
 void Simulator::Reset(){
-    this->globalTime = 0;
+    _globalTime = 0;
+	_timeout = 0;
 }
 
 /**
- * Simulates the scheduled events. Initial events must 
- * be scheduled in constructor */
-void Simulator::Run(){
+ * @brief Simulates scheduled events.
+ * @param time Number of cycles to be simulate.
+ * @return the current time by the end of simulation.
+ */
+unsigned long long Simulator::Run(unsigned long long time){
+	
+	_timeout = _globalTime + time;
 
-	while(this->queue.size() > 0 && this->globalTime < this->timeout){
-		//cout << this->globalTime << ": " << this->queue.top().process->name << endl;
+	while(_queue.size() > 0 && _globalTime < _timeout)
 		this->executeNext();
-	}
+	
+	return _globalTime;
 }
 
 /**
- * Schedules an event */
+ * @brief Schedule an event to run in a certain period of time
+ * @param Event to run.*/
 void Simulator::Schedule(const Event& e){
-	this->queue.push(e);
+	_queue.push(e);
 }
 
 /**
- * Removes the event on top of the queue and executes it */
+ * @brief Removes the event on top of the queue and executes it */
 void Simulator::executeNext(){
 	
 	//get next event to be processed
-	Event e = this->queue.top();
-	this->globalTime = e.time;
+	Event e = _queue.top();
+	_globalTime = e.time;
 
 	//process it
-	long long int interval = e.process->Run();
-	this->queue.push(Event(this->globalTime + interval, e.process));
+	long long int interv = e.process->Run();
+	_queue.push(Event(_globalTime + interv, e.process));
 
 	//remove it from the top of the queue
-	this->queue.pop();
+	_queue.pop();
 }
 
+/**
+ * @brief Dtor. */
 Simulator::~Simulator(){
 
 }
