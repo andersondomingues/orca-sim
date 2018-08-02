@@ -30,6 +30,7 @@
 NocRouterModel::NocRouterModel(std::string name, uint32_t x_pos, uint32_t y_pos) : Process(name){
     _x = x_pos;
     _y = y_pos;
+	_is_first_flit = false; //starts in roundrobin mode, not flit to be routed
     
     for(int i = 0; i < 5; i++){
         std::string bname = "(" + std::to_string(_x) + "," + std::to_string(_y) + ").OUT" + std::to_string(i);
@@ -72,7 +73,8 @@ unsigned long long NocRouterModel::Run(){
                     _state = RouterState::WORMHOLE;
                     _source_port = _round_robin;
                     _target_port = this->GetRoute(tb->top()); 
-                    
+                    _is_first_flit = true;
+					
                     //alternativelly:
 					//_packets_to_send = tb->size(); 
                     _packets_to_send = tb->top() & 0x0000FFFF;
@@ -91,6 +93,8 @@ unsigned long long NocRouterModel::Run(){
 		//router returns to ROUNDROBIN state.
         case RouterState::WORMHOLE:
         {
+			_is_first_flit = false;
+			
             //if packets to be sent, 
             Buffer<FlitType>* ob = _ob[_target_port];
             Buffer<FlitType>* ib = _ib[_source_port];

@@ -56,6 +56,12 @@ private:
         //address of the router
         uint32_t _x;
         uint32_t _y;
+		
+		//when this gla is enabled the router is 
+		//routing the first flit af a packet. This is 
+		//the only case in which the flit takes 4 cycles
+		//to be sent.
+		bool _is_first_flit;
         
         //state
         RouterState _state;
