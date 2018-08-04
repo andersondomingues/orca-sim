@@ -10,11 +10,7 @@ The URSA environment is composed of some subprojects. Each of these subprojects 
 
 ![Components of URSA and their interaction.](https://github.com/andersondomingues/ursa/blob/master/web-client/figs/URSA.png?raw=true)
 
-- BUILDER: The builder project aims to deliver an automated way to build platforms. In short words, you can create new platforms by declaring hardware and how they interact. The builder tool then glues everything, generate the necessary source code and build a ready-to-use platform.
-
 - MODELS: Models are functional implementations of hardware's behaviour, that is, its C++ code that emulates the hardware. Still, it is cycle accurate and very useful for fast-programming when targeting embedded platforms. Platforms are composed of several interconnected hardware models. Models can be reused in many plataforms and have their own documentation.
-
-- OS: Stands for "operating systems", self-explanatory.
 
 - PLATFORMS: Platforms are made of peripherals, busses, processors and other hardware. We are currently working on integrating both the HF-RISCV processor and peripherals from the HEMPS project onto a single platform. More information on HF-RISCV and HEMPS projects can be found in the [external contribution](#external-contribution) section. 
 
