@@ -3,10 +3,9 @@ OUTPUTDIR :=./bin
 
 CPP:=g++
 
-CPPFLAGS  :=-I. -I../simulator -c -g -O3 -Wall
-LDFLAGS   :=-l:libudes.a
+CPPFLAGS  :=-I. -I../simulator -I../generics -c -g -O3 -Wall
 
-LIBNAME   :=libmodels.a
+LIBNAME   :=libmod.a
 
 all: $(OUTPUTDIR)/$(LIBNAME)
 	@echo "done."

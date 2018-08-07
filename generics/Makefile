@@ -5,12 +5,12 @@ OUTPUTDIR :=./bin
 CPP := g++
 CPPFLAGS := -g -c -O3 -I. -Wall
 ARFLAGS :=
-LIBNAME := libsim.a 
+LIBNAME := libgen.a 
 
 all: $(OUTPUTDIR)/$(LIBNAME)
 	@echo "done."
 
-$(OUTPUTDIR)/$(LIBNAME): $(OUTPUTDIR)/Event.o $(OUTPUTDIR)/Process.o $(OUTPUTDIR)/Simulator.o
+$(OUTPUTDIR)/$(LIBNAME): $(OUTPUTDIR)/Buffer.o $(OUTPUTDIR)/Memory.o 
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
 
 #compile all classes into %.o files
