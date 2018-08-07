@@ -25,7 +25,7 @@ int main(int argc, char** argv){
 	cout << "Simulation stated" << endl;
 	
 	//creates a new simulator
-	Simulator s = Simulator(CYCLES_TO_SIM);
+	Simulator s = Simulator();
 
 	//creates a new memory
 	MemoryModel mem1 = MemoryModel(
@@ -49,36 +49,12 @@ int main(int argc, char** argv){
     //reset all hardware
     hfr1.Reset();
     dmni1.Reset();
-    mem1.Reset();
-    
-    hfr1.PortMap(
-        dmni1.GetIntr(), //intr_in
-        0, //mem_data_read
-        0  //mem_pause
-    );
-    
-    dmni1.PortMap(
-        0, //set_address
-        0, //set_address_2
-        0, //set_size
-        0, //set_size_2
-        0, //set_op
-        0, //start
-        0, //config_data
-        0, //mem_data_read
-        0, //credit_i
-        0, //rx
-        0  //data_in
-    );
-
-    //mem1.PortMap();
 
     //s.Schedule(Event(0, &mem1));
 	s.Schedule(Event(0, &dmni1));
 	s.Schedule(Event(0, &hfr1));
-    s.Schedule(Event(0, &mem1));
 
-	s.Run();
+	s.Run(CYCLES_TO_SIM);
 
 	cout << "\nSimulation ended" << endl;
 	

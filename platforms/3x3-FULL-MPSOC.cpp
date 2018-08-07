@@ -51,15 +51,15 @@ MemoryModel* mems[NOC_W_SIZE][NOC_H_SIZE];
 // 
 //   (0,0)  (1,0)  (2,0)
 //----------------------------------
-void MakePes(Simulator* sptr){
-	
+void MakePes(Simulator* sptr, std::string bin){
+
 	//instantiate elements
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			mems[i][j] = new MemoryModel("M_" + std::to_string(i) + "_" + std::to_string(j), MEM_SIZE, true);
-			dmnis[i][j] = new DmniModel("D_" + std::to_string(i) + "_" + std::to_string(j));
-			cpus[i][j] = new HFRiscvModel("D_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j]->GetMemPtr(), SRAM_BASE, MEM_SIZE);
-			routers[i][j] = new NocRouterModel("R_" + std::to_string(i) + "_" + std::to_string(j), i, j);
+			mems[i][j] = new MemoryModel("MEM_" + std::to_string(i) + "_" + std::to_string(j), MEM_SIZE, true, bin);
+			dmnis[i][j] = new DmniModel("DMNI_" + std::to_string(i) + "_" + std::to_string(j));
+			cpus[i][j] = new HFRiscvModel("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j]->GetMemPtr(), MEM_SIZE, SRAM_BASE);
+			routers[i][j] = new NocRouterModel("ROUTER_" + std::to_string(i) + "_" + std::to_string(j), i, j);
 		}
 	}
 	
@@ -113,17 +113,8 @@ int main(int argc, char** argv){
 	Simulator* s = new Simulator();
 	
 	//instantiate hardware
-	MakePes(s);
-	
-	//load software into memories
-    for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE -1; j++){
-			mems[i][j]->LoadBin(argv[1], MEM_SIZE, SRAM_BASE);
-		}
-	}
-	
-
-	
+	MakePes(s, string(argv[1]));
+		
 	//schedule elements
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){

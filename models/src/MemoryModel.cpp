@@ -83,7 +83,8 @@ void MemoryModel::LoadBin(std::string filename, uint32_t base, uint32_t size){
 		f.close();
 	}else{
 	    //TODO: surround with try-catch instead of printing
-		std::cout << "Unable to load '" << filename << "'." << std::endl;
+		std::string err_msg = name + ": unable to load '" + filename + "'.";
+		throw std::runtime_error(err_msg);		
 	}
 }
 

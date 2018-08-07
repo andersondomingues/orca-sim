@@ -301,8 +301,8 @@ void HFRiscvModel::cycle(risc_v_state *s){
 	
 	return;
 fail:
-	printf("invalid opcode (pc=0x%x opcode=0x%x)\n", s->pc, inst);
-	exit(0);
+	std::string err_msg = name + ":invalid opcode (pc=0x" + std::to_string(s->pc) + " opcode=0x" + std::to_string(inst) + ")";
+	throw std::runtime_error(err_msg);
 }
 
 HFRiscvModel::HFRiscvModel(string name, MemoryType* mptr, 

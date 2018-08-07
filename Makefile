@@ -1,20 +1,23 @@
-SIMLIB:=simulator/bin/libsim.a
-MODLIB:=models/bin/libmodels.a
+APPNAME :=single_core
 
-SOFTBIN:=software/bin/code.bin
-PLATEXE:=platforms/bin/teste
+SIMLIB  :=simulator/bin/libsim.a
+MODLIB  :=models/bin/libmodels.a
+SOFTBIN :=software/bin/code.bin
+PLATEXE :=platforms/bin/teste
+OS      :=software/bin/code.bin
 
-all: $(SIMLIB) $(MODLIB) $(SOFTBIN) $(PLATEXE)
+all: $(SIMLIB) $(MODLIB) $(SOFTBIN) $(PLATEXE) $(OS)
 	@echo "$'\e[036mSimulation Started! \e[0m"
-	./$(PLATEXE) $(SOFTBIN)
+	./$(PLATEXE) ./$(OS)
 
 $(PLATEXE):
 	@echo "$'\e[036mPlatform... \e[0m"
 	make -C platforms
 
-$(SOFTBIN):
-	@echo "$'\e[036mBuilding Software BIN... \e[0m"
-	make -C software
+$(OS):
+	@echo "$'\e[036mBuilding HellfireOS BIN... \e[0m"
+	make -C hellfireos/platform/$(APPNAME) image
+	mv ./hellfireos/platform/$(APPNAME)/image.bin $(OS)
 
 $(MODLIB):
 	@echo "$'\e[036mBuilding Models LIB... \e[0m"
@@ -25,13 +28,14 @@ $(SIMLIB):
 	make -C simulator
 
 clean:
-	@echo "$'\e[036mSimulator... \e[0m"
+	@echo "$'\e[036mCleaning Simulator... \e[0m"
 	make -C simulator clean
-	@echo "$'\e[036mModels... \e[0m"
+	@echo "$'\e[036mCleaning Models... \e[0m"
 	make -C models clean
-	@echo "$'\e[036mSoftware... \e[0m"
-	make -C software clean
-	@echo "$'\e[036mPlatform... \e[0m"
+	@echo "$'\e[036mCleaning Hellfire... \e[0m"
+	make -C hellfireos/platform/$(APPNAME) clean	
+	rm -rf software/bin/code.bin
+	@echo "$'\e[036mCleaning Platform... \e[0m"
 	make -C platforms clean
 
 
