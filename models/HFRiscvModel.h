@@ -50,7 +50,6 @@
 typedef struct {
 	int32_t r[32];
 	uint32_t pc, pc_next;
-	//int8_t* mem;
 	MemoryType* mem;
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
@@ -58,7 +57,12 @@ typedef struct {
 
 class HFRiscvModel : public Process{
 
-	private:
+private:
+	//when exit trap is triggered, activate 
+	//this flag to remove the cpu from simulation
+	//scheduling
+	bool _disabled; 
+	
 		risc_v_state context;
 		risc_v_state *s;
 		int i;		
@@ -82,28 +86,18 @@ public:
 		int32_t mem_fetch(risc_v_state *s, uint32_t address);
 		int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
 		void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
-		void cycle(risc_v_state *s);
 
 		HFRiscvModel(string name, MemoryType* mptr, uint32_t size, uint32_t base);
 		unsigned long long Run();
+		unsigned long long cycle(risc_v_state *s);
+		
+		ofstream output_debug, output_uart;
+		
 		~HFRiscvModel();
     
         /**
          * @brief Processor reset.*/
-        void Reset();
-
-        void PortMap(
-            bool* intr_in,
-			uint32_t* mem_data_read,  
-			uint8_t * byte_we
-        );
-        
-        //getters and setters for out wires
-        uint8_t* GetCurrentPage();
-        bool* GetMemoryPause();
-        uint32_t* GetMemDataWrite();
-        uint32_t* GetMemAddress();
-        
+        void Reset();        
 };
 
 #endif /* __RISC_V_H */

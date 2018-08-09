@@ -15,7 +15,7 @@ OSIMG   :=hellfireos/platform/$(APPNAME)/image.bin
 #6th) When all pieces are compiled, we run our platform.
 all: $(PLATEXE) $(OSIMG)
 	@echo "$'\e[036mSimulating...\e[0m"
-	./$(PLATEXE) code.bin ./$(OSIMG)
+	./$(PLATEXE) ./$(OSIMG)
 	@echo "$'\e[036mFinished! \e[0m"
 
 #--------------------------- SIMULATOR AND HARWARE

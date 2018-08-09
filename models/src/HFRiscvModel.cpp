@@ -74,18 +74,16 @@ int32_t HFRiscvModel::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 	switch(size){
 		case 4:
 			if(address & 3){
-				printf("unaligned access (load word) pc=0x%x addr=0x%x\n", s->pc, address);
-				dumpregs(s);
-				exit(1);
+				std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				throw std::runtime_error(err_msg);
 			}else{
 				value = *(int32_t *)ptr;
 			}
 			break;
 		case 2:
 			if(address & 1){
-				printf("unaligned access (load halfword) pc=0x%x addr=0x%x\n", s->pc, address);
-				dumpregs(s);
-				exit(1);
+				std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				throw std::runtime_error(err_msg);
 			}else{
 				value = *(int16_t *)ptr;
 			}
@@ -94,7 +92,8 @@ int32_t HFRiscvModel::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 			value = *(int8_t *)ptr;
 			break;
 		default:
-			printf("error\n");
+			std::string err_msg = this->GetName() + ": unknown02";
+			throw std::runtime_error(err_msg);
 	}
 
 	return(value);
@@ -114,14 +113,16 @@ void HFRiscvModel::mem_write(risc_v_state *s, int32_t size, uint32_t address, ui
 		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
 		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
 		case EXIT_TRAP:
-			fflush(stdout);
-			printf("end of simulation - %ld cycles.\n", s->cycles);
-			exit(0);
+			std::cout << "end of simulation - " << s->cycles << std::endl;
+			_disabled = true;
+			output_debug.close();
+			output_uart.close();
 		case DEBUG_ADDR:
-			printf("%c", (int8_t)(value & 0xff));
+			output_debug << (int8_t)(value & 0xff) << std::flush;
 			return;
 		case UART_WRITE:
-			fprintf(stderr, "%c", (int8_t)(value & 0xff));
+			output_uart << (int8_t)(value & 0xff) << std::flush;
+			
 			return;
 		case UART_DIVISOR:
 			return;
@@ -132,18 +133,16 @@ void HFRiscvModel::mem_write(risc_v_state *s, int32_t size, uint32_t address, ui
 	switch(size){
 		case 4:
 			if(address & 3){
-				printf("unaligned access (store word) pc=0x%x addr=0x%x\n", s->pc, address);
-				dumpregs(s);
-				exit(1);
+				std::string err_msg = this->GetName() + ": unaligned access (store word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				throw std::runtime_error(err_msg);
 			}else{
 				*(int32_t *)ptr = value;
 			}
 			break;
 		case 2:
 			if(address & 1){
-				printf("unaligned access (store halfword) pc=0x%x addr=0x%x\n", s->pc, address);
-				dumpregs(s);
-				exit(1);
+				std::string err_msg = this->GetName() + ": unaligned access (store halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				throw std::runtime_error(err_msg);
 			}else{
 				*(int16_t *)ptr = (uint16_t)value;
 			}
@@ -152,19 +151,22 @@ void HFRiscvModel::mem_write(risc_v_state *s, int32_t size, uint32_t address, ui
 			*(int8_t *)ptr = (uint8_t)value;
 			break;
 		default:
-			printf("error\n");
+			std::string err_msg = this->GetName() + ": unknown01";
+			throw std::runtime_error(err_msg);
 	}
 }
 
 
 unsigned long long HFRiscvModel::Run(){
 
-	this->cycle(this->s);
-	return 1; //assuming that it takes exactly 1 cycle
+	if(_disabled) 
+		return 0;
+		
+	return this->cycle(this->s);
 }
 
-void HFRiscvModel::cycle(risc_v_state *s){
-	
+unsigned long long HFRiscvModel::cycle(risc_v_state *s){
+		
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;
 	int32_t *r = s->r;
@@ -299,7 +301,10 @@ void HFRiscvModel::cycle(risc_v_state *s){
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffd;			/*IRQ_COUNTER_NOT*/
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffe;			/*IRQ_COUNTER*/
 	
-	return;
+	
+	//returns 4 of Store or Load, else returns 3
+	return (opcode == 0x23 || opcode == 0x3) ? 4 : 3;
+	
 fail:
 	std::string err_msg = this->GetName() + ":invalid opcode (pc=0x" + std::to_string(s->pc) + " opcode=0x" + std::to_string(inst) + ")";
 	throw std::runtime_error(err_msg);
@@ -312,11 +317,8 @@ HFRiscvModel::HFRiscvModel(string name, MemoryType* mptr,
 	memset(s, 0, sizeof(risc_v_state));
 	
 	s->pc = base;
-	s->pc = 0;
+	//s->pc = 0;
 	s->pc_next = s->pc + 4;
-
-	//set addr from external mem
-	//s->mem = &sram[0];
 
 	//TODO: deprecate it and make memory accessible only
 	//through [] operator
@@ -333,11 +335,15 @@ HFRiscvModel::HFRiscvModel(string name, MemoryType* mptr,
 	s->compare = 0;
 	s->compare2 = 0;
 	s->cycles = 0;
+	
+	_disabled = false;
+	
+	output_debug.open("logs/" + this->GetName() + "_debug.log");
+	output_uart.open("logs/" + this->GetName() + "_uart.log");
 }
 
 //TODO: clear allocated memory if any
 HFRiscvModel::~HFRiscvModel(){}
-
 
 /**
  * @brief Processor reset.*/
@@ -345,19 +351,3 @@ void HFRiscvModel::Reset(){
     //TODO: to be implemented
     return;
 }
-
-void HFRiscvModel::PortMap(
-    bool* intr_in,
-    uint32_t* mem_data_read,  
-    uint8_t * byte_we
-){
-    _mem_data_read = mem_data_read;
-    _byte_we = byte_we;
-    _intr_in = intr_in;
-}
-
-//getters for wires
-uint8_t* HFRiscvModel::GetCurrentPage(){ return &_current_page; }
-bool* HFRiscvModel::GetMemoryPause(){ return &_mem_pause; }
-uint32_t* HFRiscvModel::GetMemDataWrite(){ return &_mem_data_write; }
-uint32_t* HFRiscvModel::GetMemAddress(){return &_mem_address;}
