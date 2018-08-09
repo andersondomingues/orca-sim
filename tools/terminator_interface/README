@@ -1,0 +1,20 @@
+You can use Terminator to display a lot of terminals using the same window, which is useful for watching several log files during the simulation. The config file contains a layout for Terminator that splits the window in a 3x3 tile setup and display logs for the HFRiscV processor in each window. You can either install it manually or run the terminator.sh script. 
+
+INSTALLING:
+Option 1] Copy the lines that correspond to the LAYOUTNOC3X3 layout 
+          into your configuration file, which should be at "~/.config/terminator/config"
+
+Option 2] Replace your configuration file by the one provided
+Option 3] Run the provided script. This script will do the replacing for you.
+
+
+USAGE:
+Once you have installed the config file, run terminator passing '-l LAYOUTNOC3X3' as parameter. Alternativelly, run the provided script.
+
+REMARKS:
+1) Do not run this script from inside terminator because terminator will start in the wrong directory. Use XTerm or any other terminal emulator.
+
+2) The provided script will OVERWRITE your current configuration file. Save it somewhere else or manually add the provided layout.
+
+TODOS:
+1) Automatize this script to receive X/Y as parameter and display logs for different system sizes. You need to generate a new config file for each run as well.

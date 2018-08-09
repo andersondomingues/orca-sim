@@ -2,6 +2,7 @@
 #SHELL:=/bin/bash
 
 APPNAME :=single_core
+#APPNAME := noc_3x3 images
 
 SIMLIB  :=simulator/bin/libsim.a
 GENLIB  :=generics/bin/libgen.a

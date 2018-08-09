@@ -1,0 +1,161 @@
+[global_config]
+  enabled_plugins = LaunchpadCodeURLHandler, APTURLHandler, LaunchpadBugURLHandler
+  handle_size = 1
+[keybindings]
+[layouts]
+  [[default]]
+    [[[child0]]]
+      fullscreen = False
+      last_active_term = bd400289-813e-4aeb-91d2-358667795d67
+      last_active_window = True
+      maximised = False
+      order = 0
+      parent = ""
+      position = 0:135
+      size = 734, 454
+      title = adomingues@gaph11: ~
+      type = Window
+    [[[terminal1]]]
+      command = ""
+      order = 0
+      parent = child0
+      profile = default
+      type = Terminal
+      uuid = bd400289-813e-4aeb-91d2-358667795d67
+  [[LAYOUTNOC3X3]]
+    [[[child0]]]
+      fullscreen = False
+      last_active_term = 7dcf74a6-9df8-43f3-b288-8e95f6a039ec
+      last_active_window = True
+      maximised = True
+      order = 0
+      parent = ""
+      position = 1440:0
+      size = 1680, 1021
+      title = adomingues@gaph11: ~
+      type = Window
+    [[[child1]]]
+      order = 0
+      parent = child0
+      position = 340
+      ratio = 0.333006856024
+      type = VPaned
+    [[[child10]]]
+      order = 1
+      parent = child8
+      position = 567
+      ratio = 0.508064516129
+      type = HPaned
+    [[[child13]]]
+      order = 1
+      parent = child7
+      position = 561
+      ratio = 0.333928571429
+      type = HPaned
+    [[[child15]]]
+      order = 1
+      parent = child13
+      position = 559
+      ratio = 0.5
+      type = HPaned
+    [[[child2]]]
+      order = 0
+      parent = child1
+      position = 563
+      ratio = 0.335119047619
+      type = HPaned
+    [[[child4]]]
+      order = 1
+      parent = child2
+      position = 575
+      ratio = 0.51523297491
+      type = HPaned
+    [[[child7]]]
+      order = 1
+      parent = child1
+      position = 340
+      ratio = 0.5
+      type = VPaned
+    [[[child8]]]
+      order = 0
+      parent = child7
+      position = 563
+      ratio = 0.335119047619
+      type = HPaned
+    [[[terminal11]]]
+      order = 0
+      parent = child10
+      profile = default
+      title = 11
+      command = tail -f ../../logs/HF_1_1_debug.log; bash
+      type = Terminal
+      uuid = 7dcf74a6-9df8-43f3-b288-8e95f6a039ec
+    [[[terminal12]]]
+      order = 1
+      parent = child10
+      profile = default
+      type = Terminal
+      command = tail -f ../../logs/HF_2_1_debug.log; bash
+      title = 21
+      uuid = 5dd6fc5b-7b2d-42c2-b840-a0a47cafce8e
+    [[[terminal14]]]
+      order = 0
+      parent = child13
+      profile = default
+      title = 02
+      command = tail -f ../../logs/HF_0_2_debug.log; bash
+      type = Terminal
+      uuid = f403df48-7f31-4e92-b8af-c6c148f48729
+    [[[terminal16]]]
+      order = 0
+      parent = child15
+      profile = default
+      title = 12
+      command = tail -f ../../logs/HF_1_2_debug.log; bash
+      type = Terminal
+      uuid = c60898e9-1372-41d1-8965-30e8a689020e
+    [[[terminal17]]]
+      order = 1
+      parent = child15
+      profile = default
+      title = 22
+      command = tail -f ../../logs/HF_2_2_debug.log; bash
+      type = Terminal
+      uuid = 92d54f1d-79d9-466d-8446-44628fab87bc
+    [[[terminal3]]]
+      order = 0
+      parent = child2
+      profile = default
+      title = 00
+      command = tail -f ../../logs/HF_0_0_debug.log; bash
+      type = Terminal
+      uuid = bd400289-813e-4aeb-91d2-358667795d67
+    [[[terminal5]]]
+      order = 0
+      parent = child4
+      profile = default
+      title = 10
+      command = tail -f ../../logs/HF_1_0_debug.log; bash
+      type = Terminal
+      uuid = 43c474d8-b6a9-475e-88e4-4e17f8719b8d
+    [[[terminal6]]]
+      order = 1
+      parent = child4
+      profile = default
+      title = 20
+      command = tail -f ../../logs/HF_2_0_debug.log; bash
+      type = Terminal
+      uuid = a813a58d-fb73-4733-a262-a24948ea0528
+    [[[terminal9]]]
+      order = 0
+      parent = child8
+      profile = default
+      title = 01
+      command = tail -f ../../logs/HF_0_1_debug.log; bash
+      type = Terminal
+      uuid = d8339645-1e44-4e53-b164-3fd987607d1d
+[plugins]
+[profiles]
+  [[default]]
+    cursor_color = "#aaaaaa"
+    scrollback_infinite = True
