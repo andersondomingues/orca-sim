@@ -54,8 +54,6 @@ typedef struct {
 	MemoryType* mem;
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
-	
-	
 } risc_v_state;
 
 class HFRiscvModel : public Process{

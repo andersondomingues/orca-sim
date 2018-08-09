@@ -1,15 +1,24 @@
 #include "Process.h"
 
+/**
+ * @brief Ctor.
+ * @param name An arbitrary name that identifies the instance. 
+ */
 Process::Process(string name){
-	this->name = name;
-	return; 
+	_name = name;
 }
-/*
-unsigned long long  Process::Run(){
-	
-	return 3;
-}
-*/
+
+/**
+ * @brief Dtor.
+ */
 Process::~Process(){
 
+}
+
+/**
+ * @brief Gets the name of the instance which was set during construction.
+ * @return The name of the instance.
+ */
+string Process::GetName(){
+	return _name;
 }

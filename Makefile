@@ -9,11 +9,14 @@ MODLIB  :=models/bin/libmod.a
 SOFTBIN :=software/bin/code.bin
 PLATEXE :=platforms/bin/teste
 OSIMG   :=hellfireos/platform/$(APPNAME)/image.bin
+#OSIMG   :=./code.bin
 
 #---------------------------- RUN
 #6th) When all pieces are compiled, we run our platform.
 all: $(PLATEXE) $(OSIMG)
-	./$(PLATEXE) ./$(OSIMG)
+	@echo "$'\e[036mSimulating...\e[0m"
+	./$(PLATEXE) code.bin ./$(OSIMG)
+	@echo "$'\e[036mFinished! \e[0m"
 
 #--------------------------- SIMULATOR AND HARWARE
 #1st) Compile simulation lib. 

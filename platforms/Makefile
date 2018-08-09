@@ -15,7 +15,7 @@ LIBS:= ../models/bin/libmod.a ../simulator/bin/libsim.a ../generics/bin/libgen.a
 all: $(OUTPUTDIR)/$(LIBNAME)
 	@echo "done."
 	
-$(OUTPUTDIR)/$(LIBNAME): main.cpp
+$(OUTPUTDIR)/$(LIBNAME): $(PLATFORM)
 	g++ $(PLATFORM) $(GCCFLAGS) -o  $(OUTPUTDIR)/$(LIBNAME) $(LIBS)
 
 clean:

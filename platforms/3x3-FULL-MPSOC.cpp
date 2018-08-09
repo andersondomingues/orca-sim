@@ -28,13 +28,13 @@
 #include <DmniModel.h>
 
 #define CYCLES_TO_SIM 100000
-#define NOC_H_SIZE 3
-#define NOC_W_SIZE 3
+#define NOC_H_SIZE 6
+#define NOC_W_SIZE 6
 
 #define MEM_SIZE  0x00100000
 #define SRAM_BASE 0x40000000
 
-//function prototypes
+//function prototypes d
 void printBuffers();
 
 //objects to be simulated
@@ -107,8 +107,6 @@ void MakePes(Simulator* sptr, std::string bin){
 //this program tests the NocRouterModel class 
 int main(int argc, char** argv){
 
-	cout << "Setup..." << endl;
-	
 	//ptr to simulation
 	Simulator* s = new Simulator();
 	
@@ -123,10 +121,15 @@ int main(int argc, char** argv){
 			s->Schedule(Event(0, dmnis[i][j]));
 		}
 	}
-	
-	cout << "Begin simulation..." << endl;
-	
+
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+			std::cout << cpus[i][j]->GetName() << ": " << std::endl;
+		}
+	}
+
+	mems[0][0]->Dump(0, MEM_SIZE);
+
     s->Run(CYCLES_TO_SIM);
-    
-	cout << "End simulation..." << endl;
+	std::cout << std::flush; 	
 }
