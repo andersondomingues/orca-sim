@@ -19,76 +19,68 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#include <Memory.h>
 #include <string>
 #include <inttypes.h>
 
-//CTOR. TODO:merge duplicated code merge both ctors.
-Memory::Memory(std::string name, uint32_t size, bool wipe){
+#include <UMemory.h>
 
-	this->name = name;
-	this->mem = new MemoryType[size];
-  
-    if(wipe) 
-    	this->Wipe(0, size);
-}
-
-Memory::Memory(std::string name, uint32_t size, bool wipe, std::string binname){
-				
-	this->name = name;
-	this->mem = new MemoryType[size];
+UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe, std::string binname) : UntimedModel(name){
+	
+	_mem = new MemoryType[size];
+	_length = size;
+	_sram_base = sram_base;
 
     if(wipe) 
 	   	this->Wipe(0, size);
 
-	this->LoadBin(binname, 0, size);
+	if(binname != "")
+		this->LoadBin(binname, 0, size);
 }
 
-void Memory::Write(uint32_t addr, MemoryType* data, uint32_t length){
+void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
     //same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
-		this->mem[addr] = data[i];
+		_mem[addr] = data[i];
 		addr++;		
 	}
 }
 
-void Memory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
+void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	
 	//same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
-		buffer[i] = this->mem[addr];
+		buffer[i] = _mem[addr];
 		addr++;
 	}
 }
 
 		
-void Memory::Wipe(uint32_t base, uint32_t size){
+void UMemory::Wipe(uint32_t base, uint32_t size){
 	
     //TODO: investigate memcpy, zero fill and other methods
-    //for filling the memory with zeroes.
+    //for filling the UMemory with zeroes.
 	for(uint32_t i = base; i < size; i++)	
-		mem[i] = 0x00;
+		_mem[i] = 0x00;
 	
 }
 
-void Memory::LoadBin(std::string filename, uint32_t base, uint32_t size){
+void UMemory::LoadBin(std::string filename, uint32_t base, uint32_t size){
 
     //TODO: not sure it is the best performatic way
 	std::ifstream f(filename, std::ios::binary | std::ios::in | std::ios::out);
 	
 	if(f.is_open()){
-	
-		f.read((char*)&mem[base], sizeof(mem[0]) * size);
+		f.read((char*)&_mem[base], sizeof(_mem[0]) * size);
 		f.close();
 	}else{
 	    //TODO: surround with try-catch instead of printing
-		std::string err_msg = name + ": unable to load '" + filename + "'.";
+		std::string err_msg = this->GetName() + ": unable to load '" + filename + "'.";
 		throw std::runtime_error(err_msg);		
 	}
 }
 
-void Memory::Dump(uint32_t base, uint32_t length){
+void UMemory::Dump(uint32_t base, uint32_t length){
 	
 	printf("--- mem dump:\n");
 	
@@ -98,14 +90,14 @@ void Memory::Dump(uint32_t base, uint32_t length){
 	for(uint32_t i = base; i < length; i+= 16){
 
 		//TODO: fix check on unaligned files
-		if(mem[i+1]  + mem[i  ]  + mem[i+3]  + mem[i+2] 
-		 + mem[i+5]  + mem[i+4]  + mem[i+7]  + mem[i+6]
- 		 + mem[i+9]  + mem[i+8]  + mem[i+11] + mem[i+10]
- 		 + mem[i+13] + mem[i+12] + mem[i+15] + mem[i+14] != 0){
+		if(_mem[i+1]  + _mem[i  ]  + _mem[i+3]  + _mem[i+2] 
+		 + _mem[i+5]  + _mem[i+4]  + _mem[i+7]  + _mem[i+6]
+ 		 + _mem[i+9]  + _mem[i+8]  + _mem[i+11] + _mem[i+10]
+ 		 + _mem[i+13] + _mem[i+12] + _mem[i+15] + _mem[i+14] != 0){
 
 	
 			printf("%07x ", i);	
-			for(int j = 0; j < 16; j+= 2) printf("%02x%02x ", mem[i+j+1]  & mask, mem[i+j] & mask);
+			for(int j = 0; j < 16; j+= 2) printf("%02x%02x ", _mem[i+j+1]  & mask, _mem[i+j] & mask);
 			printf("\n");
 		}
 	}
@@ -114,6 +106,15 @@ void Memory::Dump(uint32_t base, uint32_t length){
 }
 
 //TODO:remove it as soon as possible
-MemoryType* Memory::GetMemPtr(){
-	return this->mem;
+MemoryType* UMemory::GetMemPtr(){
+	return _mem;
+}
+
+UMemory::~UMemory(){
+	delete(_mem);
+}
+
+void UMemory::Reset(){
+	delete(_mem);
+	_mem = new MemoryType[_length];
 }

@@ -19,18 +19,18 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __DMNI_H
-#define __DMNI_H
+#ifndef __TDMNI_H
+#define __TDMNI_H
 
 //std API
 #include <iostream>
 
 //simulator API
-#include <Process.h>
-#include <Buffer.h>
+#include <TimedModel.h>
 
 //model API
-#include <MemoryModel.h>
+#include <UMemory.h>
+#include <UBuffer.h>
 
 #define DMNI_TIMER 10  /*std_logic_vector(4 downto 0):="10000"*/
 #define WORD_SIZE  4   /*std_logic_vector(4 downto 0):="00100"*/
@@ -41,6 +41,15 @@
  * the change will correcly propagate to all involved 
  * modules*/
 typedef uint16_t FlitType;
+
+//memory-mapped "registers"
+#define DMNI_SIZE 	 0xe0000100
+#define DMNI_OP   	 0xe0000200
+#define DMNI_ADDRESS 0xe0000300
+#define DMNI_START 	 0xe0000400
+
+#define DMNI_SEND_ACTIVE 0xe0000500
+#define DMNI_RECV_ACTIVE 0xe0000600
 
 #define OP_SEND 4
 #define OP_RECV 8
@@ -59,23 +68,23 @@ enum class ArbiterState {SEND, RECV, ROUND}; //ok
  * from HeMPS project (see URSA documentation regarding HeMPS). The
  * DMNI module has both roles of NI (network interface) and DMA (
  * direct memory access) modules. */
-class DmniModel : public Process {
+class TDmni : public TimedModel {
 
 private:
         //dmin->proc interface
         bool* _intr;
         
         //proc->dmni interface
-        uint32_t _mma_addr; //addr to start copying from
-        uint32_t _mma_len;  //length of data
-        uint32_t _mma_op;
+        int8_t _mma_addr; //addr to start copying from
+        int8_t _mma_len;  //length of data
+        int8_t _mma_op;
         
         //memory interface
-        MemoryModel* _mem;
+        UMemory* _mem;
         
         //noc interface (local port)        
-        Buffer<FlitType>* _ib;
-        Buffer<FlitType>* _ob; 
+        UBuffer<FlitType>* _ib;
+        UBuffer<FlitType>* _ob; 
         
         bool _start;
         
@@ -97,10 +106,10 @@ private:
         
 public:       
         //Noc IO
-        Buffer<FlitType>* GetOutputBuffer();
-        Buffer<FlitType>* GetInputBuffer();
+        UBuffer<FlitType>* GetOutputBuffer();
+        UBuffer<FlitType>* GetInputBuffer();
         
-		void SetInputBuffer(Buffer<FlitType>*);
+		void SetInputBuffer(UBuffer<FlitType>*);
 		void SetIntr(bool* b);
 		
 				
@@ -123,8 +132,8 @@ public:
 		
 		
         //memory
-        void SetMemoryModel(MemoryModel* mem);
-        MemoryModel* GetMemoryModel();
+        void SetMemoryModel(UMemory* mem);
+        UMemory* GetMemoryModel();
         
 		
         /** Implementation of the Process' interface
@@ -139,10 +148,10 @@ public:
 		  * @param mem: memory model to attach the dmni to
 		  * @param intr: interrupt address
 		  * @param mmr: mmr address */
-		DmniModel(string name);
+		TDmni(string name);
 	
 		/** Dtor. */
-		~DmniModel();
+		~TDmni();
 
 		/**
 		 * @brief Reset operation, affects all internal state machines. We opt for
@@ -153,4 +162,4 @@ public:
 		void Reset();
 };
 
-#endif /* DMNI */
+#endif /* TDMNI_H */

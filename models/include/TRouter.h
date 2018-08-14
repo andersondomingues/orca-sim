@@ -19,20 +19,17 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __NOC_ROUTER_MODEL_H
-#define __NOC_ROUTER_MODEL_H
+#ifndef __TROUTER_H
+#define __TROUTER_H
 
 //std API
 #include <iostream>
 
 //simulator API
-#include <Process.h>
-#include <Buffer.h>
+#include <TimedModel.h>
+#include <UBuffer.h>
 
 typedef uint16_t FlitType;
-
-//model API
-#include <MemoryModel.h>
 
 enum class RouterState{
     WORMHOLE, ROUNDROBIN
@@ -46,7 +43,7 @@ enum class RouterState{
 
 #define LOCAL 4
 
-class NocRouterModel: public Process {
+class TRouter: public TimedModel{
 
 private:
         uint32_t _round_robin;
@@ -67,18 +64,18 @@ private:
         RouterState _state;
         
         //output buffers
-        Buffer<FlitType>* _ob[5];
+        UBuffer<FlitType>* _ob[5];
         
         //input buffers
-        Buffer<FlitType>* _ib[5];        
+        UBuffer<FlitType>* _ib[5];        
 public: 
         /**
          * @brief Get a pointer to one of the output buffers.
          * @param p The port to where the pointer will be pointing.
          * @return The pointer to the respective buffer. */
-        Buffer<FlitType>* GetOutputBuffer(uint32_t p);
-        Buffer<FlitType>* GetInputBuffer(uint32_t p);
-        void SetInputBuffer(Buffer<FlitType>* b, uint32_t port);
+        UBuffer<FlitType>* GetOutputBuffer(uint32_t p);
+        UBuffer<FlitType>* GetInputBuffer(uint32_t p);
+        void SetInputBuffer(UBuffer<FlitType>* b, uint32_t port);
         
 		/** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */
@@ -88,13 +85,13 @@ public:
 		uint32_t GetRoute(uint32_t flit);
         
         /** Ctor. **/
-		NocRouterModel(string name, uint32_t x_pos, uint32_t y_pos);
+		TRouter(string name, uint32_t x_pos, uint32_t y_pos);
 	
 		/** Dtor. **/
-		~NocRouterModel();
+		~TRouter();
 		
 		void Reset();
 };
 
 
-#endif /* DMNI */
+#endif /* TROUTER_H */

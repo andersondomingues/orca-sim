@@ -22,14 +22,17 @@
 #include <Event.h>
 #include <Simulator.h>
 
-#include <NocRouterModel.h>
-#include <HFRiscvModel.h>
-#include <MemoryModel.h>
-#include <DmniModel.h>
+//opaque
+#include <UMemory.h>
+
+//processes
+#include <THellfireProcessor.h>
+#include <TRouter.h>
+#include <TDmni.h>
 
 #define CYCLES_TO_SIM 10000000
-#define NOC_H_SIZE 6
-#define NOC_W_SIZE 6
+#define NOC_H_SIZE 3
+#define NOC_W_SIZE 3
 
 #define MEM_SIZE  0x00100000
 #define SRAM_BASE 0x40000000
@@ -38,10 +41,10 @@
 void printBuffers();
 
 //objects to be simulated
-NocRouterModel* routers[NOC_W_SIZE][NOC_H_SIZE];
-DmniModel* dmnis[NOC_W_SIZE][NOC_H_SIZE];
-HFRiscvModel* cpus[NOC_W_SIZE][NOC_H_SIZE];
-MemoryModel* mems[NOC_W_SIZE][NOC_H_SIZE];
+TRouter* routers[NOC_W_SIZE][NOC_H_SIZE];
+TDmni* dmnis[NOC_W_SIZE][NOC_H_SIZE];
+THellfireProcessor* cpus[NOC_W_SIZE][NOC_H_SIZE];
+UMemory* mems[NOC_W_SIZE][NOC_H_SIZE];
 
 //instantiates a mesh of MxM routers
 //----------------------------------
@@ -51,15 +54,22 @@ MemoryModel* mems[NOC_W_SIZE][NOC_H_SIZE];
 // 
 //   (0,0)  (1,0)  (2,0)
 //----------------------------------
-void MakePes(Simulator* sptr, std::string bin){
+void MakePes(Simulator* sptr){
 
 	//instantiate elements
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			mems[i][j] = new MemoryModel("MEM_" + std::to_string(i) + "_" + std::to_string(j), MEM_SIZE, true, bin);
-			dmnis[i][j] = new DmniModel("DMNI_" + std::to_string(i) + "_" + std::to_string(j));
-			cpus[i][j] = new HFRiscvModel("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j]->GetMemPtr(), MEM_SIZE, SRAM_BASE);
-			routers[i][j] = new NocRouterModel("ROUTER_" + std::to_string(i) + "_" + std::to_string(j), i, j);
+			mems[i][j] = new UMemory("MEM_" + std::to_string(i) + "_" + std::to_string(j), MEM_SIZE);
+			dmnis[i][j] = new TDmni("DMNI_" + std::to_string(i) + "_" + std::to_string(j));
+			cpus[i][j] = new THellfireProcessor("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j]->GetMemPtr(), MEM_SIZE, SRAM_BASE);
+			routers[i][j] = new TRouter("ROUTER_" + std::to_string(i) + "_" + std::to_string(j), i, j);
+		}
+	}	
+	
+	//bind memory to dmni
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+			dmnis[i][j]->SetMemoryModel(mems[i][j]);
 		}
 	}
 	
@@ -110,7 +120,7 @@ int main(int argc, char** argv){
 	Simulator* s = new Simulator();
 	
 	//instantiate hardware
-	MakePes(s, string(argv[1]));
+	MakePes(s);
 		
 	//schedule elements
 	for(int i = 0; i < NOC_W_SIZE; i++){
@@ -120,7 +130,41 @@ int main(int argc, char** argv){
 			s->Schedule(Event(0, dmnis[i][j]));
 		}
 	}
-	//mems[0][0]->Dump(0, MEM_SIZE);
+
+	//reset everything
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+			dmnis[i][j]->Reset();
+			cpus[i][j]->Reset();
+			routers[i][j]->Reset();
+		}
+	}
+	
+	
+	int index = 0;
+	std::string source_dir = argv[1];
+
+	//load binaries into memories
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+
+			string code = source_dir + "code" + std::to_string(index) + ".bin";
+			std::cout << "Loading '" << code << "' to '" << mems[i][j]->GetName() << "'" << std::endl;
+			//mems[i][j]->LoadBin(code, 0, MEM_SIZE);
+			
+			index++;
+		}
+	}
+	
+	
+	std::cout << "Instantiated hardware: " << std::endl;
+	//print all object names
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+			string pe_name = cpus[i][j]->GetName() + " | " + dmnis[i][j]->GetName() + " | " + routers[i][j]->GetName();
+			std::cout << pe_name << std::endl;
+		}
+	}
 	
 	//keep simulating until something happen
 	while(1){

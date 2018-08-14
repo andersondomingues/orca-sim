@@ -19,37 +19,43 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#include "Buffer.h"
+#include <UBuffer.h>
 
 template <typename T>
-Buffer<T>::Buffer(std::string name){
-    this->_name = name;
-    this->_queue = new std::queue<T>();
+UBuffer<T>::UBuffer(std::string name) : UntimedModel(name){
+    _name = name;
+    _queue = new std::queue<T>();
 }
 
 template <typename T>
-Buffer<T>::~Buffer(){
+UBuffer<T>::~UBuffer(){
     //the underlying queue is the only object
     //with dynamic allocation
     delete(_queue);
 }
 
 template <typename T>
-void Buffer<T>::pop(){
+void UBuffer<T>::pop(){
     _queue->pop();
 }
 
 template <typename T>
-void Buffer<T>::push(T e){
+void UBuffer<T>::push(T e){
     _queue->push(e);
 }
 
 template <typename T>
-T Buffer<T>::top(){
+T UBuffer<T>::top(){
     return _queue->front();
 }
 
 template <typename T>
-uint32_t Buffer<T>::size(){
+uint32_t UBuffer<T>::size(){
     return _queue->size();
+}
+
+template <typename T>
+void UBuffer<T>::Reset(){
+	delete(_queue);
+	_queue = new std::queue<T>();
 }

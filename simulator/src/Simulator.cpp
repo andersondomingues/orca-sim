@@ -1,4 +1,4 @@
-#include "Simulator.h"
+#include <Simulator.h>
 
 using namespace std;
 
@@ -42,8 +42,8 @@ void Simulator::executeNext(){
 	_globalTime = e.time;
 
 	//process it
-	long long int interv = e.process->Run();
-	_queue.push(Event(_globalTime + interv, e.process));
+	long long int interv = e.timedModel->Run();
+	_queue.push(Event(_globalTime + interv, e.timedModel));
 
 	//remove it from the top of the queue
 	_queue.pop();

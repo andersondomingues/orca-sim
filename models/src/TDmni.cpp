@@ -19,38 +19,46 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#include <DmniModel.h>
-#include <Buffer.h>
+#include <TDmni.h>
 
 #include <cstdlib>
 
-DmniModel::DmniModel(std::string name) : Process(name){
-    _ob  = new Buffer<FlitType>(name + ": ob");
+TDmni::TDmni(std::string name) : TimedModel(name){
+    _ob  = new UBuffer<FlitType>(name + ": ob");
+	_mem = nullptr;
 }
 
 //status wires (memory mapped)
 bool send_active;
 bool recv_active;
 
-MemoryModel* DmniModel::GetMemoryModel(){ return _mem; }
-Buffer<FlitType>* DmniModel::GetOutputBuffer(){ return _ob; }
-Buffer<FlitType>* DmniModel::GetInputBuffer(){ return _ib; }
+UMemory* TDmni::GetMemoryModel(){ return _mem; }
+UBuffer<FlitType>* TDmni::GetOutputBuffer(){ return _ob; }
+UBuffer<FlitType>* TDmni::GetInputBuffer(){ return _ib; }
 
 //setters
-void DmniModel::SetIntr(bool* b){ _intr = b;}
-void DmniModel::SetMemoryModel(MemoryModel* m){ _mem = m; }
-void DmniModel::SetInputBuffer(Buffer<FlitType>* b){ _ib = b; }
+void TDmni::SetIntr(bool* b){ _intr = b;}
+void TDmni::SetMemoryModel(UMemory* m){ _mem = m; }
+void TDmni::SetInputBuffer(UBuffer<FlitType>* b){ _ib = b; }
 
 /**
  * @brief reset state
  */
-void DmniModel::Reset(){
+void TDmni::Reset(){
    
     //proc -> dmni IF
     _mma_addr = 0;
     _mma_len  = 0;
 	_mma_op   = OP_NONE;
     
+	//memory mapped statuses
+	if(_mem != nullptr){
+		int8_t data = 0;
+		//_mem->Write(DMNI_SEND_ACTIVE, &data, 1);
+		//_mem->Write(DMNI_RECV_ACTIVE, &data, 1);
+		//_mem->Read(DMNI_SIZE,    &_mma_len, 1);  //read 1 word
+	}
+	
     //arbiter reset
     _read_enable  = false;
     _write_enable = false;
@@ -66,14 +74,29 @@ void DmniModel::Reset(){
  * @brief Implementation of the Run method from
  * the Proccess abstract class.
  * @return The next time to schedule the event.*/
-unsigned long long DmniModel::Run(){
-    CycleArbiter();
+unsigned long long TDmni::Run(){
+    
+	//update mma status (currently mapped to memory)
+	//_mem->Dump();
+	
+	//if(this->GetName() == "DMNI_0_2"){
+	//_mem->Read(DMNI_ADDRESS, &_mma_addr, 1); //read 1 word
+	//	std::cout << std::to_string(_mma_addr) << endl;
+	//}
+	
+	//_mem->Read(DMNI_SIZE,    &_mma_len, 1);  //read 1 word
+	//_mem->Read(DMNI_OP,      &_mma_op, 1);   //read 1 word
+	
+	CycleArbiter();
     CycleReceive();
     CycleSend();
+	
+	//commit status to memory
+	
     return 1;
 }
 
-void DmniModel::CycleArbiter(){
+void TDmni::CycleArbiter(){
 
     switch(_arb_state){
         case ArbiterState::ROUND:{
@@ -127,7 +150,7 @@ void DmniModel::CycleArbiter(){
 
 /** 
  * @brief Mimic the Sender process of the DMNI. */
-void DmniModel::CycleSend(){
+void TDmni::CycleSend(){
 
     switch(_send_state){
 
@@ -192,7 +215,7 @@ void DmniModel::CycleSend(){
 
 /**
  * @brief Mimics the Receiver process of the dmni module */
-void DmniModel::CycleReceive(){
+void TDmni::CycleReceive(){
 
     switch(_recv_state){
 		
@@ -244,7 +267,7 @@ void DmniModel::CycleReceive(){
  * starting address and size.
  * @param addr Address in which data begins.
  * @param size Total length o data (size of FlitType) */
-void DmniModel::CopyFrom(uint32_t addr, uint32_t size){
+void TDmni::CopyFrom(uint32_t addr, uint32_t size){
 	_mma_addr = addr;
 	_mma_len  = size;
 	_mma_op = OP_SEND;
@@ -255,7 +278,7 @@ void DmniModel::CopyFrom(uint32_t addr, uint32_t size){
  * stores it into the memory. 
  * @param addr Address to start the writing.
  * @param size Size of data to be written.*/
-void DmniModel::CopyTo(uint32_t addr, uint32_t size){
+void TDmni::CopyTo(uint32_t addr, uint32_t size){
 	_mma_addr = addr;
 	_mma_len  = size;
 	_mma_op   = OP_RECV;
@@ -264,4 +287,4 @@ void DmniModel::CopyTo(uint32_t addr, uint32_t size){
 /**
  * @brief Free allocated memory if any
  */
-DmniModel::~DmniModel(){}
+TDmni::~TDmni(){}

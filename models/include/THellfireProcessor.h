@@ -1,5 +1,5 @@
-#ifndef __RISC_V_H
-#define __RISC_V_H
+#ifndef __THELLFIREPROCESSOR_H
+#define __THELLFIREPROCESSOR_H
 
 /**
  * This is file is a modification of the following file
@@ -20,13 +20,14 @@
 #include <stdint.h>
 
 //simulator libs
-#include <Process.h>
+#include <TimedModel.h>
 
 //models libs
-#include <MemoryModel.h>
+#include <UMemory.h>
 
 #define MEM_SIZE			0x00100000
 #define EXIT_TRAP			0xe0000000
+
 #define IRQ_VECTOR			0xf0000000
 #define IRQ_CAUSE			0xf0000010
 #define IRQ_MASK			0xf0000020
@@ -55,7 +56,7 @@ typedef struct {
 	uint64_t cycles;
 } risc_v_state;
 
-class HFRiscvModel : public Process{
+class THellfireProcessor : public TimedModel{
 
 private:
 	//when exit trap is triggered, activate 
@@ -87,17 +88,17 @@ public:
 		int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
 		void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
-		HFRiscvModel(string name, MemoryType* mptr, uint32_t size, uint32_t base);
+		THellfireProcessor(string name, MemoryType* mptr, uint32_t size, uint32_t base);
 		unsigned long long Run();
 		unsigned long long cycle(risc_v_state *s);
 		
 		ofstream output_debug, output_uart;
 		
-		~HFRiscvModel();
+		~THellfireProcessor();
     
         /**
          * @brief Processor reset.*/
-        void Reset();        
+        void Reset();
 };
 
 #endif /* __RISC_V_H */

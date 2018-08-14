@@ -22,6 +22,9 @@
 #ifndef __GENERIC_RAM_H
 #define __GENERIC_RAM_H
 
+//simulation API
+#include <UntimedModel.h>
+
 #include <iostream>
 #include <fstream>
 
@@ -37,24 +40,23 @@
 // encapsulate it inside a class. Thus, memory manipu-   
 // lation is done through the static methods of the
 // MemoryHelper class.
-class Memory{
+class UMemory: public UntimedModel{
 
 private:
   
-    MemoryType* mem;
-  
-    std::string name;
-  
-    uint32_t length;
-    
+    MemoryType* _mem;
+    uint32_t _length;
+	uint32_t _sram_base;
+
 public:
     
     /** Creates a new memory area.	
      * @param size: Total length of the memory are to be created.
      * @param wipe (optional): If <true> is passed, wipes the are after creating. */
-    Memory(std::string name, 	uint32_t size, bool wipe = false);
-    Memory(std::string name, uint32_t size, bool wipe, std::string binname);
-
+	UMemory(std::string name, uint32_t size, uint32_t sram_base = 0, bool wipe = true, std::string binname = "");
+	~UMemory();
+    void Reset();
+    
     /** Writes data to a given memory location.
      * @param addr: Location to write to.
      * @param data: Pointer to the place that hold the data to be copied to the memory.
@@ -84,6 +86,7 @@ public:
 	  * @param base: Initial address to start reading.
 	  * @param size: Total length to be dumped. */
 	void Dump(uint32_t base, uint32_t length);
+	void Dump();
 	
 	/** Overrides operator [] for accessing internal mem data
 	  * @param i: index of the internal array to be accessed
@@ -91,11 +94,14 @@ public:
 	MemoryType &operator[](int i) {
 	
 		//TODO: validate behaviour
-		return this->mem[i];
+		return _mem[i];
 	}
 	
 	//TODO:remove it as soon as possible
-	MemoryType* GetMemPtr();    
+	MemoryType* GetMemPtr();
+    
+	unsigned long long Run();    
+	
 };
 
 #endif

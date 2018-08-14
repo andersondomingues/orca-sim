@@ -1,11 +1,13 @@
-#ifndef __SIMULATION_H
-#define __SIMULATION_H
+#ifndef __SIMULATOR_H
+#define __SIMULATOR_H
 
-#include "Event.h"
-
+//lib dependencies
 #include <iostream>
 #include <queue>
 #include <string>
+
+//own api dependencies
+#include <Event.h>
 
 class Simulator{
 
@@ -34,6 +36,7 @@ public:
 	/** schedules a event */
 	void Schedule(const Event& e);
 
+	/** Dtor. */
 	~Simulator();
 };
 

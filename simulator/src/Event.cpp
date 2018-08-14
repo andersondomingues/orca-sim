@@ -1,11 +1,11 @@
-#include "Event.h"
+#include <Event.h>
 
 bool Event::operator<(const Event& e) const{
 	return (this->time > e.time);
 }
 
-Event::Event(long long time, Process* p){
+Event::Event(long long time, TimedModel* p){
 	this->time = time;
-	this->process = p;
+	this->timedModel = p;
 }
 

@@ -2,15 +2,18 @@ SOURCEDIR :=./src
 OUTPUTDIR :=./bin
 
 CPP:=g++
+CPPFLAGS :=-I./include -I../simulator/include -c -g -O3 -Wall
 
-CPPFLAGS  :=-I. -I../simulator -I../generics -c -g -O3 -Wall
+LIBNAME :=libmod.a
 
-LIBNAME   :=libmod.a
+
+TARGET_DEPS := $(OUTPUTDIR)/UBuffer.o $(OUTPUTDIR)/UMemory.o $(OUTPUTDIR)/TDmni.o $(OUTPUTDIR)/TRouter.o $(OUTPUTDIR)/THellfireProcessor.o
+
 
 all: $(OUTPUTDIR)/$(LIBNAME)
-	@echo "done."
+	@echo "all done!"
 
-$(OUTPUTDIR)/$(LIBNAME): $(OUTPUTDIR)/HFRiscvModel.o $(OUTPUTDIR)/MemoryModel.o $(OUTPUTDIR)/DmniModel.o $(OUTPUTDIR)/NocRouterModel.o
+$(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
 
 #compile all classes into %.o files

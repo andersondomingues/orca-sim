@@ -19,12 +19,16 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __BUFFER_H
-#define __BUFFER_H
+#ifndef __UBuffer_H
+#define __UBuffer_H
 
+//lib dependent includes
 #include <iostream>
 #include <queue>
 #include <stdint.h>
+
+//api includes
+#include <UntimedModel.h>
 
 /**
  * @class Buffer
@@ -36,7 +40,7 @@
  * @param T The type of data being buffered.
  * the underlying type. */
 template <typename T>
-class Buffer{
+class UBuffer : public UntimedModel{
 
 private:
     std::string _name;
@@ -46,11 +50,11 @@ public:
     /**
      * @brief Constructor. 
      * @param name (optional) An arbitrary name for the instance of Buffer.*/
-    Buffer(std::string name = "");
+    UBuffer(std::string name = "");
     
     /**
      * @brief Destructor. Cleans dynamic allocated memory before disposing the object.*/
-    ~Buffer();
+    ~UBuffer();
 
     /**
      * @brief Peeks at the top of the buffer.
@@ -69,12 +73,15 @@ public:
      * @brief Counts elements from the buffer.
      * @return The number of elements. */
     uint32_t size();
+	
+	/**
+	 * @brief Empties the queue */
+	void Reset();
 };
 
+//Some of the most used instances. More can be added later.
+template class UBuffer<uint8_t>;  //mem word
+template class UBuffer<uint16_t>; //dmni/noc word
+template class UBuffer<uint32_t>; //proc word
 
-template class Buffer<uint8_t>;  //mem word
-template class Buffer<uint16_t>; //dmni/noc word
-template class Buffer<uint32_t>; //proc word
-
-
-#endif
+#endif /* UBuffer_H */

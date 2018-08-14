@@ -1,16 +1,15 @@
 #ifndef __EVENT_H
 #define __EVENT_H
 
-#include "Process.h"
+#include "TimedModel.h"
 
 class Event{
 
 	public:
 		long long time;
-		Process* process;
-		Event(long long time, Process* b);
+		TimedModel* timedModel;
+		Event(long long time, TimedModel* b);
 		bool operator<(const Event& e) const;
-
 };
 
 #endif /* EVENT_H */

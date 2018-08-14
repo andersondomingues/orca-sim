@@ -23,10 +23,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
  *---------------------------------------------------------------------------- */
-#include <HFRiscvModel.h>
+#include <THellfireProcessor.h>
 #include <cstdlib>
 
-void HFRiscvModel::dumpregs(risc_v_state *s){
+void THellfireProcessor::dumpregs(risc_v_state *s){
 	int32_t i;
 	
 	for (i = 0; i < 32; i+=4){
@@ -36,13 +36,13 @@ void HFRiscvModel::dumpregs(risc_v_state *s){
 	printf("\n");
 }
 
-void HFRiscvModel::bp(risc_v_state *s, uint32_t ir){
+void THellfireProcessor::bp(risc_v_state *s, uint32_t ir){
 	printf("pc: %08x, ir: %08x\n", s->pc, ir);
 	dumpregs(s);
 	getchar();
 }
 
-int32_t HFRiscvModel::mem_fetch(risc_v_state *s, uint32_t address){
+int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 	uint32_t value=0;
 	uint32_t *ptr;
 
@@ -52,7 +52,7 @@ int32_t HFRiscvModel::mem_fetch(risc_v_state *s, uint32_t address){
 	return(value);
 }
 
-int32_t HFRiscvModel::mem_read(risc_v_state *s, int32_t size, uint32_t address){
+int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 	uint32_t value=0;
 	uint32_t *ptr;
 
@@ -99,7 +99,7 @@ int32_t HFRiscvModel::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 	return(value);
 }
 
-void HFRiscvModel::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
+void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
 	uint32_t i;
 	uint32_t *ptr;
 
@@ -122,10 +122,12 @@ void HFRiscvModel::mem_write(risc_v_state *s, int32_t size, uint32_t address, ui
 			return;
 		case UART_WRITE:
 			output_uart << (int8_t)(value & 0xff) << std::flush;
-			
 			return;
 		case UART_DIVISOR:
 			return;
+		
+		//looking for the DMNI? sorry, your princess is 
+		//in another castle
 	}
 
 	ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
@@ -157,7 +159,7 @@ void HFRiscvModel::mem_write(risc_v_state *s, int32_t size, uint32_t address, ui
 }
 
 
-unsigned long long HFRiscvModel::Run(){
+unsigned long long THellfireProcessor::Run(){
 
 	if(_disabled) 
 		return 0;
@@ -165,7 +167,7 @@ unsigned long long HFRiscvModel::Run(){
 	return this->cycle(this->s);
 }
 
-unsigned long long HFRiscvModel::cycle(risc_v_state *s){
+unsigned long long THellfireProcessor::cycle(risc_v_state *s){
 		
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;
@@ -310,8 +312,8 @@ fail:
 	throw std::runtime_error(err_msg);
 }
 
-HFRiscvModel::HFRiscvModel(string name, MemoryType* mptr, 
-		uint32_t size, uint32_t base) : Process(name) {
+THellfireProcessor::THellfireProcessor(string name, MemoryType* mptr, 
+		uint32_t size, uint32_t base) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
@@ -343,11 +345,11 @@ HFRiscvModel::HFRiscvModel(string name, MemoryType* mptr,
 }
 
 //TODO: clear allocated memory if any
-HFRiscvModel::~HFRiscvModel(){}
+THellfireProcessor::~THellfireProcessor(){}
 
 /**
  * @brief Processor reset.*/
-void HFRiscvModel::Reset(){
+void THellfireProcessor::Reset(){
     //TODO: to be implemented
     return;
 }
