@@ -25,6 +25,8 @@
 //models libs
 #include <UMemory.h>
 
+
+#define SRAM_BASE           0x40000000
 #define MEM_SIZE			0x00100000
 #define EXIT_TRAP			0xe0000000
 
@@ -51,7 +53,8 @@
 typedef struct {
 	int32_t r[32];
 	uint32_t pc, pc_next;
-	MemoryType* mem;
+	/*MemoryType* mem;*/
+	UMemory* mem;
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
 } risc_v_state;
@@ -88,7 +91,7 @@ public:
 		int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
 		void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
-		THellfireProcessor(string name, MemoryType* mptr, uint32_t size, uint32_t base);
+		THellfireProcessor(string name, /*MemoryType*/ UMemory* mptr, uint32_t size, uint32_t base);
 		unsigned long long Run();
 		unsigned long long cycle(risc_v_state *s);
 		

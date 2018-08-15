@@ -31,32 +31,64 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 	_sram_base = sram_base;
 
     if(wipe) 
-	   	this->Wipe(0, size);
+	   	this->Wipe();
 
 	if(binname != "")
-		this->LoadBin(binname, 0, size);
+		this->LoadBin(binname, _sram_base, _length);
 }
 
 void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
+	#ifndef NOGUARDS
+	if(addr < _sram_base)
+		throw std::runtime_error(this->GetName() + ": unable to write to addr (" + std::to_string(addr) + ") lower than sram base .");
+
+	if(addr > _sram_base + _length)
+		throw std::runtime_error(this->GetName() + ": unable to write to addr (" + std::to_string(addr) + ") higher than sram base + length.");
+	#endif
+
+
     //same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
-		_mem[addr] = data[i];
-		addr++;		
+		_mem[addr - _sram_base] = data[i];
+		addr++;
 	}
 }
 
 void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	
+	#ifndef NOGUARDS
+	if(addr < _sram_base)
+		throw std::runtime_error(this->GetName() + ": unable to read from addr (" + std::to_string(addr) + ") lower than sram base .");
+
+	if(addr > _sram_base + _length)
+		throw std::runtime_error(this->GetName() + ": unable to read from addr (" + std::to_string(addr) + ") higher than sram base + length.");
+	#endif
+	
 	//same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
-		buffer[i] = _mem[addr];
+		buffer[i] = _mem[addr - _sram_base];
 		addr++;
 	}
 }
 
-		
+//alias
+void UMemory::Wipe(){
+	this->Wipe(_sram_base, _length);
+}
+
 void UMemory::Wipe(uint32_t base, uint32_t size){
+	
+	#ifndef NOGUARDS
+	if(base < _sram_base)
+		throw std::runtime_error(this->GetName() + ": unable to wipe from base (" + std::to_string(base) + ") lower than sram base .");
+
+	if(base > _sram_base + _length)
+		throw std::runtime_error(this->GetName() + ": unable to wipe from base (" + std::to_string(base) + ") higher than sram base + length.");
+		
+	if(size > _length)
+		throw std::runtime_error(this->GetName() + ": unable to wipe beyound memory size (" + std::to_string(size) + ", but memory size is " + std::to_string(_length));
+	#endif
 	
     //TODO: investigate memcpy, zero fill and other methods
     //for filling the UMemory with zeroes.

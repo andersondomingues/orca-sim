@@ -43,18 +43,26 @@ void THellfireProcessor::bp(risc_v_state *s, uint32_t ir){
 }
 
 int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
-	uint32_t value=0;
+	
+	/*uint32_t value=0;
 	uint32_t *ptr;
 
 	ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
 	value = *ptr;
 
-	return(value);
+	return(value);*/
+	
+	int32_t data;
+	s->mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
+	return data;
 }
 
 int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t address){
-	uint32_t value=0;
-	uint32_t *ptr;
+	
+	/*uint32_t value = 0;
+	uint32_t *ptr;*/
+	
+	uint32_t data;
 
 	switch(address){
 		case IRQ_VECTOR:	return s->vector;
@@ -69,7 +77,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		case UART_DIVISOR:	return 0;
 	}
 
-	ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
+	//ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
 
 	switch(size){
 		case 4:
@@ -77,7 +85,8 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 				std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				value = *(int32_t *)ptr;
+				/*value = *(int32_t *)ptr;*/
+				s->mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 			}
 			break;
 		case 2:
@@ -85,38 +94,57 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 				std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				value = *(int16_t *)ptr;
+				/*value = *(int16_t *)ptr;*/
+				int16_t value;
+				s->mem->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
+				data = value;
 			}
 			break;
 		case 1:
-			value = *(int8_t *)ptr;
+			/*value = *(int8_t *)ptr;*/
+			int8_t value;
+			s->mem->Read(address, &value, 1); //1 x sizeof(uint8_t)
+			data = value;
 			break;
 		default:
 			std::string err_msg = this->GetName() + ": unknown02";
 			throw std::runtime_error(err_msg);
 	}
 
-	return(value);
+	/*return(value);*/
+	return data;
 }
 
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
-	uint32_t i;
-	uint32_t *ptr;
+
+	/*uint32_t *ptr;*/
 
 	switch(address){
+
+		case IRQ_STATUS:
+			if (value == 0){ 
+				s->status = 0; 
+				for (int i = 0; i < 4; i++) 
+					s->status_dly[i] = 0; 
+				}else{ 
+					s->status_dly[3] = value; 
+			}
+			return;
+			
 		case IRQ_VECTOR:	s->vector = value; return;
 		case IRQ_CAUSE:		s->cause = value; return;
 		case IRQ_MASK:		s->mask = value; return;
-		case IRQ_STATUS:	if (value == 0){ s->status = 0; for (i = 0; i < 4; i++) s->status_dly[i] = 0; }else{ s->status_dly[3] = value; } return;
 		case IRQ_EPC:		s->epc = value; return;
 		case COUNTER:		s->counter = value; return;
 		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
 		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
+
 		case EXIT_TRAP:
-			std::cout << "end of simulation - " << s->cycles << std::endl;
+			std::cout << this->GetName() <<": exit trap triggered! (" << s->cycles << " cycles)" << std::endl;
 			_disabled = true;
 			output_debug.close();
 			output_uart.close();
+			return;
 		case DEBUG_ADDR:
 			output_debug << (int8_t)(value & 0xff) << std::flush;
 			return;
@@ -130,7 +158,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		//in another castle
 	}
 
-	ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
+	//ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
 	
 	switch(size){
 		case 4:
@@ -138,7 +166,8 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				std::string err_msg = this->GetName() + ": unaligned access (store word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				*(int32_t *)ptr = value;
+				/*  *(int32_t *)ptr = value;*/
+				s->mem->Write(address, (int8_t*)&value, size);
 			}
 			break;
 		case 2:
@@ -146,12 +175,18 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				std::string err_msg = this->GetName() + ": unaligned access (store halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				*(int16_t *)ptr = (uint16_t)value;
+				/*  *(int16_t *)ptr = (uint16_t)value;*/
+				int16_t data = value;
+				s->mem->Write(address, (int8_t*)&data, size);
 			}
 			break;
 		case 1:
-			*(int8_t *)ptr = (uint8_t)value;
+			/*  *(int8_t *)ptr = (uint8_t)value;*/
+			int8_t data;
+			data = value;
+			s->mem->Write(address, &data, size);
 			break;
+			
 		default:
 			std::string err_msg = this->GetName() + ": unknown01";
 			throw std::runtime_error(err_msg);
@@ -162,7 +197,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 unsigned long long THellfireProcessor::Run(){
 
 	if(_disabled) 
-		return 0;
+		return -1; //-1 is an special code that means "do not schedule me anymore"
 		
 	return this->cycle(this->s);
 }
@@ -296,8 +331,9 @@ unsigned long long THellfireProcessor::cycle(risc_v_state *s){
 	
 	s->cycles++;
 	s->counter++;
-	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;		/*IRQ_COMPARE2*/
-	if (s->compare == s->counter) s->cause |= 0x10;						/*IRQ_COMPARE*/
+	
+	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;     /*IRQ_COMPARE2*/
+	if (s->compare == s->counter) s->cause |= 0x10;                                /*IRQ_COMPARE*/
 	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfff7;			/*IRQ_COUNTER2_NOT*/
 	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffb;			/*IRQ_COUNTER2*/
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffd;			/*IRQ_COUNTER_NOT*/
@@ -312,19 +348,17 @@ fail:
 	throw std::runtime_error(err_msg);
 }
 
-THellfireProcessor::THellfireProcessor(string name, MemoryType* mptr, 
-		uint32_t size, uint32_t base) : TimedModel(name) {
+THellfireProcessor::THellfireProcessor(string name, UMemory* mptr, uint32_t size, uint32_t base) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
 	
 	s->pc = base;
-	//s->pc = 0;
 	s->pc_next = s->pc + 4;
 
 	//TODO: deprecate it and make memory accessible only
 	//through [] operator
-	s->mem = &mptr[0];
+	s->mem = mptr;
 
 	s->vector = 0;
 	s->cause = 0;

@@ -59,9 +59,9 @@ void MakePes(Simulator* sptr){
 	//instantiate elements
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			mems[i][j] = new UMemory("MEM_" + std::to_string(i) + "_" + std::to_string(j), MEM_SIZE);
+			mems[i][j] = new UMemory("MEM_" + std::to_string(i) + "_" + std::to_string(j), MEM_SIZE, SRAM_BASE);
 			dmnis[i][j] = new TDmni("DMNI_" + std::to_string(i) + "_" + std::to_string(j));
-			cpus[i][j] = new THellfireProcessor("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j]->GetMemPtr(), MEM_SIZE, SRAM_BASE);
+			cpus[i][j] = new THellfireProcessor("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j], MEM_SIZE, SRAM_BASE);
 			routers[i][j] = new TRouter("ROUTER_" + std::to_string(i) + "_" + std::to_string(j), i, j);
 		}
 	}	
@@ -114,6 +114,21 @@ void MakePes(Simulator* sptr){
             );	
 }
 
+void loadBins(std::string path){
+
+	int index = 0;
+	//load binaries into memories
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+
+			string code = path + "code" + std::to_string(index) + ".bin";
+			std::cout << "Loading '" << code << "' to '" << mems[i][j]->GetName() << "'" << std::endl;
+			mems[i][j]->LoadBin(code, 0, MEM_SIZE);
+			index++;
+		}
+	}
+}
+
 int main(int argc, char** argv){
 
 	//ptr to simulation
@@ -140,22 +155,10 @@ int main(int argc, char** argv){
 		}
 	}
 	
-	
-	int index = 0;
-	std::string source_dir = argv[1];
-
-	//load binaries into memories
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-
-			string code = source_dir + "code" + std::to_string(index) + ".bin";
-			std::cout << "Loading '" << code << "' to '" << mems[i][j]->GetName() << "'" << std::endl;
-			//mems[i][j]->LoadBin(code, 0, MEM_SIZE);
-			
-			index++;
-		}
-	}
-	
+	//load binaries
+	std::cout << argv[1] << std::endl;
+	std::string x = std::string(argv[1]);
+	loadBins(x);
 	
 	std::cout << "Instantiated hardware: " << std::endl;
 	//print all object names
@@ -169,6 +172,7 @@ int main(int argc, char** argv){
 	//keep simulating until something happen
 	while(1){
 		s->Run(CYCLES_TO_SIM);
+		std::cout << ".";
 	}
 	std::cout << std::flush; 	
 }

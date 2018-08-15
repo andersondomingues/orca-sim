@@ -81,6 +81,10 @@ public:
       * @param base: Starting address of the region to be wiped.
       * @param length: Number of memory positions to be overwritten. */
 	void Wipe(uint32_t base, uint32_t length);
+	
+	/** Write zeroes to the whole memory area. This overload 
+	  * wipes from _sram_base to _length. */
+	void Wipe();
 		
 	/** Push the content of a memory are into sdtout.
 	  * @param base: Initial address to start reading.
