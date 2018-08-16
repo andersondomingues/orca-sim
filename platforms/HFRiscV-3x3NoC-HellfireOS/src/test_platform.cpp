@@ -61,7 +61,7 @@ void MakePes(Simulator* sptr){
 		for(int j = 0; j < NOC_H_SIZE; j++){
 			mems[i][j] = new UMemory("MEM_" + std::to_string(i) + "_" + std::to_string(j), MEM_SIZE, SRAM_BASE);
 			dmnis[i][j] = new TDmni("DMNI_" + std::to_string(i) + "_" + std::to_string(j));
-			cpus[i][j] = new THellfireProcessor("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j], MEM_SIZE, SRAM_BASE);
+			cpus[i][j] = new THellfireProcessor("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j], dmnis[i][j], MEM_SIZE, SRAM_BASE);
 			routers[i][j] = new TRouter("ROUTER_" + std::to_string(i) + "_" + std::to_string(j), i, j);
 		}
 	}	

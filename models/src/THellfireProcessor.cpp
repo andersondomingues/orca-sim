@@ -33,6 +33,7 @@ void THellfireProcessor::dumpregs(risc_v_state *s){
 		printf("r%02d [%08x] r%02d [%08x] r%02d [%08x] r%02d [%08x]\n", \
 		i, s->r[i], i+1, s->r[i+1], i+2, s->r[i+2], i+3, s->r[i+3]);
 	}
+	printf("pc: %08x\n", s->pc);
 	printf("\n");
 }
 
@@ -52,8 +53,9 @@ int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 
 	return(value);*/
 	
-	int32_t data;
+	uint32_t data;
 	s->mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
+		
 	return data;
 }
 
@@ -75,17 +77,36 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		case COMPARE2:		return s->compare2;
 		case UART_READ:		return getchar();
 		case UART_DIVISOR:	return 0;
+		
+		//dmni read-only space
+		case DMNI_SEND_ACTIVE: 
+			output_debug << "mem_read from DMNI_SEND_ACTIVE" << std::flush;
+			return _dmni->GetSendActive();
+		case DMNI_RECEIVE_ACTIVE: 
+			output_debug << "mem_read from DMNI_RECEIVE_ACTIVE" << std::flush;
+			return _dmni->GetReceiveActive();		
 	}
 
 	//ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
-
+	
+	#ifndef NOGUARDS
+	if(address < SRAM_BASE){
+		dumpregs(s);
+		throw std::runtime_error(this->GetName() + ": unable to read from unmapped memory memory space (lower than sram_base) " + std::to_string(address) + ".");
+	}
+	if(address > SRAM_BASE + MEM_SIZE){
+		dumpregs(s);
+		throw std::runtime_error(this->GetName() + ": unable to read from unmapped memory memory space (greater than sram_base + mem_size) " + std::to_string(address) + ".");
+	}
+	#endif	
+	
 	switch(size){
 		case 4:
 			if(address & 3){
 				std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				/*value = *(int32_t *)ptr;*/
+				/*value = *(int32_t *)ptr; */
 				s->mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 			}
 			break;
@@ -121,7 +142,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 
 	switch(address){
 
-		case IRQ_STATUS:
+		case IRQ_STATUS:{
 			if (value == 0){ 
 				s->status = 0; 
 				for (int i = 0; i < 4; i++) 
@@ -130,7 +151,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 					s->status_dly[3] = value; 
 			}
 			return;
-			
+		}
 		case IRQ_VECTOR:	s->vector = value; return;
 		case IRQ_CAUSE:		s->cause = value; return;
 		case IRQ_MASK:		s->mask = value; return;
@@ -153,13 +174,58 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			return;
 		case UART_DIVISOR:
 			return;
-		
-		//looking for the DMNI? sorry, your princess is 
-		//in another castle
-	}
 
-	//ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
+		//dmni write-only space
+		case DMNI_SIZE: 
+			output_debug << "mem_write to DMNI_SIZE" << std::flush;
+			s->dmni_size = value;
+			return;
+		case DMNI_OP: 
+			output_debug << "mem_write to DMNI_OP" << std::flush;
+			s->dmni_op = value;
+			return;
+		case DMNI_ADDRESS: 
+			output_debug << "mem_write to DMNI_ADDRESS" << std::flush;
+			s->dmni_addr = value;
+			return;
+		case DMNI_START:{ 
+			output_debug << "mem_write to DMNI_START" << std::flush;
+			switch(s->dmni_op){
+				case DMNI_WRITE:
+					_dmni->CopyTo(s->dmni_addr, s->dmni_size);
+					break;
+				case DMNI_READ:
+					_dmni->CopyFrom(s->dmni_addr, s->dmni_size);
+					break;
+			}
+			return;
+		}	
+			
+		//dmni read-only space
+		case DMNI_SEND_ACTIVE: 
+			output_debug << "mem_write to DMNI_START" << std::flush;
+			throw std::runtime_error(this->GetName() + ": unable to write to write-protected address (DMNI_SEND_ACTIVE)");
+			return;
+		case DMNI_RECEIVE_ACTIVE: 
+			output_debug << "mem_write to DMNI_START" << std::flush;
+			throw std::runtime_error(this->GetName() + ": unable to write to write-protected address (DMNI_RECEIVE_ACTIVE)");
+			return;
+	}
 	
+	//ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
+	//no more calculation needed, 'cause memory operates over given base
+	
+	#ifndef NOGUARDS
+	if(address < SRAM_BASE){
+		dumpregs(s);
+		throw std::runtime_error(this->GetName() + ": unable to write to unmapped memory memory space (lower than sram_base) " + std::to_string(address) + ".");
+	}
+	if(address > SRAM_BASE + MEM_SIZE){
+		dumpregs(s);
+		throw std::runtime_error(this->GetName() + ": unable to write to unmapped memory memory space (greater than sram_base + mem_size) " + std::to_string(address) + ".");
+	}
+	#endif
+		
 	switch(size){
 		case 4:
 			if(address & 3){
@@ -167,6 +233,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				throw std::runtime_error(err_msg);
 			}else{
 				/*  *(int32_t *)ptr = value;*/
+				//int32_t val = value;
 				s->mem->Write(address, (int8_t*)&value, size);
 			}
 			break;
@@ -176,15 +243,15 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				throw std::runtime_error(err_msg);
 			}else{
 				/*  *(int16_t *)ptr = (uint16_t)value;*/
-				int16_t data = value;
+				uint16_t data = (uint16_t)value;
 				s->mem->Write(address, (int8_t*)&data, size);
 			}
 			break;
 		case 1:
 			/*  *(int8_t *)ptr = (uint8_t)value;*/
-			int8_t data;
-			data = value;
-			s->mem->Write(address, &data, size);
+			uint8_t data;
+			data = (uint8_t)value;
+			s->mem->Write(address, (int8_t*)&data, size);
 			break;
 			
 		default:
@@ -196,8 +263,11 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 
 unsigned long long THellfireProcessor::Run(){
 
-	if(_disabled) 
-		return -1; //-1 is an special code that means "do not schedule me anymore"
+	
+	//-1 is an special code that means "do not schedule me anymore"
+	//TODO: change simulator to reflect it, otherwise only this processor
+	//will be simulated
+	//if(_disabled) return -1; 
 		
 	return this->cycle(this->s);
 }
@@ -348,7 +418,7 @@ fail:
 	throw std::runtime_error(err_msg);
 }
 
-THellfireProcessor::THellfireProcessor(string name, UMemory* mptr, uint32_t size, uint32_t base) : TimedModel(name) {
+THellfireProcessor::THellfireProcessor(string name, UMemory* mptr, TDmni* dmni, uint32_t size, uint32_t base) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
@@ -356,22 +426,23 @@ THellfireProcessor::THellfireProcessor(string name, UMemory* mptr, uint32_t size
 	s->pc = base;
 	s->pc_next = s->pc + 4;
 
-	//TODO: deprecate it and make memory accessible only
-	//through [] operator
 	s->mem = mptr;
 
 	s->vector = 0;
 	s->cause = 0;
 	s->mask = 0;
 	s->status = 0;
+	
 	for (i = 0; i < 4; i++)
 		s->status_dly[i] = 0;
+		
 	s->epc = 0;
 	s->counter = 0;
 	s->compare = 0;
 	s->compare2 = 0;
 	s->cycles = 0;
 	
+	_dmni = dmni;
 	_disabled = false;
 	
 	output_debug.open("logs/" + this->GetName() + "_debug.log");

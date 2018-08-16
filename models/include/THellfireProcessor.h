@@ -24,6 +24,7 @@
 
 //models libs
 #include <UMemory.h>
+#include <TDmni.h>
 
 
 #define SRAM_BASE           0x40000000
@@ -45,6 +46,7 @@
 #define UART_READ			0xf00000e0
 #define UART_DIVISOR		0xf00000f0
 
+
 #define ntohs(A) ( ((A)>>8) | (((A)&0xff)<<8) )
 #define htons(A) ntohs(A)
 #define ntohl(A) ( ((A)>>24) | (((A)&0xff0000)>>8) | (((A)&0xff00)<<8) | ((A)<<24) )
@@ -57,6 +59,11 @@ typedef struct {
 	UMemory* mem;
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
+
+	uint8_t  dmni_op;
+	uint32_t dmni_addr;
+	uint32_t dmni_size;	
+	
 } risc_v_state;
 
 class THellfireProcessor : public TimedModel{
@@ -67,41 +74,45 @@ private:
 	//scheduling
 	bool _disabled; 
 	
-		risc_v_state context;
-		risc_v_state *s;
-		int i;		
+	//dmni
+	TDmni* _dmni;
 
-        //out wires
-        uint32_t _mem_address; 
-        uint32_t _mem_data_write;
-        bool _mem_pause;
-        uint8_t _current_page; //can be ignored for riscv        
-        
-        //in wires
-        bool* _intr_in;
-        uint32_t* _mem_data_read;
-        uint8_t * _byte_we;
+	//context
+	risc_v_state context;
+	risc_v_state *s;
+	int i;		
+
+    //out wires
+    uint32_t _mem_address; 
+    uint32_t _mem_data_write;
+    bool _mem_pause;
+    uint8_t _current_page; //can be ignored for riscv        
+    
+    //in wires
+    bool* _intr_in;
+    uint32_t* _mem_data_read;
+    uint8_t * _byte_we;
 
 public:
-	
-        
-		void dumpregs(risc_v_state *s);
-		void bp(risc_v_state *s, uint32_t ir);
-		int32_t mem_fetch(risc_v_state *s, uint32_t address);
-		int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
-		void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
-		THellfireProcessor(string name, /*MemoryType*/ UMemory* mptr, uint32_t size, uint32_t base);
-		unsigned long long Run();
-		unsigned long long cycle(risc_v_state *s);
-		
-		ofstream output_debug, output_uart;
-		
-		~THellfireProcessor();
     
-        /**
-         * @brief Processor reset.*/
-        void Reset();
+	void dumpregs(risc_v_state *s);
+	void bp(risc_v_state *s, uint32_t ir);
+	int32_t mem_fetch(risc_v_state *s, uint32_t address);
+	int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
+	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
+
+	THellfireProcessor(string name, UMemory* mptr, TDmni* dmni, uint32_t size, uint32_t base);
+	unsigned long long Run();
+	unsigned long long cycle(risc_v_state *s);
+	
+	ofstream output_debug, output_uart;
+	
+	~THellfireProcessor();
+
+    /**
+     * @brief Processor reset.*/
+    void Reset();
 };
 
 #endif /* __RISC_V_H */

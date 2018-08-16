@@ -43,17 +43,19 @@
 typedef uint16_t FlitType;
 
 //memory-mapped "registers"
-#define DMNI_SIZE 	 0xe0000100
-#define DMNI_OP   	 0xe0000200
-#define DMNI_ADDRESS 0xe0000300
-#define DMNI_START 	 0xe0000400
 
-#define DMNI_SEND_ACTIVE 0xe0000500
-#define DMNI_RECV_ACTIVE 0xe0000600
 
-#define OP_SEND 4
-#define OP_RECV 8
-#define OP_NONE 0
+#define DMNI_SIZE 	        0xf0000100
+#define DMNI_OP   	        0xf0000101
+#define DMNI_ADDRESS        0xf0000110
+#define DMNI_START 	        0xf0000111
+
+#define DMNI_SEND_ACTIVE    0xf0001000
+#define DMNI_RECEIVE_ACTIVE 0xf0001001
+
+#define DMNI_WRITE 2
+#define DMNI_READ  1
+#define DMNI_NONE  0
 
 //States for internal state machines
 enum class SendState {WAIT, FINISH, COPY_FROM_MEM};
@@ -112,8 +114,8 @@ public:
 		void SetInputBuffer(UBuffer<FlitType>*);
 		void SetIntr(bool* b);
 		
-				
-		//MMA ABSTRACTION ------------------------------
+		uint8_t GetSendActive();
+		uint8_t GetReceiveActive();
 		
 		/**
 		 * @brief Sends data from the memory to the 

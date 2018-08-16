@@ -21,8 +21,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <string>
 #include <inttypes.h>
-
 #include <UMemory.h>
+
+//#define NOGUARDS 1
 
 UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe, std::string binname) : UntimedModel(name){
 	

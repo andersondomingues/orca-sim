@@ -49,15 +49,7 @@ void TDmni::Reset(){
     //proc -> dmni IF
     _mma_addr = 0;
     _mma_len  = 0;
-	_mma_op   = OP_NONE;
-    
-	//memory mapped statuses
-	if(_mem != nullptr){
-		int8_t data = 0;
-		//_mem->Write(DMNI_SEND_ACTIVE, &data, 1);
-		//_mem->Write(DMNI_RECV_ACTIVE, &data, 1);
-		//_mem->Read(DMNI_SIZE,    &_mma_len, 1);  //read 1 word
-	}
+	_mma_op   = DMNI_NONE;
 	
     //arbiter reset
     _read_enable  = false;
@@ -70,23 +62,20 @@ void TDmni::Reset(){
     _recv_state = RecvState::WAIT;
 }
 
+uint8_t TDmni::GetSendActive(){
+	return _send_active;
+}
+uint8_t TDmni::GetReceiveActive(){
+	return _recv_active;
+}
+
+
 /**
  * @brief Implementation of the Run method from
  * the Proccess abstract class.
  * @return The next time to schedule the event.*/
 unsigned long long TDmni::Run(){
     
-	//update mma status (currently mapped to memory)
-	//_mem->Dump();
-	
-	//if(this->GetName() == "DMNI_0_2"){
-	//_mem->Read(DMNI_ADDRESS, &_mma_addr, 1); //read 1 word
-	//	std::cout << std::to_string(_mma_addr) << endl;
-	//}
-	
-	//_mem->Read(DMNI_SIZE,    &_mma_len, 1);  //read 1 word
-	//_mem->Read(DMNI_OP,      &_mma_op, 1);   //read 1 word
-	
 	CycleArbiter();
     CycleReceive();
     CycleSend();
@@ -158,7 +147,7 @@ void TDmni::CycleSend(){
         //wait to be configured through the
         //cpu (wires _mma_op, _mma_addr, _mma_len).
         case SendState::WAIT:{
-            if(_mma_op == OP_SEND){
+            if(_mma_op == DMNI_READ){
                 _send_addr = _mma_addr;
                 _send_len  = _mma_len;
                 _send_state = SendState::COPY_FROM_MEM;
@@ -171,7 +160,7 @@ void TDmni::CycleSend(){
         //is, in most cases, connected to a router)
         case SendState::COPY_FROM_MEM:{
             
-			_mma_op = OP_NONE;
+			_mma_op = DMNI_NONE;
             if(_arb_state == ArbiterState::SEND){
 				
                 //DMNI operates over FlitType (curretly uint16_t),
@@ -224,7 +213,7 @@ void TDmni::CycleReceive(){
 		//otherwise stays stuck in wait state.
         case RecvState::WAIT:{
 			
-            if(_mma_op == OP_RECV){
+            if(_mma_op == DMNI_WRITE){
                 _recv_addr = _mma_addr;
                 _recv_len  = _mma_len;                
                 _recv_state = RecvState::COPY_TO_MEM;
@@ -234,8 +223,8 @@ void TDmni::CycleReceive(){
         
 		//copies to memory only when the arbiter state is RECV
         case RecvState::COPY_TO_MEM:{
-            _mma_op = OP_NONE;
-			
+
+            _mma_op = DMNI_NONE;			
             if(_arb_state == ArbiterState::RECV){
                 
                 //2-byte type, so we need to write twice.
@@ -270,7 +259,7 @@ void TDmni::CycleReceive(){
 void TDmni::CopyFrom(uint32_t addr, uint32_t size){
 	_mma_addr = addr;
 	_mma_len  = size;
-	_mma_op = OP_SEND;
+	_mma_op = DMNI_READ;
 }
 
 /**
@@ -281,7 +270,7 @@ void TDmni::CopyFrom(uint32_t addr, uint32_t size){
 void TDmni::CopyTo(uint32_t addr, uint32_t size){
 	_mma_addr = addr;
 	_mma_len  = size;
-	_mma_op   = OP_RECV;
+	_mma_op   = DMNI_WRITE;
 }
 
 /**
