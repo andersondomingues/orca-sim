@@ -1,19 +1,19 @@
-current_platform :=HFRiscV-3x3NoC-HellfireOS
+#current_platform :=HFRiscV-3x3NoC-HellfireOS
+current_platform :=hfriscv32-memory-based-test
+
 
 imgpath := ./hellfireos/platform/noc_3x3/
 
 libsim :=./simulator/bin/libsim.a
 libmod :=./models/bin/libmod.a
 plaexe :=./platforms/$(current_platform)/bin/$(current_platform)
-osimg  :=$(imgpath)/code0.bin
-
-
-
+osimg  :=$(imgpath)code0.bin
 
 #---------------- master recipie
 all: $(libsim) $(libmod) $(osimg) $(plaexe)
 	@echo "$'\e[032mStarting... \e[0m"
-	./platforms/$(current_platform)/bin/$(current_platform) $(imgpath)
+#./platforms/$(current_platform)/bin/$(current_platform) $(imgpath)
+	./platforms/$(current_platform)/bin/$(current_platform) $(osimg)
 
 #---------------- dependencies
 $(libsim):

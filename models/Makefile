@@ -2,7 +2,12 @@ SOURCEDIR :=./src
 OUTPUTDIR :=./bin
 
 CPP:=g++
-CPPFLAGS :=-I./include -I../simulator/include -c -g -O3 -Wall
+
+#some useful flags:
+#"-DNOGUARDS" disables all IFs (not kidding, all guards down!)
+CPPFLAGS :=-I./include -I../simulator/include -c -g -O3 -Wall -DNOGUARDS 
+
+
 
 LIBNAME :=libmod.a
 
