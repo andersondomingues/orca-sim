@@ -1,3 +1,6 @@
 [submodule "submodules/hellfireos"]
 	path = submodules/hellfireos
 	url = https://github.com/sjohann81/hellfireos
+[submodule "submodules/hf-risc"]
+	path = submodules/hf-risc
+	url = https://github.com/sjohann81/hf-risc
