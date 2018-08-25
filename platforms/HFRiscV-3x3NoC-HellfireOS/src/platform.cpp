@@ -123,7 +123,7 @@ void loadBins(std::string path){
 
 			string code = path + "code" + std::to_string(index) + ".bin";
 			std::cout << "Loading '" << code << "' to '" << mems[i][j]->GetName() << "'" << std::endl;
-			mems[i][j]->LoadBin(code, 0, MEM_SIZE);
+			mems[i][j]->LoadBin(code, SRAM_BASE, MEM_SIZE);
 			index++;
 		}
 	}
@@ -156,7 +156,6 @@ int main(int argc, char** argv){
 	}
 	
 	//load binaries
-	std::cout << argv[1] << std::endl;
 	std::string x = std::string(argv[1]);
 	loadBins(x);
 	
@@ -168,7 +167,9 @@ int main(int argc, char** argv){
 			std::cout << pe_name << std::endl;
 		}
 	}
-	
+
+	mems[0][0]->Dump();
+
 	//keep simulating until something happen
 	while(1){
 		s->Run(CYCLES_TO_SIM);

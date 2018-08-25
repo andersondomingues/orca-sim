@@ -15,7 +15,7 @@ LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
 #that they may be different form flags used for compiling
 #dependencies.
 GCCFLAGS  := -g -I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include -Wall -Werror -O3 
-LDFLAGS   := -L$(LIBSIM_PATH)/bin -L-I$(LIBMOD_PATH)/bin -lmod -lsim 
+LDFLAGS   := -L$(LIBSIM_PATH)/bin -L$(LIBMOD_PATH)/bin -lmod -lsim 
 OUTPUTDIR :=./bin
 SOURCEDIR :=./src
 
@@ -26,7 +26,7 @@ HELLFIREOS_ARCH:=../../submodules/hellfireos/arch/riscv/hf-riscv
 #This is the master recipie. It compiles all the stuff and launchs the simulation.
 all: $(LIBSIM) $(LIBMOD) $(HELLFIREOS_PATH)/code0.bin $(OUTPUTDIR)/$(PLATFORM_NAME)
 	@echo "$'\e[032mStarting... \e[0m"
-	$(OUTPUTDIR)/$(PLATFORM_NAME) $(HELLFIREOS_PATH)
+	$(OUTPUTDIR)/$(PLATFORM_NAME) ./bin/
 
 #Recipies for compiling dependencies.
 $(LIBSIM):
@@ -45,10 +45,11 @@ $(HELLFIREOS_PATH)/code0.bin:
 	cp hellfire-patch/makefile $(HELLFIREOS_PATH)/makefile
 	@echo "$'\e[036mBuilding HellfireOS... \e[0m"
 	@make -C $(HELLFIREOS_PATH) images
+	cp $(HELLFIREOS_PATH)/*.bin ./bin
 
-$(OUTPUTDIR)/$(PLATFORM_NAME):
+$(OUTPUTDIR)/$(PLATFORM_NAME): $(SOURCEDIR)/platform.cpp
 	@echo "$'\e[036mBuilding target platform ($(PLATFORM_NAME))... \e[0m"
-	g++ $(SOURCEDIR)/platform.cpp $(GCCFLAGS) $(LDFLAGS)
+	g++ $(SOURCEDIR)/platform.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME)
 
 #The old, gold cleanup
 clean:
@@ -59,6 +60,7 @@ clean:
 	@echo "$'\e[033mCleaning HellfireOS... \e[0m"
 	make -C $(HELLFIREOS_PATH) clean
 	@echo "$'\e[033mCleaning target platform $(PLATFORM_NAME)... \e[0m"
-	rm -rf $(OUTPUTDIR)/$(LIBNAME)
+	rm -rf $(OUTPUTDIR)/$(PLATFORM_NAME)
+	rm -rf $(OUTPUTDIR)/code*
 
 

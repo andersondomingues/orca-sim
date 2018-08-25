@@ -45,14 +45,6 @@ void THellfireProcessor::bp(risc_v_state *s, uint32_t ir){
 
 int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 	
-	/*uint32_t value=0;
-	uint32_t *ptr;
-
-	ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
-	value = *ptr;
-
-	return(value);*/
-	
 	uint32_t data;
 	s->mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 		
@@ -60,9 +52,6 @@ int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 }
 
 int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t address){
-	
-	/*uint32_t value = 0;
-	uint32_t *ptr;*/
 	
 	uint32_t data;
 
@@ -212,9 +201,6 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			return;
 	}
 	
-	//ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
-	//no more calculation needed, 'cause memory operates over given base
-	
 	#ifndef NOGUARDS
 	if(address < SRAM_BASE){
 		dumpregs(s);
@@ -264,11 +250,6 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 unsigned long long THellfireProcessor::Run(){
 
 	
-	//-1 is an special code that means "do not schedule me anymore"
-	//TODO: change simulator to reflect it, otherwise only this processor
-	//will be simulated
-	//if(_disabled) return -1; 
-		
 	return this->cycle(this->s);
 }
 

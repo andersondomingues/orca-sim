@@ -104,7 +104,7 @@ void UMemory::LoadBin(std::string filename, uint32_t base, uint32_t size){
 	std::ifstream f(filename, std::ios::binary | std::ios::in | std::ios::out);
 	
 	if(f.is_open()){
-		f.read((char*)&_mem[base - _sram_base], sizeof(_mem[0]) * size);
+		f.read((char*)&_mem[base -_sram_base], sizeof(_mem[0]) * size);
 		f.close();
 	}else{
 	    //TODO: surround with try-catch instead of printing
