@@ -50,13 +50,13 @@ void DMNI_send_data(unsigned int initial_address, unsigned int dmni_msg_size){
 
 	//program dmni to send the message
 	set_mem(DMNI_SIZE, dmni_msg_size);
-	set_mem(DMNI_OP, READ);
+	set_mem(DMNI_OP, DMNI_READ);
 	set_mem(DMNI_ADDRESS, initial_address);
 	
 	//start the dmni
 	set_mem(DMNI_START, 1);
 }
-*/
+
 /**
  * @brief Configures DMNI to receive data from the noc
  * @param initial_address Address in which data should be put
@@ -67,7 +67,7 @@ void DMNI_read_data(unsigned int initial_address, unsigned int dmni_msg_size){
 	
 	//program dmni to recv the message
 	set_mem(DMNI_SIZE, dmni_msg_size);
-	set_mem(DMNI_OP, READ);
+	set_mem(DMNI_OP, DMNI_READ);
 	set_mem(DMNI_ADDRESS, initial_address);
 	
 	//start the dmni
