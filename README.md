@@ -8,13 +8,17 @@ The following sections may serve you as a tour on the project. Note that the pro
 
 ## The Anatomy of URSA
 
-URSA project is made of smaller components, described as following.
+URSA project is made of a few modules:
 
-- MODELS: Models are functional implementations of hardware's behavior, that is, its C++ code that emulates the hardware. Still, it is cycle-accurate and handy for fast-programming when targeting embedded platforms. Platforms are composed of several interconnected hardware models. Models are used to make platforms, which are then simulated by URSA's simulator. 
+- MODELS: Models are functional implementations of hardware's behavior, that is, its C++ code that emulates the hardware. Still, it is cycle-accurate and handy for fast-programming when targeting embedded platforms. We currently have models for 
+  * Memory model, suitable for RAM and ROM emulation. This model support configuring addressing range (base and size), data manipulation methods (multi-range write and read), debugging (dump), and more. 
+  * Buffer model. This model support fixed and dynamic buffer length (including unlimited length).
+  * Risc-V 32-bit core (hf-riscv).
+  * Network-on-chip router (hermes noc). XY routing algorithm, round-robin policy and whormhole package switching.
+  * DMNI module (from hemps). DMA + NI modules, together.
 
-- GENERICS: Generic hardware is used to model parts of platforms do not need to be observed at runtime or which the abstraction does not require cycle precision. We provide two generic models: Buffer and Memory.
 
-- PLATFORMS: Platforms are made of peripherals, busses, processors and other hardware. We are currently working on integrating both the HF-RISCV processor and peripherals from the HEMPS project onto a single platform. More information on HF-RISCV and HEMPS projects can be found in the [external contribution](#external-contribution) section. 
+- PLATFORMS: Platforms are composed of several interconnected hardware models, such as peripherals, busses, processors and other hardware. We are currently working on integrating both the HF-RISCV processor and peripherals from the HEMPS project onto a single platform. More information on HF-RISCV and HEMPS projects can be found in the [external contribution](#external-contribution) section. 
 
 - SIMULATOR: The discrete event simulator component is the heart of simulation. It instantiates a queue in which events from hardware are scheduled and executed in-order. URSA provides cycle-precise simulation.
 
