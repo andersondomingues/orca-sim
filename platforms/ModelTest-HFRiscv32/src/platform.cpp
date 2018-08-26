@@ -13,6 +13,8 @@
 #include <string.h>
 #include <stdint.h>
 
+#define CYCLES_TO_SIM 1000000
+
 #define MEM_SIZE			0x00100000
 #define SRAM_BASE			0x40000000
 #define EXIT_TRAP			0xe0000000
@@ -43,6 +45,8 @@ typedef struct {
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
 } state;
+
+//typedef risc_v_state state;
 
 int8_t sram[MEM_SIZE];
 
@@ -120,12 +124,20 @@ static int32_t mem_read(state *s, int32_t size, uint32_t address){
 			printf("\nerror");
 	}
 
+	std::cout << " rref: size " << std::hex << size
+				<< " addr " << std::hex << address 
+				<< " val " << std::hex << value << std::flush;
+
 	return(value);
 }
 
 static void mem_write(state *s, int32_t size, uint32_t address, uint32_t value){
 	uint32_t i;
 	uint32_t *ptr;
+
+	std::cout << " wref: size " << std::hex << size
+				<< " addr " << std::hex << address 
+				<< " val " << std::hex << value << std::flush;
 
 	switch(address){
 		case IRQ_VECTOR:	s->vector = value; return;
@@ -155,6 +167,9 @@ static void mem_write(state *s, int32_t size, uint32_t address, uint32_t value){
 
 	ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
 	
+	if((uint64_t)ptr == 0x4fffffb8)
+		printf("%p", ptr);
+	
 	switch(size){
 		case 4:
 			if(address & 3){
@@ -183,6 +198,7 @@ static void mem_write(state *s, int32_t size, uint32_t address, uint32_t value){
 }
 
 void cycle(state *s){
+
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;
 	int32_t *r = s->r;
@@ -361,6 +377,7 @@ int main(int argc, char *argv[]){
 
 	s->pc = SRAM_BASE;
 	s->pc_next = s->pc + 4;
+	
 	s->mem = &sram[0];
 	s->vector = 0;
 	s->cause = 0;
@@ -375,28 +392,55 @@ int main(int argc, char *argv[]){
 	s->cycles = 0;
 
 	//instantiate new models (ursa's)
-	UMemory* umem = new UMemory("MEM", MEM_SIZE, SRAM_BASE, true, std::string(argv[1]));
-	THellfireProcessor* proc = new THellfireProcessor("PROC", umem, nullptr, MEM_SIZE, SRAM_BASE);
-	umem->Dump();
+	UMemory* umem = new UMemory(
+		"MEM", MEM_SIZE, SRAM_BASE, true, std::string(argv[1]));
+	THellfireProcessor* proc = new THellfireProcessor(
+		"PROC", umem, nullptr, MEM_SIZE, SRAM_BASE);
 	
+	//get data from the inside memory
+	int8_t dump[MEM_SIZE];
+	umem->Read(SRAM_BASE, &dump[0], MEM_SIZE);
+
+	std::cout << "TEST001: checking memories..." << std::endl;
+	
+	//---TEST01: check whether memories were loaded correctly
+	for(int i = 0; i < MEM_SIZE; i++){
+		if(dump[i] != s->mem[i]){
+			std::cout << "pau" << i << std::endl;
+			exit(0);
+		}
+	}
+	
+	std::cout << "ok." << std::endl;
+	std::cout << "TEST002: runnning model-match test..." <<std::endl;
+	
+	//--TEST02: fetch test
 	//new simulator
 	Simulator* ss = new Simulator();
-	ss->Schedule(Event(0, proc));
+	ss->Schedule(Event(1, proc));
 
-	for(;;){
+	risc_v_state hfs; 
+
+	for(int k = 0; k < CYCLES_TO_SIM; k++){
 	
-		//run each processor for exately 1 cycle 
-		ss->Run(1);
-		cycle(s);
+		hfs = proc->GetState();
 		
-		//compare memories
-		int8_t mem_temp;
-		for(int i = 0; i < MEM_SIZE; i++){
-			umem->Read(i + SRAM_BASE, &mem_temp, 1);
-			if(s->mem[i] != mem_temp){
-				printf("pau");
-			}
-		}
+		if(hfs.pc != s->pc){
+			std::cout << "PC mismatch: reference is " << std::hex << s->pc 
+						<< " and model is " << std::hex << hfs.pc 
+						<< " cycle " << k << std::endl;
+			exit(0);
+		}		
+		
+		//run each processor for exately 1 cycle 
+		cycle(s);
+		ss->Run(1);		
+		
+		//int32_t r[32];
+
+		//uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
+		//uint64_t cycles;
+		
 	}
 
 	return(0);

@@ -121,6 +121,10 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			throw std::runtime_error(err_msg);
 	}
 
+	std::cout << " rhrf: size " << std::hex << size
+				<< " addr " << std::hex << address 
+				<< " val " << std::hex << data << std::endl;
+
 	/*return(value);*/
 	return data;
 }
@@ -128,6 +132,10 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
 
 	/*uint32_t *ptr;*/
+	std::cout << " hrf: size " << std::hex << size
+				<< " addr " << std::hex << address 
+				<< " val " << std::hex << value << std::endl;
+	
 
 	switch(address){
 
@@ -207,6 +215,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		throw std::runtime_error(this->GetName() + ": unable to write to unmapped memory memory space (lower than sram_base) " + std::to_string(address) + ".");
 	}
 	if(address > SRAM_BASE + MEM_SIZE){
+		return;
 		dumpregs(s);
 		throw std::runtime_error(this->GetName() + ": unable to write to unmapped memory memory space (greater than sram_base + mem_size) " + std::to_string(address) + ".");
 	}
@@ -249,7 +258,6 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 
 unsigned long long THellfireProcessor::Run(){
 
-	
 	return this->cycle(this->s);
 }
 
@@ -399,7 +407,14 @@ fail:
 	throw std::runtime_error(err_msg);
 }
 
-THellfireProcessor::THellfireProcessor(string name, UMemory* mptr, TDmni* dmni, uint32_t size, uint32_t base) : TimedModel(name) {
+risc_v_state THellfireProcessor::GetState(){
+	return *s;
+}
+
+THellfireProcessor::THellfireProcessor(
+	string name, 
+	UMemory* mptr, TDmni* dmni, 
+	uint32_t size, uint32_t base) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));

@@ -8,7 +8,7 @@ Simulator::Simulator(){
 
 void Simulator::Reset(){
     _globalTime = 0;
-	_timeout = 0;
+	_timeout = 1;
 }
 
 /**
@@ -30,6 +30,15 @@ unsigned long long Simulator::Run(unsigned long long time){
  * @brief Schedule an event to run in a certain period of time
  * @param Event to run.*/
 void Simulator::Schedule(const Event& e){
+
+	#ifndef NOGUARDS
+	if(e.time == 0){
+		throw std::runtime_error("Simulator: unable to schedule "
+			+ e.timedModel->GetName() + " to run in the past. " +
+			"Events must be scheduled to run with time > 0." 
+		);
+	}
+	#endif
 	_queue.push(e);
 }
 
@@ -39,14 +48,13 @@ void Simulator::executeNext(){
 	
 	//get next event to be processed
 	Event e = _queue.top();
+	_queue.pop();
+	
 	_globalTime = e.time;
 
 	//process it
 	long long int interv = e.timedModel->Run();
 	_queue.push(Event(_globalTime + interv, e.timedModel));
-
-	//remove it from the top of the queue
-	_queue.pop();
 }
 
 /**

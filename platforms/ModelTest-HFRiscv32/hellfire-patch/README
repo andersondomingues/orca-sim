@@ -1,0 +1,2 @@
+copy ni.h to /home/adomingues/gaph/ursa/hellfireos/arch/riscv/hf-riscv/include
+copy ni.c to /home/adomingues/gaph/ursa/hellfireos/arch/riscv/hf-riscv/drivers
