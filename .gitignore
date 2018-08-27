@@ -3,6 +3,7 @@
 *.pdf
 *.log
 *.bin
+*.exe
 submodules/hellfire
 submodules/hf-risc
 submodules/hemps
