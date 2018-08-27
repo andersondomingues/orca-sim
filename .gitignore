@@ -2,3 +2,7 @@
 *.o
 *.pdf
 *.log
+*.bin
+submodules/hellfire
+submodules/hf-risc
+submodules/hemps

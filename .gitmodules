@@ -1,0 +1,9 @@
+[submodule "submodules/hellfireos"]
+	path = submodules/hellfireos
+	url = https://github.com/andersondomingues/hellfireos
+[submodule "submodules/hf-risc"]
+	path = submodules/hf-risc
+	url = https://github.com/sjohann81/hf-risc
+[submodule "submodules/hemps"]
+	path = submodules/hemps
+	url = https://github.com/GaphGroup/hemps
