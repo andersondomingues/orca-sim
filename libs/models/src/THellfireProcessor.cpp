@@ -46,7 +46,7 @@ void THellfireProcessor::bp(risc_v_state *s, uint32_t ir){
 int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 	
 	uint32_t data;
-	s->mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
+	s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 		
 	return data;
 }
@@ -76,7 +76,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			return _dmni->GetReceiveActive();		
 	}
 
-	//ptr = (uint32_t *)(s->mem + (address % MEM_SIZE));
+	//ptr = (uint32_t *)(s->sram + (address % MEM_SIZE));
 	
 	#ifndef NOGUARDS
 	if(address < SRAM_BASE){
@@ -96,7 +96,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 				throw std::runtime_error(err_msg);
 			}else{
 				/*value = *(int32_t *)ptr; */
-				s->mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
+				s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 			}
 			break;
 		case 2:
@@ -106,14 +106,14 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			}else{
 				/*value = *(int16_t *)ptr;*/
 				int16_t value;
-				s->mem->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
+				s->sram->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
 				data = value;
 			}
 			break;
 		case 1:
 			/*value = *(int8_t *)ptr;*/
 			int8_t value;
-			s->mem->Read(address, &value, 1); //1 x sizeof(uint8_t)
+			s->sram->Read(address, &value, 1); //1 x sizeof(uint8_t)
 			data = value;
 			break;
 		default:
@@ -229,7 +229,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			}else{
 				/*  *(int32_t *)ptr = value;*/
 				//int32_t val = value;
-				s->mem->Write(address, (int8_t*)&value, size);
+				s->sram->Write(address, (int8_t*)&value, size);
 			}
 			break;
 		case 2:
@@ -239,14 +239,14 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			}else{
 				/*  *(int16_t *)ptr = (uint16_t)value;*/
 				uint16_t data = (uint16_t)value;
-				s->mem->Write(address, (int8_t*)&data, size);
+				s->sram->Write(address, (int8_t*)&data, size);
 			}
 			break;
 		case 1:
 			/*  *(int8_t *)ptr = (uint8_t)value;*/
 			uint8_t data;
 			data = (uint8_t)value;
-			s->mem->Write(address, (int8_t*)&data, size);
+			s->sram->Write(address, (int8_t*)&data, size);
 			break;
 			
 		default:
@@ -422,7 +422,7 @@ THellfireProcessor::THellfireProcessor(
 	s->pc = base;
 	s->pc_next = s->pc + 4;
 
-	s->mem = mptr;
+	s->sram = mptr;
 
 	s->vector = 0;
 	s->cause = 0;

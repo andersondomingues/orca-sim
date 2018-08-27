@@ -12,7 +12,6 @@
  * author:        Sergio Johann Filho <sergio.filho@pucrs.br>
  */
 
-
 //STD libraries
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,10 +26,11 @@
 #include <TDmni.h>
 
 
-#define SRAM_BASE           0x40000000
-#define MEM_SIZE			0x00100000
-#define EXIT_TRAP			0xe0000000
+#define SRAM_BASE         	0x40000000
+//#define MEM_SIZE			0x00100000
+#define MEM_SIZE			0x00100400
 
+#define EXIT_TRAP			0xe0000000
 #define IRQ_VECTOR			0xf0000000
 #define IRQ_CAUSE			0xf0000010
 #define IRQ_MASK			0xf0000020
@@ -46,7 +46,6 @@
 #define UART_READ			0xf00000e0
 #define UART_DIVISOR		0xf00000f0
 
-
 #define ntohs(A) ( ((A)>>8) | (((A)&0xff)<<8) )
 #define htons(A) ntohs(A)
 #define ntohl(A) ( ((A)>>24) | (((A)&0xff0000)>>8) | (((A)&0xff00)<<8) | ((A)<<24) )
@@ -55,8 +54,9 @@
 typedef struct {
 	int32_t r[32];
 	uint32_t pc, pc_next;
-	/*MemoryType* mem;*/
-	UMemory* mem;
+
+	UMemory* sram;
+	
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
 
@@ -80,18 +80,7 @@ private:
 	//context
 	risc_v_state context;
 	risc_v_state *s;
-	int i;		
-
-    //out wires
-    uint32_t _mem_address; 
-    uint32_t _mem_data_write;
-    bool _mem_pause;
-    uint8_t _current_page; //can be ignored for riscv        
-    
-    //in wires
-    bool* _intr_in;
-    uint32_t* _mem_data_read;
-    uint8_t * _byte_we;
+	int i;
 
 public:
 

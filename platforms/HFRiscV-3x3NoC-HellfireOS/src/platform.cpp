@@ -34,7 +34,7 @@
 #define NOC_H_SIZE 3
 #define NOC_W_SIZE 3
 
-#define MEM_SIZE  0x00100000
+#define MEM_SIZE  0x00100400
 #define SRAM_BASE 0x40000000
 
 //function prototypes d
@@ -140,9 +140,9 @@ int main(int argc, char** argv){
 	//schedule elements
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			s->Schedule(Event(0, cpus[i][j]));
-			s->Schedule(Event(0, routers[i][j]));
-			s->Schedule(Event(0, dmnis[i][j]));
+			s->Schedule(Event(1, cpus[i][j]));
+			s->Schedule(Event(1, routers[i][j]));
+			s->Schedule(Event(1, dmnis[i][j]));
 		}
 	}
 

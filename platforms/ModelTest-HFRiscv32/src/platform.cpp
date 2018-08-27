@@ -15,7 +15,7 @@
 
 #define CYCLES_TO_SIM 1000000
 
-#define MEM_SIZE			0x00100000
+#define MEM_SIZE			0x00100400
 #define SRAM_BASE			0x40000000
 #define EXIT_TRAP			0xe0000000
 #define IRQ_VECTOR			0xf0000000
@@ -421,19 +421,20 @@ int main(int argc, char *argv[]){
 
 	risc_v_state hfs; 
 
-	for(int k = 0; k < CYCLES_TO_SIM; k++){
+	//for(int k = 0; k < CYCLES_TO_SIM; k++){
+	for(;;){
 	
 		hfs = proc->GetState();
 		
-		if(hfs.pc != s->pc){
+		/*if(hfs.pc != s->pc){
 			std::cout << "PC mismatch: reference is " << std::hex << s->pc 
 						<< " and model is " << std::hex << hfs.pc 
 						<< " cycle " << k << std::endl;
 			exit(0);
-		}		
+		}*/		
 		
 		//run each processor for exately 1 cycle 
-		cycle(s);
+		//cycle(s);
 		ss->Run(1);		
 		
 		//int32_t r[32];
