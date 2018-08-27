@@ -38,11 +38,11 @@ $(LIBMOD):
 	@make -C $(LIBMOD_PATH)
 
 $(HELLFIREOS_PATH)/code0.bin:
-	@echo "$'\e[036mPatching HellfireOS... \e[0m"
-	cp hellfire-patch/ni.c $(HELLFIREOS_ARCH)/drivers/ni.c
-	cp hellfire-patch/ni.h $(HELLFIREOS_ARCH)/include/ni.h
-	cp hellfire-patch/arch.mak $(HELLFIREOS_ARCH)/arch.mak
-	cp hellfire-patch/makefile $(HELLFIREOS_PATH)/makefile
+#	@echo "$'\e[036mPatching HellfireOS... \e[0m"
+#	cp hellfire-patch/ni.c $(HELLFIREOS_ARCH)/drivers/ni.c
+#	cp hellfire-patch/ni.h $(HELLFIREOS_ARCH)/include/ni.h
+#	cp hellfire-patch/arch.mak $(HELLFIREOS_ARCH)/arch.mak
+#	cp hellfire-patch/makefile $(HELLFIREOS_PATH)/makefile
 	@echo "$'\e[036mBuilding HellfireOS... \e[0m"
 	@make -C $(HELLFIREOS_PATH) images
 	cp $(HELLFIREOS_PATH)/*.bin ./bin

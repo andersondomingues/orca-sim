@@ -75,8 +75,6 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			output_debug << "mem_read from DMNI_RECEIVE_ACTIVE" << std::flush;
 			return _dmni->GetReceiveActive();		
 	}
-
-	//ptr = (uint32_t *)(s->sram + (address % MEM_SIZE));
 	
 	#ifndef NOGUARDS
 	if(address < SRAM_BASE){
@@ -95,7 +93,6 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 				std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				/*value = *(int32_t *)ptr; */
 				s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 			}
 			break;
@@ -104,14 +101,12 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 				std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				/*value = *(int16_t *)ptr;*/
 				int16_t value;
 				s->sram->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
 				data = value;
 			}
 			break;
 		case 1:
-			/*value = *(int8_t *)ptr;*/
 			int8_t value;
 			s->sram->Read(address, &value, 1); //1 x sizeof(uint8_t)
 			data = value;
@@ -121,21 +116,10 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			throw std::runtime_error(err_msg);
 	}
 
-	std::cout << " rhrf: size " << std::hex << size
-				<< " addr " << std::hex << address 
-				<< " val " << std::hex << data << std::endl;
-
-	/*return(value);*/
 	return data;
 }
 
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
-
-	/*uint32_t *ptr;*/
-	std::cout << " hrf: size " << std::hex << size
-				<< " addr " << std::hex << address 
-				<< " val " << std::hex << value << std::endl;
-	
 
 	switch(address){
 
@@ -157,34 +141,22 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
 		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
 
+		case DEBUG_ADDR: output_debug << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_WRITE: output_uart << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_DIVISOR: return;
+
 		case EXIT_TRAP:
 			std::cout << this->GetName() <<": exit trap triggered! (" << s->cycles << " cycles)" << std::endl;
 			_disabled = true;
 			output_debug.close();
 			output_uart.close();
 			return;
-		case DEBUG_ADDR:
-			output_debug << (int8_t)(value & 0xff) << std::flush;
-			return;
-		case UART_WRITE:
-			output_uart << (int8_t)(value & 0xff) << std::flush;
-			return;
-		case UART_DIVISOR:
-			return;
 
 		//dmni write-only space
-		case DMNI_SIZE: 
-			output_debug << "mem_write to DMNI_SIZE" << std::flush;
-			s->dmni_size = value;
-			return;
-		case DMNI_OP: 
-			output_debug << "mem_write to DMNI_OP" << std::flush;
-			s->dmni_op = value;
-			return;
-		case DMNI_ADDRESS: 
-			output_debug << "mem_write to DMNI_ADDRESS" << std::flush;
-			s->dmni_addr = value;
-			return;
+		case DMNI_SIZE: s->dmni_size = value; output_debug << "mem_write to DMNI_SIZE" << std::flush; return;
+		case DMNI_OP: s->dmni_op = value; output_debug << "mem_write to DMNI_OP" << std::flush; return;
+		case DMNI_ADDRESS: 	s->dmni_addr = value; output_debug << "mem_write to DMNI_ADDRESS" << std::flush; return;
+		
 		case DMNI_START:{ 
 			output_debug << "mem_write to DMNI_START" << std::flush;
 			switch(s->dmni_op){
@@ -227,8 +199,6 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				std::string err_msg = this->GetName() + ": unaligned access (store word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				/*  *(int32_t *)ptr = value;*/
-				//int32_t val = value;
 				s->sram->Write(address, (int8_t*)&value, size);
 			}
 			break;
@@ -237,18 +207,16 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				std::string err_msg = this->GetName() + ": unaligned access (store halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				/*  *(int16_t *)ptr = (uint16_t)value;*/
 				uint16_t data = (uint16_t)value;
 				s->sram->Write(address, (int8_t*)&data, size);
 			}
 			break;
-		case 1:
-			/*  *(int8_t *)ptr = (uint8_t)value;*/
+		case 1:{
 			uint8_t data;
 			data = (uint8_t)value;
 			s->sram->Write(address, (int8_t*)&data, size);
 			break;
-			
+		}
 		default:
 			std::string err_msg = this->GetName() + ": unknown01";
 			throw std::runtime_error(err_msg);
@@ -257,11 +225,6 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 
 
 unsigned long long THellfireProcessor::Run(){
-
-	return this->cycle(this->s);
-}
-
-unsigned long long THellfireProcessor::cycle(risc_v_state *s){
 		
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;

@@ -168,12 +168,11 @@ int main(int argc, char** argv){
 		}
 	}
 
-	mems[0][0]->Dump();
 
 	//keep simulating until something happen
 	while(1){
 		s->Run(CYCLES_TO_SIM);
-		std::cout << ".";
+		std::cout << "Simulation: %d cycles has been passed since last message." << std::endl;
 	}
 	std::cout << std::flush; 	
 }

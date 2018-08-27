@@ -94,7 +94,6 @@ public:
 
 	THellfireProcessor(string name, UMemory* mptr, TDmni* dmni, uint32_t size, uint32_t base);
 	unsigned long long Run();
-	unsigned long long cycle(risc_v_state *s);
 	
 	ofstream output_debug, output_uart;
 	
