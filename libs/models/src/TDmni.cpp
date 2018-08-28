@@ -28,10 +28,6 @@ TDmni::TDmni(std::string name) : TimedModel(name){
 	_mem = nullptr;
 }
 
-//status wires (memory mapped)
-bool send_active;
-bool recv_active;
-
 UMemory* TDmni::GetMemoryModel(){ return _mem; }
 UBuffer<FlitType>* TDmni::GetOutputBuffer(){ return _ob; }
 UBuffer<FlitType>* TDmni::GetInputBuffer(){ return _ib; }
@@ -159,9 +155,11 @@ void TDmni::CycleSend(){
         //memory and put into the output buffer (which
         //is, in most cases, connected to a router)
         case SendState::COPY_FROM_MEM:{
-            
+           
 			_mma_op = DMNI_NONE;
             if(_arb_state == ArbiterState::SEND){
+
+                std::cout << "address: 0x" << std::hex << _send_addr << std::endl << std::flush;
 				
                 //DMNI operates over FlitType (curretly uint16_t),
                 //but memory operates over MemoryType (curently uint8_t).
@@ -177,6 +175,7 @@ void TDmni::CycleSend(){
                 //[][][][] 16 << flit
                 //[][] 8 << mem word
                 FlitType flit;
+
                 
                 _mem->Read(_send_addr, (int8_t*)(&flit), 2);
                 _ob->push(flit);
@@ -257,6 +256,9 @@ void TDmni::CycleReceive(){
  * @param addr Address in which data begins.
  * @param size Total length o data (size of FlitType) */
 void TDmni::CopyFrom(uint32_t addr, uint32_t size){
+
+	std::cout << "CopyFrom addr " << addr << " size " << size << std::endl;
+
 	_mma_addr = addr;
 	_mma_len  = size;
 	_mma_op = DMNI_READ;

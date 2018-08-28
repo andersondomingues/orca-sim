@@ -149,9 +149,9 @@ int main(int argc, char** argv){
 	//reset everything
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			//dmnis[i][j]->Reset();
+			dmnis[i][j]->Reset();
 			cpus[i][j]->Reset();
-			//routers[i][j]->Reset();
+			routers[i][j]->Reset();
 		}
 	}
 	

@@ -24,9 +24,9 @@ SOURCEDIR :=./src
 HELLFIREOS_PATH:=../../submodules/hellfireos/platform/noc_3x3
 HELLFIREOS_ARCH:=../../submodules/hellfireos/arch/riscv/hf-riscv
 #This is the master recipie. It compiles all the stuff and launchs the simulation.
-all: $(LIBSIM) $(LIBMOD) $(HELLFIREOS_PATH)/code0.bin $(OUTPUTDIR)/$(PLATFORM_NAME)
+all: $(LIBSIM) $(LIBMOD) $(HELLFIREOS_PATH)/code0.bin $(OUTPUTDIR)/$(PLATFORM_NAME).exe
 	@echo "$'\e[032mStarting... \e[0m"
-	$(OUTPUTDIR)/$(PLATFORM_NAME) ./bin/
+	$(OUTPUTDIR)/$(PLATFORM_NAME).exe ./bin/
 
 #Recipies for compiling dependencies.
 $(LIBSIM):
@@ -62,5 +62,9 @@ clean:
 	@echo "$'\e[033mCleaning target platform $(PLATFORM_NAME)... \e[0m"
 	rm -rf $(OUTPUTDIR)/$(PLATFORM_NAME)
 	rm -rf $(OUTPUTDIR)/code*
+#@echo "$'\e[033mCleaning logs... \e[0m"
+#rm -rf logs/*.log
+	
+	
 
 

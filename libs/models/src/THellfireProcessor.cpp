@@ -68,29 +68,30 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		case UART_DIVISOR:	return 0;
 		
 		//dmni read-only space
-		case DMNI_SEND_ACTIVE: 
-			output_debug << "mem_read from DMNI_SEND_ACTIVE" << std::flush;
-			return _dmni->GetSendActive();
-		case DMNI_RECEIVE_ACTIVE: 
-			output_debug << "mem_read from DMNI_RECEIVE_ACTIVE" << std::flush;
-			return _dmni->GetReceiveActive();		
+		case DMNI_SEND_ACTIVE: return _dmni->GetSendActive();
+		case DMNI_RECEIVE_ACTIVE: return _dmni->GetReceiveActive();		
 	}
 	
 	#ifndef NOGUARDS
 	if(address < SRAM_BASE){
 		dumpregs(s);
-		throw std::runtime_error(this->GetName() + ": unable to read from unmapped memory memory space (lower than sram_base) " + std::to_string(address) + ".");
+		throw std::runtime_error(this->GetName() 
+			+ ": unable to read from unmapped memory memory space"
+			+ " (lower than sram_base) " + std::to_string(address) + ".");
 	}
 	if(address > SRAM_BASE + MEM_SIZE){
 		dumpregs(s);
-		throw std::runtime_error(this->GetName() + ": unable to read from unmapped memory memory space (greater than sram_base + mem_size) " + std::to_string(address) + ".");
+		throw std::runtime_error(this->GetName() 
+			+ ": unable to read from unmapped memory memory space" 
+			+ " (greater than sram_base + mem_size) " + std::to_string(address) + ".");
 	}
 	#endif	
 	
 	switch(size){
 		case 4:
 			if(address & 3){
-				std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" 
+					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
 				s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
@@ -98,7 +99,8 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			break;
 		case 2:
 			if(address & 1){
-				std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" 
+					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
 				int16_t value;
@@ -153,12 +155,11 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			return;
 
 		//dmni write-only space
-		case DMNI_SIZE: s->dmni_size = value; output_debug << "mem_write to DMNI_SIZE" << std::flush; return;
-		case DMNI_OP: s->dmni_op = value; output_debug << "mem_write to DMNI_OP" << std::flush; return;
-		case DMNI_ADDRESS: 	s->dmni_addr = value; output_debug << "mem_write to DMNI_ADDRESS" << std::flush; return;
+		case DMNI_SIZE: s->dmni_size = value; return;
+		case DMNI_OP: s->dmni_op = value; return;
+		case DMNI_ADDRESS: 	s->dmni_addr = value; return;
 		
-		case DMNI_START:{ 
-			output_debug << "mem_write to DMNI_START" << std::flush;
+		case DMNI_START:{
 			switch(s->dmni_op){
 				case DMNI_WRITE:
 					_dmni->CopyTo(s->dmni_addr, s->dmni_size);
@@ -172,11 +173,9 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			
 		//dmni read-only space
 		case DMNI_SEND_ACTIVE: 
-			output_debug << "mem_write to DMNI_START" << std::flush;
 			throw std::runtime_error(this->GetName() + ": unable to write to write-protected address (DMNI_SEND_ACTIVE)");
 			return;
 		case DMNI_RECEIVE_ACTIVE: 
-			output_debug << "mem_write to DMNI_START" << std::flush;
 			throw std::runtime_error(this->GetName() + ": unable to write to write-protected address (DMNI_RECEIVE_ACTIVE)");
 			return;
 	}
@@ -404,8 +403,8 @@ THellfireProcessor::THellfireProcessor(
 	_dmni = dmni;
 	_disabled = false;
 	
-	output_debug.open("logs/" + this->GetName() + "_debug.log");
-	output_uart.open("logs/" + this->GetName() + "_uart.log");
+	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
+	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
 }
 
 //TODO: clear allocated memory if any
