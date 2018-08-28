@@ -257,7 +257,7 @@ void TDmni::CycleReceive(){
  * @param size Total length o data (size of FlitType) */
 void TDmni::CopyFrom(uint32_t addr, uint32_t size){
 
-	std::cout << "CopyFrom addr " << addr << " size " << size << std::endl;
+	std::cout << "CopyFrom addr " << addr << " size " << size << std::endl << std::flush;
 
 	_mma_addr = addr;
 	_mma_len  = size;
@@ -270,6 +270,9 @@ void TDmni::CopyFrom(uint32_t addr, uint32_t size){
  * @param addr Address to start the writing.
  * @param size Size of data to be written.*/
 void TDmni::CopyTo(uint32_t addr, uint32_t size){
+
+	std::cout << "CopyTo addr " << addr << " size " << size << std::endl << std::flush;
+	
 	_mma_addr = addr;
 	_mma_len  = size;
 	_mma_op   = DMNI_WRITE;
