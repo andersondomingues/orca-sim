@@ -24,7 +24,7 @@
 #include <cstdlib>
 
 TDmni::TDmni(std::string name) : TimedModel(name){
-    _ob  = new UBuffer<FlitType>(name + ": ob");
+    _ib  = new UBuffer<FlitType>(name + ": ib");
 	_mem = nullptr;
 }
 
@@ -35,7 +35,7 @@ UBuffer<FlitType>* TDmni::GetInputBuffer(){ return _ib; }
 //setters
 void TDmni::SetIntr(bool* b){ _intr = b;}
 void TDmni::SetMemoryModel(UMemory* m){ _mem = m; }
-void TDmni::SetInputBuffer(UBuffer<FlitType>* b){ _ib = b; }
+void TDmni::SetOutputBuffer(UBuffer<FlitType>* b){ _ob = b; }
 
 /**
  * @brief reset state
@@ -158,8 +158,6 @@ void TDmni::CycleSend(){
            
 			_mma_op = DMNI_NONE;
             if(_arb_state == ArbiterState::SEND){
-
-                std::cout << "address: 0x" << std::hex << _send_addr << std::endl << std::flush;
 				
                 //DMNI operates over FlitType (curretly uint16_t),
                 //but memory operates over MemoryType (curently uint8_t).
@@ -171,7 +169,6 @@ void TDmni::CycleSend(){
                 //[x][y][length] [x][y][s][p] [------][------] [------]...
                 
                 
-                //[][][][][][][][] 32
                 //[][][][] 16 << flit
                 //[][] 8 << mem word
                 FlitType flit;
@@ -216,6 +213,9 @@ void TDmni::CycleReceive(){
                 _recv_addr = _mma_addr;
                 _recv_len  = _mma_len;                
                 _recv_state = RecvState::COPY_TO_MEM;
+				
+				std::cout << "DMNI: recv addr = 0x" << std::hex << _mma_addr << std::endl;
+					
             }
             break;
         }
@@ -245,7 +245,7 @@ void TDmni::CycleReceive(){
             _recv_state = RecvState::WAIT;
             break;
         }
-    }        
+    }
 }
 
 
@@ -257,7 +257,8 @@ void TDmni::CycleReceive(){
  * @param size Total length o data (size of FlitType) */
 void TDmni::CopyFrom(uint32_t addr, uint32_t size){
 
-	std::cout << "CopyFrom addr " << addr << " size " << size << std::endl << std::flush;
+    std::cout << "DMNI: from=0x" << std::hex << addr 
+    	<< " size=" << size << std::endl << std::flush;
 
 	_mma_addr = addr;
 	_mma_len  = size;
@@ -271,7 +272,8 @@ void TDmni::CopyFrom(uint32_t addr, uint32_t size){
  * @param size Size of data to be written.*/
 void TDmni::CopyTo(uint32_t addr, uint32_t size){
 
-	std::cout << "CopyTo addr " << addr << " size " << size << std::endl << std::flush;
+    std::cout << "DMNI: to=0x" << std::hex << addr 
+    	<< " size=" << size << std::endl << std::flush;
 	
 	_mma_addr = addr;
 	_mma_len  = size;

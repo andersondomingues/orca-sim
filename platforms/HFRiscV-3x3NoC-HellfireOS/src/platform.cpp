@@ -34,7 +34,7 @@
 #define NOC_H_SIZE 3
 #define NOC_W_SIZE 3
 
-#define MEM_SIZE  0x00100400
+#define MEM_SIZE  0x00200000
 #define SRAM_BASE 0x40000000
 
 //function prototypes d
@@ -76,15 +76,15 @@ void MakePes(Simulator* sptr){
 	//connect router to dmnis
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			routers[i][j]->SetInputBuffer(dmnis[i][j]->GetOutputBuffer(), LOCAL);
-			dmnis[i][j]->SetInputBuffer(routers[i][j]->GetOutputBuffer(LOCAL));
+			routers[i][j]->SetOutputBuffer(dmnis[i][j]->GetOutputBuffer(), LOCAL);
+			dmnis[i][j]->SetOutputBuffer(routers[i][j]->GetOutputBuffer(LOCAL));
 		}
 	}
 	
 	//bind routers to the left 
     for(int i = 1; i < NOC_W_SIZE; i++)
         for(int j = 0; j < NOC_H_SIZE; j++)
-            routers[i][j]->SetInputBuffer(
+            routers[i][j]->SetOutputBuffer(
                 routers[i -1][j]->GetOutputBuffer(EAST),
                 WEST
             );
@@ -92,7 +92,7 @@ void MakePes(Simulator* sptr){
     //bind routers to the right
     for(int i = 0; i < NOC_W_SIZE-1; i++)
         for(int j = 0; j < NOC_H_SIZE; j++)
-            routers[i][j]->SetInputBuffer(
+            routers[i][j]->SetOutputBuffer(
                 routers[i +1][j]->GetOutputBuffer(WEST),
                 EAST
             );
@@ -100,7 +100,7 @@ void MakePes(Simulator* sptr){
     //bind routers to the top
     for(int i = 0; i < NOC_W_SIZE; i++)
         for(int j = 1; j < NOC_H_SIZE; j++)
-            routers[i][j]->SetInputBuffer(
+            routers[i][j]->SetOutputBuffer(
                 routers[i][j-1]->GetOutputBuffer(NORTH), 
                 SOUTH
             );
@@ -108,7 +108,7 @@ void MakePes(Simulator* sptr){
     //bind routers to the bottom
     for(int i = 0; i < NOC_W_SIZE; i++)
         for(int j = 0; j < NOC_H_SIZE -1; j++)
-            routers[i][j]->SetInputBuffer(
+            routers[i][j]->SetOutputBuffer(
                 routers[i][j+1]->GetOutputBuffer(SOUTH), 
                 NORTH
             );	
@@ -168,11 +168,15 @@ int main(int argc, char** argv){
 		}
 	}
 
-
-	//keep simulating until something happen
-	while(1){
-		s->Run(CYCLES_TO_SIM);
-		std::cout << "Simulation: " << CYCLES_TO_SIM << " cycles has been passed since last message." << std::endl;
+	try{
+		//keep simulating until something happen
+		while(1){
+			s->Run(CYCLES_TO_SIM);
+			std::cout << "Simulation: " << CYCLES_TO_SIM << " cycles has been passed since last message." << std::endl;
+		}
+	}catch(std::runtime_error& e){
+		std::cout << e.what() << std::endl;
 	}
-	std::cout << std::flush; 	
+	
+	std::cout << std::flush;
 }

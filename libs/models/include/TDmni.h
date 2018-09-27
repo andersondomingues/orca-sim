@@ -44,14 +44,13 @@ typedef uint16_t FlitType;
 
 //memory-mapped "registers"
 
-
 #define DMNI_SIZE 	        0xf0000100
-#define DMNI_OP   	        0xf0000101
-#define DMNI_ADDRESS        0xf0000110
-#define DMNI_START 	        0xf0000111
+#define DMNI_OP   	        0xf0000104
+#define DMNI_ADDRESS        0xf0000108
+#define DMNI_START 	        0xf000010C
 
-#define DMNI_SEND_ACTIVE    0xf0001000
-#define DMNI_RECEIVE_ACTIVE 0xf0001001
+#define DMNI_SEND_ACTIVE    0xf0000110
+#define DMNI_RECEIVE_ACTIVE 0xf0000114
 
 #define DMNI_WRITE 2
 #define DMNI_READ  1
@@ -111,7 +110,7 @@ public:
         UBuffer<FlitType>* GetOutputBuffer();
         UBuffer<FlitType>* GetInputBuffer();
         
-		void SetInputBuffer(UBuffer<FlitType>*);
+		void SetOutputBuffer(UBuffer<FlitType>*);
 		void SetIntr(bool* b);
 		
 		uint8_t GetSendActive();

@@ -69,20 +69,18 @@ private:
         //input buffers
         UBuffer<FlitType>* _ib[5];        
 public: 
-        /**
-         * @brief Get a pointer to one of the output buffers.
-         * @param p The port to where the pointer will be pointing.
-         * @return The pointer to the respective buffer. */
+		
         UBuffer<FlitType>* GetOutputBuffer(uint32_t p);
         UBuffer<FlitType>* GetInputBuffer(uint32_t p);
-        void SetInputBuffer(UBuffer<FlitType>* b, uint32_t port);
+        
+        void SetOutputBuffer(UBuffer<FlitType>* b, uint32_t port);
         
 		/** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */
 		unsigned long long Run();
 		
         /** return this **/
-		uint32_t GetRoute(uint32_t flit);
+		uint32_t GetRoute(FlitType flit);
         
         /** Ctor. **/
 		TRouter(string name, uint32_t x_pos, uint32_t y_pos);

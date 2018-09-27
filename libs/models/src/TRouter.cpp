@@ -34,9 +34,9 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
 	_is_first_flit = false; //starts in roundrobin mode, not flit to be routed
     
     for(int i = 0; i < 5; i++){
-        std::string bname = "(" + std::to_string(_x) + "," + std::to_string(_y) + ").OUT" + std::to_string(i);
-        _ob[i] = new UBuffer<FlitType>(bname);
-        _ib[i] = nullptr;
+        std::string bname = "(" + std::to_string(_x) + "," + std::to_string(_y) + ").IN" + std::to_string(i);
+        _ob[i] = nullptr;
+        _ib[i] = new UBuffer<FlitType>(bname);
     }
     
     this->Reset();
@@ -74,6 +74,9 @@ unsigned long long TRouter::Run(){
                     _state = RouterState::WORMHOLE;
                     _source_port = _round_robin;
                     _target_port = this->GetRoute(tb->top()); 
+                    
+                    std::cout << "[" << _target_port << "]" << endl;
+                    
                     _is_first_flit = true;
 					
                     //alternativelly:
@@ -100,8 +103,6 @@ unsigned long long TRouter::Run(){
             UBuffer<FlitType>* ob = _ob[_target_port];
             UBuffer<FlitType>* ib = _ib[_source_port];
             
-            std::cout << "sent from (" << _x << "," << _y << ") at (" << _target_port << ")"<< std::endl;
-            
             ob->push(ib->top());
             ib->pop();
             
@@ -112,8 +113,6 @@ unsigned long long TRouter::Run(){
 
             break;
         }
-        
-            
     }
 	
 	//First flit takes 4 cycles to be sent due the time consumed 
@@ -127,10 +126,10 @@ unsigned long long TRouter::Run(){
  * @brief Calculate the port to route a given flit
  * @param flit to be routed
  * @return the port to where te packet must go*/
-uint32_t TRouter::GetRoute(uint32_t flit){
+uint32_t TRouter::GetRoute(FlitType flit){
     
-    uint32_t tx = (flit & 0xFF000000) >> 24;
-    uint32_t ty = (flit & 0x00FF0000) >> 16;
+    FlitType tx = (flit & 0xFF00) >> 8;
+    FlitType ty = (flit & 0x00FF);
 
     //if X=0, then route "vertically" (Y)
     if(_x == tx){
@@ -169,6 +168,6 @@ UBuffer<FlitType>* TRouter::GetInputBuffer(uint32_t r){
     return _ib[r];
 }
 
-void TRouter::SetInputBuffer(UBuffer<FlitType>* b, uint32_t port){
-    _ib[port] = b;
+void TRouter::SetOutputBuffer(UBuffer<FlitType>* b, uint32_t port){
+    _ob[port] = b;
 }

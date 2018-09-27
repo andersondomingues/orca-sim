@@ -28,7 +28,8 @@
 
 #define SRAM_BASE         	0x40000000
 //#define MEM_SIZE			0x00100000
-#define MEM_SIZE			0x00100400
+//#define MEM_SIZE			0x00100400
+#define MEM_SIZE			0x00200000
 
 #define EXIT_TRAP			0xe0000000
 #define IRQ_VECTOR			0xf0000000
@@ -60,7 +61,7 @@ typedef struct {
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
 
-	uint8_t  dmni_op;
+	uint32_t dmni_op;
 	uint32_t dmni_addr;
 	uint32_t dmni_size;	
 	

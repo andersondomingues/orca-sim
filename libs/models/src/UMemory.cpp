@@ -20,6 +20,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <string>
+#include <sstream>
 #include <inttypes.h>
 #include <UMemory.h>
 
@@ -41,11 +42,20 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
 	#ifndef NOGUARDS
-	if(addr < _sram_base)
-		throw std::runtime_error(this->GetName() + ": unable to write to addr (" + std::to_string(addr) + ") lower than sram base .");
+	if(addr < _sram_base){
+		stringstream s;
+		s << this->GetName() << ": unable to write to addr (0x" << std::hex
+			<< addr << ") lower than sram base.";
+	
+		throw std::runtime_error(s.str());
+	}
 
-	if(addr > _sram_base + _length)
-		throw std::runtime_error(this->GetName() + ": unable to write to addr (" + std::to_string(addr) + ") higher than sram base + length.");
+	if(addr > _sram_base + _length){
+		stringstream s;
+		s << this->GetName() << ": unable to write to addr (0x" << std::hex
+			<< addr << ") higher than sram base + mem_size.";
+		throw std::runtime_error(s.str());
+	}
 	#endif
 
 
@@ -59,11 +69,19 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	
 	#ifndef NOGUARDS
-	if(addr < _sram_base)
-		throw std::runtime_error(this->GetName() + ": unable to read from addr (" + std::to_string(addr) + ") lower than sram base .");
+	if(addr < _sram_base){
+		stringstream s;
+		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
+			<< addr << ") lower than sram base.";
+		throw std::runtime_error(s.str());
+	}
 
-	if(addr > _sram_base + _length)
-		throw std::runtime_error(this->GetName() + ": unable to read from addr (" + std::to_string(addr) + ") higher than sram base + length.");
+	if(addr > _sram_base + _length){
+		stringstream s;
+		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
+			<< addr << ") higher than sram base + mem_size.";
+		throw std::runtime_error(s.str());
+	}
 	#endif
 	
 	//same performance as memcpy but library independent
