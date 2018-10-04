@@ -27,8 +27,10 @@
 
 //processes
 #include <THellfireProcessor.h>
-#include <TRouter.h>
-#include <TDmni.h>
+#include <TRouter.h>  //hermes router
+#include <TNetif.h>   //hermes ni
+//#include <TDma2.h>    //hermes dma
+//#include <TEth.h>    //ethernet module
 
 #define CYCLES_TO_SIM 10000000
 #define NOC_H_SIZE 3
@@ -42,7 +44,7 @@ void printBuffers();
 
 //objects to be simulated
 TRouter* routers[NOC_W_SIZE][NOC_H_SIZE];
-TDmni* dmnis[NOC_W_SIZE][NOC_H_SIZE];
+TNetif* netifs[NOC_W_SIZE][NOC_H_SIZE];
 THellfireProcessor* cpus[NOC_W_SIZE][NOC_H_SIZE];
 UMemory* mems[NOC_W_SIZE][NOC_H_SIZE];
 
@@ -60,24 +62,25 @@ void MakePes(Simulator* sptr){
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
 			mems[i][j] = new UMemory("MEM_" + std::to_string(i) + "_" + std::to_string(j), MEM_SIZE, SRAM_BASE);
-			dmnis[i][j] = new TDmni("DMNI_" + std::to_string(i) + "_" + std::to_string(j));
-			cpus[i][j] = new THellfireProcessor("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j], dmnis[i][j], MEM_SIZE, SRAM_BASE);
+			netifs[i][j] = new TNetif("NETIF_" + std::to_string(i) + "_" + std::to_string(j));
+			cpus[i][j] = new THellfireProcessor("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j], MEM_SIZE, SRAM_BASE);
 			routers[i][j] = new TRouter("ROUTER_" + std::to_string(i) + "_" + std::to_string(j), i, j);
 		}
 	}	
 	
 	//bind memory to dmni
-	for(int i = 0; i < NOC_W_SIZE; i++){
+	//TODO: must bind memory to CPU and DMNI
+	/*for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			dmnis[i][j]->SetMemoryModel(mems[i][j]);
+			netifs[i][j]->SetMemoryModel(mems[i][j]);
 		}
-	}
+	}*/
 	
-	//connect router to dmnis
+	//connect router to netifs
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			routers[i][j]->SetOutputBuffer(dmnis[i][j]->GetOutputBuffer(), LOCAL);
-			dmnis[i][j]->SetOutputBuffer(routers[i][j]->GetOutputBuffer(LOCAL));
+			routers[i][j]->SetOutputBuffer(netifs[i][j]->GetInputBuffer(), LOCAL);
+			netifs[i][j]->SetOutputBuffer(routers[i][j]->GetInputBuffer(LOCAL));
 		}
 	}
 	
@@ -142,14 +145,14 @@ int main(int argc, char** argv){
 		for(int j = 0; j < NOC_H_SIZE; j++){
 			s->Schedule(Event(1, cpus[i][j]));
 			s->Schedule(Event(1, routers[i][j]));
-			s->Schedule(Event(1, dmnis[i][j]));
+			s->Schedule(Event(1, netifs[i][j]));
 		}
 	}
 
 	//reset everything
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			dmnis[i][j]->Reset();
+			netifs[i][j]->Reset();
 			cpus[i][j]->Reset();
 			routers[i][j]->Reset();
 		}
@@ -163,7 +166,7 @@ int main(int argc, char** argv){
 	//print all object names
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
-			string pe_name = cpus[i][j]->GetName() + " | " + dmnis[i][j]->GetName() + " | " + routers[i][j]->GetName();
+			string pe_name = cpus[i][j]->GetName() + " | " + netifs[i][j]->GetName() + " | " + routers[i][j]->GetName();
 			std::cout << pe_name << std::endl;
 		}
 	}
