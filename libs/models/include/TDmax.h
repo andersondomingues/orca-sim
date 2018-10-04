@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __TNETIF_H
-#define __TNETIF_H
+#ifndef __TDMAX_H
+#define __TDMAX_H
 
 //std API
 #include <iostream>
@@ -42,17 +42,19 @@ enum class NISendState{ IDLE, SETUP, SEND, DONE };
  * @date 10/03/18
  * @file TNetif.h
  * @brief This class models the behaviour of a network
- * interface based on the one from HermesSRC platform
+ * interface based on the one from HermesSRC platform but
+ * with the addition of support for multiple ports
  */
 class TNetif: public TimedModel{
 
 private:
+		//port 1 (network interface)		
+        UBuffer<FlitType>* _ob1;  //output buffer (router)
+        UBuffer<FlitType>* _ib1;  //input buffer  (router)
 		
-        UBuffer<FlitType>* _or;  //output buffer (router)
-        UBuffer<FlitType>* _ir;  //input buffer  (router)
-		
-		UBuffer<FlitType>* _od;  //output buffer (dma)
-		UBuffer<FlitType>* _id;  //input buffer  (dma)
+		//port 2 (ethernet interface)
+		UBuffer<FlitType>* _ob2;  //output buffer (dma)
+		UBuffer<FlitType>* _ob2;  //input buffer  (dma)
 		
 		//internal state
 		NIRecvState _recv_state;
@@ -100,4 +102,4 @@ public:
 };
 
 
-#endif /* TNETIF_H */
+#endif /* TDMAX_H */

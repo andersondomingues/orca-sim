@@ -22,13 +22,35 @@
 #-------------------------------------------------------------------------*/
 
 #include <cstdlib>
-#include <TRouter.h>
+#include <TNetif.h>
 
 typedef uint16_t FlitType;
 
 int main(int argc, char** argv){
 
+	//module to be tested
+	TNetif* netif = new TNetif();
 	
-
-
+	//input buffer of the router
+	Buffer<FlitType>* ob = new Buffer<FlitType>();
+	
+	//bind buffer to the dmni
+	netif->SetOutputBuffer(ob);
+	
+	//test sending by generating 4 packets into input inputbuffer that 
+	//should ba attached the the dma: [0x01][0x02][0x03][0x04]
+	for(int i = 0; i < 4; i++)
+		netif->GetInputBuffer()->push(i);
+		
+	//configure ni to send
+	netif->SetIntrSend(new Comm<uint8_t>("intr_send", 0));
+	netif->GetIntrSend()->Write(1);
+	
+	//simulate for 1000 cycles
+	Simulator* s = new Simulator();
+	s->Schedule(Event(1, netif));
+	s->Run(1000);
+	
+	//print output buffer
+		
 }

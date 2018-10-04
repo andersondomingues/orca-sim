@@ -1,8 +1,8 @@
 /** 
  * This file is part of project URSA. More information on the project
- * can be found at 
- *
- * URSA's repository at GitHub: http://https://github.com/andersondomingues/ursa
+ * can be found at URSA's repository at GitHub
+ * 
+ * http://https://github.com/andersondomingues/ursa
  *
  * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
  *
