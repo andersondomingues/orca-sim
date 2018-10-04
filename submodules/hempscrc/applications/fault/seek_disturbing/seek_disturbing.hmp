@@ -1,0 +1,70 @@
+[project name]
+seek_disturbing
+[page size]
+16
+[memory size]
+64
+[processor description]
+iss
+[dimensions]
+6
+6
+[processors core]
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+plasma
+[master processor]
+1
+1
+[application]
+disturbing
+0 ms
+[application directory]
+applications/disturbing
+[allocated tasks]
+disturbingtaskA_0.c
+0
+5
+100
+16384
+disturbingtaskB_0.c
+5
+0
+100
+16384
+[not allocated tasks]
+[end application]
+[end]

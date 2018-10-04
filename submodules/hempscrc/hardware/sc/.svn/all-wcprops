@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/sc
+END
+logfilegen.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/sc/logfilegen.h
+END
+hemps.h
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/sc/hemps.h
+END
+test_bench.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/sc/test_bench.h
+END
+logfilegen.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/sc/logfilegen.cpp
+END
+hemps.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/sc/hemps.cpp
+END
+test_bench.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/sc/test_bench.cpp
+END

@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/std
+END
+std_Pkg.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/std/std_Pkg.vhd
+END
+dsram.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/std/dsram.vhd
+END

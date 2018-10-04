@@ -23,8 +23,6 @@
 
 //models libs
 #include <UMemory.h>
-#include <TDmni.h>
-
 
 #define SRAM_BASE         	0x40000000
 //#define MEM_SIZE			0x00100000
@@ -60,10 +58,6 @@ typedef struct {
 	
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
-
-	uint32_t dmni_op;
-	uint32_t dmni_addr;
-	uint32_t dmni_size;	
 	
 } risc_v_state;
 
@@ -74,9 +68,6 @@ private:
 	//this flag to remove the cpu from simulation
 	//scheduling
 	bool _disabled; 
-	
-	//dmni
-	TDmni* _dmni;
 
 	//context
 	risc_v_state context;
@@ -93,7 +84,7 @@ public:
 	int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
 	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
-	THellfireProcessor(string name, UMemory* mptr, TDmni* dmni, uint32_t size, uint32_t base);
+	THellfireProcessor(string name, UMemory* mptr, uint32_t size, uint32_t base);
 	unsigned long long Run();
 	
 	ofstream output_debug, output_uart;

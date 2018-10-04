@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/dma/rtl
+END
+dma_master.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/dma/rtl/dma_master.vhd
+END
+dma.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/dma/rtl/dma.vhd
+END

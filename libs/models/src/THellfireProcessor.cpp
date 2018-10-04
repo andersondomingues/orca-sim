@@ -66,10 +66,6 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		case COMPARE2:		return s->compare2;
 		case UART_READ:		return getchar();
 		case UART_DIVISOR:	return 0;
-		
-		//dmni read-only space
-		case DMNI_SEND_ACTIVE: return _dmni->GetSendActive();
-		case DMNI_RECEIVE_ACTIVE: return _dmni->GetReceiveActive();		
 	}
 	
 	#ifndef NOGUARDS
@@ -152,31 +148,6 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			_disabled = true;
 			output_debug.close();
 			output_uart.close();
-			return;
-
-		//dmni write-only space
-		case DMNI_SIZE: s->dmni_size = value; return;
-		case DMNI_OP: s->dmni_op = value; return;
-		case DMNI_ADDRESS: 	s->dmni_addr = value; return;
-		
-		case DMNI_START:{
-			switch(s->dmni_op){
-				case DMNI_WRITE:
-					_dmni->CopyTo(s->dmni_addr, s->dmni_size);
-					break;
-				case DMNI_READ:
-					_dmni->CopyFrom(s->dmni_addr, s->dmni_size);
-					break;
-			}
-			return;
-		}	
-			
-		//dmni read-only space
-		case DMNI_SEND_ACTIVE: 
-			throw std::runtime_error(this->GetName() + ": unable to write to write-protected address (DMNI_SEND_ACTIVE)");
-			return;
-		case DMNI_RECEIVE_ACTIVE: 
-			throw std::runtime_error(this->GetName() + ": unable to write to write-protected address (DMNI_RECEIVE_ACTIVE)");
 			return;
 	}
 	
@@ -374,9 +345,7 @@ risc_v_state THellfireProcessor::GetState(){
 }
 
 THellfireProcessor::THellfireProcessor(
-	string name, 
-	UMemory* mptr, TDmni* dmni, 
-	uint32_t size, uint32_t base) : TimedModel(name) {
+	string name, UMemory* mptr, uint32_t size, uint32_t base) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
@@ -400,7 +369,6 @@ THellfireProcessor::THellfireProcessor(
 	s->compare2 = 0;
 	s->cycles = 0;
 	
-	_dmni = dmni;
 	_disabled = false;
 	
 	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);

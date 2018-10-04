@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/master
+END
+premap.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/master/premap.h
+END
+kernel.c
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/master/kernel.c
+END
+boot.S
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/master/boot.S
+END
+kernel.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/master/kernel.h
+END

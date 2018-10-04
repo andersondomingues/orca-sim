@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/sc
+END
+plasma_master.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/sc/plasma_master.cpp
+END
+plasma_slave.h
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/sc/plasma_slave.h
+END
+plasma_master.h
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/sc/plasma_master.h
+END
+access_repository.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/sc/access_repository.cpp
+END
+mlite_cpu.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/sc/mlite_cpu.cpp
+END
+access_repository.h
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/sc/access_repository.h
+END
+mlite_cpu.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/sc/mlite_cpu.h
+END
+plasma_slave.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/sc/plasma_slave.cpp
+END

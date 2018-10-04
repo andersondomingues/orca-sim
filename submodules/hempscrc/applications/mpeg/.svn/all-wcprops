@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/applications/mpeg
+END
+print.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/applications/mpeg/print.c
+END
+ivlc.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/applications/mpeg/ivlc.c
+END
+start.c
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/applications/mpeg/start.c
+END
+iquant.c
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/applications/mpeg/iquant.c
+END
+idct.c
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/applications/mpeg/idct.c
+END

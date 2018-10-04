@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/core
+END
+gprf.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/core/gprf.vhd
+END
+mem.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/core/mem.vhd
+END
+execute.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/core/execute.vhd
+END
+decode.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/core/decode.vhd
+END
+core.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/core/core.vhd
+END
+core_Pkg.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/core/core_Pkg.vhd
+END
+fetch.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/mblite/rtl/core/fetch.vhd
+END

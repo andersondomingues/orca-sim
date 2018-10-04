@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/slave
+END
+interrupt.s
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/slave/interrupt.s
+END
+kernel.c
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/slave/kernel.c
+END
+boot.S
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/slave/boot.S
+END
+kernel.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/software/kernel/slave/kernel.h
+END

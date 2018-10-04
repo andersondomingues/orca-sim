@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl
+END
+mlite_pack.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/mlite_pack.vhd
+END
+reg_bank.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/reg_bank.vhd
+END
+UartFile.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/UartFile.vhd
+END
+plasma.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/plasma.vhd
+END
+access_repository.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/access_repository.vhd
+END
+control.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/control.vhd
+END
+pc_next.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/pc_next.vhd
+END
+alu.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/alu.vhd
+END
+mlite_cpu.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/mlite_cpu.vhd
+END
+mult.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/mult.vhd
+END
+bus_mux.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/bus_mux.vhd
+END
+mem_ctrl.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/mem_ctrl.vhd
+END
+shifter.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/shifter.vhd
+END
+pipeline.vhd
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/hemps_exe/!svn/ver/2069/branches/hempscrc/hempscrc2/hardware/plasma/rtl/pipeline.vhd
+END

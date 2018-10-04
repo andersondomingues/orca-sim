@@ -1,0 +1,55 @@
+#!/bin/bash
+
+if [ $# != 1 ]; then
+    echo "ERROR: missing arguments !"
+    echo "USAGE: ./run-all-date <fault file>"
+    echo "this script starts all *.hmp scenarios in this foldr on the grid with the fault file"
+    exit 1
+else
+    echo $1
+fi
+
+FAULT_FILE=$1
+SCENARIO_DIR=${PWD}
+
+# if [ -f ${HEMPS_PATH}/testcases/${FAULT_APP}.hmp ]; then
+#     echo "Checking hmp file at ${HEMPS_PATH}/testcases/${FAULT_APP}.hmp ... ok !"
+# else
+#     echo "ERROR: hmp file not found !"
+#     echo "USAGE: ./run-all <app.hmp>"
+#     exit 1
+# fi
+if [ -d "$HEMPS_PATH" ]; then
+    echo "Checking HEMPS path at ${HEMPS_PATH} ... ok !"
+else
+    echo "ERROR: HEMPS_PATH environment variable not found !"
+    exit 1
+fi
+if [ -d ${SCENARIO_DIR} ]; then
+    echo "Checking scenario dir at ${SCENARIO_DIR} ... ok !"
+else
+    echo "ERROR: scenario dir not found !"
+    echo "USAGE: ./run-all <app.hmp>"
+    exit 1
+fi
+
+# list the .hmp files and ignore the directories
+cd $SCENARIO_DIR
+SCENARIOS=`ls  -p *.hmp | cut -d'.' -f1`
+NSCENARIOS=`ls  -p *.hmp | wc -l`
+
+#echo $SCENARIOS
+echo Executing $FAULT_APP with ${NSCENARIOS} scenarios in `/bin/hostname` at `/bin/date` >> sent_jobs.txt
+echo ========================================================================== >> sent_jobs.txt
+echo Executing $FAULT_APP with ${NSCENARIOS} scenarios 
+echo Submitting jobs ...
+for i in $SCENARIOS; do
+	if [ ! -d "${i}-log" ]; then
+		echo "submitting ${i}"
+        scenarionbr=$(echo $i|cut -d '-' -f2)
+		echo "qsub -N ${scenarionbr}-${FAULT_FILE} -cwd ~/Documents/mazembe/ft_v1/scripts/fault/run_grid_app_fault.sh ${i} ${FAULT_FILE}"
+		# qsub -N ${scenarionbr}-${FAULT_FILE} -cwd ~/Documents/mazembe/ft_v1/scripts/fault/run_grid_app_fault.sh ${i} ${FAULT_FILE}
+		# sleep 1
+	fi
+done
+echo Jobs submitted !!!

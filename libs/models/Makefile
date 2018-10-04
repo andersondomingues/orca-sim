@@ -12,7 +12,7 @@ CPPFLAGS :=-I./include -I../simulator/include -c -g -O3 -Wall
 LIBNAME :=libmod.a
 
 
-TARGET_DEPS := $(OUTPUTDIR)/UBuffer.o $(OUTPUTDIR)/UMemory.o $(OUTPUTDIR)/TDmni.o $(OUTPUTDIR)/TRouter.o $(OUTPUTDIR)/THellfireProcessor.o
+TARGET_DEPS := $(OUTPUTDIR)/UComm.o $(OUTPUTDIR)/UBuffer.o $(OUTPUTDIR)/UMemory.o $(OUTPUTDIR)/TNetif.o $(OUTPUTDIR)/TRouter.o $(OUTPUTDIR)/THellfireProcessor.o
 
 
 all: $(OUTPUTDIR)/$(LIBNAME)

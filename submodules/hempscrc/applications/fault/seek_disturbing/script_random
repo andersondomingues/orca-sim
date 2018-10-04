@@ -1,0 +1,29 @@
+set fault [open "signals1" r]
+set signals [read $fault]
+set lines [split $signals "\n"]
+
+set number [llength $lines]
+incr number -1
+puts $number
+
+set repeat 5
+
+for { set i 0 } { $i < $repeat } { incr i } {
+
+	set getLine [expr {int(rand() * $number)}]
+	puts $getLine
+
+	set line [lindex $lines $getLine]
+	set tokens [split $line " "]
+	set number [llength $line] 
+	if { $number == 4 } { 
+		set force_cmd [format "force %s %s %s %s -cancel 1000 ms" [lindex $tokens 0] [lindex $tokens 1] [lindex $tokens 2] [lindex $tokens 3]]
+	}
+	if { $number ==6 } {
+		set force_cmd [format "force %s %s %s %s -cancel %s %s" [lindex $tokens 0] [lindex $tokens 1] [lindex $tokens 2] [lindex $tokens 3] [lindex $tokens 4] [lindex $tokens 5]]
+	}
+	puts $force_cmd
+	#eval $force_cmd
+}
+
+#run 1500 ns
