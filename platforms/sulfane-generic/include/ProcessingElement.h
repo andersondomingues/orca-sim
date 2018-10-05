@@ -44,17 +44,28 @@ class TProcessingElement{
 
 private:
 
-	//parts of the PE
 	THellfireProcessor* _cpu;
 	TDma*    _dma; 
-	UMemory*  _mem0; //main memory
-	UMemory*  _mem1; //dma -> proc
-	UMemory*  _mem2; //proc -> dma
 	TRouter* _router; //hermes router
-		
+	
+	UMemory* _mem0; //main memory
+	UMemory* _mem1; //recv memory
+	UMemory* _mem2; //send memory
+	
+	UComm* _cpudma_ack, _cpudma_intr;
+	
 public: 
 
-		
+	TProcessingElement(uint32_t x, uint32_t y);
+	~TProcessingElement();
+	
+	//getters
+	TRouter* GetRouter();
+	TDma* GetDma();
+	THellfireProcessor* GetCpu();
+	UMemory* GetMem0();
+	UMemory* GetMem1();
+	UMemory* GetMem2();
 };
 
 
