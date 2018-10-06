@@ -23,7 +23,7 @@
 //std API
 #include <iostream>
 
-#include <TProcessingElement.h>
+#include <ProcessingElement.h>
 
 //model API
 #include <THellfireProcessor.h>
@@ -43,10 +43,10 @@ UComm* _cpudma_ack, _cpudma_intr;
 
 TProcessingElement::TProcessingElement(uint32_t x, uint32_t y){
 	
-	_name = "?";
+	_name = "pe-" + std:to_string(x) + "-" + std::to_string(y);
 	
 	//create PE hardware
-	_mem0   = new UMemory(); //main
+	_mem0   = new UMemory(_name + "mem0"); //main
 	_mem1   = new UMemory(); //read from noc 
 	_mem2   = new UMemory(); //write to noc
 	

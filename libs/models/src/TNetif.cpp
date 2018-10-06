@@ -29,39 +29,31 @@
 
 #include <TNetif.h>
 
-TNetif::TNetif(std::string name, uint32_t addr) : TimedModel(name) {
-	_ob = nullptr;
-	_ib = new UBuffer<FlitType>();
-	_intr = false;
-	_base_addr = addr;
+TNetif::TNetif(
+    std::string name,
+    UComm<bool>* ack, UComm<bool>* intr, UComm<bool>* start,
+    UMemory* mem1, UMemory* mem2) : TimedModel(name) {
+    
+    _mem1 = mem1;
+    _mem2 = mem2;
+    _comm_ack   = ack;
+    _comm_intr  = intr; 
+    _comm_start = start;
 }
-
-UBuffer<FlitType>* TNetif::GetOutputBuffer(){
-	return _ob;
-}
-
-UBuffer<FlitType>* TNetif::GetInputBuffer(){
-	return _ib;
-}
-        
-void TNetif::SetOutputBuffer(UBuffer<FlitType>* b){
-	_ob = b;
-}
-
 
 TNetif::~TNetif(){
-	delete(_ib);
+    //nothing to do
 }
 
 void TNetif::Reset(){
-	//_ib->clear();	
+    _recv_state = NetifSendState::WAIT;
+    _send_state = NetifRecvState::WAIT;
 }
 
 long long unsigned int TNetif::Run(){
-
-	this->recvProcess();
-	this->sendProcess();
-	return 1;
+    this->recvProcess();
+    this->sendProcess();
+    return 1; //takes only 1 cycle to change both states
 }
 
 void TNetif::SetBaseAddr(uint32_t addr){

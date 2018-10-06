@@ -42,7 +42,7 @@ $(HELLFIREOS_PATH)/code0.bin:
 	@make -C $(HELLFIREOS_PATH) images
 	cp $(HELLFIREOS_PATH)/*.bin ./bin
 
-$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCEDIR)/platform.cpp
+$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCEDIR)/Sulfane.cpp $(SOURCEDIR)/ProcessingElement.cpp
 	@echo "$'\e[036mBuilding target platform ($(PLATFORM_NAME))... \e[0m"
 	g++ $(SOURCEDIR)/ProcessingElement.cpp $(SOURCEDIR)/Sulfane.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe -Iinclude
 

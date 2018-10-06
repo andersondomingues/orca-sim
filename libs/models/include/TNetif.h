@@ -47,56 +47,44 @@ enum class NISendState{ IDLE, SETUP, SEND, DONE };
 class TNetif: public TimedModel{
 
 private:
+    //memories for reading and writing network packets
+    //by convetion, _mem0 should be used to address the
+    //main memory module. Received packets must be written
+    //to _mem1, while packets to be sent must be written
+    //to _mem2.
+    UMemory* _mem1; //packets to be received
+    UMemory* _mem2; //packets to be sent
+    
+    //this module can send and receive packets simultaneously.
+    //the following states reffer to the sender and receiver 
+    //processes.
+    NIRecvState _recv_state; //state of receiver module
+    NISendState _send_state; //state of sender module
 		
-        UBuffer<FlitType>* _or;  //output buffer (router)
-        UBuffer<FlitType>* _ir;  //input buffer  (router)
-		
-		UBuffer<FlitType>* _od;  //output buffer (dma)
-		UBuffer<FlitType>* _id;  //input buffer  (dma)
-		
-		//internal state
-		NIRecvState _recv_state;
-		NISendState _send_state;
-		
-		//recv proc vars
-		uint32_t _words_to_send; //to router
-		uint32_t _words_to_copy; //to memory
-		
-		uint32_t _next_addr;
-		
-		//dma configuration
-		UComm<uint8_t> dma_config;
-		UComm<uint8_t> dma_status; //status is "SNI, SETH, SCPU, OC"
-		
-	
-		bool _intr;
-public: 
+    //recv proc vars
+    uint32_t _words_to_send; //to router
+    uint32_t _words_to_recv; //to memory
 
-		/** buffers **/
-		
-		//buffer that outputs to the router
-        void SetOutputBuffer(UBuffer<FlitType>* b);
-		UBuffer<FlitType>* GetOutputBuffer();
-		
-		//buffer which comes from the dma
-		UBuffer<FlitType>* GetInputBuffer();
-		
-		
-		/** internal processes */
-		void sendProcess();
-		void recvProcess();
-		
-		void SetBaseAddr(uint32_t addr);
-				
-		/** others **/
-		unsigned long long Run();
-		void Reset();
+    //communication with CPU while receiveing
+    UComm<bool>* _cpu_intr; //up when packet arrive, down when ack
+    UComm<bool>* _cpu_ack;  //ack when cpu finishes copying to main memory
 
-        /** ctor. **/
-		TNetif(string name, uint32_t addr = 0);
-	
-		/** dtor. **/
-		~TNetif();
+    //communication with CPU while sending
+    UComm<bool>* _cpu_start;  //cpu set up to send, down by netif when finished
+
+public:	
+    
+    //internal processes
+    void sendProcess();
+    void recvProcess();
+			
+    //other 
+    unsigned long long Run();
+    void Reset();
+
+    //ctor./dtor.
+    TNetif(string name, UComm<bool>* ack, UComm<bool>* intr, UComm<bool>* start);
+    ~TNetif();
 };
 
 
