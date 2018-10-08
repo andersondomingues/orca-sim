@@ -27,7 +27,7 @@
 
 //model API
 #include <THellfireProcessor.h>
-#include <TDma.h>
+#include <TNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
 
@@ -44,15 +44,16 @@ class TProcessingElement{
 
 private:
 
-	THellfireProcessor* _cpu;
-	TDma*    _dma; 
+	THellfireProcessor* _cpu; //hfrisv-core
+	TNetif*  _netif;  //network interface 
 	TRouter* _router; //hermes router
 	
 	UMemory* _mem0; //main memory
 	UMemory* _mem1; //recv memory
 	UMemory* _mem2; //send memory
 	
-	UComm* _cpudma_ack, _cpudma_intr;
+	UComm* _cpudma_ack, _cpudma_intr;      //recv signals 
+	UComm* _cpudma_start, _cpudma_status;  //send signals
 	
 public: 
 
@@ -61,11 +62,13 @@ public:
 	
 	//getters
 	TRouter* GetRouter();
-	TDma* GetDma();
+	TNetif*  GetNetif();
 	THellfireProcessor* GetCpu();
 	UMemory* GetMem0();
 	UMemory* GetMem1();
 	UMemory* GetMem2();
+	
+	std::string GetName();
 };
 
 

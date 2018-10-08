@@ -19,34 +19,34 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
+#include <iostream>
+
+//simulation API
 #include <Event.h>
 #include <Simulator.h>
 
-//opaque
+//model API
 #include <UMemory.h>
-
-//processes
 #include <THellfireProcessor.h>
-#include <TRouter.h>  //hermes router
-#include <TNetif.h>   //hermes ni
-//#include <TDma2.h>    //hermes dma
-//#include <TEth.h>    //ethernet module
+#include <TRouter.h>
+#include <TNetif.h> 
+
+#include <ProcessingElement.h>
 
 #define CYCLES_TO_SIM 10000000
-#define NOC_H_SIZE 3
-#define NOC_W_SIZE 3
+#define NOC_H_SIZE 5
+#define NOC_W_SIZE 5
 
-#define MEM_SIZE  0x00200000
-#define SRAM_BASE 0x40000000
+//#define MEM_SIZE  0x00200000
+//#define SRAM_BASE 0x40000000
 
-//function prototypes d
-void printBuffers();
+#define MEM0_SIZE 0x00200000 /* main memory */
+#define MEM0_BASE 0x40000000
+#define MEM1_SIZE 0x00000100 /* recv memory */
+#define MEM1_BASE 0x80000000
+#define MEM2_SIZE 0x00000100 /* send memory */
+#define MEM2_BASE 0x81000000
 
-//objects to be simulated
-TRouter* routers[NOC_W_SIZE][NOC_H_SIZE];
-TNetif* netifs[NOC_W_SIZE][NOC_H_SIZE];
-THellfireProcessor* cpus[NOC_W_SIZE][NOC_H_SIZE];
-UMemory* mems[NOC_W_SIZE][NOC_H_SIZE];
 
 //instantiates a mesh of MxM routers
 //----------------------------------
@@ -56,123 +56,56 @@ UMemory* mems[NOC_W_SIZE][NOC_H_SIZE];
 // 
 //   (0,0)  (1,0)  (2,0)
 //----------------------------------
-void MakePes(Simulator* sptr){
-
-	//instantiate elements
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			mems[i][j] = new UMemory("MEM_" + std::to_string(i) + "_" + std::to_string(j), MEM_SIZE, SRAM_BASE);
-			netifs[i][j] = new TNetif("NETIF_" + std::to_string(i) + "_" + std::to_string(j));
-			cpus[i][j] = new THellfireProcessor("HF_" + std::to_string(i) + "_" + std::to_string(j), mems[i][j], MEM_SIZE, SRAM_BASE);
-			routers[i][j] = new TRouter("ROUTER_" + std::to_string(i) + "_" + std::to_string(j), i, j);
-		}
-	}	
-	
-	//bind memory to dmni
-	//TODO: must bind memory to CPU and DMNI
-	/*for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			netifs[i][j]->SetMemoryModel(mems[i][j]);
-		}
-	}*/
-	
-	//connect router to netifs
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			routers[i][j]->SetOutputBuffer(netifs[i][j]->GetInputBuffer(), LOCAL);
-			netifs[i][j]->SetOutputBuffer(routers[i][j]->GetInputBuffer(LOCAL));
-		}
-	}
-	
-	//bind routers to the left 
-    for(int i = 1; i < NOC_W_SIZE; i++)
-        for(int j = 0; j < NOC_H_SIZE; j++)
-            routers[i][j]->SetOutputBuffer(
-                routers[i -1][j]->GetOutputBuffer(EAST),
-                WEST
-            );
-
-    //bind routers to the right
-    for(int i = 0; i < NOC_W_SIZE-1; i++)
-        for(int j = 0; j < NOC_H_SIZE; j++)
-            routers[i][j]->SetOutputBuffer(
-                routers[i +1][j]->GetOutputBuffer(WEST),
-                EAST
-            );
-
-    //bind routers to the top
-    for(int i = 0; i < NOC_W_SIZE; i++)
-        for(int j = 1; j < NOC_H_SIZE; j++)
-            routers[i][j]->SetOutputBuffer(
-                routers[i][j-1]->GetOutputBuffer(NORTH), 
-                SOUTH
-            );
-    
-    //bind routers to the bottom
-    for(int i = 0; i < NOC_W_SIZE; i++)
-        for(int j = 0; j < NOC_H_SIZE -1; j++)
-            routers[i][j]->SetOutputBuffer(
-                routers[i][j+1]->GetOutputBuffer(SOUTH), 
-                NORTH
-            );	
-}
-
-void loadBins(std::string path){
-
-	int index = 0;
-	//load binaries into memories
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-
-			string code = path + "code" + std::to_string(index) + ".bin";
-			std::cout << "Loading '" << code << "' to '" << mems[i][j]->GetName() << "'" << std::endl;
-			mems[i][j]->LoadBin(code, SRAM_BASE, MEM_SIZE);
-			index++;
-		}
-	}
-}
-
 int main(int argc, char** argv){
 
-	//ptr to simulation
+	std::cout << "URSA is building Sulphane (" << NOC_W_SIZE << " by " << NOC_H_SIZE << ")" <, std:endl;
+	
+	//create a mesh of interconnected PE
+	ProcessingElement* pes[NOC_W_SIZE][NOC_H_SIZE];
+	
+	//populate PEs
+	for(int x = 0; x < NOC_W_SIZE; x++)
+		for(int y = 0; y < NOC_H_SIZE; y++)
+			pes[NOC_W_SIZE][NOC_H_SIZE] = new ProcessingElement(x, y);
+			
+	//connect PE to each other (left-to-right, right-to-left connections)	
+	for(int x = 0; x < NOC_W_SIZE - 1; x++)
+		for(int y = 0; y < NOC_H_SIZE; y++)
+			connect_routers(pes[x][y]->GetRouter(), EAST, pes[x+1][y]->GetRouter(), WEST);
+			
+	//connect PE to each other (bottom-to-top, top-to-bottom connections)
+	for(int x = 0; x < NOC_W_SIZE; x++)
+		for(int y = 0; y < NOC_H_SIZE - 1; y++)
+			connect_routers(pes[x][y]->GetRouter(), NORTH, pes[x][y+1]->GetRouter(), SOUTH);
+	
+	//instantiate simulation
 	Simulator* s = new Simulator();
-	
-	//instantiate hardware
-	MakePes(s);
 		
-	//schedule elements
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			s->Schedule(Event(1, cpus[i][j]));
-			s->Schedule(Event(1, routers[i][j]));
-			s->Schedule(Event(1, netifs[i][j]));
-		}
-	}
-
-	//reset everything
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			netifs[i][j]->Reset();
-			cpus[i][j]->Reset();
-			routers[i][j]->Reset();
+	//schedule hardware to be simulated
+	for(int x = 0; x < NOC_W_SIZE; x++){
+		for(int y = 0; y < NOC_H_SIZE; y++){
+			
+			s->Schedule(Event(1, pes[x][y]->GetCpu()));
+			s->Schedule(Event(1, pes[x][y]->GetRouter()));
+			s->Schedule(Event(1, pes[x][y]->GetNetif()));
+			
+			std::cout << pes[x][y]->ToString() << std::endl;		
 		}
 	}
 	
-	//load binaries
-	std::string x = std::string(argv[1]);
-	loadBins(x);
-	
-	std::cout << "Instantiated hardware: " << std::endl;
-	//print all object names
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			string pe_name = cpus[i][j]->GetName() + " | " + netifs[i][j]->GetName() + " | " + routers[i][j]->GetName();
-			std::cout << pe_name << std::endl;
+	//load binaries into main memories
+	int index = 0;
+	std::string code_file;
+	for(int x = 0; x < NOC_W_SIZE; x++){
+		for(int y = 0; y < NOC_H_SIZE; y++){
+				code_file = std::string(argv[1]) + "code" + std::to_string(index) + ".bin";
+				pes[x][y]->GetMem0()->LoadBin(code_file, MEM0_BASE, MEM0_SIZE);
 		}
 	}
-
+	
+	//keep simulating until something happen
 	try{
-		//keep simulating until something happen
+		
 		while(1){
 			s->Run(CYCLES_TO_SIM);
 			std::cout << "Simulation: " << CYCLES_TO_SIM << " cycles has been passed since last message." << std::endl;
