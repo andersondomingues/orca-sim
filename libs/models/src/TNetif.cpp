@@ -29,16 +29,14 @@
 
 #include <TNetif.h>
 
-TNetif::TNetif(
-    std::string name,
-    UComm<bool>* ack, UComm<bool>* intr, UComm<bool>* start,
-    UMemory* mem1, UMemory* mem2) : TimedModel(name) {
-    
+TNetif::TNetif(std::string name) : TimedModel(name) {
     _mem1 = mem1;
     _mem2 = mem2;
-    _comm_ack   = ack;
-    _comm_intr  = intr; 
-    _comm_start = start;
+    
+    _comm_ack = nullptr;
+    _comm_intr = nullptr;
+    _comm_start = nullptr;
+    _comm_status = nullptr;
 }
 
 TNetif::~TNetif(){
@@ -48,16 +46,17 @@ TNetif::~TNetif(){
 void TNetif::Reset(){
     _recv_state = NetifSendState::WAIT;
     _send_state = NetifRecvState::WAIT;
+    
+    if(_comm_ack != nullptr) _comm_ack->Write(false);
+    if(_comm_intr != nullptr) _comm_intr->Write(false);
+    if(_comm_start != nullptr) _comm_start->Write(false);
+    if(_comm_status != nullptr) _comm_status->Write(false);
 }
 
 long long unsigned int TNetif::Run(){
     this->recvProcess();
     this->sendProcess();
     return 1; //takes only 1 cycle to change both states
-}
-
-void TNetif::SetBaseAddr(uint32_t addr){
-	_base_addr = addr;	
 }
 
 void TNetif::recvProcess(){

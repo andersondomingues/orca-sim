@@ -60,30 +60,40 @@ private:
     //processes.
     NIRecvState _recv_state; //state of receiver module
     NISendState _send_state; //state of sender module
-		
+
     //recv proc vars
     uint32_t _words_to_send; //to router
     uint32_t _words_to_recv; //to memory
 
-    //communication with CPU while receiveing
-    UComm<bool>* _cpu_intr; //up when packet arrive, down when ack
-    UComm<bool>* _cpu_ack;  //ack when cpu finishes copying to main memory
+    //communication with CPU while receiving
+    UComm<bool>* _comm_intr; //up when packet arrive, down when ack
+    UComm<bool>* _comm_ack;  //ack when cpu finishes copying to main memory
 
     //communication with CPU while sending
-    UComm<bool>* _cpu_start;  //cpu set up to send, down by netif when finished
-
+    UComm<bool>* _comm_start;  //cpu set up to send, down by netif when finished
+    UComm<bool>* _comm_status;  //cpu set up to send, down by netif when finished
+    
+    //network router interface
+    UBuffer<FlitType>* _ib;
+    UBuffer<FlitType>* _ob;
+    
 public:	
+    
+    void SetCommAck(UComm<bool>* comm);
+    void SetCommStart(UComm<bool>* comm);
+    void SetCommStatus(UComm<bool>* comm);
+    void SetCommIntr(UComm<bool>* comm);
     
     //internal processes
     void sendProcess();
     void recvProcess();
-			
+
     //other 
     unsigned long long Run();
     void Reset();
 
     //ctor./dtor.
-    TNetif(string name, UComm<bool>* ack, UComm<bool>* intr, UComm<bool>* start);
+    TNetif(string name);
     ~TNetif();
 };
 
