@@ -41,14 +41,9 @@
 //#define SRAM_BASE 0x40000000
 
 
-//instantiates a mesh of MxM routers
-//----------------------------------
-//   (0,2)  (1,2)  (2,2)
-//   
-//   (0,1)  (1,1)  (2,1)
-// 
-//   (0,0)  (1,0)  (2,0)
-//----------------------------------
+//instantiates a mesh of MxN PE
+ProcessingElement* pes[NOC_W_SIZE][NOC_H_SIZE];
+
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
 	r2->SetOutputBuffer(r1->GetInputBuffer(p1), p2);
@@ -58,13 +53,10 @@ int main(int argc, char** argv){
 
 	std::cout << "URSA is building Sulphane (" << NOC_W_SIZE << " by " << NOC_H_SIZE << ")" << std::endl;
 	
-	//create a mesh of interconnected PE
-	ProcessingElement* pes[NOC_W_SIZE][NOC_H_SIZE];
-	
 	//populate PEs
 	for(int x = 0; x < NOC_W_SIZE; x++)
 		for(int y = 0; y < NOC_H_SIZE; y++)
-			pes[NOC_W_SIZE][NOC_H_SIZE] = new ProcessingElement(x, y);
+			pes[x][y] = new ProcessingElement(x, y);
 			
 	//connect PE to each other (left-to-right, right-to-left connections)	
 	for(int x = 0; x < NOC_W_SIZE - 1; x++)

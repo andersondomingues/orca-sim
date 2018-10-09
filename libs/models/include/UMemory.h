@@ -106,6 +106,9 @@ public:
     
 	unsigned long long Run();    
 	
+	
+	uint32_t GetBase();
+	
 };
 
 #endif

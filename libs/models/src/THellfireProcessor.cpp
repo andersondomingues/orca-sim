@@ -23,8 +23,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
  *---------------------------------------------------------------------------- */
-#include <THellfireProcessor.h>
 #include <cstdlib>
+#include <sstream>
+#include <THellfireProcessor.h>
+
 
 void THellfireProcessor::dumpregs(risc_v_state *s){
 	int32_t i;
@@ -70,16 +72,24 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	
 	#ifndef NOGUARDS
 	if(address < SRAM_BASE){
+		
 		dumpregs(s);
-		throw std::runtime_error(this->GetName() 
-			+ ": unable to read from unmapped memory memory space"
-			+ " (lower than sram_base) " + std::to_string(address) + ".");
+		
+		stringstream ss;
+		ss << this->GetName() << ": unable to read from unmapped memory space 0x"
+		   << std::hex << address << " (under memory_base)";
+		
+		throw std::runtime_error(ss.str());
 	}
 	if(address > SRAM_BASE + MEM_SIZE){
+		
 		dumpregs(s);
-		throw std::runtime_error(this->GetName() 
-			+ ": unable to read from unmapped memory memory space" 
-			+ " (greater than sram_base + mem_size) " + std::to_string(address) + ".");
+		
+		stringstream ss;
+		ss << this->GetName() << ": unable to read from unmapped memory space 0x" 
+		   << std::hex << address << " (over memory_base + memory_size)";
+			
+		throw std::runtime_error(ss.str());
 	}
 	#endif	
 	
@@ -145,7 +155,6 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 
 		case EXIT_TRAP:
 			std::cout << this->GetName() <<": exit trap triggered! (" << s->cycles << " cycles)" << std::endl;
-			_disabled = true;
 			output_debug.close();
 			output_uart.close();
 			return;
@@ -348,32 +357,36 @@ risc_v_state THellfireProcessor::GetState(){
  * @brief Configures main memory module.
  * @param m A pointer to a UMemory object*/
 void THellfireProcessor::SetMem0(UMemory* m){
-	_mem0 = m;
+	
+	s->pc = m->GetBase();
+	s->pc_next = s->pc + 4;
+
+	s->sram = m;
 }
 
 void THellfireProcessor::SetMem1(UMemory* m){
-	_mem1 = m
+	s->mem1 = m;
 }
 
-void THellfireProcessor::SetMem2(UMemory*){
-	_mem2 = m;
+void THellfireProcessor::SetMem2(UMemory* m){
+	s->mem2 = m;
 }
 
 //setters for comms
 void THellfireProcessor::SetCommAck(UComm<bool>* comm){
-		_comm_ack = comm;
+	s->comm_ack = comm;
 }
 
 void THellfireProcessor::SetCommIntr(UComm<bool>* comm){
-		_comm_intr = comm;
+	s->comm_intr = comm;
 }
 
 void THellfireProcessor::SetCommStart(UComm<bool>* comm){
-		_comm_start = comm;
+	s->comm_start = comm;
 }
 
 void THellfireProcessor::SetCommStatus(UComm<bool>* comm){
-		_comm_status = comm;
+	s->comm_status = comm;
 }
 
 
@@ -382,11 +395,6 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
 	
-	s->pc = base;
-	s->pc_next = s->pc + 4;
-
-	s->sram = mptr;
-
 	s->vector = 0;
 	s->cause = 0;
 	s->mask = 0;
@@ -400,9 +408,7 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 	s->compare = 0;
 	s->compare2 = 0;
 	s->cycles = 0;
-	
-	_disabled = false;
-	
+		
 	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
 	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
 }

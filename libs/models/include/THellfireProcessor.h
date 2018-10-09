@@ -56,9 +56,16 @@ typedef struct {
 	uint32_t pc, pc_next;
 
 	UMemory* sram;
+	UMemory* mem1;
+	UMemory* mem2;
 	
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
+	
+	UComm<bool>* comm_ack;
+	UComm<bool>* comm_intr;
+	UComm<bool>* comm_start;
+	UComm<bool>* comm_status;
 	
 } risc_v_state;
 

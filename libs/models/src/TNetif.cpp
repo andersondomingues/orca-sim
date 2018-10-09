@@ -47,8 +47,14 @@ TNetif::~TNetif(){
 }
 
 void TNetif::Reset(){
-    _recv_state = NetifSendState::WAIT;
-    _send_state = NetifRecvState::WAIT;
+    
+	
+	_recv_state = NetifRecvState::READY;
+	_flits_to_recv = 0;
+	_next_recv_addr = 0;
+	
+    _send_state = NetifSendState::READY;
+	_flits_to_send = 0;
     
     if(_comm_ack != nullptr) _comm_ack->Write(false);
     if(_comm_intr != nullptr) _comm_intr->Write(false);
@@ -62,18 +68,20 @@ void TNetif::SetOutputBuffer(UBuffer<FlitType>* ob){
 	_ob = ob;
 }
 
-UBuffer<FlitType>* GetInputBuffer(){
+UBuffer<FlitType>* TNetif::GetInputBuffer(){
 	return _ib;
 }
 
 
-void SetMem1(UMemory* m){
-	_mem1 = m;
-}
-void SetMem2(UMemory* m){
-	_mem2 = m;
-}
+//mems
+void TNetif::SetMem1(UMemory* m){ _mem1 = m; }
+void TNetif::SetMem2(UMemory* m){ _mem2 = m; }
 
+//comms
+void TNetif::SetCommAck(UComm<bool>* c){ _comm_ack = c; }
+void TNetif::SetCommIntr(UComm<bool>* c){ _comm_intr = c; }
+void TNetif::SetCommStart(UComm<bool>* c){ _comm_start = c; }
+void TNetif::SetCommStatus(UComm<bool>* c){ _comm_status = c; }
 
 long long unsigned int TNetif::Run(){
     this->recvProcess();
@@ -88,7 +96,7 @@ void TNetif::recvProcess(){
 		
 		//wait for data to arrive at input buffer. cannot
 		//receive while interrupt is up
-		case NetifRecvState::IDLE:
+		case NetifRecvState::READY:
 		
 			//buffer has data and interruption flag is not set
 			if(_ib->size() > 0 && _comm_intr == false){
@@ -98,8 +106,8 @@ void TNetif::recvProcess(){
 				
 				//writes length flit to the memory
 				_flits_to_recv = len_flit;
-				_mem1->Write(0, &len_flit, 2);
-				_next_addr = 2;
+				_mem1->Write(0, (int8_t*)&len_flit, 2);
+				_next_recv_addr = 2;
 				
 				//change state
 				_recv_state = NetifRecvState::DATA_IN;
@@ -116,8 +124,8 @@ void TNetif::recvProcess(){
 				FlitType next = _ib->top(); _ib->pop();
 				
 				//writes to memory
-				_mem->Write(_next_addr, (int8_t*)&next, 2);
-				_next_addr += 2;
+				_mem1->Write(_next_recv_addr, (int8_t*)&next, 2);
+				_next_recv_addr += 2;
 				_flits_to_recv--;
 			}else{
 				
@@ -129,14 +137,17 @@ void TNetif::recvProcess(){
 		case NetifRecvState::INTR_CPU:
 		
 			//interrupts CPU
-			_recv_intr->Write(1);
+			_comm_intr->Write(1);
 			_recv_state = NetifRecvState::WAIT;
 			
 		case NetifRecvState::WAIT:
 			
-			//wait until CPU finishes copying
-			if(!_recv_intr->Read())
-				_recv_state = NetifRecvState::IDLE;
+			//wait until CPU finishes copying. Then, disable both flags
+			if(_comm_ack->Read()){
+				_recv_state = NetifRecvState::READY;
+				_comm_intr->Write(false);
+				_comm_ack->Write(false);
+			}
 				
 		break;
 	}
@@ -145,38 +156,45 @@ void TNetif::recvProcess(){
 void TNetif::sendProcess(){	
 	
 	switch(_send_state){
-		case NISendState::IDLE:
-			if(_send_intr->Read() == 1){
-				_send_state = NISendState::SETUP;
+		
+		case NetifSendState::READY:
+			if(_comm_start->Read()){
+				_send_state = NetifSendState::SETUP;
+				_next_send_addr = 0;
 			}
 			break;
-		case NISendState::SETUP:
+		case NetifSendState::SETUP:
 		
 			//send header flit to router
-			_ob->push(_ib->top());
-			_ib->pop();
+			FlitType header;
+			_mem2->Read(0, (int8_t*)&header, 2);
+			_ob->push(header);
 			
-			//stores num of flits to send
-			_words_to_send = _ib->top();
-			_ob->push(_ib->top());
-			_ib->pop();
-			
-			_send_state = NISendState::SEND;
+			//get number of flits to send (and send it)
+			_mem2->Read(2, (int8_t*)&header, 2);
+			_ob->push(header);
+			_flits_to_send = header;
+
+			_send_state = NetifSendState::DATA_OUT;
 			break;
 		
 		//burst send next flits
-		case NISendState::SEND:
-			if(_words_to_send == 0){
-				_send_state = NISendState::DONE;
+		case NetifSendState::DATA_OUT:
+			
+			if(_flits_to_send == 0){
+				_send_state = NetifSendState::WAIT;
 			}else{
 				//send next
-				_ob->push(_ib->top());
-				_ib->pop();
+				FlitType data;
+				_mem2->Read(_next_send_addr, (int8_t*)&data, 2);
+				_ob->push(data);
+				_next_send_addr += 2;
+				_flits_to_send--;
 			}
 			break;
-		case NISendState::DONE:
-			_send_intr->Write(0); //down intr flag		
-			_send_state = NISendState::IDLE;
+		case NetifSendState::WAIT:
+			_comm_start->Write(0); //down start flag
+			_send_state = NetifSendState::READY;
 			break;
 	}
 }

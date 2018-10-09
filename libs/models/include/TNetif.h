@@ -33,8 +33,8 @@
 
 typedef uint16_t FlitType;
 
-enum class NetifRecvState{ IDLE, WRITE_DATA, RECV_TO_MEM, INTR_CPU};
-enum class NetifSendState{ IDLE, SET UP, SEND, DONE };
+enum class NetifRecvState{ READY, DATA_IN, INTR_CPU, WAIT};
+enum class NetifSendState{ READY, SETUP, DATA_OUT, WAIT};
 
 /**
  * @class TNetif
@@ -62,8 +62,12 @@ private:
     NetifSendState _send_state; //state of sender module
 
     //recv proc vars
-    uint32_t _words_to_send; //to router
-    uint32_t _words_to_recv; //to memory
+    uint32_t _flits_to_send; //to router
+    uint32_t _next_send_addr; 
+	
+	uint32_t _flits_to_recv; //to memory
+	uint32_t _next_recv_addr; 
+    
 
     //communication with CPU while receiving
     UComm<bool>* _comm_intr; //up when packet arrive, down when ack

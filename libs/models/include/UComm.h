@@ -64,6 +64,7 @@ public:
 };
 
 //Some of the most used instances. More can be added later.
+template class UComm<bool>;  //wire
 template class UComm<uint8_t>;  //mem word
 template class UComm<uint16_t>; //dmni/noc word
 template class UComm<uint32_t>; //proc word

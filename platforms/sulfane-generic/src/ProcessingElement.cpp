@@ -106,15 +106,15 @@ THellfireProcessor* ProcessingElement::GetCpu(){
 	return _cpu;
 } 
 
-UMemory* ProcessingElement::GetmMem0(){
+UMemory* ProcessingElement::GetMem0(){
 	return _mem0;
 }
 
-UMemory* ProcessingElement::GetmMem1(){
+UMemory* ProcessingElement::GetMem1(){
 	return _mem1;
 }
 
-UMemory* ProcessingElement::GetmMem2(){
+UMemory* ProcessingElement::GetMem2(){
 	return _mem2;
 }
 
@@ -124,9 +124,9 @@ std::string ProcessingElement::GetName(){
 
 std::string ProcessingElement::ToString(){
 	stringstream ss;
-	ss << _name << "{" << std::endl;
-	ss << "    " << _cpu->GetName() << std::endl;
-	ss << "}" << std::endl;
+	ss << _name << "={" << _cpu->GetName() 
+	   << ", " << _router->GetName() 
+	   << ", " << _netif->GetName() << "}";
 	
 	return ss.str();
 }
