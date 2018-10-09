@@ -23,6 +23,7 @@
 
 //models libs
 #include <UMemory.h>
+#include <UComm.h>
 
 #define SRAM_BASE         	0x40000000
 //#define MEM_SIZE			0x00100000
@@ -64,11 +65,6 @@ typedef struct {
 class THellfireProcessor : public TimedModel{
 
 private:
-	//when exit trap is triggered, activate 
-	//this flag to remove the cpu from simulation
-	//scheduling
-	bool _disabled; 
-
 	//context
 	risc_v_state context;
 	risc_v_state *s;
@@ -84,15 +80,27 @@ public:
 	int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
 	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
-	THellfireProcessor(string name, UMemory* mptr, uint32_t size, uint32_t base);
+	//ctor./dtor.
+	THellfireProcessor(string name);
+	~THellfireProcessor();
+	
+	//setters for memories
+	void SetMem0(UMemory*);
+	void SetMem1(UMemory*);
+	void SetMem2(UMemory*);
+	
+	//setters for comms
+	void SetCommAck(UComm<bool>*);
+	void SetCommIntr(UComm<bool>*);
+	void SetCommStart(UComm<bool>*);
+	void SetCommStatus(UComm<bool>*);	
+	
 	unsigned long long Run();
 	
-	ofstream output_debug, output_uart;
+	//file output
+	ofstream output_debug;
+	ofstream output_uart;
 	
-	~THellfireProcessor();
-
-    /**
-     * @brief Processor reset.*/
     void Reset();
 };
 

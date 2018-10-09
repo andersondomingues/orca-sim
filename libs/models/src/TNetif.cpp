@@ -30,13 +30,14 @@
 #include <TNetif.h>
 
 TNetif::TNetif(std::string name) : TimedModel(name) {
-    _mem1 = mem1;
-    _mem2 = mem2;
-    
+      
     _comm_ack = nullptr;
     _comm_intr = nullptr;
     _comm_start = nullptr;
     _comm_status = nullptr;
+	
+	_mem1 = nullptr;
+	_mem2 = nullptr;
     
     _ib = new UBuffer<FlitType>();
 }
@@ -57,6 +58,23 @@ void TNetif::Reset(){
     _ib->Reset();
 }
 
+void TNetif::SetOutputBuffer(UBuffer<FlitType>* ob){
+	_ob = ob;
+}
+
+UBuffer<FlitType>* GetInputBuffer(){
+	return _ib;
+}
+
+
+void SetMem1(UMemory* m){
+	_mem1 = m;
+}
+void SetMem2(UMemory* m){
+	_mem2 = m;
+}
+
+
 long long unsigned int TNetif::Run(){
     this->recvProcess();
     this->sendProcess();
@@ -70,38 +88,56 @@ void TNetif::recvProcess(){
 		
 		//wait for data to arrive at input buffer. cannot
 		//receive while interrupt is up
-		case NIRecvState::IDLE:
-			if(_ib->size() >= 2 && _intr == 0){
-				_recv_state = NIRecvState::WRITE_DATA;
-				_ib->pop(); //remove destination flit
+		case NetifRecvState::IDLE:
+		
+			//buffer has data and interruption flag is not set
+			if(_ib->size() > 0 && _comm_intr == false){
+				
+				//removes length flit from buffer
+				FlitType len_flit = _ib->top(); _ib->pop();
+				
+				//writes length flit to the memory
+				_flits_to_recv = len_flit;
+				_mem1->Write(0, &len_flit, 2);
+				_next_addr = 2;
+				
+				//change state
+				_recv_state = NetifRecvState::DATA_IN;
+				
 			}
 			break;
-				
-		//calculate number of words to copy
-		case NIRecvState::WRITE_DATA:
-		
-			_words_to_copy = _ib->top();
-			_next_addr = _base_addr;
-			_ib->pop(); //remove size flit from buffer			
-			_recv_state = NIRecvState::RECV_TO_MEM;
-			break;
-		
+						
 		//copies words to memory (two-by-two, that is, 16-bits);
-		case NIRecvState::RECV_TO_MEM:
+		case NetifRecvState::DATA_IN:
 			
-			if(_words_to_copy > 0){
+			if(_flits_to_recv > 0){
+				
+				//get next flit
 				FlitType next = _ib->top(); _ib->pop();
+				
+				//writes to memory
 				_mem->Write(_next_addr, (int8_t*)&next, 2);
 				_next_addr += 2;
-				_words_to_copy--;
+				_flits_to_recv--;
 			}else{
-				_recv_state = NIRecvState::INTR_CPU;
+				
+				//no more flits to recv, change state
+				_recv_state = NetifRecvState::INTR_CPU;
 			}
 			break;
 		
-		case NIRecvState::INTR_CPU:
-			_recv_intr->Write(1);		
-			_recv_state = NIRecvState::IDLE;
+		case NetifRecvState::INTR_CPU:
+		
+			//interrupts CPU
+			_recv_intr->Write(1);
+			_recv_state = NetifRecvState::WAIT;
+			
+		case NetifRecvState::WAIT:
+			
+			//wait until CPU finishes copying
+			if(!_recv_intr->Read())
+				_recv_state = NetifRecvState::IDLE;
+				
 		break;
 	}
 }

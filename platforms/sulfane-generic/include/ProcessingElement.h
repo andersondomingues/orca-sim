@@ -30,7 +30,15 @@
 #include <TNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
+#include <UComm.h>
 
+
+#define MEM0_SIZE 0x00200000 /* main memory */
+#define MEM0_BASE 0x40000000
+#define MEM1_SIZE 0x00000100 /* recv memory */
+#define MEM1_BASE 0x80000000
+#define MEM2_SIZE 0x00000100 /* send memory */
+#define MEM2_BASE 0x81000000
 
 /**
  * @class TProcessingElement
@@ -40,9 +48,11 @@
  * @brief This class models an entire processing element that contains
  * RAM memory (3x), DMA, NoC Router, HFRiscV core and an SPI interface. 
  */
-class TProcessingElement{
+class ProcessingElement{
 
 private:
+
+	std::string _name;
 
 	THellfireProcessor* _cpu; //hfrisv-core
 	TNetif*  _netif;  //network interface 
@@ -52,13 +62,18 @@ private:
 	UMemory* _mem1; //recv memory
 	UMemory* _mem2; //send memory
 	
-	UComm* _cpudma_ack, _cpudma_intr;      //recv signals 
-	UComm* _cpudma_start, _cpudma_status;  //send signals
+	//recv signals 
+	UComm<bool>* _cpudma_ack;
+	UComm<bool>* _cpudma_intr;      
+	
+	//send signals
+	UComm<bool>* _cpudma_start;
+	UComm<bool>* _cpudma_status;
 	
 public: 
 
-	TProcessingElement(uint32_t x, uint32_t y);
-	~TProcessingElement();
+	ProcessingElement(uint32_t x, uint32_t y);
+	~ProcessingElement();
 	
 	//getters
 	TRouter* GetRouter();
@@ -68,7 +83,19 @@ public:
 	UMemory* GetMem1();
 	UMemory* GetMem2();
 	
+	//comms
+	void SetCommAck(UComm<bool>*);
+	void SetCommIntr(UComm<bool>*);
+	void SetCommStart(UComm<bool>*);
+	void SetCommStatus(UComm<bool>*);
+	
+	//getters for mems
+	UMemory* GetmMem0();
+	UMemory* GetmMem1();
+	UMemory* GetmMem2();
+	
 	std::string GetName();
+	std::string ToString();
 };
 
 

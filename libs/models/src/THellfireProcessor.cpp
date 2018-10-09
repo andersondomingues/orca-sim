@@ -344,8 +344,40 @@ risc_v_state THellfireProcessor::GetState(){
 	return *s;
 }
 
-THellfireProcessor::THellfireProcessor(
-	string name, UMemory* mptr, uint32_t size, uint32_t base) : TimedModel(name) {
+/**
+ * @brief Configures main memory module.
+ * @param m A pointer to a UMemory object*/
+void THellfireProcessor::SetMem0(UMemory* m){
+	_mem0 = m;
+}
+
+void THellfireProcessor::SetMem1(UMemory* m){
+	_mem1 = m
+}
+
+void THellfireProcessor::SetMem2(UMemory*){
+	_mem2 = m;
+}
+
+//setters for comms
+void THellfireProcessor::SetCommAck(UComm<bool>* comm){
+		_comm_ack = comm;
+}
+
+void THellfireProcessor::SetCommIntr(UComm<bool>* comm){
+		_comm_intr = comm;
+}
+
+void THellfireProcessor::SetCommStart(UComm<bool>* comm){
+		_comm_start = comm;
+}
+
+void THellfireProcessor::SetCommStatus(UComm<bool>* comm){
+		_comm_status = comm;
+}
+
+
+THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
@@ -376,10 +408,10 @@ THellfireProcessor::THellfireProcessor(
 }
 
 //TODO: clear allocated memory if any
-THellfireProcessor::~THellfireProcessor(){}
+THellfireProcessor::~THellfireProcessor(){
+	//nothing to do
+}
 
-/**
- * @brief Processor reset.*/
 void THellfireProcessor::Reset(){
     //TODO: to be implemented
     return;

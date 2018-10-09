@@ -33,8 +33,8 @@
 
 typedef uint16_t FlitType;
 
-enum class NIRecvState{ IDLE, WRITE_DATA, RECV_TO_MEM, INTR_CPU};
-enum class NISendState{ IDLE, SETUP, SEND, DONE };
+enum class NetifRecvState{ IDLE, WRITE_DATA, RECV_TO_MEM, INTR_CPU};
+enum class NetifSendState{ IDLE, SET UP, SEND, DONE };
 
 /**
  * @class TNetif
@@ -58,8 +58,8 @@ private:
     //this module can send and receive packets simultaneously.
     //the following states reffer to the sender and receiver 
     //processes.
-    NIRecvState _recv_state; //state of receiver module
-    NISendState _send_state; //state of sender module
+    NetifRecvState _recv_state; //state of receiver module
+    NetifSendState _send_state; //state of sender module
 
     //recv proc vars
     uint32_t _words_to_send; //to router
@@ -91,6 +91,14 @@ public:
     //other 
     unsigned long long Run();
     void Reset();
+
+	//memories
+	void SetMem1(UMemory*);
+	void SetMem2(UMemory*);
+
+	//buffers
+	void SetOutputBuffer(UBuffer<FlitType>* ob); //packets go to the router
+	UBuffer<FlitType>* GetInputBuffer();         //packets come from the router
 
     //ctor./dtor.
     TNetif(string name);
