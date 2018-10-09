@@ -37,6 +37,8 @@ TNetif::TNetif(std::string name) : TimedModel(name) {
     _comm_intr = nullptr;
     _comm_start = nullptr;
     _comm_status = nullptr;
+    
+    _ib = new UBuffer<FlitType>();
 }
 
 TNetif::~TNetif(){
@@ -51,6 +53,8 @@ void TNetif::Reset(){
     if(_comm_intr != nullptr) _comm_intr->Write(false);
     if(_comm_start != nullptr) _comm_start->Write(false);
     if(_comm_status != nullptr) _comm_status->Write(false);
+    
+    _ib->Reset();
 }
 
 long long unsigned int TNetif::Run(){
