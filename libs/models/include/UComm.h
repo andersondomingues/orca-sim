@@ -37,12 +37,13 @@ private:
     std::string _name;
     T _default;
     T _val;
+	uint32_t _addr;
 
 public:
     /**
      * @brief Constructor. 
      * @param name (optional) An arbitrary name for the instance of Buffer.*/
-    UComm(std::string name = "", T def = nullptr);
+    UComm(std::string name = "", T def = nullptr, uint32_t addr = 0x0);
     
     /**
      * @brief Destructor. Cleans dynamic allocated memory before disposing the object.*/
@@ -61,6 +62,7 @@ public:
 	/**
 	 * @brief Empties the queue */
 	void Reset();
+	uint32_t GetAddr();
 };
 
 //Some of the most used instances. More can be added later.

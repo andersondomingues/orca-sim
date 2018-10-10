@@ -29,8 +29,9 @@
 #include <UComm.h>
 
 template <typename T>
-UComm<T>::UComm(std::string name, T default_value) : UntimedModel(name){
+UComm<T>::UComm(std::string name, T default_value, uint32_t addr) : UntimedModel(name){
 	_default = default_value;
+	_addr = addr;
 	this->Reset();
 };
 
@@ -52,4 +53,9 @@ void UComm<T>::Write(T val){
 template <typename T>
 void UComm<T>::Reset(){
 	_val = _default;
+}
+
+template <typename T>
+uint32_t UComm<T>::GetAddr(){
+	return _addr;
 }

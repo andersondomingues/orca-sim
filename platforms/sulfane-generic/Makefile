@@ -21,8 +21,9 @@ SOURCEDIR :=./src
 
 #Path to the operating system. HellfireOS provide some scripts for compiling
 #a 3x3 noc platform.
-HELLFIREOS_PATH:=../../submodules/hellfireos/platform/noc_3x3
+HELLFIREOS_PATH:=../../submodules/hellfireos/platform/noc_5x5
 HELLFIREOS_ARCH:=../../submodules/hellfireos/arch/riscv/hf-riscv
+
 #This is the master recipie. It compiles all the stuff and launchs the simulation.
 all: $(LIBSIM) $(LIBMOD) $(OUTPUTDIR)/$(PLATFORM_NAME).exe
 	@echo "$'\e[032m==SULFANE==\e[0m"

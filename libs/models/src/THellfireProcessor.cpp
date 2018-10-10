@@ -70,25 +70,28 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		case UART_DIVISOR:	return 0;
 	}
 	
-	#ifndef NOGUARDS
-	if(address < SRAM_BASE){
+	//comms
+	if(address == s->comm_ack->GetAddr())    return s->comm_ack->Read();
+	if(address == s->comm_intr->GetAddr())   return s->comm_intr->Read();
+	if(address == s->comm_start->GetAddr())  return s->comm_start->Read();
+	if(address == s->comm_status->GetAddr()) return s->comm_status->Read();
+	
+	UMemory* sel_mem = nullptr;
+	
+	//memread to mem0
+	if(address >= s->sram->GetBase() && address <= (s->sram->GetBase() + s->sram->GetBase())){
+		sel_mem = s->sram;
 		
-		dumpregs(s);
-		
-		stringstream ss;
-		ss << this->GetName() << ": unable to read from unmapped memory space 0x"
-		   << std::hex << address << " (under memory_base)";
-		
-		throw std::runtime_error(ss.str());
+	//memread to mem1 
+	}else if(address >= s->mem1->GetBase() && address <= (s->mem1->GetBase() + s->mem1->GetBase())){
+		sel_mem = s->mem1;
 	}
-	if(address > SRAM_BASE + MEM_SIZE){
-		
+	
+	#ifndef NOGUARDS
+	if(sel_mem == nullptr){
 		dumpregs(s);
-		
 		stringstream ss;
-		ss << this->GetName() << ": unable to read from unmapped memory space 0x" 
-		   << std::hex << address << " (over memory_base + memory_size)";
-			
+		ss << this->GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
 		throw std::runtime_error(ss.str());
 	}
 	#endif	
@@ -100,7 +103,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
+				sel_mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 			}
 			break;
 		case 2:
@@ -110,13 +113,13 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 				throw std::runtime_error(err_msg);
 			}else{
 				int16_t value;
-				s->sram->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
+				sel_mem->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
 				data = value;
 			}
 			break;
 		case 1:
 			int8_t value;
-			s->sram->Read(address, &value, 1); //1 x sizeof(uint8_t)
+			sel_mem->Read(address, &value, 1); //1 x sizeof(uint8_t)
 			data = value;
 			break;
 		default:
@@ -160,25 +163,37 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			return;
 	}
 	
-	#ifndef NOGUARDS
-	if(address < SRAM_BASE){
-		dumpregs(s);
-		throw std::runtime_error(this->GetName() + ": unable to write to unmapped memory memory space (lower than sram_base) " + std::to_string(address) + ".");
+	//comms
+	if(address == s->comm_ack->GetAddr())    s->comm_ack->Write(value == 0x1);
+	if(address == s->comm_start->GetAddr())  s->comm_start->Write(value == 0x1);
+	
+	UMemory* sel_mem = nullptr;
+	
+	//memwrite to sram
+	if(address >= s->sram->GetBase() && address <= (s->sram->GetBase() + s->sram->GetBase())){
+		sel_mem = s->sram;
+		
+	//memwrite to mem2 
+	}else if(address >= s->mem2->GetBase() && address <= (s->mem2->GetBase() + s->mem2->GetBase())){
+		sel_mem = s->mem2;
 	}
-	if(address > SRAM_BASE + MEM_SIZE){
-		return;
+	
+	#ifndef NOGUARDS
+	if(sel_mem == nullptr){
 		dumpregs(s);
-		throw std::runtime_error(this->GetName() + ": unable to write to unmapped memory memory space (greater than sram_base + mem_size) " + std::to_string(address) + ".");
+		stringstream ss;
+		ss << this->GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
+		throw std::runtime_error(ss.str());
 	}
 	#endif
-		
+	
 	switch(size){
 		case 4:
 			if(address & 3){
 				std::string err_msg = this->GetName() + ": unaligned access (store word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				s->sram->Write(address, (int8_t*)&value, size);
+				sel_mem->Write(address, (int8_t*)&value, size);
 			}
 			break;
 		case 2:
@@ -187,23 +202,31 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				throw std::runtime_error(err_msg);
 			}else{
 				uint16_t data = (uint16_t)value;
-				s->sram->Write(address, (int8_t*)&data, size);
+				sel_mem->Write(address, (int8_t*)&data, size);
 			}
 			break;
 		case 1:{
 			uint8_t data;
 			data = (uint8_t)value;
-			s->sram->Write(address, (int8_t*)&data, size);
+			sel_mem->Write(address, (int8_t*)&data, size);
 			break;
 		}
 		default:
-			std::string err_msg = this->GetName() + ": unknown01";
+			std::string err_msg = this->GetName() + ": unable to write to memory (unk02)";
 			throw std::runtime_error(err_msg);
 	}
+	
+	
 }
 
 
 unsigned long long THellfireProcessor::Run(){
+	
+	//netif interrupt
+	if(s->comm_intr->Read()){
+		s->cause |= 0x00000100;
+	}
+	
 		
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;
@@ -333,14 +356,14 @@ unsigned long long THellfireProcessor::Run(){
 	s->cycles++;
 	s->counter++;
 	
-	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;     /*IRQ_COMPARE2*/
-	if (s->compare == s->counter) s->cause |= 0x10;                                /*IRQ_COMPARE*/
-	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfff7;			/*IRQ_COUNTER2_NOT*/
-	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffb;			/*IRQ_COUNTER2*/
-	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffd;			/*IRQ_COUNTER_NOT*/
-	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffe;			/*IRQ_COUNTER*/
+	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;   /*IRQ_COMPARE2*/
+	if (s->compare == s->counter) s->cause |= 0x10;                              /*IRQ_COMPARE*/
+	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;   /*IRQ_COUNTER2_NOT*/
+	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;      /*IRQ_COUNTER2*/
+	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;   /*IRQ_COUNTER_NOT*/
+	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;      /*IRQ_COUNTER*/
 	
-	
+		
 	//returns 4 of Store or Load, else returns 3
 	return (opcode == 0x23 || opcode == 0x3) ? 4 : 3;
 	

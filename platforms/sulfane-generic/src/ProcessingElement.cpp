@@ -49,13 +49,13 @@ ProcessingElement::ProcessingElement(uint32_t x, uint32_t y){
 	_netif  = new TNetif(_name + ".netif");
 
 	//control signals to receive packets from netif
-	_cpudma_ack  = new UComm<bool>("cpunetif_ack",  false);
-	_cpudma_intr = new UComm<bool>("cpunetif_intr", false);
+	_cpudma_ack  = new UComm<bool>("cpunetif_ack",  false, COMM_NOC_ACK);
+	_cpudma_intr = new UComm<bool>("cpunetif_intr", false, COMM_NOC_INTR);
 	
 	//control signals to send packets to the netif
-	_cpudma_start  = new UComm<bool>("cpunetif_start", false);
-	_cpudma_status = new UComm<bool>("cpunetif_status", false);
-		
+	_cpudma_start  = new UComm<bool>("cpunetif_start", false, COMM_NOC_START);
+	_cpudma_status = new UComm<bool>("cpunetif_status", false, COMM_NOC_STATUS);
+
 	//bind control signals to hardware (netif side)
 	_netif->SetCommAck(_cpudma_ack);
 	_netif->SetCommIntr(_cpudma_intr);

@@ -34,12 +34,8 @@
 #include <ProcessingElement.h>
 
 #define CYCLES_TO_SIM 10000000
-#define NOC_H_SIZE 5
-#define NOC_W_SIZE 5
-
-//#define MEM_SIZE  0x00200000
-//#define SRAM_BASE 0x40000000
-
+#define NOC_H_SIZE 3
+#define NOC_W_SIZE 3
 
 //instantiates a mesh of MxN PE
 ProcessingElement* pes[NOC_W_SIZE][NOC_H_SIZE];

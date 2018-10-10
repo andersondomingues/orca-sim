@@ -32,13 +32,42 @@
 #include <UMemory.h>
 #include <UComm.h>
 
+/* MEMORY LAYOUT
+------------------- 0x3FFFFF00
+    mem2 (send)
+    (128 bytes)
+------------------- 0x3FFFFF80
+    mem1 (recv)
+    (128 bytes)
+------------------- 0x40000000
 
+       sram
+      (~2MB)
+
+------------------- 0x40200000
+     empty space
+------------------- 0x80000000
+ COMM_NOC_ACK       0x80000001
+ COMM_NOC_INTR      0x80000002
+ COMM_NOC_START     0x80000003
+ COMM_NOC_STATUS    0x80000004
+-------------------------------*/
+
+//memory mapping
 #define MEM0_SIZE 0x00200000 /* main memory */
 #define MEM0_BASE 0x40000000
-#define MEM1_SIZE 0x00000100 /* recv memory */
-#define MEM1_BASE 0x80000000
-#define MEM2_SIZE 0x00000100 /* send memory */
-#define MEM2_BASE 0x81000000
+
+#define MEM1_SIZE 0x00000080 /* recv memory */
+#define MEM1_BASE 0x3FFFFF00
+
+#define MEM2_SIZE 0x00000080 /* send memory */
+#define MEM2_BASE 0x3FFFFF80
+
+#define COMM_NOC_ACK    0x80000001
+#define COMM_NOC_INTR   0x80000002
+#define COMM_NOC_START  0x80000003
+#define COMM_NOC_STATUS 0x80000004
+
 
 /**
  * @class TProcessingElement
