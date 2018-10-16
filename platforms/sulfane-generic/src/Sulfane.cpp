@@ -84,6 +84,7 @@ int main(int argc, char** argv){
 	std::string code_file;
 	for(int x = 0; x < NOC_W_SIZE; x++){
 		for(int y = 0; y < NOC_H_SIZE; y++){
+				index = x + NOC_W_SIZE * y;
 				code_file = std::string(argv[1]) + "code" + std::to_string(index) + ".bin";
 				pes[x][y]->GetMem0()->LoadBin(code_file, MEM0_BASE, MEM0_SIZE);
 		}

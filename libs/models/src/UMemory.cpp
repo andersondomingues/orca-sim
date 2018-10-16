@@ -101,6 +101,10 @@ uint32_t UMemory::GetBase(){
 	return _sram_base;
 }
 
+uint32_t UMemory::GetSize(){
+	return _length;
+}
+
 void UMemory::Wipe(uint32_t base, uint32_t size){
 	
 	#ifndef NOGUARDS

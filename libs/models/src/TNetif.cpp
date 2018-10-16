@@ -165,6 +165,8 @@ void TNetif::sendProcess(){
 			break;
 		case NetifSendState::SETUP:
 		
+			std::cout << this->GetName() << ": setup" << std::endl;
+		
 			//send header flit to router
 			FlitType header;
 			_mem2->Read(0, (int8_t*)&header, 2);

@@ -79,11 +79,11 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	UMemory* sel_mem = nullptr;
 	
 	//memread to mem0
-	if(address >= s->sram->GetBase() && address <= (s->sram->GetBase() + s->sram->GetBase())){
+	if(address >= s->sram->GetBase() && address <= (s->sram->GetBase() + s->sram->GetSize())){
 		sel_mem = s->sram;
 		
 	//memread to mem1 
-	}else if(address >= s->mem1->GetBase() && address <= (s->mem1->GetBase() + s->mem1->GetBase())){
+	}else if(address >= s->mem1->GetBase() && address <= (s->mem1->GetBase() + s->mem1->GetSize())){
 		sel_mem = s->mem1;
 	}
 	
@@ -164,25 +164,28 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	}
 	
 	//comms
-	if(address == s->comm_ack->GetAddr())    s->comm_ack->Write(value == 0x1);
-	if(address == s->comm_start->GetAddr())  s->comm_start->Write(value == 0x1);
+	if(address == s->comm_intr->GetAddr()){ s->comm_ack->Write(value); return; }
+	if(address == s->comm_ack->GetAddr()){ s->comm_ack->Write(value); return; }
+	if(address == s->comm_start->GetAddr()){ s->comm_start->Write(value); return; }
 	
 	UMemory* sel_mem = nullptr;
 	
 	//memwrite to sram
-	if(address >= s->sram->GetBase() && address <= (s->sram->GetBase() + s->sram->GetBase())){
+	if(address >= s->sram->GetBase() && address <= (s->sram->GetBase() + s->sram->GetSize())){
 		sel_mem = s->sram;
 		
 	//memwrite to mem2 
-	}else if(address >= s->mem2->GetBase() && address <= (s->mem2->GetBase() + s->mem2->GetBase())){
+	}else if(address >= s->mem2->GetBase() && address <= (s->mem2->GetBase() + s->mem2->GetSize())){
 		sel_mem = s->mem2;
 	}
-	
+		
 	#ifndef NOGUARDS
 	if(sel_mem == nullptr){
 		dumpregs(s);
 		stringstream ss;
+			
 		ss << this->GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
+		
 		throw std::runtime_error(ss.str());
 	}
 	#endif
@@ -221,12 +224,6 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 
 
 unsigned long long THellfireProcessor::Run(){
-	
-	//netif interrupt
-	if(s->comm_intr->Read()){
-		s->cause |= 0x00000100;
-	}
-	
 		
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;
@@ -356,13 +353,13 @@ unsigned long long THellfireProcessor::Run(){
 	s->cycles++;
 	s->counter++;
 	
-	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;   /*IRQ_COMPARE2*/
-	if (s->compare == s->counter) s->cause |= 0x10;                              /*IRQ_COMPARE*/
-	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;   /*IRQ_COUNTER2_NOT*/
-	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;      /*IRQ_COUNTER2*/
-	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;   /*IRQ_COUNTER_NOT*/
-	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;      /*IRQ_COUNTER*/
-	
+	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;     /*IRQ_COMPARE2*/
+	if (s->compare == s->counter) s->cause |= 0x10;                                /*IRQ_COMPARE*/
+	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;     /*IRQ_COUNTER2_NOT*/
+	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;        /*IRQ_COUNTER2*/
+	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;     /*IRQ_COUNTER_NOT*/
+	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
+	if (s->comm_intr->Read()) s->cause |= 0x100; else s->cause &= 0xffffffef;       /*NOC*/
 		
 	//returns 4 of Store or Load, else returns 3
 	return (opcode == 0x23 || opcode == 0x3) ? 4 : 3;

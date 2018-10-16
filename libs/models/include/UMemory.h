@@ -108,6 +108,7 @@ public:
 	
 	
 	uint32_t GetBase();
+	uint32_t GetSize();
 	
 };
 
