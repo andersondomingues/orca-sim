@@ -32,7 +32,7 @@
 typedef uint16_t FlitType;
 
 enum class RouterState{
-    WORMHOLE, ROUNDROBIN
+    ROUNDROBIN, FORWARD1, PKTLEN, BURST
 };
 
 //routing ports
@@ -80,7 +80,7 @@ public:
 		unsigned long long Run();
 		
         /** return this **/
-		uint32_t GetRoute(FlitType flit);
+		uint32_t GetRouteXY(FlitType flit);
         
         /** Ctor. **/
 		TRouter(string name, uint32_t x_pos, uint32_t y_pos);
@@ -89,6 +89,7 @@ public:
 		~TRouter();
 		
 		void Reset();
+		std::string ToString();
 };
 
 

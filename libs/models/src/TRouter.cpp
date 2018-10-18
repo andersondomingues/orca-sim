@@ -21,6 +21,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <cstdlib>
 #include <TRouter.h>
+#include <sstream>
 
 /**
  * @brief Ctor.
@@ -61,77 +62,101 @@ unsigned long long TRouter::Run(){
 		//of course, defined by the RR algorithm. When some of the 
 		//ports have packages to be sent, the router changes to 
 		//WHORMHOLE state.
-		case RouterState::ROUNDROBIN:
-        {
-            UBuffer<FlitType>* tb = _ib[_round_robin];
-
-            //prevent from serving unconnected ports (e.g. border)
-            if(tb != nullptr){
+		case RouterState::ROUNDROBIN:{
+			
+            //prevent from serving unconnected ports (e.g. border). However,
+			//it still consumed one cycle for changing to next port
+			//TODO: discuss if it is necessary to clone unused ports
+            if(_ib[_round_robin] != nullptr && _ib[_round_robin]->size() > 0){
+			
+				//get target port from first flit
+				_source_port = _round_robin;
+				_target_port = this->GetRouteXY(_ib[_source_port]->top()); 
 				
-				//if has packet to send
-                if(tb->size() > 0){  
+				#ifndef NO_GUARDS
+				if(_ob[_target_port] == nullptr){
+					stringstream ss;
+					ss << this->GetName() << ": unable to route to unconnected port (";
+					ss << _target_port << ")";
 					
-                    _state = RouterState::WORMHOLE;
-                    _source_port = _round_robin;
-                    _target_port = this->GetRoute(tb->top()); 
-                    
-                    _is_first_flit = true;
-					
-                    //alternativelly:
-					//_packets_to_send = tb->size(); 
-                    _packets_to_send = tb->top() & 0x0000FFFF;
-					
-					std::cout << this->GetName() << ": "
-							  << "source:" << _source_port 
-							  << "target:" << _target_port 
-							  << std::endl << std::flush;
-					
-					
-                }
-            }
+					throw std::runtime_error(ss.str());
+				}
+				#endif
+				
+				//change state
+				_state = RouterState::FORWARD1;				
+			}
 			
 			//get next port
             _round_robin++;
             _round_robin = _round_robin % 5; 
-            
-            break;
-        } 
-  
-		//in WORMHOLE state, the router keeps sending flits until there
-		//is no more flits to be sent. When the last flit is sent, the 
-		//router returns to ROUNDROBIN state.
-        case RouterState::WORMHOLE:
-        {
-			_is_first_flit = false;
+			//std::cout << this->GetName() << ": RR" << std::endl;
 			
-            //if packets to be sent, 
-            UBuffer<FlitType>* ob = _ob[_target_port];
-            UBuffer<FlitType>* ib = _ib[_source_port];
-            
-            ob->push(ib->top());
-            ib->pop();
+		} break;
+		
+		case RouterState::FORWARD1:{
+			
+			//forward first flit and clean from input 
+			_ob[_target_port]->push(_ib[_source_port]->top());
+				
+			//forward second flit and clean from input
+			_ob[_target_port]->push(_ib[_source_port]->top());
+			_ib[_source_port]->pop();
+			
+			//change state
+			_state = RouterState::PKTLEN;
+			std::cout << this->GetName() << ": FRWD" << std::endl;
+			std::cout << this->GetName() << ": source=" <<_source_port << ", target=" << _target_port << std::endl;
+			
+		} break;
+		
+		case RouterState::PKTLEN:{
+			
+			//read length flit to determine how many
+			//to push after the third flit 
+			_packets_to_send = _ib[_source_port]->top();
+			
+			//forward third flit and clean from input
+			_ob[_target_port]->push(_ib[_source_port]->top());
+			_ib[_source_port]->pop();
+			
+			//change state
+			_state = RouterState::BURST;
+			std::cout << this->GetName() << ": PKTLEN" << std::endl;
+			
+        } break;
+  
+		//keeps sending flits until there is no more flits to be
+		//sent. When the last flit is sent, the 
+		//router returns to ROUNDROBIN state.
+        case RouterState::BURST: {
+			
+			//forward the next flit and clean from input
+			_ob[_target_port]->push(_ib[_source_port]->top());
+			_ib[_source_port]->pop();
             
             _packets_to_send--;
             
             if(_packets_to_send == 0)
                 _state = RouterState::ROUNDROBIN;
+				
+			std::cout << this->GetName() << ": BURST" << std::endl;
 
-            break;
-        }
+        } break;
     }
 	
 	//First flit takes 4 cycles to be sent due the time consumed 
 	//by the routing algorithm. When the rr finds no canditate to
 	//send flits or the flit is other than the first, it takes only
 	//one cycle to happen.
-	return (_is_first_flit) ? 4 : 1;
+	return (_state == RouterState::FORWARD1) ? 4 : 1;
 }
 
 /**
  * @brief Calculate the port to route a given flit
  * @param flit to be routed
  * @return the port to where te packet must go*/
-uint32_t TRouter::GetRoute(FlitType flit){
+uint32_t TRouter::GetRouteXY(FlitType flit){
     
     FlitType tx = (flit & 0xFF00) >> 8;
     FlitType ty = (flit & 0x00FF);
@@ -175,4 +200,18 @@ UBuffer<FlitType>* TRouter::GetInputBuffer(uint32_t r){
 
 void TRouter::SetOutputBuffer(UBuffer<FlitType>* b, uint32_t port){
     _ob[port] = b;
+}
+
+
+std::string TRouter::ToString(){
+	
+	stringstream ss;
+	ss << this->GetName() + ": ";
+	
+	for(int i = 0; i < 5; i++){
+		if(_ob[i] != nullptr)
+			ss << "{" << _ob[i]->GetName() << "} ";
+	}
+	
+	return ss.str();
 }

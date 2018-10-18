@@ -85,7 +85,14 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	//memread to mem1 
 	}else if(address >= s->mem1->GetBase() && address <= (s->mem1->GetBase() + s->mem1->GetSize())){
 		sel_mem = s->mem1;
+	
+	//memread to mem2. please note that this is set only for debuggin since neither the 
+	//kernel or applications should read from this memory space
+	}else if(address >= s->mem2->GetBase() && address <= (s->mem2->GetBase() + s->mem2->GetSize())){
+		sel_mem = s->mem2;
 	}
+	
+	
 	
 	#ifndef NOGUARDS
 	if(sel_mem == nullptr){

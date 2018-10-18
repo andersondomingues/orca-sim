@@ -78,6 +78,8 @@ int main(int argc, char** argv){
 			std::cout << pes[x][y]->ToString() << std::endl;		
 		}
 	}
+
+
 	
 	//load binaries into main memories
 	int index = 0;

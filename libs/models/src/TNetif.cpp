@@ -39,7 +39,7 @@ TNetif::TNetif(std::string name) : TimedModel(name) {
 	_mem1 = nullptr;
 	_mem2 = nullptr;
     
-    _ib = new UBuffer<FlitType>();
+    _ib = new UBuffer<FlitType>(name + ".IN");
 }
 
 TNetif::~TNetif(){
@@ -111,7 +111,6 @@ void TNetif::recvProcess(){
 				
 				//change state
 				_recv_state = NetifRecvState::DATA_IN;
-				
 			}
 			break;
 						
@@ -168,38 +167,45 @@ void TNetif::sendProcess(){
 			
 		case NetifSendState::SETUP:
 		
-		
-			//send header flit to router
+			//push two first packets to router's input buffer
 			FlitType header;
 			_mem2->Read(_next_send_addr, (int8_t*)&header, 2);
 			_ob->push(header);
-			
 			_next_send_addr += 2;
 			
-			//get number of flits to send (and send it)
+			_mem2->Read(_next_send_addr, (int8_t*)&header, 2);
+			_ob->push(header);
+			_next_send_addr += 2;
+			
+			//get number of flits. push third flit
 			_mem2->Read(_next_send_addr , (int8_t*)&header, 2);
 			_ob->push(header);
+			_next_send_addr += 2;
+			
 			_flits_to_send = header;
 			
-			_next_send_addr += 2;
-
+			std::cout << "NETIF PUSHING " << _flits_to_send << "+2 flits" << std::endl;
+			
 			_send_state = NetifSendState::DATA_OUT;
 			break;
 		
 		//burst send next flits
-		case NetifSendState::DATA_OUT:
+		case NetifSendState::DATA_OUT:{
+
+			//send next
+			FlitType data;
+			_mem2->Read(_next_send_addr, (int8_t*)&data, 2);
+			_ob->push(data);
+			_next_send_addr += 2;
+			_flits_to_send--;
 			
 			if(_flits_to_send == 0){
-				_send_state = NetifSendState::WAIT;
-			}else{
-				//send next
-				FlitType data;
-				_mem2->Read(_next_send_addr, (int8_t*)&data, 2);
-				_ob->push(data);
-				_next_send_addr += 2;
-				_flits_to_send--;
+				_send_state = NetifSendState::WAIT;	
+				std::cout << "NETIF LAST FLIT " << std::hex << data << std::endl;
 			}
-			break;
+			
+		} break;
+		
 		case NetifSendState::WAIT:
 			_comm_start->Write(0); //down start flag
 			_send_state = NetifSendState::READY;
