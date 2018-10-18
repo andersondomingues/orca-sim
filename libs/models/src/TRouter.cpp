@@ -75,13 +75,18 @@ unsigned long long TRouter::Run(){
                     _source_port = _round_robin;
                     _target_port = this->GetRoute(tb->top()); 
                     
-                    std::cout << "[" << _target_port << "]" << endl;
-                    
                     _is_first_flit = true;
 					
                     //alternativelly:
 					//_packets_to_send = tb->size(); 
                     _packets_to_send = tb->top() & 0x0000FFFF;
+					
+					std::cout << this->GetName() << ": "
+							  << "source:" << _source_port 
+							  << "target:" << _target_port 
+							  << std::endl << std::flush;
+					
+					
                 }
             }
 			

@@ -158,24 +158,30 @@ void TNetif::sendProcess(){
 	switch(_send_state){
 		
 		case NetifSendState::READY:
+				
 			if(_comm_start->Read()){
+				
 				_send_state = NetifSendState::SETUP;
-				_next_send_addr = 0;
+				_next_send_addr = _mem2->GetBase();
 			}
 			break;
+			
 		case NetifSendState::SETUP:
 		
-			std::cout << this->GetName() << ": setup" << std::endl;
 		
 			//send header flit to router
 			FlitType header;
-			_mem2->Read(0, (int8_t*)&header, 2);
+			_mem2->Read(_next_send_addr, (int8_t*)&header, 2);
 			_ob->push(header);
 			
+			_next_send_addr += 2;
+			
 			//get number of flits to send (and send it)
-			_mem2->Read(2, (int8_t*)&header, 2);
+			_mem2->Read(_next_send_addr , (int8_t*)&header, 2);
 			_ob->push(header);
 			_flits_to_send = header;
+			
+			_next_send_addr += 2;
 
 			_send_state = NetifSendState::DATA_OUT;
 			break;

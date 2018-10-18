@@ -31,6 +31,12 @@
 #include <UMemory.h>
 #include <UComm.h>
 
+#define MEM1_SIZE 0x00000080 /* recv memory */
+#define MEM1_BASE 0x3FFFFF00
+
+#define MEM2_SIZE 0x00000080 /* send memory */
+#define MEM2_BASE 0x3FFFFF80
+
 typedef uint16_t FlitType;
 
 enum class NetifRecvState{ READY, DATA_IN, INTR_CPU, WAIT};
@@ -68,7 +74,6 @@ private:
 	uint32_t _flits_to_recv; //to memory
 	uint32_t _next_recv_addr; 
     
-
     //communication with CPU while receiving
     UComm<bool>* _comm_intr; //up when packet arrive, down when ack
     UComm<bool>* _comm_ack;  //ack when cpu finishes copying to main memory
