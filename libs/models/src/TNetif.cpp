@@ -173,16 +173,20 @@ void TNetif::sendProcess(){
 			_ob->push(header);
 			_next_send_addr += 2;
 			
+			std::cout << std::hex << header;
+			
 			_mem2->Read(_next_send_addr, (int8_t*)&header, 2);
 			_ob->push(header);
 			_next_send_addr += 2;
+			
+			std::cout << std::hex << header;
 			
 			//get number of flits. push third flit
 			_mem2->Read(_next_send_addr , (int8_t*)&header, 2);
 			_ob->push(header);
 			_next_send_addr += 2;
 			
-			_flits_to_send = header;
+			_flits_to_send = header;	
 			
 			std::cout << "NETIF PUSHING " << _flits_to_send << "+2 flits" << std::endl;
 			

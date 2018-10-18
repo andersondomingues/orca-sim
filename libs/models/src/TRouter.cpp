@@ -69,6 +69,8 @@ unsigned long long TRouter::Run(){
 			//TODO: discuss if it is necessary to clone unused ports
             if(_ib[_round_robin] != nullptr && _ib[_round_robin]->size() > 0){
 			
+				std::cout << "topflit = " << std::hex << _ib[_source_port]->top() << std::endl;
+				
 				//get target port from first flit
 				_source_port = _round_robin;
 				_target_port = this->GetRouteXY(_ib[_source_port]->top()); 
@@ -160,6 +162,8 @@ uint32_t TRouter::GetRouteXY(FlitType flit){
     
     FlitType tx = (flit & 0xFF00) >> 8;
     FlitType ty = (flit & 0x00FF);
+	
+	std::cout << this->GetName() << ":0x" << flit << ":(x, y) => (" << tx << "," << ty << ")" << std::endl;
 
     //if X=0, then route "vertically" (Y)
     if(_x == tx){
