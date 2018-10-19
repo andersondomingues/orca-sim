@@ -58,16 +58,30 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 	}
 	#endif
 
+	/*
+	int xxx = 0;
+	if(addr == 0x3fffff80 && *data == '"'){
+		xxx = 1;
+		std::cout << std::hex << addr << "|" << std::hex << length << "|" << std::hex << *data << std::endl;
+	}
+		*/
+			
 
     //same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
 		_mem[addr - _sram_base] = data[i];
 		addr++;
 	}
+	/*
+						
+	if(xxx == 1){
+		std::cout << std::hex << (addr -1)<< "|" << std::hex << length << "|" << std::hex << _mem[addr - _sram_base -1] << std::endl;
+	}
+	*/
 }
 
 void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
-	
+
 	#ifndef NOGUARDS
 	if(addr < _sram_base){
 		stringstream s;

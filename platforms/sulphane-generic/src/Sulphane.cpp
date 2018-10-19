@@ -48,6 +48,7 @@ void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 int main(int argc, char** argv){
 
 	std::cout << "URSA is building Sulphane (" << NOC_W_SIZE << " by " << NOC_H_SIZE << ")" << std::endl;
+	std::cout << "Simulation step set to " << CYCLES_TO_SIM << " cycles." << std::endl;
 	
 	//populate PEs
 	for(int x = 0; x < NOC_W_SIZE; x++)
@@ -94,7 +95,6 @@ int main(int argc, char** argv){
 	
 	//keep simulating until something happen
 	try{
-		
 		while(1){
 			s->Run(CYCLES_TO_SIM);
 			std::cout << "Simulation: " << CYCLES_TO_SIM << " cycles has been passed since last message." << std::endl;
