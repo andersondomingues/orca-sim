@@ -31,12 +31,6 @@
 #include <UMemory.h>
 #include <UComm.h>
 
-#define MEM1_SIZE 0x00000080 /* recv memory */
-#define MEM1_BASE 0x3FFFFF00
-
-#define MEM2_SIZE 0x00000080 /* send memory */
-#define MEM2_BASE 0x3FFFFF80
-
 typedef uint16_t FlitType;
 
 enum class NetifRecvState{ READY, DATA_IN, INTR_CPU, WAIT};

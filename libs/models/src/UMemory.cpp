@@ -132,8 +132,6 @@ void UMemory::Wipe(uint32_t base, uint32_t size){
 		throw std::runtime_error(this->GetName() + ": unable to wipe beyound memory size (" + std::to_string(size) + ", but memory size is " + std::to_string(_length));
 	#endif
 	
-    //TODO: investigate memcpy, zero fill and other methods
-    //for filling the UMemory with zeroes.
 	for(uint32_t i = base; i < size; i++)	
 		_mem[i] = 0x00;
 	
@@ -159,33 +157,31 @@ void UMemory::Dump(){
 }
 
 void UMemory::Dump(uint32_t base, uint32_t length){
+	uint32_t k, l;
 	
-	printf("--- mem dump:\n");
+	//mask is necessary to correct a bug(?) when printing
+	//negative hexas.
+	uint32_t mask = 0x000000FF; 
+	int8_t ch;
 	
-	//fix for printing only 4-digit values
-	int mask = 0x000000FF;
-	
-	for(uint32_t i = base; i < length; i+= 16){
-
-		//TODO: fix check on unaligned files
-		if(_mem[i+1]  + _mem[i  ]  + _mem[i+3]  + _mem[i+2] 
-		 + _mem[i+5]  + _mem[i+4]  + _mem[i+7]  + _mem[i+6]
- 		 + _mem[i+9]  + _mem[i+8]  + _mem[i+11] + _mem[i+10]
- 		 + _mem[i+13] + _mem[i+12] + _mem[i+15] + _mem[i+14] != 0){
-
-	
-			printf("%07x ", i);	
-			for(int j = 0; j < 16; j+= 2) printf("%02x%02x ", _mem[i+j+1]  & mask, _mem[i+j] & mask);
-			printf("\n");
+	//uint32_t* memptr = (uint32_t*)_mem;
+	//uint32_t  len = _length / 4;
+	for(k = 0; k < length; k += 16){
+		printf("\n%08x ", base + k);
+		for(l = 0; l < 16; l++){
+			printf("%02x ", _mem[k + l] & mask );
+			if (l == 7) putchar(' ');
 		}
+		printf(" |");
+		for(l = 0; l < 16; l++){
+			ch = _mem[k + l];
+			if ((ch >= 32) && (ch <= 126))
+				putchar(ch);
+			else
+				putchar('.');
+		}
+		putchar('|');
 	}
-	
-	printf("--- eod:\n");
-}
-
-//TODO:remove it as soon as possible
-MemoryType* UMemory::GetMemPtr(){
-	return _mem;
 }
 
 UMemory::~UMemory(){

@@ -33,12 +33,6 @@
 #include <UComm.h>
 
 /* MEMORY LAYOUT
-------------------- 0x3FFFFF00
-    mem2 (send)
-    (128 bytes)
-------------------- 0x3FFFFF80
-    mem1 (recv)
-    (128 bytes)
 ------------------- 0x40000000
 
        sram
@@ -51,6 +45,14 @@
  COMM_NOC_INTR      0x80000002
  COMM_NOC_START     0x80000003
  COMM_NOC_STATUS    0x80000004
+
+      .....
+------------------- 0x90000000
+    mem1 (recv)
+    (128 bytes)
+------------------- 0x90000080
+    mem2 (send)
+    (128 bytes)
 -------------------------------*/
 
 //memory mapping
@@ -58,10 +60,11 @@
 #define MEM0_BASE 0x40000000
 
 #define MEM1_SIZE 0x00000080 /* recv memory */
-#define MEM1_BASE 0x3FFFFF00
+#define MEM1_BASE 0x90000000
+//#define MEM1_BASE 0x3FFFFF00
 
 #define MEM2_SIZE 0x00000080 /* send memory */
-#define MEM2_BASE 0x3FFFFF80
+#define MEM2_BASE 0x90000080
 
 #define COMM_NOC_ACK    0x80000001
 #define COMM_NOC_INTR   0x80000002

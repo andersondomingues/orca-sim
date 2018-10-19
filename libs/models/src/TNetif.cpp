@@ -74,8 +74,13 @@ UBuffer<FlitType>* TNetif::GetInputBuffer(){
 
 
 //mems
-void TNetif::SetMem1(UMemory* m){ _mem1 = m; }
-void TNetif::SetMem2(UMemory* m){ _mem2 = m; }
+void TNetif::SetMem1(UMemory* m){ 
+	_mem1 = m; 
+}
+
+void TNetif::SetMem2(UMemory* m){
+	_mem2 = m; 
+}
 
 //comms
 void TNetif::SetCommAck(UComm<bool>* c){ _comm_ack = c; }
@@ -169,22 +174,22 @@ void TNetif::sendProcess(){
 		
 			//push two first packets to router's input buffer
 			FlitType header;
-			_mem2->Read(_next_send_addr, (int8_t*)&header, 2);
+			_mem2->Read(_next_send_addr, (int8_t*)&header, sizeof(FlitType));
 			_ob->push(header);
-			_next_send_addr += 2;
+			_next_send_addr += sizeof(FlitType);
 			
 			std::cout << std::hex << header;
 			
-			_mem2->Read(_next_send_addr, (int8_t*)&header, 2);
+			_mem2->Read(_next_send_addr, (int8_t*)&header, sizeof(FlitType));
 			_ob->push(header);
-			_next_send_addr += 2;
+			_next_send_addr += sizeof(FlitType);
 			
 			std::cout << std::hex << header;
 			
 			//get number of flits. push third flit
-			_mem2->Read(_next_send_addr , (int8_t*)&header, 2);
+			_mem2->Read(_next_send_addr , (int8_t*)&header, sizeof(FlitType));
 			_ob->push(header);
-			_next_send_addr += 2;
+			_next_send_addr += sizeof(FlitType);
 			
 			_flits_to_send = header;	
 			
