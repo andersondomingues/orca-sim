@@ -79,7 +79,6 @@ ProcessingElement::ProcessingElement(uint32_t x, uint32_t y){
 	
 	_netif->SetMem1(_mem1);
 	_netif->SetMem2(_mem2);
-
 }
 
 ProcessingElement::~ProcessingElement(){

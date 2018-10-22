@@ -29,6 +29,7 @@
 UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe, std::string binname) : UntimedModel(name){
 	
 	_mem = new MemoryType[size];
+	
 	_length = size;
 	_sram_base = sram_base;
 
@@ -50,7 +51,7 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 		throw std::runtime_error(s.str());
 	}
 
-	if(addr > _sram_base + _length){
+	if(addr > (_sram_base + _length)){
 		stringstream s;
 		s << this->GetName() << ": unable to write to addr (0x" << std::hex
 			<< addr << ") higher than sram base + mem_size.";
@@ -58,26 +59,11 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 	}
 	#endif
 
-	/*
-	int xxx = 0;
-	if(addr == 0x3fffff80 && *data == '"'){
-		xxx = 1;
-		std::cout << std::hex << addr << "|" << std::hex << length << "|" << std::hex << *data << std::endl;
-	}
-		*/
-			
-
     //same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
 		_mem[addr - _sram_base] = data[i];
 		addr++;
 	}
-	/*
-						
-	if(xxx == 1){
-		std::cout << std::hex << (addr -1)<< "|" << std::hex << length << "|" << std::hex << _mem[addr - _sram_base -1] << std::endl;
-	}
-	*/
 }
 
 void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
@@ -90,7 +76,7 @@ void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 		throw std::runtime_error(s.str());
 	}
 
-	if(addr > _sram_base + _length){
+	if(addr > (_sram_base + _length)){
 		stringstream s;
 		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
 			<< addr << ") higher than sram base + mem_size.";
@@ -126,15 +112,15 @@ void UMemory::Wipe(uint32_t base, uint32_t size){
 		throw std::runtime_error(this->GetName() + ": unable to wipe from base (" + std::to_string(base) + ") lower than sram base .");
 
 	if(base > _sram_base + _length)
-		throw std::runtime_error(this->GetName() + ": unable to wipe from base (" + std::to_string(base) + ") higher than sram base + length.");
-		
-	if(size > _length)
-		throw std::runtime_error(this->GetName() + ": unable to wipe beyound memory size (" + std::to_string(size) + ", but memory size is " + std::to_string(_length));
+		throw std::runtime_error(this->GetName() + ": unable to wipe from base (" + std::to_string(base) + ") higher than sram base .");
+
+	if(base + size > _sram_base + _length)
+		throw std::runtime_error(this->GetName() + ": unable to wipe that much length (" + std::to_string(size) + ") higher than sram base + length.");
 	#endif
 	
-	for(uint32_t i = base; i < size; i++)	
-		_mem[i] = 0x00;
-	
+	MemoryType* range_ptr = _mem + (base - _sram_base);
+	for(uint32_t i = 0; i < size; i++)
+		range_ptr[i] = 0;
 }
 
 void UMemory::LoadBin(std::string filename, uint32_t base, uint32_t size){

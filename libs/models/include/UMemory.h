@@ -91,7 +91,6 @@ public:
 	  * @param size: Total length to be dumped. */
 	void Dump(uint32_t base, uint32_t length);
 	void Dump();
-	void Dump2();
 	
 	/** Overrides operator [] for accessing internal mem data
 	  * @param i: index of the internal array to be accessed
@@ -101,10 +100,7 @@ public:
 		//TODO: validate behaviour
 		return _mem[i];
 	}
-	
-	//TODO:remove it as soon as possible
-	MemoryType* GetMemPtr();
-    
+	    
 	unsigned long long Run();    
 	
 	

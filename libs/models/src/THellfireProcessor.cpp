@@ -91,9 +91,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	}else if(address >= s->mem2->GetBase() && address <= (s->mem2->GetBase() + s->mem2->GetSize())){
 		sel_mem = s->mem2;
 	}
-	
-	
-	
+		
 	#ifndef NOGUARDS
 	if(sel_mem == nullptr){
 		dumpregs(s);
@@ -197,6 +195,10 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	}
 	#endif
 	
+	if(address == 0x90000080){
+		std::cout << std::hex << value << std::endl;
+	}
+
 	switch(size){
 		case 4:
 			if(address & 3){
