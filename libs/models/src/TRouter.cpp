@@ -186,7 +186,7 @@ uint32_t TRouter::GetRouteXY(FlitType flit){
  * @brief Free allocated memory if any
  */
 TRouter::~TRouter(){
-    //nothing to do here
+    delete [] _ib;
 }
 
 

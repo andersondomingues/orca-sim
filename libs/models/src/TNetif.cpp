@@ -91,7 +91,7 @@ void TNetif::SetCommStart(UComm<bool>* c){ _comm_start = c; }
 void TNetif::SetCommStatus(UComm<bool>* c){ _comm_status = c; }
 
 long long unsigned int TNetif::Run(){
-    //this->recvProcess();
+    this->recvProcess();
     this->sendProcess();
     return 1; //takes only 1 cycle to change both states
 }
