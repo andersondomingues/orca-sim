@@ -30,9 +30,6 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 	
 	_mem = new MemoryType[size];
 
-
-        std::cout << this->GetName() << " at " << ((void*)(int*) _mem) << std::endl;
-
 	_length = size;
 	_sram_base = sram_base;
 
@@ -41,6 +38,9 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 
 	if(binname != "")
 		this->LoadBin(binname, _sram_base, _length);
+		
+    std::cout << this->GetName() << " at " << ((void*)(int*) _mem) << " mapped from 0x" 
+		      << std::hex << _sram_base << " to 0x" << std::hex << (_sram_base + _length - 1) <<std::endl;
 }
 
 void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
@@ -54,10 +54,11 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 		throw std::runtime_error(s.str());
 	}
 
-	if(addr > (_sram_base + _length)){
+	if(addr > GetLastAddr()){
 		stringstream s;
 		s << this->GetName() << ": unable to write to addr (0x" << std::hex
-			<< addr << ") higher than sram base + mem_size.";
+			<< addr << ") higher than last mapped address of (0x" << std::hex 
+			<< GetLastAddr() << ").";
 		throw std::runtime_error(s.str());
 	}
 	#endif
@@ -79,10 +80,11 @@ void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 		throw std::runtime_error(s.str());
 	}
 
-	if(addr > (_sram_base + _length)){
+	if(addr > GetLastAddr()){
 		stringstream s;
 		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
-			<< addr << ") higher than sram base + mem_size.";
+			<< addr << ") higher than last mapped address of (0x" << std::hex 
+			<< GetLastAddr() << ").";
 		throw std::runtime_error(s.str());
 	}
 	#endif
@@ -99,13 +101,16 @@ void UMemory::Wipe(){
 	this->Wipe(_sram_base, _length);
 }
 
-
 uint32_t UMemory::GetBase(){
 	return _sram_base;
 }
 
 uint32_t UMemory::GetSize(){
 	return _length;
+}
+
+uint32_t UMemory::GetLastAddr(){
+	return _sram_base + (_length - 1);
 }
 
 void UMemory::Wipe(uint32_t base, uint32_t size){

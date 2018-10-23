@@ -49,7 +49,7 @@ int main(int argc, char** argv){
 
         argc = argc; //workaround to use -Wextra
 
-	std::cout << "URSA is building Sulphane (" << NOC_W_SIZE << " by " << NOC_H_SIZE << ")" << std::endl;
+	std::cout << "Sulphane: (H2S) Hermes-Hellfire SoC (Width=" << NOC_W_SIZE << ", Height=" << NOC_H_SIZE << ")" << std::endl;
 	std::cout << "Simulation step set to " << CYCLES_TO_SIM << " cycles." << std::endl;
 	
 	//populate PEs

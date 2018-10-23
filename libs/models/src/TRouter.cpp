@@ -67,13 +67,24 @@ unsigned long long TRouter::Run(){
             //prevent from serving unconnected ports (e.g. border). However,
 			//it still consumed one cycle for changing to next port
 			//TODO: discuss if it is necessary to clone unused ports
-            if(_ib[_round_robin] != nullptr && _ib[_round_robin]->size() > 0){
+            if(_ib[_round_robin] == nullptr || _ib[_round_robin]->size() == 0)
+				_round_robin = (_round_robin + 1) % 5; 
+			else
+				_state = RouterState::FORWARD1;
 			
-				std::cout << "topflit = " << std::hex << _ib[_source_port]->top() << std::endl;
+		}break;
+		
+		case RouterState::FORWARD1:{
+			
+			if(_ib[_round_robin]->size() > 0){
 				
 				//get target port from first flit
 				_source_port = _round_robin;
-				_target_port = this->GetRouteXY(_ib[_source_port]->top()); 
+				
+				FlitType flit = _ib[_source_port]->top(); _ib[_source_port]->pop();
+				std::cout << GetName() << ": first flit = " << flit << std::endl;
+				
+				_target_port = this->GetRouteXY(flit); 
 				
 				#ifndef NO_GUARDS
 				if(_ob[_target_port] == nullptr){
@@ -85,46 +96,34 @@ unsigned long long TRouter::Run(){
 				}
 				#endif
 				
-				//change state
-				_state = RouterState::FORWARD1;				
-			}
-			
-			//get next port
-            _round_robin++;
-            _round_robin = _round_robin % 5; 
-			//std::cout << this->GetName() << ": RR" << std::endl;
-			
-		} break;
-		
-		case RouterState::FORWARD1:{
-			
-			//forward first flit and clean from input 
-			_ob[_target_port]->push(_ib[_source_port]->top());
+				//foward header flit
+				_ob[_target_port]->push(flit);
 				
-			//forward second flit and clean from input
-			_ob[_target_port]->push(_ib[_source_port]->top());
-			_ib[_source_port]->pop();
-			
-			//change state
-			_state = RouterState::PKTLEN;
-			std::cout << this->GetName() << ": FRWD" << std::endl;
-			std::cout << this->GetName() << ": source=" <<_source_port << ", target=" << _target_port << std::endl;
+				//change state
+				_state = RouterState::PKTLEN;
+			}
 			
 		} break;
 		
 		case RouterState::PKTLEN:{
 			
-			//read length flit to determine how many
-			//to push after the third flit 
-			_packets_to_send = _ib[_source_port]->top();
-			
-			//forward third flit and clean from input
-			_ob[_target_port]->push(_ib[_source_port]->top());
-			_ib[_source_port]->pop();
-			
-			//change state
-			_state = RouterState::BURST;
-			std::cout << this->GetName() << ": PKTLEN" << std::endl;
+			if(_ib[_round_robin]->size() > 0){
+				//read length flit to determine how many
+				//to push after the third flit 
+				_packets_to_send = _ib[_source_port]->top();
+				
+				//forward third flit and clean from input
+				_ob[_target_port]->push(_ib[_source_port]->top());
+				_ib[_source_port]->pop();
+				
+				std::cout << GetName() << ": flits_to_send = 0x" << std::hex << _packets_to_send 
+						  << "(" << std::dec << _packets_to_send << ") from port " << _source_port 
+						  << " to " << _target_port << std::endl;
+				
+				//change state
+				_state = RouterState::BURST;
+				//std::cout << this->GetName() << ": PKTLEN" << std::endl;
+			}
 			
         } break;
   
@@ -133,17 +132,18 @@ unsigned long long TRouter::Run(){
 		//router returns to ROUNDROBIN state.
         case RouterState::BURST: {
 			
-			//forward the next flit and clean from input
-			_ob[_target_port]->push(_ib[_source_port]->top());
-			_ib[_source_port]->pop();
-            
-            _packets_to_send--;
-            
-            if(_packets_to_send == 0)
+			if(_packets_to_send == 0)
                 _state = RouterState::ROUNDROBIN;
 				
-			std::cout << this->GetName() << ": BURST" << std::endl;
-
+			else if(_ib[_round_robin]->size() > 0){
+			
+				//forward the next flit and clean from input
+				_ob[_target_port]->push(_ib[_source_port]->top());
+				_ib[_source_port]->pop();
+				
+				_packets_to_send--;
+			}
+			
         } break;
     }
 	
@@ -160,8 +160,8 @@ unsigned long long TRouter::Run(){
  * @return the port to where te packet must go*/
 uint32_t TRouter::GetRouteXY(FlitType flit){
     
-    FlitType tx = (flit & 0xFF00) >> 8;
-    FlitType ty = (flit & 0x00FF);
+    FlitType tx = (flit & 0xF0) >> 4;
+    FlitType ty = (flit & 0x0F);
 	
 	std::cout << this->GetName() << ":0x" << flit << ":(x, y) => (" << tx << "," << ty << ")" << std::endl;
 
@@ -186,7 +186,7 @@ uint32_t TRouter::GetRouteXY(FlitType flit){
  * @brief Free allocated memory if any
  */
 TRouter::~TRouter(){
-    delete [] _ib;
+    //delete [] _ib;
 }
 
 

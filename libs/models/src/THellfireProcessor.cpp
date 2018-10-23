@@ -79,16 +79,16 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	UMemory* sel_mem = nullptr;
 	
 	//memread to mem0
-	if(address >= s->sram->GetBase() && address < (s->sram->GetBase() + s->sram->GetSize())){
+	if(address >= s->sram->GetBase() && address < s->sram->GetLastAddr()){
 		sel_mem = s->sram;
 		
 	//memread to mem1 
-	}else if(address >= s->mem1->GetBase() && address < (s->mem1->GetBase() + s->mem1->GetSize())){
+	}else if(address >= s->mem1->GetBase() && address < s->mem1->GetLastAddr()){
 		sel_mem = s->mem1;
 	
 	//memread to mem2. please note that this is set only for debuggin since neither the 
 	//kernel or applications should read from this memory space
-	}else if(address >= s->mem2->GetBase() && address < (s->mem2->GetBase() + s->mem2->GetSize())){
+	}else if(address >= s->mem2->GetBase() && address < s->mem2->GetLastAddr()){
 		sel_mem = s->mem2;
 	}
 		

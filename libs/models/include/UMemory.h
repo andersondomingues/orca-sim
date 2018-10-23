@@ -104,8 +104,12 @@ public:
 	unsigned long long Run();    
 	
 	
-	uint32_t GetBase();
-	uint32_t GetSize();
+	uint32_t GetBase(); //first address 
+	uint32_t GetSize(); //number of addresses 
+	
+	//last address; NOTE THAT the last address is NOT (_base + _length), since the 
+	//address zero still counts. Last address is (_base + _length - 1);
+	uint32_t GetLastAddr(); //last address
 	
 };
 
