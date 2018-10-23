@@ -29,7 +29,10 @@
 UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe, std::string binname) : UntimedModel(name){
 	
 	_mem = new MemoryType[size];
-	
+
+
+        std::cout << this->GetName() << " at " << ((void*)(int*) _mem) << std::endl;
+
 	_length = size;
 	_sram_base = sram_base;
 
@@ -175,6 +178,6 @@ UMemory::~UMemory(){
 }
 
 void UMemory::Reset(){
-	delete(_mem);
-	_mem = new MemoryType[_length];
+	//delete(_mem);
+	//_mem = new MemoryType[_length];
 }
