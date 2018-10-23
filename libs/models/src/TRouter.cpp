@@ -82,7 +82,7 @@ unsigned long long TRouter::Run(){
 				_source_port = _round_robin;
 				
 				FlitType flit = _ib[_source_port]->top(); _ib[_source_port]->pop();
-				std::cout << GetName() << ": first flit = " << flit << std::endl;
+				//std::cout << GetName() << ": first flit = " << flit << std::endl;
 				
 				_target_port = this->GetRouteXY(flit); 
 				
@@ -116,9 +116,9 @@ unsigned long long TRouter::Run(){
 				_ob[_target_port]->push(_ib[_source_port]->top());
 				_ib[_source_port]->pop();
 				
-				std::cout << GetName() << ": flits_to_send = 0x" << std::hex << _packets_to_send 
+				/*std::cout << GetName() << ": flits_to_send = 0x" << std::hex << _packets_to_send 
 						  << "(" << std::dec << _packets_to_send << ") from port " << _source_port 
-						  << " to " << _target_port << std::endl;
+						  << " to " << _target_port << std::endl;*/
 				
 				//change state
 				_state = RouterState::BURST;
@@ -163,7 +163,7 @@ uint32_t TRouter::GetRouteXY(FlitType flit){
     FlitType tx = (flit & 0xF0) >> 4;
     FlitType ty = (flit & 0x0F);
 	
-	std::cout << this->GetName() << ":0x" << flit << ":(x, y) => (" << tx << "," << ty << ")" << std::endl;
+	//std::cout << this->GetName() << ":0x" << flit << ":(x, y) => (" << tx << "," << ty << ")" << std::endl;
 
     //if X=0, then route "vertically" (Y)
     if(_x == tx){

@@ -22,6 +22,7 @@
 
 //std API
 #include <iostream>
+#include <sstream>
 
 //simulator API
 #include <TimedModel.h>
@@ -53,7 +54,6 @@ void TNetif::Reset(){
 	
 	_recv_state = NetifRecvState::READY;
 	_flits_to_recv = 0;
-	_next_recv_addr = 0;
 	
     _send_state = NetifSendState::READY;
 	_flits_to_send = 0;
@@ -111,31 +111,30 @@ void TNetif::recvProcess(){
 				//writes addr header to mem
 				_next_recv_addr = _mem1->GetBase();
 				
-				
 				FlitType flit = _ib->top(); _ib->pop();
 				_mem1->Write(_next_recv_addr, (int8_t*)&flit, 2);
-				
 				_next_recv_addr += sizeof(FlitType);
 				
 				_recv_state = NetifRecvState::LENGTH;
-				
-				
-				std::cout << "RECV!" << std::endl;
 			}
 			
 		}break;		
 		
 		case NetifRecvState::LENGTH:{
 			
-			FlitType len_flit = _ib->top(); _ib->pop();
-			_mem1->Write(_next_recv_addr, (int8_t*)&len_flit, 2);
-			_next_recv_addr += sizeof(FlitType);
-			
-			_flits_to_recv = len_flit;
-			
-			_recv_state = NetifRecvState::DATA_IN;			
+			if(_ib->size() > 0){
+				FlitType len_flit = _ib->top(); _ib->pop();
+				_mem1->Write(_next_recv_addr, (int8_t*)&len_flit, 2);
+				_next_recv_addr += sizeof(FlitType);
+				
+				_flits_to_recv = len_flit;
+				
+				_recv_state = NetifRecvState::DATA_IN;			
+				
+				std::cout << "DATAIN of 0x" << std::hex << len_flit << std::endl;
+			}
 		}break;
-						
+
 		//copies words to memory (two-by-two, that is, 16-bits);
 		case NetifRecvState::DATA_IN:{
 			
@@ -143,13 +142,16 @@ void TNetif::recvProcess(){
 			if(_flits_to_recv == 0)
 				_recv_state = NetifRecvState::INTR_CPU;
 			
-			//get next flit
-			FlitType next = _ib->top(); _ib->pop();
-			
-			//writes to memory
-			_mem1->Write(_next_recv_addr, (int8_t*)&next, 2);
-			_next_recv_addr += sizeof(FlitType);
-			_flits_to_recv--;
+			if(_ib->size() > 0){
+				
+				//get next flit
+				FlitType next = _ib->top(); _ib->pop();
+				
+				//writes to memory
+				_mem1->Write(_next_recv_addr, (int8_t*)&next, 2);
+				_next_recv_addr += sizeof(FlitType);
+				_flits_to_recv--;
+			}
 		
 		} break;
 		
@@ -159,16 +161,24 @@ void TNetif::recvProcess(){
 			_comm_intr->Write(1);
 			_recv_state = NetifRecvState::WAIT;
 			
+			std::cout << "INTR" << std::endl;
+			
 		} break;
 		
 		case NetifRecvState::WAIT:{
+			
+			
 			
 			//wait until CPU finishes copying. Then, disable both flags
 			if(_comm_ack->Read()){
 				_recv_state = NetifRecvState::READY;
 				_comm_intr->Write(false);
 				_comm_ack->Write(false);
+				
+				std::cout << "WAIT" << std::endl;
+				
 			}
+			
 		} break;
 	}
 }
@@ -177,11 +187,18 @@ void TNetif::sendProcess(){
 	
 	switch(_send_state){
 		
-		case NetifSendState::READY:
+		case NetifSendState::READY:{
 				
-			if(_comm_start->Read()){
+			if(_comm_start->Read() == true){
 				
-				_send_state = NetifSendState::SETUP;
+				#ifndef NO_GUARDS
+				if(_ib->size() != 0){
+					stringstream s;
+					s << GetName() << ": Unable to send packet. Buffer is not empty." << std::endl;
+					throw std::runtime_error(s.str());
+				}
+				#endif
+				
 				_next_send_addr = _mem2->GetBase();
 				
 				//push first packet to router's input buffer
@@ -189,39 +206,43 @@ void TNetif::sendProcess(){
 				_mem2->Read(_next_send_addr, (int8_t*)&header, sizeof(FlitType));
 				_ob->push(header);
 				_next_send_addr += sizeof(FlitType);
+				
+				//change state
+				_send_state = NetifSendState::LENGTH;
 			}
-			break;
-			
-		case NetifSendState::SETUP:
+		} break;
+
+		case NetifSendState::LENGTH:{
 			
 			FlitType flit;
 			
-			//length flit
+			//push length flit into router's buffer
 			_mem2->Read(_next_send_addr, (int8_t*)&flit, sizeof(FlitType));
 			_ob->push(flit);
 			_next_send_addr += sizeof(FlitType);
 			
-			_flits_to_send = flit;			
+			_flits_to_send = flit;
 			_send_state = NetifSendState::DATA_OUT;
-			break;
+			
+		}break;
 		
 		//burst send next flits
 		case NetifSendState::DATA_OUT:{
 
-			//send next
-			FlitType data;
-			_mem2->Read(_next_send_addr, (int8_t*)&data, 2);
-			_ob->push(data);
-			_next_send_addr += 2;
-			_flits_to_send--;
-			
-			if(_flits_to_send == 0) _send_state = NetifSendState::WAIT;	
+			if(_flits_to_send == 0) {
+				_send_state = NetifSendState::READY;
+				_comm_start->Write(false);
+			}else{			
+				//send next
+				FlitType flit;
+				_mem2->Read(_next_send_addr, (int8_t*)&flit, 2);
+				_ob->push(flit);
+				_next_send_addr += sizeof(FlitType);
+				
+				_flits_to_send--;
+			}
 			
 		} break;
-		
-		case NetifSendState::WAIT:
-			_comm_start->Write(0); //down start flag
-			_send_state = NetifSendState::READY;
-			break;
+
 	}
 }
