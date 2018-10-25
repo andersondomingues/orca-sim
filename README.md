@@ -4,7 +4,7 @@ Welcome to the repository of the URSA project. URSA is an environment for creati
 
 The following sections may serve you as a tour on the project. Note that the project is in constant evolution! So, feel free to contact us regarding the development of URSA.
 
-![Components of URSA and their interaction.](https://github.com/andersondomingues/ursa/blob/master/tools/web-client/figs/URSA.png?raw=true)
+![Components of URSA and their interaction.](https://raw.githubusercontent.com/andersondomingues/ursa/stable/resources/URSA.png?raw=true)
 
 ## The Anatomy of URSA
 
