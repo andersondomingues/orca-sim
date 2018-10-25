@@ -166,7 +166,7 @@ void TNetif::recvProcess(){
 			//wait until CPU finishes copying. Then, disable both flags
 			if(_comm_ack->Read() == true){
 				
-				std::cout << "aquiii " << std::endl;
+				//std::cout << "aquiii " << std::endl;
 				
 				_recv_state = NetifRecvState::READY;
 				_comm_intr->Write(false);

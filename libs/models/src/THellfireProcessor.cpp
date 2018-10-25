@@ -169,7 +169,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	}
 	
 	//comms
-	if(address == s->comm_intr->GetAddr()){ s->comm_ack->Write(value); return; }
+	if(address == s->comm_intr->GetAddr()){ s->comm_intr->Write(value); return; }
 	if(address == s->comm_ack->GetAddr()){ s->comm_ack->Write(value); return; }
 	if(address == s->comm_start->GetAddr()){ s->comm_start->Write(value); return; }
 	
