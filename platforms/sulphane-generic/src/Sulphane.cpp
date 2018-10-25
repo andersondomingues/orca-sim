@@ -47,7 +47,7 @@ void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 
 int main(int argc, char** argv){
 
-        argc = argc; //workaround to use -Wextra
+    argc = argc; //workaround to use -Wextra
 
 	std::cout << "Sulphane: (H2S) Hermes-Hellfire SoC (Width=" << NOC_W_SIZE << ", Height=" << NOC_H_SIZE << ")" << std::endl;
 	std::cout << "Simulation step set to " << CYCLES_TO_SIM << " cycles." << std::endl;
@@ -56,7 +56,7 @@ int main(int argc, char** argv){
 	for(int x = 0; x < NOC_W_SIZE; x++)
 		for(int y = 0; y < NOC_H_SIZE; y++)
 			pes[x][y] = new ProcessingElement(x, y);
-			
+
 	//connect PE to each other (left-to-right, right-to-left connections)	
 	for(int x = 0; x < NOC_W_SIZE - 1; x++)
 		for(int y = 0; y < NOC_H_SIZE; y++)
@@ -82,8 +82,6 @@ int main(int argc, char** argv){
 		}
 	}
 
-
-	
 	//load binaries into main memories
 	int index = 0;
 	std::string code_file;

@@ -129,9 +129,7 @@ void TNetif::recvProcess(){
 				
 				_flits_to_recv = len_flit;
 				
-				_recv_state = NetifRecvState::DATA_IN;			
-				
-				std::cout << "DATAIN of 0x" << std::hex << len_flit << std::endl;
+				_recv_state = NetifRecvState::DATA_IN;
 			}
 		}break;
 
@@ -161,22 +159,18 @@ void TNetif::recvProcess(){
 			_comm_intr->Write(1);
 			_recv_state = NetifRecvState::WAIT;
 			
-			std::cout << "INTR" << std::endl;
-			
 		} break;
 		
 		case NetifRecvState::WAIT:{
 			
-			
-			
 			//wait until CPU finishes copying. Then, disable both flags
-			if(_comm_ack->Read()){
+			if(_comm_ack->Read() == true){
+				
+				std::cout << "aquiii " << std::endl;
+				
 				_recv_state = NetifRecvState::READY;
 				_comm_intr->Write(false);
 				_comm_ack->Write(false);
-				
-				std::cout << "WAIT" << std::endl;
-				
 			}
 			
 		} break;

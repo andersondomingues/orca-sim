@@ -364,7 +364,7 @@ unsigned long long THellfireProcessor::Run(){
 	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;        /*IRQ_COUNTER2*/
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;     /*IRQ_COUNTER_NOT*/
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
-	if (s->comm_intr->Read()) s->cause |= 0x100; else s->cause &= 0xffffffef;       /*NOC*/
+	if (s->comm_intr->Read() == true) s->cause |= 0x100; else s->cause &= 0xffffffef; /*NOC*/
 		
 	//returns 4 of Store or Load, else returns 3
 	return (opcode == 0x23 || opcode == 0x3) ? 4 : 3;
