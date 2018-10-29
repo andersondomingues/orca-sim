@@ -156,7 +156,7 @@ void TNetif::recvProcess(){
 		case NetifRecvState::INTR_CPU:{
 		
 			//interrupts CPU
-			_comm_intr->Write(1);
+			_comm_intr->Write(true);
 			_recv_state = NetifRecvState::WAIT;
 			
 		} break;
