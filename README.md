@@ -1,34 +1,18 @@
-# URSA
+# &#181; Rapid-Simulation API (URSA)
 
-Welcome to the repository of the URSA project. URSA is an environment for creating, building and simulating multiprocessed, computing systems platforms.
+URSA is a lightweigth API for the rapid simulation of computing systems. The goal of the project is to provide an alternative to the cubersome, expensive, and buggy on-the-shelf tools. 
 
-The following sections may serve you as a tour on the project. Note that the project is in constant evolution! So, feel free to contact us regarding the development of URSA.
+## An Overview on the project...
+
+URSA comprises a discrete event simulator that enables the cycle-accurate simulation of hardware models. We describe such models using C++ language. For the sake of simplicity, no libraries other than those provided with your C++ compiler are required. The project is entirely object-oriented, well organized, and properly documented. Although a very young project, URSA is a nice alternative to personal, college and industrial projects.
 
 ![Components of URSA and their interaction.](https://raw.githubusercontent.com/andersondomingues/ursa/stable/docs/URSA.png?raw=true)
 
-## The Anatomy of URSA
+## Getting Started
 
-URSA project is made of a few modules:
+- First of all, make sure you have make and gcc installed in your system. URSA is being developed using ``GNU Make 4.1``, ``GCC version 6.3.0``,  in a ``Debian 6.3.0-18+deb9u1`` machine and is guaranteed to run using these software. However, you can try another compiler or building system at your own risk. 
 
-- MODELS: Models are functional implementations of hardware's behavior, that is, its C++ code that emulates the hardware. Still, it is cycle-accurate and handy for fast-programming when targeting embedded platforms. We currently have models for 
-  * Memory model, suitable for RAM and ROM emulation. This model support configuring addressing range (base and size), data manipulation methods (multi-range write and read), debugging (dump), and more. 
-  * Buffer model. This model support fixed and dynamic buffer length (including unlimited length).
-  * Risc-V 32-bit core (hf-riscv).
-  * Network-on-chip router (hermes noc). XY routing algorithm, round-robin policy and whormhole package switching.
-  * DMNI module (from hemps). DMA + NI modules, together.
-
-
-- PLATFORMS: Platforms are composed of several interconnected hardware models, such as peripherals, busses, processors and other hardware. We are currently working on integrating both the HF-RISCV processor and peripherals from the HEMPS project onto a single platform. More information on HF-RISCV and HEMPS projects can be found in the [external contribution](#external-contribution) section. 
-
-- SIMULATOR: The discrete event simulator component is the heart of simulation. It instantiates a queue in which events from hardware are scheduled and executed in-order. URSA provides cycle-precise simulation.
-
-- WEB-CLIENT: Interactive monitoring interface that allows the visualization of models through a web browser. For instance, one may want to watch registers changing their values during systems' execution, just for fun. Also, it is possible to control the simulation through the interface by mapping IO to web controls, simulation the input of real data to the target platform.
-
-## Requirements and Running an Example
-
-- We tested URSA with ``GNU Make 4.1``, ``GCC version 6.3.0``,  and ``Debian 6.3.0-18+deb9u1``. Additional compilers may be required for compiling software for simulated CPUs. 
-
-- Examples are available at ``platforms`` directory. 
+- An example of platform can be found ``sdfdfsd`` We provide files for compiling Sulphane, is provided within URSA. The ``platforms`` directory. 
 
 ## Project Status and Roadmap
 
