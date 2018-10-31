@@ -12,19 +12,27 @@ URSA comprises a discrete event simulator that enables the cycle-accurate simula
 
 - First of all, make sure you have make and gcc installed in your system. URSA is being developed using ``GNU Make 4.1``, ``GCC version 6.3.0``,  in a ``Debian 6.3.0-18+deb9u1`` machine and is guaranteed to run using these software. However, you can try another compiler or building system at your own risk. 
 
-- An example of platform can be found ``sdfdfsd`` We provide files for compiling Sulphane, is provided within URSA. The ``platforms`` directory. 
+- Examples of platforms reside under ``platforms`` folder. Select a platform to run and type ``make clean; make`` from the inside the platform directory. For instance, type ``cd ursa/platforms/sulphane-generic; make clean; make`` and results for your simulation will be writen to ``ursa/platforms/sulphane-generic/logs`` folder.
+
+- Note that in case you are simulating any CPU other than the one in your system, additional cross-compilers may be necessary depending on the target architecture.
 
 ## Project Status and Roadmap
 
-- We are currently working on integrating the HF-RISCV processor with peripherals from the HEMPS project onto a single platform. we hope to finish this milestone near the end of August of 2018. 
+- We are currently working on the Sulphane platform, which is the example provided within URSA. We hope to finish the platform as soon as the end of November/2018. However, URSA can be considered as stable and the development of Sulphane should not bring any modifications to URSA source code.
+
+- Here are a tiny list of things to be implemented in the near future
+ - Distributed and parallel simulation (because is faster than singlecore)
+ - Functional models (to speed-up software development for simulated platforms)
+ - Debugging and visualization tools
+ - Drive detection
 
 ## Provided Models
 
-Most of the available models mimic behavior from existing hardware. Documentation for this hardware is available at providers' website or repository. 
+Some of the provided models comes from existing hardware. Documentation for these hardware is available at providers' website or repository. 
 
-- HF-RISCV. The hf-riscv processor is maintained by Sergio Johann (sjohann81). More information on his work can be found at [his repository](https://github.com/sjohann81). Also, most of the provided model for the HF-RISCV processor comes from Johann's simulator, which can also be found in his repository.
+- HF-RISCV. The hf-riscv core is maintained by Sergio Johann (sjohann81). More information on his work can be found at [his repository](https://github.com/sjohann81). Also, our model of hf-riscv core is very based on the one provided by him. 
 
-- HEMPS (and HERMES). The GAPH group maintains the HEMPS project. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html). Provided network-on-chip router and DMNI models are based on the hardware available in [their repository](https://github.com/GaphGroup/hemps). Note that HERMES is part of the HEMPS projects and should be available at the same repository.
+- HEMPS (and HERMES). The GAPH group maintains the HEMPS project. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html). Provided network-on-chip router model is based on the RTL models available at [their repository](https://github.com/GaphGroup/hemps). 
 
 ## Licensing
 
@@ -32,4 +40,4 @@ See ``LICENSE.MD`` for details.
 
 ## Contact
 
-Any of the contributors of this repository. For now, I ([andersondomingues](https://github.com/andersondomingues)) am the only contributor to this project. Feel free to [mail me](mailto:ti.andersondomingues@gmail.com).
+For now, I ([andersondomingues](https://github.com/andersondomingues)) am the only contributor to this project. Feel free to [mail me](mailto:ti.andersondomingues@gmail.com).
