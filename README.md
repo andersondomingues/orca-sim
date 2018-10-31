@@ -21,10 +21,12 @@ URSA comprises a discrete event simulator that enables the cycle-accurate simula
 - We are currently working on the Sulphane platform, which is the example provided within URSA. We hope to finish the platform as soon as the end of November/2018. However, URSA can be considered as stable and the development of Sulphane should not bring any modifications to URSA source code.
 
 - Here are a tiny list of things to be implemented in the near future
- - Distributed and parallel simulation (because is faster than singlecore)
- - Functional models (to speed-up software development for simulated platforms)
- - Debugging and visualization tools
- - Drive detection
+    - Distributed and parallel simulation (because it is faster than singlecore)
+    - Functional models (to gain simulation time and to speed-up software development for simulated platforms)
+    - Debugging and visualization tools 
+    - Drive detection
+    - Breakpoints and snapshots
+    - Simulation history, rollback and forward of simulation steps
 
 ## Provided Models
 
