@@ -3,7 +3,7 @@ HEADERDIR :=./include
 OUTPUTDIR :=./bin
 
 CPP := g++
-CPPFLAGS := -g -c -O3 -I$(HEADERDIR) -Wall 
+CPPFLAGS := -g -c -Og -I$(HEADERDIR) -Wall -Wextra -Werror 
 #-fsanitize=address
 
 ARFLAGS :=

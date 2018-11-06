@@ -47,6 +47,8 @@ void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 
 int main(int argc, char** argv){
 
+	
+
     argc = argc; //workaround to use -Wextra
 
 	std::cout << "Sulphane: (H2S) Hermes-Hellfire SoC (Width=" << NOC_W_SIZE << ", Height=" << NOC_H_SIZE << ")" << std::endl;
