@@ -70,57 +70,52 @@ void UMau::Map(Comm<uint8_t>*  comm, uint32_t base){
 }
 
 
-    /**
-     * @brief Maps a comm to an address. Supports 2-bytes sized comms.
-     * @param comm Comm to be mapped
-     * @param base Address to map the comm to
-     */
-    void Map(Comm<uint16_t>* comm, uint32_t base);
+void UMau::Map(Comm<uint16_t>*  comm, uint32_t base){
 
-    /**
-     * @bried Maps a comm to an address. Supports 4-byte sized comms.
-     * @param comm Comm to be mapped
-     * @param base Address to map the comm to
-     */
-    void Map(Comm<uint32_t>* comm, uint32_t base);
+    MemoryMapping m = MemoryMapping(
+        base, 2, base, comm, UCOMM);
 
-    /**
-     * @brief Maps a comm to an address. Supports 8-byte sized comms.
-     * @param comm Comm to be mapped
-     * @param base Address to map the comm to
-     */
-    void Map(Coom<uint64_t>* coom, uint32_t base);
+    this->add_mapping(m); //see note above
+}
 
-    /**
-     * @brief Destructor. Cleans dynamic allocated memory before disposing the object.
-     */
-    ~UMau();
+void UMau::Map(Comm<uint32_t>*  comm, uint32_t base){
 
-    /**
-     * @brief Clear all mappings. No use for now.
-     */
-    void Reset();
+    MemoryMapping m = MemoryMapping(
+        base, 4, base, comm, UCOMM);
 
-    /**
-     * @brief Reads data from the virtual memory
-     * @param base Starting address of reading
-     * @param len Size of data to be read (in bytes)
-     * @param out Memory space to write the read values
-     */
-    void Read(uint32_t base, uint32_t len, int8_t* out);
+    this->add_mapping(m); //see note above
+}
 
-    /**
-     * @brief Writes data to the virtual memory
-     * @param base Starting address to write to
-     * @param len Size of data to be write
-     * @param in Address of data to be copied into virtual memory
-     */
-    void Write(uint32_t base, uint32_t len, int8_t* in);
-};
+ void UMau::Map(Comm<uint64_t>*  comm, uint32_t base){
 
-//Some of the most used instances. More can be added later.
-template class UBuffer<uint8_t>;  //mem word
-template class UBuffer<uint16_t>; //dmni/noc word
-template class UBuffer<uint32_t>; //proc word
+    MemoryMapping m = MemoryMapping(
+        base, 8, base, comm, UCOMM);
 
-#endif /* UBuffer_H */
+    this->add_mapping(m); //see note above
+}
+
+UMau::~UMau(){}
+
+/**
+ * @brief Clear all mappings. No use for now.
+ */
+void UMau::Reset(){}
+
+  
+void Read(uint32_t base, uint32_t len, int8_t* out){
+	
+	MemoryMapping* m = nullptr;
+	
+	//look for a suitable memory mapping
+	for(int i = 0; i < _mem_entries_count; i++){
+		
+		
+		if(base >= _mem_entries[i].base && base <= _mem_entries[i].end){
+			m = _mem_entries[i];
+			break;
+		}
+	}
+}
+
+
+void Write(uint32_t base, uint32_t len, int8_t* in);
