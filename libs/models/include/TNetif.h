@@ -33,7 +33,7 @@
 
 typedef uint16_t FlitType;
 
-enum class NetifRecvState{ READY, LENGTH, DATA_IN, INTR_CPU, WAIT};
+enum class NetifRecvState{ READY, LENGTH, DATA_IN, INTR_AND_WAIT};
 enum class NetifSendState{ READY, LENGTH, DATA_OUT};
 
 /**

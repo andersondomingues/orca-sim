@@ -137,10 +137,12 @@ void TNetif::recvProcess(){
 		case NetifRecvState::DATA_IN:{
 			
 			//no more flits to recv, change state
-			if(_flits_to_recv == 0)
-				_recv_state = NetifRecvState::INTR_CPU;
+			if(_flits_to_recv == 0){
+				//interrupts CPU
+				_comm_intr->Write(true);
+				_recv_state = NetifRecvState::INTR_AND_WAIT;
 			
-			if(_ib->size() > 0){
+			}else if(_ib->size() > 0){
 				
 				//get next flit
 				FlitType next = _ib->top(); _ib->pop();
@@ -152,21 +154,11 @@ void TNetif::recvProcess(){
 			}
 		
 		} break;
-		
-		case NetifRecvState::INTR_CPU:{
-		
-			//interrupts CPU
-			_comm_intr->Write(true);
-			_recv_state = NetifRecvState::WAIT;
-			
-		} break;
-		
-		case NetifRecvState::WAIT:{
+				
+		case NetifRecvState::INTR_AND_WAIT:{
 			
 			//wait until CPU finishes copying. Then, disable both flags
 			if(_comm_ack->Read() == true){
-				
-				//std::cout << "aquiii " << std::endl;
 				
 				_recv_state = NetifRecvState::READY;
 				_comm_intr->Write(false);
