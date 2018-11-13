@@ -162,7 +162,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		case UART_DIVISOR: return;
 
 		case EXIT_TRAP:
-			std::cout << this->GetName() <<": exit trap triggered! (" << s->cycles << " cycles)" << std::endl;
+			std::cout << this->GetName() <<": exit trap triggered! (" << std::dec << s->cycles << " cycles)" << std::endl;
 			output_debug.close();
 			output_uart.close();
 			return;

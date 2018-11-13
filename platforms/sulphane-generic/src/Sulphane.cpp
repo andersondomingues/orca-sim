@@ -97,10 +97,9 @@ int main(int argc, char** argv){
 	
 	//keep simulating until something happen
 	try{
-		//while(1){
-		s->Run(CYCLES_TO_SIM);
-		//	std::cout << "Simulation: " << CYCLES_TO_SIM << " cycles has been passed since last message." << std::endl;
-		//}
+		while(1){
+			s->Run(CYCLES_TO_SIM);
+		}
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
 	}
