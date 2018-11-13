@@ -73,7 +73,7 @@ typedef struct {
 
 
 class THellfireProcessor : public TimedModel
-#if ENABLE_MONITORING
+#ifndef DISABLE_METRICS
 , public ObservableModel
 #endif
 {

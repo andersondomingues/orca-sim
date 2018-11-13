@@ -106,16 +106,29 @@ int main(int argc, char** argv){
 	}
 	
 	//show simulation statistics
-	std::cout << "========== CPU ENERGY STATISTICS =========" << std::endl;
+	std::cout << "========== CPU POWER STATISTICS =========" << std::endl;
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
 			
 			Metric* energy = pes[i][j]->GetCpu()->GetMetric(Metrics::ENERGY);
 			
 			std::cout << pes[i][j]->GetCpu()->GetName() << ":"
-			          << "\tsamples=" << std::dec << energy->GetSamples() 
-					  << "\taccumulative=" << setprecision(10) << energy->GetAccumulative() << "pJ"
-					  << "\tmean=" << (energy->GetAccumulative() / energy->GetSamples()) << "pJ"<< std::endl;
+			          << "  samples=" << std::dec << energy->GetSamples() 
+					  << "  acc.=" << setprecision(4) << energy->GetAccumulative() << "mW"
+					  << "  avg.=" << (energy->GetAccumulative() / energy->GetSamples()) << "mW"<< std::endl;
+		}
+		
+	}
+	std::cout << "========== ROUTER POWER STATISTICS =========" << std::endl;
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+			
+			Metric* energy = pes[i][j]->GetRouter()->GetMetric(Metrics::ENERGY);
+			
+			std::cout << pes[i][j]->GetRouter()->GetName() << ":"
+			          << "  samples=" << std::dec << energy->GetSamples() 
+					  << "  acc.=" << setprecision(4) << energy->GetAccumulative() << "uW"
+					  << "  avg.=" << (energy->GetAccumulative() / energy->GetSamples()) << "uW"<< std::endl;
 		}
 		
 	}

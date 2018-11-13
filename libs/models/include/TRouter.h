@@ -27,6 +27,7 @@
 
 //simulator API
 #include <TimedModel.h>
+#include <ObservableModel.h>
 #include <UBuffer.h>
 
 typedef uint16_t FlitType;
@@ -43,9 +44,18 @@ enum class RouterState{
 
 #define LOCAL 4
 
-class TRouter: public TimedModel{
+class TRouter: public TimedModel
+#ifndef DISABLE_METRICS
+, public ObservableModel
+#endif
+{
 
 private:
+		#ifndef DISABLE_METRICS
+		Metric* _metric_energy;
+		#endif
+
+
         uint32_t _round_robin;
         uint32_t _packets_to_send;
         uint32_t _target_port, _source_port;
@@ -69,6 +79,10 @@ private:
         //input buffers
         UBuffer<FlitType>* _ib[5];        
 public: 
+		
+		#ifndef DISABLE_METRICS
+		Metric* GetMetric(Metrics m);
+		#endif
 		
         UBuffer<FlitType>* GetOutputBuffer(uint32_t p);
         UBuffer<FlitType>* GetInputBuffer(uint32_t p);

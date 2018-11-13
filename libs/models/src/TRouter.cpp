@@ -34,6 +34,11 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
     _y = y_pos;
 	_is_first_flit = false; //starts in roundrobin mode, not flit to be routed
     
+	#ifndef DISABLE_METRICS
+	_metric_energy = new Metric(Metrics::ENERGY);
+	#endif
+	
+	
 	//for all ports, create a new input buffer; Note that data is bufferred by
 	//input buffers, since output buffers come from somewhere else;
     for(int i = 0; i < 5; i++){
@@ -153,8 +158,26 @@ unsigned long long TRouter::Run(){
 	//by the routing algorithm. When the rr finds no canditate to
 	//send flits or the flit is other than the first, it takes only
 	//one cycle to happen.
+	
+	#ifndef DISABLE_METRICS
+	if(_state != RouterState::ROUNDROBIN)
+		_metric_energy->Sample(364.64 + 575.64);
+	else
+		_metric_energy->Sample(755.56 + 2655.25);
+	#endif
+	
 	return (_state == RouterState::FORWARD1) ? 4 : 1;
 }
+
+#ifndef DISABLE_METRICS
+Metric* TRouter::GetMetric(Metrics m){
+	if(m == Metrics::ENERGY)
+		return _metric_energy;
+	else
+		return nullptr;
+}
+#endif
+
 
 /**
  * @brief Calculate the port to route a given flit

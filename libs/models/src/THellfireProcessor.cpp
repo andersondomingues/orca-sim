@@ -380,31 +380,31 @@ fail:
 		case 0x17: //ALUI
 		case 0x6f: //JAL
 		case 0x67: //JALR
-			_metric_energy->Sample(18.56);
+			_metric_energy->Sample(4.175);
 			break;
 		
 		case 0x63: //all branches
-			_metric_energy->Sample(31.70);
+			_metric_energy->Sample(5.723);
 			break;
 			
 		case 0x3:  //loads
 		case 0x23: //stores
-			_metric_energy->Sample(43.15);
+			_metric_energy->Sample(5.507);
 			break;
 		
 		//type R
 		case 0x13:
 			switch(funct3){
 				case 0x0: //addi
-					_metric_energy->Sample(23.58);
+					_metric_energy->Sample(5.894);
 					break;
 				case 0x4: //xori
 				case 0x6: //ori
 				case 0x7: //andi
-					_metric_energy->Sample(20.70);
+					_metric_energy->Sample(5.176);
 					break;
 				default: //shifts i
-					_metric_energy->Sample(19.76);
+					_metric_energy->Sample(4.940);
 					break;
 			}
 			break;
@@ -412,15 +412,15 @@ fail:
 		case 0x33:
 			switch(funct3){
 				case 0x0: //add, sub
-					_metric_energy->Sample(23.58);
+					_metric_energy->Sample(5.894);
 					break;
 				case 0x4: //xor
 				case 0x6: //or
 				case 0x7: //and'
-					_metric_energy->Sample(20.70);
+					_metric_energy->Sample(5.176);
 					break;
 				default: //all shifts
-					_metric_energy->Sample(19.76);
+					_metric_energy->Sample(4.940);
 				
 			}
 			break;
