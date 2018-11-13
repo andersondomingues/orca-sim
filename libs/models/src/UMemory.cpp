@@ -66,13 +66,14 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 		throw std::runtime_error(s.str());
 	}
 
-	if(addr > GetLastAddr()){
+	if((addr + length -1) > GetLastAddr()){
 		stringstream s;
 		s << this->GetName() << ": unable to write to addr (0x" << std::hex
 			<< addr << ") higher than last mapped address of (0x" << std::hex 
 			<< GetLastAddr() << ").";
 		throw std::runtime_error(s.str());
 	}
+	
 	#endif
 
     //same performance as memcpy but library independent
@@ -98,7 +99,7 @@ void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 		throw std::runtime_error(s.str());
 	}
 
-	if(addr > GetLastAddr()){
+	if((addr + length) - 1 > GetLastAddr()){
 		stringstream s;
 		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
 			<< addr << ") higher than last mapped address of (0x" << std::hex 

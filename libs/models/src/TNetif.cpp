@@ -42,7 +42,7 @@ TNetif::TNetif(std::string name) : TimedModel(name) {
     
     _ib = new UBuffer<FlitType>(name + ".IN");
 	
-	Reset();
+	this->Reset();
 }
 
 TNetif::~TNetif(){
@@ -106,7 +106,7 @@ void TNetif::recvProcess(){
 		case NetifRecvState::READY:{
 		
 			//buffer has data and interruption flag is not set
-			if(_ib->size() > 0 && _comm_intr->Read() == false){
+			if(_comm_intr->Read() == false && _ib->size() > 0){
 				
 				//writes addr header to mem
 				_next_recv_addr = _mem1->GetBase();
@@ -131,6 +131,7 @@ void TNetif::recvProcess(){
 				
 				_recv_state = NetifRecvState::DATA_IN;
 			}
+			
 		}break;
 
 		//copies words to memory (two-by-two, that is, 16-bits);
