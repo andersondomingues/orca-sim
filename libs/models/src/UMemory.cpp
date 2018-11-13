@@ -24,8 +24,14 @@
 #include <inttypes.h>
 #include <UMemory.h>
 
-//#define NOGUARDS 1
-
+/**
+ * @brief Instantiate a new memory module.
+ * @param name A name that uniquely identify the instantiated module (can be empty)
+ * @param size Total amount of bytes allocated to the memory
+ * @param sram_base The base address for the memory. The base addres is the first address
+ * @param wipe Clean the memory after creation (zero fill)
+ * @param binname A binary file to load into memory after instantiation (optional)
+ */
 UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe, std::string binname) : UntimedModel(name){
 	
 	_mem = new MemoryType[size];
@@ -43,6 +49,12 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 		      << std::hex << _sram_base << " to 0x" << std::hex << (_sram_base + _length - 1) <<std::endl;
 }
 
+/**
+ * @brief Writes a bytestream to the memory
+ * @param addr Starting addres of range to be written
+ * @param data Address to copy data from
+ * @param length The number of bytes to write
+ */
 void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
 	#ifndef NOGUARDS
@@ -70,6 +82,12 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 	}
 }
 
+/**
+ * @brief Reads a bytestream from the memory
+ * @param addr Starting address to be read
+ * @param buffer Place to write the read data
+ * @param length Number of bytes to read
+ */
 void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 
 	#ifndef NOGUARDS
@@ -96,23 +114,42 @@ void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	}
 }
 
-//alias
+/**
+ * @brief Fill all memory positions with zeroes.
+ */
 void UMemory::Wipe(){
 	this->Wipe(_sram_base, _length);
 }
 
+/**
+ * @brief Return the base address 
+ * @return the base address
+ */
 uint32_t UMemory::GetBase(){
 	return _sram_base;
 }
 
+/**
+ * @brief Return the size of the memory
+ * @return the size
+ */
 uint32_t UMemory::GetSize(){
 	return _length;
 }
 
+/**
+ * @brief Return the last address of the memory
+ * @return the last address
+ */
 uint32_t UMemory::GetLastAddr(){
-	return _sram_base + (_length - 1);
+	return (_sram_base + _length) - 1;
 }
 
+/**
+ * @brief Fill some part of the memory with zeroes
+ * @param base The starting address
+ * @param size The number of bytes to write to
+ */
 void UMemory::Wipe(uint32_t base, uint32_t size){
 	
 	#ifndef NOGUARDS
@@ -131,6 +168,12 @@ void UMemory::Wipe(uint32_t base, uint32_t size){
 		range_ptr[i] = 0;
 }
 
+/**
+ * @brief Load a binary file into memory
+ * @param filename Name of file containing memory data (program)
+ * @param base Base address to start writing to
+ * @param size Number of bytes to write into memory
+ */
 void UMemory::LoadBin(std::string filename, uint32_t base, uint32_t size){
 
     //TODO: not sure it is the best performatic way
@@ -146,10 +189,18 @@ void UMemory::LoadBin(std::string filename, uint32_t base, uint32_t size){
 	}
 }
 
+/**
+ * @brief Show the content of memory
+ */
 void UMemory::Dump(){
 	this->Dump(0, _length);
 }
 
+/**
+ * @brief Show the content of memory given some range
+ * @param base The starting address to start printing
+ * @param length The number of bytes to print
+ */
 void UMemory::Dump(uint32_t base, uint32_t length){
 	uint32_t k, l;
 	
@@ -178,6 +229,9 @@ void UMemory::Dump(uint32_t base, uint32_t length){
 	}
 }
 
+/**
+ * @brief Dtor.
+ */
 UMemory::~UMemory(){
 	delete(_mem);
 }

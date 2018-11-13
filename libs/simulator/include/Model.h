@@ -33,6 +33,9 @@ public:
 	 * @brief Gets the name of this instance.
 	 * @return The name, if any. */
 	std::string GetName();
+	
+	
+	double GetMetric(std::string metric);
 };
 
 #endif /* ENTITY_H */

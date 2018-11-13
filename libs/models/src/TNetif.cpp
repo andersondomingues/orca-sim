@@ -215,7 +215,7 @@ void TNetif::sendProcess(){
 		//burst send next flits
 		case NetifSendState::DATA_OUT:{
 
-			if(_flits_to_send == 0) {
+			if(_flits_to_send < 1) {
 				_send_state = NetifSendState::READY;
 				_comm_start->Write(false);
 			}else{			

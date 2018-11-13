@@ -248,6 +248,7 @@ unsigned long long THellfireProcessor::Run(){
 	inst = mem_fetch(s, s->pc);
 
 	opcode = inst & 0x7f;
+	
 	rd = (inst >> 7) & 0x1f;
 	rs1 = (inst >> 15) & 0x1f;
 	rs2 = (inst >> 20) & 0x1f;
@@ -271,8 +272,9 @@ unsigned long long THellfireProcessor::Run(){
 	switch(opcode){
 		case 0x37: r[rd] = imm_u; break;										/* LUI */
 		case 0x17: r[rd] = s->pc + imm_u; break;									/* AUIPC */
-		case 0x6f: r[rd] = s->pc_next; s->pc_next = s->pc + imm_uj; break;						/* JAL */
-		case 0x67: r[rd] = s->pc_next; s->pc_next = (r[rs1] + imm_i) & 0xfffffffe; break;				/* JALR */
+		
+		case 0x6f: r[rd] = s->pc_next; s->pc_next = s->pc + imm_uj; break;				  /* JAL */
+		case 0x67: r[rd] = s->pc_next; s->pc_next = (r[rs1] + imm_i) & 0xfffffffe; break; /* JALR */
 		case 0x63:
 			switch(funct3){
 				case 0x0: if (r[rs1] == r[rs2]){ s->pc_next = s->pc + imm_sb; } break;				/* BEQ */
@@ -346,7 +348,11 @@ unsigned long long THellfireProcessor::Run(){
 				default: goto fail;
 			}
 			break;
-		default: goto fail;
+		default:
+fail:
+			std::string err_msg = this->GetName() + ":invalid opcode (pc=0x" + std::to_string(s->pc) + " opcode=0x" + std::to_string(inst) + ")";
+			throw std::runtime_error(err_msg);
+			break;
 	}
 	
 	s->pc = s->pc_next;
@@ -366,12 +372,66 @@ unsigned long long THellfireProcessor::Run(){
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
 	if (s->comm_intr->Read() == true) s->cause |= 0x100; else s->cause &= 0xffffffef; /*NOC*/
 		
+	//ENERGY MONITORING
+	#ifndef DISABLE_METRICS
+	switch(opcode){
+		
+		case 0x37: //LUI
+		case 0x17: //ALUI
+		case 0x6f: //JAL
+		case 0x67: //JALR
+			_metric_energy->Sample(18.56);
+			break;
+		
+		case 0x63: //all branches
+			_metric_energy->Sample(31.70);
+			break;
+			
+		case 0x3:  //loads
+		case 0x23: //stores
+			_metric_energy->Sample(43.15);
+			break;
+		
+		//type R
+		case 0x13:
+			switch(funct3){
+				case 0x0: //addi
+					_metric_energy->Sample(23.58);
+					break;
+				case 0x4: //xori
+				case 0x6: //ori
+				case 0x7: //andi
+					_metric_energy->Sample(20.70);
+					break;
+				default: //shifts i
+					_metric_energy->Sample(19.76);
+					break;
+			}
+			break;
+			
+		case 0x33:
+			switch(funct3){
+				case 0x0: //add, sub
+					_metric_energy->Sample(23.58);
+					break;
+				case 0x4: //xor
+				case 0x6: //or
+				case 0x7: //and'
+					_metric_energy->Sample(20.70);
+					break;
+				default: //all shifts
+					_metric_energy->Sample(19.76);
+				
+			}
+			break;
+			
+		default:
+			break;
+	}
+	#endif /* DISABLE_METRICS */
+	
 	//returns 4 of Store or Load, else returns 3
 	return (opcode == 0x23 || opcode == 0x3) ? 4 : 3;
-	
-fail:
-	std::string err_msg = this->GetName() + ":invalid opcode (pc=0x" + std::to_string(s->pc) + " opcode=0x" + std::to_string(inst) + ")";
-	throw std::runtime_error(err_msg);
 }
 
 risc_v_state THellfireProcessor::GetState(){
@@ -436,6 +496,10 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 		
 	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
 	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
+	
+	#ifndef DISABLE_METRICS
+	_metric_energy = new Metric(Metrics::ENERGY);
+	#endif
 }
 
 //TODO: clear allocated memory if any
@@ -447,3 +511,16 @@ void THellfireProcessor::Reset(){
     //TODO: to be implemented
     return;
 }
+
+#ifndef DISABLE_METRICS
+Metric* THellfireProcessor::GetMetric(Metrics m){
+		
+	if(m == Metrics::ENERGY)
+		return _metric_energy;
+	else 
+		return nullptr;
+}
+#endif /* DISABLE_METRICS */
+
+
+

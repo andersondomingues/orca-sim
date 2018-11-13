@@ -28,6 +28,12 @@
 #include <UntimedModel.h>
 #include <UComm.h>
 
+/**
+ * @brief Instiate a new bus (wire)
+ * @param name A unique name to the bus (optional)
+ * @param default_value A value to be read in case none has been set yet
+ * @param addr A memory base to be used within memory mapping
+ */
 template <typename T>
 UComm<T>::UComm(std::string name, T default_value, uint32_t addr) : UntimedModel(name){
 	_default = default_value;
@@ -35,26 +41,44 @@ UComm<T>::UComm(std::string name, T default_value, uint32_t addr) : UntimedModel
 	this->Reset();
 };
 
+/**
+ * @brief Dtor.
+ */
 template <typename T>    
 UComm<T>::~UComm(){
 	//nothing to do
 }
 
+/**
+ * @brief Read the value stored into the bus
+ * @return the value
+ */
 template <typename T>
 T UComm<T>::Read(){
 	return _val;
 }
     
+/**
+ * @brief Set the value of the bus
+ * @param val the value
+ */
 template <typename T>
 void UComm<T>::Write(T val){
 	_val = val;
 }
 
+/**
+ * @brief Return the bus to their default value
+ */
 template <typename T>
 void UComm<T>::Reset(){
 	_val = _default;
 }
 
+/**
+ * @brief Get the memory mapping address
+ * @return the address
+ */
 template <typename T>
 uint32_t UComm<T>::GetAddr(){
 	return _addr;

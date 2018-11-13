@@ -34,6 +34,8 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
     _y = y_pos;
 	_is_first_flit = false; //starts in roundrobin mode, not flit to be routed
     
+	//for all ports, create a new input buffer; Note that data is bufferred by
+	//input buffers, since output buffers come from somewhere else;
     for(int i = 0; i < 5; i++){
         std::string bname = "(" + std::to_string(_x) + "," + std::to_string(_y) + ").IN" + std::to_string(i);
         _ob[i] = nullptr;

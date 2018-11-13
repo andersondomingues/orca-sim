@@ -20,6 +20,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <iostream>
+#include <iomanip>
 
 //simulation API
 #include <Event.h>
@@ -39,6 +40,7 @@
 
 //instantiates a mesh of MxN PE
 ProcessingElement* pes[NOC_W_SIZE][NOC_H_SIZE];
+Metric* metrics[NOC_W_SIZE][NOC_H_SIZE];
 
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
@@ -95,13 +97,26 @@ int main(int argc, char** argv){
 	
 	//keep simulating until something happen
 	try{
-		while(1){
-			s->Run(CYCLES_TO_SIM);
-			std::cout << "Simulation: " << CYCLES_TO_SIM << " cycles has been passed since last message." << std::endl;
-		}
+		//while(1){
+		s->Run(CYCLES_TO_SIM);
+		//	std::cout << "Simulation: " << CYCLES_TO_SIM << " cycles has been passed since last message." << std::endl;
+		//}
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
 	}
 	
-	std::cout << std::flush;
+	//show simulation statistics
+	std::cout << "========== CPU ENERGY STATISTICS =========" << std::endl;
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+			
+			Metric* energy = pes[i][j]->GetCpu()->GetMetric(Metrics::ENERGY);
+			
+			std::cout << pes[i][j]->GetCpu()->GetName() << ":"
+			          << "\tsamples=" << std::dec << energy->GetSamples() 
+					  << "\taccumulative=" << setprecision(10) << energy->GetAccumulative() << "pJ"
+					  << "\tmean=" << (energy->GetAccumulative() / energy->GetSamples()) << "pJ"<< std::endl;
+		}
+		
+	}
 }

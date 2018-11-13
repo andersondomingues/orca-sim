@@ -20,6 +20,8 @@
 
 //simulator libs
 #include <TimedModel.h>
+#include <ObservableModel.h>
+#include <Metric.h>
 
 //models libs
 #include <UMemory.h>
@@ -69,13 +71,22 @@ typedef struct {
 	
 } risc_v_state;
 
-class THellfireProcessor : public TimedModel{
+
+class THellfireProcessor : public TimedModel
+#if ENABLE_MONITORING
+, public ObservableModel
+#endif
+{
 
 private:
 	//context
 	risc_v_state context;
 	risc_v_state *s;
 	int i;
+	
+	#ifndef DISABLE_METRICS
+	Metric* _metric_energy;
+	#endif
 
 public:
 
@@ -109,6 +120,11 @@ public:
 	ofstream output_uart;
 	
     void Reset();
+	
+	#ifndef DISABLE_METRICS
+	Metric* GetMetric(Metrics m);
+	#endif
+	
 };
 
 #endif /* __RISC_V_H */
