@@ -4,31 +4,35 @@ URSA is a lightweigth API for the rapid simulation of computing systems. The goa
 
 ## An Overview on the project...
 
-URSA comprises a discrete event simulator that enables the cycle-accurate simulation of hardware models. We describe such models using C++ language. For the sake of simplicity, no libraries other than those provided with your C++ compiler are required. The project is entirely object-oriented, well organized, and properly documented. Although a very young project, URSA is a nice alternative to personal, college and industrial projects.
+URSA comprises a discrete event simulator that enables the cycle-accurate simulation of hardware models. We describe such models using C++ language. For the sake of simplicity, no libraries other than those provided with your C++ compiler are required. The project is entirely object-oriented, well organized, and properly documented. 
 
 ![Components of URSA and their interaction.](https://raw.githubusercontent.com/andersondomingues/ursa/stable/docs/URSA.png?raw=true)
 
 ## Getting Started
 
-- First of all, make sure you have make and gcc installed in your system. URSA is being developed using ``GNU Make 4.1``, ``GCC version 6.3.0``,  in a ``Debian 6.3.0-18+deb9u1`` machine and is guaranteed to run using these software. However, you can try another compiler or building system at your own risk. 
+- First of all, make sure you have make and gcc installed in your system. URSA is being developed using ``GNU Make 4.1``, ``GCC version 6.3.0``. We run it on a ``Debian 6.3.0-18+deb9u1`` machine, but it should work with other distros as well.
 
-- Examples of platforms reside under ``platforms`` folder. Select a platform to run and type ``make clean; make`` from the inside the platform directory. For instance, type ``cd ursa/platforms/sulphane-generic; make clean; make`` and results for your simulation will be writen to ``ursa/platforms/sulphane-generic/logs`` folder.
-
-- Note that in case you are simulating any CPU other than the one in your system, additional cross-compilers may be necessary depending on the target architecture.
+- Examples of platforms reside under ``platforms`` folder. Select a platform to run and type ``make clean; make`` from the inside the platform directory. For instance, you can navigate to sulphane-generic plataform dir using ``cd <path_to_ursa>/platforms/sulphane-generic``. Once there, type ``make clean; make`` to build and run a simulator for the platform. The results of the simulation will be written to ``<path_to_ursa/platforms/sulphane-generic/logs`` folder. To stop the simulation, input ``CRTL + c`` to your terminal.
 
 ## Project Status and Roadmap
 
-- We are currently working on the Sulphane platform, which is the example provided within URSA. We hope to finish the platform as soon as the end of November/2018. However, URSA can be considered as stable and the development of Sulphane should not bring any modifications to URSA source code.
+- We just finished sulphane-generic platform for good. As next step, we hope to deliver one or more of the following features. Sugestions are welcome as well. 
 
-- Here are a tiny list of things to be implemented in the near future
-    - Distributed and parallel simulation (because it is faster than singlecore)
-    - Functional models (to gain simulation time and to speed-up software development for simulated platforms)
+    - Distributed and parallel simulation (because it is faster than single-core simulation)
+    - Functional, instruction accurate models (to gain simulation time and to speed-up software development for simulated platforms)
     - Debugging and visualization tools 
     - Drive detection
     - Breakpoints and snapshots
     - Simulation history, rollback and forward of simulation steps
+    - More hardware models, including a file-based memory module
 
 ## Provided Models
+
+In-House models
+
+- NETIF. A simple network interface that can be used to send/receive packets from/to an on-chip network. 
+
+- MEMORY. An memory-based memory module, that is, we store data from the simulated platform in host machine's memory. No file on disk is used.
 
 Some of the provided models comes from existing hardware. Documentation for these hardware is available at providers' website or repository. 
 
