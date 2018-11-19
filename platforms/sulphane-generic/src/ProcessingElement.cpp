@@ -39,34 +39,32 @@ ProcessingElement::ProcessingElement(uint32_t x, uint32_t y){
 	
 	_name = "pe-" + std::to_string(x) + "-" + std::to_string(y);
 	
-	//create PE hardware
-	_mem0   = new UMemory(_name + ".mem0", MEM0_SIZE, MEM0_BASE); //main
 	_mem1   = new UMemory(_name + ".mem1", MEM1_SIZE, MEM1_BASE); //read from noc 
 	_mem2   = new UMemory(_name + ".mem2", MEM2_SIZE, MEM2_BASE); //write to noc
+	
+	//create PE hardware
+	_mem0   = new UMemory(_name + ".mem0", MEM0_SIZE, MEM0_BASE); //main
 	
 	_router = new TRouter(_name + ".router", x, y);
 	_cpu    = new THellfireProcessor(_name + ".cpu");
 	_netif  = new TNetif(_name + ".netif");
 
 	//control signals to receive packets from netif
-	_cpudma_ack  = new UComm<bool>("cpunetif_ack",  false, COMM_NOC_ACK);
-	_cpudma_intr = new UComm<bool>("cpunetif_intr", false, COMM_NOC_INTR);
+	_cpudma_ack  = new UComm<int8_t>("cpunetif_ack",  0, COMM_NOC_ACK);
+	_cpudma_intr = new UComm<int8_t>("cpunetif_intr", 0, COMM_NOC_INTR);
 	
 	//control signals to send packets to the netif
-	_cpudma_start  = new UComm<bool>("cpunetif_start", false, COMM_NOC_START);
-	_cpudma_status = new UComm<bool>("cpunetif_status", false, COMM_NOC_STATUS);
+	_cpudma_start  = new UComm<int8_t>("cpunetif_start", 0, COMM_NOC_START);
 
 	//bind control signals to hardware (netif side)
 	_netif->SetCommAck(_cpudma_ack);
 	_netif->SetCommIntr(_cpudma_intr);
 	_netif->SetCommStart(_cpudma_start);
-	_netif->SetCommStatus(_cpudma_status);
 	
 	//bind control signals to hardware (cpu side)
 	_cpu->SetCommAck(_cpudma_ack);
 	_cpu->SetCommIntr(_cpudma_intr);
 	_cpu->SetCommStart(_cpudma_start);
-	_cpu->SetCommStatus(_cpudma_status);
 	
 	//bind netif to router
 	_router->SetOutputBuffer(_netif->GetInputBuffer(), LOCAL);
@@ -82,14 +80,18 @@ ProcessingElement::ProcessingElement(uint32_t x, uint32_t y){
 }
 
 ProcessingElement::~ProcessingElement(){
+	
 	delete(_router);
 	delete(_cpu);
 	delete(_netif);
+	
 	delete(_mem0);
 	delete(_mem1);
 	delete(_mem2);
+	
 	delete(_cpudma_ack);
 	delete(_cpudma_intr);
+	delete(_cpudma_start);
 }
 
 /* getters*/

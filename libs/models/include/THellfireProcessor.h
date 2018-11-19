@@ -27,10 +27,10 @@
 #include <UMemory.h>
 #include <UComm.h>
 
-#define SRAM_BASE         	0x40000000
+//#define SRAM_BASE         	0x40000000
 //#define MEM_SIZE			0x00100000
 //#define MEM_SIZE			0x00100400
-#define MEM_SIZE			0x00200000
+//#define MEM_SIZE			0x00400000
 
 #define EXIT_TRAP			0xe0000000
 #define IRQ_VECTOR			0xf0000000
@@ -64,21 +64,23 @@ typedef struct {
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
 	
-	UComm<bool>* comm_ack;
-	UComm<bool>* comm_intr;
-	UComm<bool>* comm_start;
-	UComm<bool>* comm_status;
+	UComm<int8_t>* comm_ack;
+	UComm<int8_t>* comm_intr;
+	UComm<int8_t>* comm_start;
+	
 	
 } risc_v_state;
 
 
 class THellfireProcessor : public TimedModel
-#if ENABLE_MONITORING
+#ifndef DISABLE_METRICS
 , public ObservableModel
 #endif
 {
 
 private:
+uint32_t _last_pc;
+
 	//context
 	risc_v_state context;
 	risc_v_state *s;
@@ -104,14 +106,14 @@ public:
 	
 	//setters for memories
 	void SetMem0(UMemory*);
+	
 	void SetMem1(UMemory*);
 	void SetMem2(UMemory*);
 	
 	//setters for comms
-	void SetCommAck(UComm<bool>*);
-	void SetCommIntr(UComm<bool>*);
-	void SetCommStart(UComm<bool>*);
-	void SetCommStatus(UComm<bool>*);	
+	void SetCommAck(UComm<int8_t>*);
+	void SetCommIntr(UComm<int8_t>*);
+	void SetCommStart(UComm<int8_t>*);
 	
 	unsigned long long Run();
 	

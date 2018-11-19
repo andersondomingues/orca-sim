@@ -38,14 +38,12 @@
        sram
       (~2MB)
 
-------------------- 0x40200000
+------------------- 0x40400000
      empty space
 ------------------- 0x80000000
  COMM_NOC_ACK       0x80000001
  COMM_NOC_INTR      0x80000002
  COMM_NOC_START     0x80000003
- COMM_NOC_STATUS    0x80000004
-
       .....
 ------------------- 0x90000000
     mem1 (recv)
@@ -56,12 +54,11 @@
 -------------------------------*/
 
 //memory mapping
-#define MEM0_SIZE 0x00200000 /* main memory */
+#define MEM0_SIZE 0x00400000 /* main memory */
 #define MEM0_BASE 0x40000000
 
 #define MEM1_SIZE 0x00000080 /* recv memory */
 #define MEM1_BASE 0x90000000
-//#define MEM1_BASE 0x3FFFFF00
 
 #define MEM2_SIZE 0x00000080 /* send memory */
 #define MEM2_BASE 0x90000080
@@ -69,7 +66,6 @@
 #define COMM_NOC_ACK    0x80000001
 #define COMM_NOC_INTR   0x80000002
 #define COMM_NOC_START  0x80000003
-#define COMM_NOC_STATUS 0x80000004
 
 
 /**
@@ -90,17 +86,18 @@ private:
 	TNetif*  _netif;  //network interface 
 	TRouter* _router; //hermes router
 	
-	UMemory* _mem0; //main memory
 	UMemory* _mem1; //recv memory
 	UMemory* _mem2; //send memory
 	
+	UMemory* _mem0; //main memory
+	
+	
 	//recv signals 
-	UComm<bool>* _cpudma_ack;
-	UComm<bool>* _cpudma_intr;      
+	UComm<int8_t>* _cpudma_ack;
+	UComm<int8_t>* _cpudma_intr;      
 	
 	//send signals
-	UComm<bool>* _cpudma_start;
-	UComm<bool>* _cpudma_status;
+	UComm<int8_t>* _cpudma_start;
 	
 public: 
 
@@ -116,10 +113,9 @@ public:
 	UMemory* GetMem2();
 	
 	//comms
-	void SetCommAck(UComm<bool>*);
-	void SetCommIntr(UComm<bool>*);
-	void SetCommStart(UComm<bool>*);
-	void SetCommStatus(UComm<bool>*);
+	void SetCommAck(UComm<int8_t>*);
+	void SetCommIntr(UComm<int8_t>*);
+	void SetCommStart(UComm<int8_t>*);
 	
 	//getters for mems
 	UMemory* GetmMem0();

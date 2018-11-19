@@ -66,13 +66,14 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 		throw std::runtime_error(s.str());
 	}
 
-	if(addr > GetLastAddr()){
+	if((addr + length -1) > GetLastAddr()){
 		stringstream s;
 		s << this->GetName() << ": unable to write to addr (0x" << std::hex
 			<< addr << ") higher than last mapped address of (0x" << std::hex 
 			<< GetLastAddr() << ").";
 		throw std::runtime_error(s.str());
 	}
+	
 	#endif
 
     //same performance as memcpy but library independent
@@ -98,7 +99,7 @@ void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 		throw std::runtime_error(s.str());
 	}
 
-	if(addr > GetLastAddr()){
+	if((addr + length) - 1 > GetLastAddr()){
 		stringstream s;
 		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
 			<< addr << ") higher than last mapped address of (0x" << std::hex 
@@ -109,8 +110,7 @@ void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	
 	//same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
-		buffer[i] = _mem[addr - _sram_base];
-		addr++;
+		buffer[i] = _mem[(addr - _sram_base) + i];
 	}
 }
 
@@ -214,12 +214,12 @@ void UMemory::Dump(uint32_t base, uint32_t length){
 	for(k = 0; k < length; k += 16){
 		printf("\n%08x ", base + k);
 		for(l = 0; l < 16; l++){
-			printf("%02x ", _mem[k + l] & mask );
+			printf("%02x ", _mem[k + l + (base - _sram_base)] & mask );
 			if (l == 7) putchar(' ');
 		}
 		printf(" |");
 		for(l = 0; l < 16; l++){
-			ch = _mem[k + l];
+			ch = _mem[k + l + (base - _sram_base)];
 			if ((ch >= 32) && (ch <= 126))
 				putchar(ch);
 			else
@@ -233,7 +233,7 @@ void UMemory::Dump(uint32_t base, uint32_t length){
  * @brief Dtor.
  */
 UMemory::~UMemory(){
-	delete(_mem);
+	delete [] _mem;
 }
 
 void UMemory::Reset(){
