@@ -62,19 +62,18 @@ private:
     NetifSendState _send_state; //state of sender module
 
     //recv proc vars
-    FlitType _flits_to_send; //to router
+    uint32_t _flits_to_send; //to router
     uint32_t _next_send_addr; 
 	
-	FlitType _flits_to_recv; //to memory
+	uint32_t _flits_to_recv; //to memory
 	uint32_t _next_recv_addr; 
     
     //communication with CPU while receiving
-    UComm<bool>* _comm_intr; //up when packet arrive, down when ack
-    UComm<bool>* _comm_ack;  //ack when cpu finishes copying to main memory
+    UComm<int8_t>* _comm_intr; //up when packet arrive, down when ack
+    UComm<int8_t>* _comm_ack;  //ack when cpu finishes copying to main memory
 
     //communication with CPU while sending
-    UComm<bool>* _comm_start;  //cpu set up to send, down by netif when finished
-    UComm<bool>* _comm_status;  //cpu set up to send, down by netif when finished
+    UComm<int8_t>* _comm_start;  //cpu set up to send, down by netif when finished
     
     //network router interface
     UBuffer<FlitType>* _ib;
@@ -82,10 +81,10 @@ private:
     
 public:	
     
-    void SetCommAck(UComm<bool>* comm);
-    void SetCommStart(UComm<bool>* comm);
-    void SetCommStatus(UComm<bool>* comm);
-    void SetCommIntr(UComm<bool>* comm);
+    void SetCommAck(UComm<int8_t>* comm);
+	void SetCommIntr(UComm<int8_t>* comm);
+	void SetCommStart(UComm<int8_t>* comm);
+    
     
     //internal processes
     void sendProcess();

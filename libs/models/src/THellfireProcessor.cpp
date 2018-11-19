@@ -27,7 +27,6 @@
 #include <sstream>
 #include <THellfireProcessor.h>
 
-
 void THellfireProcessor::dumpregs(risc_v_state *s){
 	int32_t i;
 	
@@ -74,22 +73,17 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	if(address == s->comm_ack->GetAddr())    return s->comm_ack->Read();
 	if(address == s->comm_intr->GetAddr())   return s->comm_intr->Read();
 	if(address == s->comm_start->GetAddr())  return s->comm_start->Read();
-	if(address == s->comm_status->GetAddr()) return s->comm_status->Read();
 	
 	UMemory* sel_mem = nullptr;
 	
 	//memread to mem0
-	if(address >= s->sram->GetBase() && address < s->sram->GetLastAddr()){
+	if(address >= s->sram->GetBase() && address <= s->sram->GetLastAddr()){
 		sel_mem = s->sram;
+	}else 
 		
-	//memread to mem1 
-	}else if(address >= s->mem1->GetBase() && address < s->mem1->GetLastAddr()){
+	//memread to mem1 	
+	if(address >= s->mem1->GetBase() && address <= s->mem1->GetLastAddr()){
 		sel_mem = s->mem1;
-	
-	//memread to mem2. please note that this is set only for debuggin since neither the 
-	//kernel or applications should read from this memory space
-	}else if(address >= s->mem2->GetBase() && address < s->mem2->GetLastAddr()){
-		sel_mem = s->mem2;
 	}
 		
 	#ifndef NOGUARDS
@@ -137,6 +131,15 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
 
+//	uint32_t last_addr;
+//	s->sram->Read(0x40000228, (int8_t*)&last_addr, 4);
+//	
+//	if(last_addr != 0x01bd2023){
+//		//this->dumpregs(s);
+//		std::cout << "0xN0228: 0x" << std::hex << last_addr << std::endl << std::flush;
+//		std::cout << "last pc = 0x" << _last_pc;
+//	}
+	
 	switch(address){
 
 		case IRQ_STATUS:{
@@ -176,11 +179,12 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	UMemory* sel_mem = nullptr;
 	
 	//memwrite to sram
-	if(address >= s->sram->GetBase() && address < (s->sram->GetBase() + s->sram->GetSize())){
+	if(address >= s->sram->GetBase() && address <= s->sram->GetLastAddr()){
 		sel_mem = s->sram;
-		
-	//memwrite to mem2 
-	}else if(address >= s->mem2->GetBase() && address < (s->mem2->GetBase() + s->mem2->GetSize())){
+	}else 
+	
+	//memwrite to mem2 	
+	if(address >= s->mem2->GetBase() && address <= s->mem2->GetLastAddr()){
 		sel_mem = s->mem2;
 	}
 		
@@ -350,11 +354,17 @@ unsigned long long THellfireProcessor::Run(){
 			break;
 		default:
 fail:
-			std::string err_msg = this->GetName() + ":invalid opcode (pc=0x" + std::to_string(s->pc) + " opcode=0x" + std::to_string(inst) + ")";
-			throw std::runtime_error(err_msg);
+			stringstream ss;
+			ss << this->GetName() << ":invalid opcode (pc=0x" << std::hex << s->pc;
+			ss << " opcode=0x" << std::hex << inst << ")";
+			
+			s->sram->Dump(0x40000150, 500);
+			
+			throw std::runtime_error(ss.str());
 			break;
 	}
 	
+	_last_pc = s->pc;
 	s->pc = s->pc_next;
 	s->pc_next = s->pc_next + 4;
 	s->status = s->status_dly[0];
@@ -370,7 +380,7 @@ fail:
 	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;        /*IRQ_COUNTER2*/
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;     /*IRQ_COUNTER_NOT*/
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
-	if (s->comm_intr->Read() == true) s->cause |= 0x100; else s->cause &= 0xffffffef; /*NOC*/
+	if (s->comm_intr->Read() == 1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
 		
 	//ENERGY MONITORING
 	#ifndef DISABLE_METRICS
@@ -458,20 +468,16 @@ void THellfireProcessor::SetMem2(UMemory* m){
 }
 
 //setters for comms
-void THellfireProcessor::SetCommAck(UComm<bool>* comm){
+void THellfireProcessor::SetCommAck(UComm<int8_t>* comm){
 	s->comm_ack = comm;
 }
 
-void THellfireProcessor::SetCommIntr(UComm<bool>* comm){
+void THellfireProcessor::SetCommIntr(UComm<int8_t>* comm){
 	s->comm_intr = comm;
 }
 
-void THellfireProcessor::SetCommStart(UComm<bool>* comm){
+void THellfireProcessor::SetCommStart(UComm<int8_t>* comm){
 	s->comm_start = comm;
-}
-
-void THellfireProcessor::SetCommStatus(UComm<bool>* comm){
-	s->comm_status = comm;
 }
 
 
@@ -504,7 +510,10 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 
 //TODO: clear allocated memory if any
 THellfireProcessor::~THellfireProcessor(){
-	//nothing to do
+	
+	#ifndef DISABLE_METRICS
+	delete _metric_energy;
+	#endif
 }
 
 void THellfireProcessor::Reset(){

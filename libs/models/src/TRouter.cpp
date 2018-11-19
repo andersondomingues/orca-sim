@@ -50,6 +50,21 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
     this->Reset();
 }
 
+/**
+ * @brief Free allocated memory if any
+ */
+TRouter::~TRouter(){
+    
+    #ifndef DISABLE_METRICS
+    delete _metric_energy;
+    #endif
+    
+    for(int i = 0; i < 5; i++)
+    	delete(_ib[i]);
+}
+
+
+
 void TRouter::Reset(){
     _round_robin = LOCAL; //starts checking on local port
     _state = RouterState::ROUNDROBIN;
@@ -206,14 +221,6 @@ uint32_t TRouter::GetRouteXY(FlitType flit){
             : EAST;
     }
 }
-
-/**
- * @brief Free allocated memory if any
- */
-TRouter::~TRouter(){
-    //delete [] _ib;
-}
-
 
 /**
  * @brief Get a pointer to one of the output buffers.

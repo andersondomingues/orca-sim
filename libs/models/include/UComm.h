@@ -43,7 +43,7 @@ public:
     /**
      * @brief Constructor. 
      * @param name (optional) An arbitrary name for the instance of Buffer.*/
-    UComm(std::string name = "", T def = nullptr, uint32_t addr = 0x0);
+    UComm(std::string name, T default_value, uint32_t addr = 0x0);
     
     /**
      * @brief Destructor. Cleans dynamic allocated memory before disposing the object.*/
@@ -71,6 +71,10 @@ template class UComm<uint8_t>;  //mem word
 template class UComm<uint16_t>; //dmni/noc word
 template class UComm<uint32_t>; //proc word
 template class UComm<uint64_t>; //double word
+template class UComm<int8_t>;  //mem word
+template class UComm<int16_t>; //dmni/noc word
+template class UComm<int32_t>; //proc word
+template class UComm<int64_t>; //double word
 
 //for larger data size, consider using a UMemory instead.
 

@@ -35,7 +35,6 @@ TNetif::TNetif(std::string name) : TimedModel(name) {
     _comm_ack = nullptr;
     _comm_intr = nullptr;
     _comm_start = nullptr;
-    _comm_status = nullptr;
 	
 	_mem1 = nullptr;
 	_mem2 = nullptr;
@@ -46,7 +45,7 @@ TNetif::TNetif(std::string name) : TimedModel(name) {
 }
 
 TNetif::~TNetif(){
-    //nothing to do
+    delete _ib;
 }
 
 void TNetif::Reset(){
@@ -58,12 +57,11 @@ void TNetif::Reset(){
     _send_state = NetifSendState::READY;
 	_flits_to_send = 0;
     
-    if(_comm_ack != nullptr) _comm_ack->Write(false);
-    if(_comm_intr != nullptr) _comm_intr->Write(false);
-    if(_comm_start != nullptr) _comm_start->Write(false);
-    if(_comm_status != nullptr) _comm_status->Write(false);
+    //if(_comm_ack != nullptr) _comm_ack->Write(0);
+    //if(_comm_intr != nullptr) _comm_intr->Write(0);
+    //if(_comm_start != nullptr) _comm_start->Write(0);
     
-    _ib->Reset();
+    //_ib->Reset();
 }
 
 void TNetif::SetOutputBuffer(UBuffer<FlitType>* ob){
@@ -75,20 +73,21 @@ UBuffer<FlitType>* TNetif::GetInputBuffer(){
 }
 
 //recv mem
-void TNetif::SetMem1(UMemory* m){ 
-	_mem1 = m; 
+void TNetif::SetMem1(UMemory* m1){ 
+	_mem1 = m1; 
+	_next_recv_addr = _mem1->GetBase();
 }
 
 //send mem
-void TNetif::SetMem2(UMemory* m){
-	_mem2 = m; 
+void TNetif::SetMem2(UMemory* m2){
+	_mem2 = m2; 
+	_next_send_addr = _mem2->GetBase();
 }
 
 //comms
-void TNetif::SetCommAck(UComm<bool>* c){ _comm_ack = c; }
-void TNetif::SetCommIntr(UComm<bool>* c){ _comm_intr = c; }
-void TNetif::SetCommStart(UComm<bool>* c){ _comm_start = c; }
-void TNetif::SetCommStatus(UComm<bool>* c){ _comm_status = c; }
+void TNetif::SetCommAck(UComm<int8_t>* c){ _comm_ack = c; }
+void TNetif::SetCommIntr(UComm<int8_t>* c){ _comm_intr = c; }
+void TNetif::SetCommStart(UComm<int8_t>* c){ _comm_start = c; }
 
 long long unsigned int TNetif::Run(){
     this->recvProcess();
@@ -98,6 +97,10 @@ long long unsigned int TNetif::Run(){
 
 void TNetif::recvProcess(){
 
+//	if(_recv_state != NetifRecvState::READY &&
+//	_recv_state != NetifRecvState::INTR_AND_WAIT)
+//		std::cout << _next_recv_addr << std::endl;
+
 	//recv state machine
 	switch(_recv_state){
 		
@@ -106,15 +109,15 @@ void TNetif::recvProcess(){
 		case NetifRecvState::READY:{
 		
 			//buffer has data and interruption flag is not set
-			if(_comm_intr->Read() == false && _ib->size() > 0){
+			if(_comm_intr->Read() == 0 && _ib->size() > 0){
 				
 				//writes addr header to mem
 				_next_recv_addr = _mem1->GetBase();
 				
 				FlitType flit = _ib->top(); _ib->pop();
 				_mem1->Write(_next_recv_addr, (int8_t*)&flit, 2);
-				_next_recv_addr += sizeof(FlitType);
 				
+				_next_recv_addr += sizeof(FlitType);
 				_recv_state = NetifRecvState::LENGTH;
 			}
 			
@@ -123,8 +126,10 @@ void TNetif::recvProcess(){
 		case NetifRecvState::LENGTH:{
 			
 			if(_ib->size() > 0){
+				
 				FlitType len_flit = _ib->top(); _ib->pop();
 				_mem1->Write(_next_recv_addr, (int8_t*)&len_flit, 2);
+				
 				_next_recv_addr += sizeof(FlitType);
 				
 				_flits_to_recv = len_flit;
@@ -140,7 +145,7 @@ void TNetif::recvProcess(){
 			//no more flits to recv, change state
 			if(_flits_to_recv == 0){
 				//interrupts CPU
-				_comm_intr->Write(true);
+				_comm_intr->Write(1);
 				_recv_state = NetifRecvState::INTR_AND_WAIT;
 			
 			}else if(_ib->size() > 0){
@@ -150,9 +155,14 @@ void TNetif::recvProcess(){
 				
 				//writes to memory
 				_mem1->Write(_next_recv_addr, (int8_t*)&next, 2);
+				
 				_next_recv_addr += sizeof(FlitType);
 				_flits_to_recv--;
 			}
+			//
+			//else{
+			//	std::cout << "data is not ready at buffers output" << std::endl;
+			//}
 		
 		} break;
 				
@@ -162,8 +172,8 @@ void TNetif::recvProcess(){
 			if(_comm_ack->Read() == true){
 				
 				_recv_state = NetifRecvState::READY;
-				_comm_intr->Write(false);
-				_comm_ack->Write(false);
+				_comm_intr->Write(0);
+				_comm_ack ->Write(0);
 			}
 			
 		} break;
@@ -171,20 +181,16 @@ void TNetif::recvProcess(){
 }
 
 void TNetif::sendProcess(){	
-	
+//	
+//	if(_send_state != NetifSendState::READY )
+//		std::cout << _next_send_addr << std::endl;
+//
+//	
 	switch(_send_state){
 		
 		case NetifSendState::READY:{
 				
-			if(_comm_start->Read() == true){
-				
-				#ifndef NO_GUARDS
-				if(_ib->size() != 0){
-					stringstream s;
-					s << GetName() << ": Unable to send packet. Buffer is not empty." << std::endl;
-					throw std::runtime_error(s.str());
-				}
-				#endif
+			if(_comm_start->Read() == 0x1){
 				
 				_next_send_addr = _mem2->GetBase();
 				
@@ -218,7 +224,7 @@ void TNetif::sendProcess(){
 
 			if(_flits_to_send < 1) {
 				_send_state = NetifSendState::READY;
-				_comm_start->Write(false);
+				_comm_start->Write(0); //start = 0 means "IF inactive"
 			}else{			
 				//send next
 				FlitType flit;

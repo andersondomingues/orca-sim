@@ -36,8 +36,10 @@
  */
 template <typename T>
 UComm<T>::UComm(std::string name, T default_value, uint32_t addr) : UntimedModel(name){
+	
 	_default = default_value;
 	_addr = addr;
+	
 	this->Reset();
 };
 

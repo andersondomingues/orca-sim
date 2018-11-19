@@ -3,8 +3,7 @@ HEADERDIR :=./include
 OUTPUTDIR :=./bin
 
 CPP := g++
-CPPFLAGS := -g -c -Og -I$(HEADERDIR) -Wall -Wextra -Werror 
-#-fsanitize=address
+CPPFLAGS := -g -c -O0 -I$(HEADERDIR) -Wall -Wextra -Werror -fsanitize=address
 
 ARFLAGS :=
 LIBNAME := libsim.a 
