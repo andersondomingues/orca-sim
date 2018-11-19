@@ -97,10 +97,6 @@ long long unsigned int TNetif::Run(){
 
 void TNetif::recvProcess(){
 
-//	if(_recv_state != NetifRecvState::READY &&
-//	_recv_state != NetifRecvState::INTR_AND_WAIT)
-//		std::cout << _next_recv_addr << std::endl;
-
 	//recv state machine
 	switch(_recv_state){
 		

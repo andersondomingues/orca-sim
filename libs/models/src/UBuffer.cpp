@@ -28,6 +28,7 @@
 template <typename T>
 UBuffer<T>::UBuffer(std::string name) : UntimedModel(name){
     _name = name;
+	_size = 0;
     _queue = new std::queue<T>();
 }
 
@@ -46,7 +47,9 @@ UBuffer<T>::~UBuffer(){
  */
 template <typename T>
 void UBuffer<T>::pop(){
-    _queue->pop();
+    _size--;
+	_queue->pop();
+	
 }
 
 /**
@@ -55,6 +58,7 @@ void UBuffer<T>::pop(){
  */
 template <typename T>
 void UBuffer<T>::push(T e){
+	_size++;
     _queue->push(e);
 }
 
@@ -68,14 +72,15 @@ T UBuffer<T>::top(){
 }
 
 /**
- * @brief Return the number of elements residing into the buffer
- * @return the number of elements
+ * @brief Return the number of elements store into underlying container
+ * @return Number of elements
  */
 template <typename T>
 uint32_t UBuffer<T>::size(){
-    return _queue->size();
+	return _size;
 }
 
+//
 /**
  * @brief Delete the internal buffer and instantiate a new one with zero
  * elements

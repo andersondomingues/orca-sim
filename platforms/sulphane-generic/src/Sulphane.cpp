@@ -31,9 +31,11 @@
 #include <THellfireProcessor.h>
 #include <TRouter.h>
 #include <TNetif.h> 
+#include <TNetSocket.h>
 
 #include <ProcessingElement.h>
 
+//10 milion cycles
 #define CYCLES_TO_SIM 10000000
 #define NOC_H_SIZE 3
 #define NOC_W_SIZE 3
@@ -93,12 +95,16 @@ int main(int argc, char** argv){
 			std::cout << pes[x][y]->ToString() << std::endl;		
 		}
 	}
-	
+//	
+//	//add a NetSocket to the simulation (not bound to the platform)
+//	TNetSocket* socket = new TNetSocket("ns-x");
+//	s->Schedule(Event(1, socket));
+//	
 	//keep simulating until something happen
 	try{
-		while(1){
+		//while(1){
 			s->Run(CYCLES_TO_SIM);
-		}
+		//}
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
 		goto clean;

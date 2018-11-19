@@ -60,7 +60,14 @@ private:
 	//packet simultaneously.
     NetSocketRecvState _recv_state; //state of receiver module
     NetSocketSendState _send_state; //state of sender module
-    
+	
+	//file descriptor for the sending and receiving sockets
+	int32_t _send_socket;
+	int32_t _recv_socket;
+	
+	//adresses for of the running host
+	//struct sockaddr_in _sock_addr; 
+	
 public:	
     
     //internal processes

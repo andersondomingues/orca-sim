@@ -130,15 +130,6 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 }
 
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
-
-//	uint32_t last_addr;
-//	s->sram->Read(0x40000228, (int8_t*)&last_addr, 4);
-//	
-//	if(last_addr != 0x01bd2023){
-//		//this->dumpregs(s);
-//		std::cout << "0xN0228: 0x" << std::hex << last_addr << std::endl << std::flush;
-//		std::cout << "last pc = 0x" << _last_pc;
-//	}
 	
 	switch(address){
 
@@ -380,6 +371,7 @@ fail:
 	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;        /*IRQ_COUNTER2*/
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;     /*IRQ_COUNTER_NOT*/
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
+	
 	if (s->comm_intr->Read() == 1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
 		
 	//ENERGY MONITORING

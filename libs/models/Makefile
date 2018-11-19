@@ -5,7 +5,7 @@ CPP:=g++
 
 #some useful flags:
 #"-DNOGUARDS" disables all IFs (not kidding, all guards down!)
-CPPFLAGS :=-I./include -I../simulator/include -c -g -O3 -Wall -Wextra -Werror
+CPPFLAGS :=-I./include -I../simulator/include -c -g -O0 -Wall -Wextra -Werror
 #-fsanitize=address
 
 LIBNAME :=libmod.a
