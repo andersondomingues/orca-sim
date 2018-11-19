@@ -14,7 +14,8 @@ LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
 #Flags to be used during compilation of the platform. Note 
 #that they may be different form flags used for compiling
 #dependencies.
-GCCFLAGS  := -g -I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include -Wextra -Wall -Werror -O0 -DENABLE_MONITORING -fsanitize=address
+GCCFLAGS  := -g -I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include -Wextra -Wall -Werror -O3 
+#-fsanitize=address
 
 LDFLAGS   := -L$(LIBSIM_PATH)/bin -L$(LIBMOD_PATH)/bin -lmod -lsim 
 OUTPUTDIR :=./bin

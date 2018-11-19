@@ -5,12 +5,13 @@ CPP:=g++
 
 #some useful flags:
 #"-DNOGUARDS" disables all IFs (not kidding, all guards down!)
-CPPFLAGS :=-I./include -I../simulator/include -c -g -O0 -Wall -Wextra -Werror -fsanitize=address
+CPPFLAGS :=-I./include -I../simulator/include -c -g -O3 -Wall -Wextra -Werror
+#-fsanitize=address
 
 LIBNAME :=libmod.a
 
 
-TARGET_DEPS := $(OUTPUTDIR)/UComm.o $(OUTPUTDIR)/UBuffer.o $(OUTPUTDIR)/UMemory.o $(OUTPUTDIR)/TNetif.o $(OUTPUTDIR)/TRouter.o $(OUTPUTDIR)/THellfireProcessor.o
+TARGET_DEPS := $(OUTPUTDIR)/TNetSocket.o $(OUTPUTDIR)/UComm.o $(OUTPUTDIR)/UBuffer.o $(OUTPUTDIR)/UMemory.o $(OUTPUTDIR)/TNetif.o $(OUTPUTDIR)/TRouter.o $(OUTPUTDIR)/THellfireProcessor.o
 
 
 all: $(OUTPUTDIR)/$(LIBNAME)
