@@ -46,7 +46,7 @@ enum class NetSocketRecvState{ READY, LENGTH, DATA_OUT};
  * @file TNetSocket.h
  * @brief This class defines a model for a "fake" network adapter 
  * that uses of UDP datagrams at one side and on-chip network's
- * flits on the other side of the communication.
+ * flits on the other side of the UCommunication.
  */
 class TNetSocket: public TimedModel{
 
@@ -65,6 +65,11 @@ private:
 	int32_t _send_socket;
 	int32_t _recv_socket;
 	
+	//control wires (netsocket <-> netif)
+	UComm<int8_t>* _comm_ack;
+	UComm<int8_t>* _comm_intr;
+	UComm<int8_t>* _comm_start;
+	
 	//adresses for of the running host
 	//struct sockaddr_in _sock_addr; 
 	
@@ -78,9 +83,21 @@ public:
     unsigned long long Run();
     void Reset();
 
-	//memories
-	void SetNetif(TNetif*);
-	TNetif* GetNetif();
+	//setters/getters for memories
+	UMemory* GetMem1();
+	UMemory* GetMem2();
+	void SetMem1(UMemory*);
+	void SetMem2(UMemory*);
+	
+	
+	//setter/getters for UComms
+	UComm<int8_t>* GetCommIntr();
+	UComm<int8_t>* GetCommStart();
+	UComm<int8_t>* GetCommAck();
+	
+	void SetCommIntr(UComm<int8_t>* UComm);
+	void SetCommStart(UComm<int8_t>* UComm);
+	void SetCommAck(UComm<int8_t>* UComm);
 
     //ctor./dtor.
     TNetSocket(string name);

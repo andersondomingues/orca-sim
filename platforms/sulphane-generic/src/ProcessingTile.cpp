@@ -29,13 +29,13 @@
 #include <TRouter.h>
 #include <UMemory.h>
 
-#include <ProcessingElement.h>
+#include <ProcessingTile.h>
 
 /** 
  * Default constructor.
  * Instantiate and bind internal hardware to each
  * other. */
-ProcessingElement::ProcessingElement(uint32_t x, uint32_t y){
+ProcessingTile::ProcessingTile(uint32_t x, uint32_t y){
 	
 	_name = "pe-" + std::to_string(x) + "-" + std::to_string(y);
 	
@@ -79,7 +79,7 @@ ProcessingElement::ProcessingElement(uint32_t x, uint32_t y){
 	_netif->SetMem2(_mem2);
 }
 
-ProcessingElement::~ProcessingElement(){
+ProcessingTile::~ProcessingTile(){
 	
 	delete(_router);
 	delete(_cpu);
@@ -95,35 +95,35 @@ ProcessingElement::~ProcessingElement(){
 }
 
 /* getters*/
-TRouter* ProcessingElement::GetRouter(){
+TRouter* ProcessingTile::GetRouter(){
 	return _router;
 }
 
-TNetif* ProcessingElement::GetNetif(){
+TNetif* ProcessingTile::GetNetif(){
 	return _netif;
 }
 
-THellfireProcessor* ProcessingElement::GetCpu(){
+THellfireProcessor* ProcessingTile::GetCpu(){
 	return _cpu;
 } 
 
-UMemory* ProcessingElement::GetMem0(){
+UMemory* ProcessingTile::GetMem0(){
 	return _mem0;
 }
 
-UMemory* ProcessingElement::GetMem1(){
+UMemory* ProcessingTile::GetMem1(){
 	return _mem1;
 }
 
-UMemory* ProcessingElement::GetMem2(){
+UMemory* ProcessingTile::GetMem2(){
 	return _mem2;
 }
 
-std::string ProcessingElement::GetName(){
+std::string ProcessingTile::GetName(){
 	return _name;
 }
 
-std::string ProcessingElement::ToString(){
+std::string ProcessingTile::ToString(){
 	stringstream ss;
 	ss << _name << "={" << _cpu->GetName() 
 	   << ", " << _router->GetName() 

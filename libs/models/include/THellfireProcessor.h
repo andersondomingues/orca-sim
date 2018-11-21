@@ -68,7 +68,6 @@ typedef struct {
 	UComm<int8_t>* comm_intr;
 	UComm<int8_t>* comm_start;
 	
-	
 } risc_v_state;
 
 

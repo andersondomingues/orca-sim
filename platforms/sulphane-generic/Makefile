@@ -45,9 +45,9 @@ $(HELLFIREOS_PATH)/code0.bin:
 	@make -C $(HELLFIREOS_PATH) images
 	cp $(HELLFIREOS_PATH)/*.bin ./bin
 
-$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCEDIR)/Sulphane.cpp $(SOURCEDIR)/ProcessingElement.cpp
+$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCEDIR)/Sulphane.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/NetworkTile.cpp
 	@echo "$'\e[036mBuilding target platform ($(PLATFORM_NAME))... \e[0m"
-	g++ $(SOURCEDIR)/ProcessingElement.cpp $(SOURCEDIR)/Sulphane.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe -Iinclude
+	g++ $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/Sulphane.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe -Iinclude
 
 app:
 	@echo "$'\e[033mCleaning HellfireOS... \e[0m"

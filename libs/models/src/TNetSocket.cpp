@@ -81,6 +81,25 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 	this->Reset();*/
 }
 
+void TNetSocket::SetCommAck(UComm<int8_t>* p){
+	_comm_ack = p;
+}
+void TNetSocket::SetCommIntr(UComm<int8_t>* p){
+	_comm_intr = p;
+}
+void TNetSocket::SetCommStart(UComm<int8_t>* p){
+	_comm_start = p;
+}
+
+
+void TNetSocket::SetMem1(UMemory* mem1){
+	_mem1 = mem1;	
+}
+void TNetSocket::SetMem2(UMemory* mem2){
+	_mem2 = mem2;
+}
+
+
 /**
  * @brief Dtor. No dynamic allocation is being used. Keept by design.
  */

@@ -33,7 +33,7 @@
 #include <TNetif.h> 
 #include <TNetSocket.h>
 
-#include <ProcessingElement.h>
+#include <ProcessingTile.h>
 
 //10 milion cycles
 #define CYCLES_TO_SIM 10000000
@@ -41,7 +41,7 @@
 #define NOC_W_SIZE 3
 
 //instantiates a mesh of MxN PE
-ProcessingElement* pes[NOC_W_SIZE][NOC_H_SIZE];
+ProcessingTile* pes[NOC_W_SIZE][NOC_H_SIZE];
 
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
@@ -58,7 +58,7 @@ int main(int argc, char** argv){
 	//populate PEs
 	for(int x = 0; x < NOC_W_SIZE; x++)
 		for(int y = 0; y < NOC_H_SIZE; y++)
-			pes[x][y] = new ProcessingElement(x, y);
+			pes[x][y] = new ProcessingTile(x, y);
 
 	//load binaries into main memories
 	int index = 0;

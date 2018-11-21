@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __TPROCESSINGELEMENT_H
-#define __TPROCESSINGELEMENT_H
+#ifndef __TProcessingTile_H
+#define __TProcessingTile_H
 
 //std API
 #include <iostream>
@@ -69,14 +69,14 @@
 
 
 /**
- * @class TProcessingElement
+ * @class TProcessingTile
  * @author Anderson Domingues
  * @date 10/04/18
- * @file TProcessingElement.h
+ * @file TProcessingTile.h
  * @brief This class models an entire processing element that contains
  * RAM memory (3x), DMA, NoC Router, HFRiscV core and an SPI interface. 
  */
-class ProcessingElement{
+class ProcessingTile{
 
 private:
 
@@ -101,8 +101,8 @@ private:
 	
 public: 
 
-	ProcessingElement(uint32_t x, uint32_t y);
-	~ProcessingElement();
+	ProcessingTile(uint32_t x, uint32_t y);
+	~ProcessingTile();
 	
 	//getters
 	TRouter* GetRouter();
