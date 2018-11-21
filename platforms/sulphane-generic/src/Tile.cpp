@@ -37,6 +37,8 @@
  * other. */
 Tile::Tile(uint32_t x, uint32_t y){
 	
+	_name = std::to_string(x) + "-" + std::to_string(y);
+	
 	//create new memories	
 	_mem1   = new UMemory(_name + ".mem1", MEM1_SIZE, MEM1_BASE); //read from noc 
 	_mem2   = new UMemory(_name + ".mem2", MEM2_SIZE, MEM2_BASE); //write to noc

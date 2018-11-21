@@ -37,8 +37,7 @@
  * other. */
 ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	
-	_name = "pe-" + std::to_string(x) + "-" + std::to_string(y);
-
+	this->SetName("pe-" + this->GetName());
 	
 	//create 
 	_mem0   = new UMemory(_name + ".mem0", MEM0_SIZE, MEM0_BASE); //main

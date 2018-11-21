@@ -57,15 +57,19 @@ int main(int argc, char** argv){
 
 	std::cout << "Sulphane: (H2S) Hermes-Hellfire SoC (Width=" << NOC_W_SIZE << ", Height=" << NOC_H_SIZE << ")" << std::endl;
 	std::cout << "Simulation step set to " << CYCLES_TO_SIM << " cycles." << std::endl;
+	std::cout << "Instanting new hardware..." << std::endl;
 	
 	//populate tiles
 	for(int x = 0; x < NOC_W_SIZE; x++){
 		for(int y = 0; y < NOC_H_SIZE; y++){
 			
-			if(x == 0 && y ==0)
-				tiles[x][y] = (Tile*)new NetworkTile(x, y);
-			else
+			if(x == 0 && y ==0){
+				std::cout << "\tnew network tile @ 0,0" << std::endl;
+				tiles[x][y] = (Tile*)new NetworkTile(x, y);				
+			}else{
+				std::cout << "\tnew processing tile @ " << x << "," << y << std::endl;
 				tiles[x][y] = (Tile*)new ProcessingTile(x, y);
+			}
 		}
 	}
 	

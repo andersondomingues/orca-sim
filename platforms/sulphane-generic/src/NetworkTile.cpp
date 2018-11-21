@@ -37,6 +37,8 @@
  * other. */
 NetworkTile::NetworkTile(uint32_t x, uint32_t y) : Tile(x, y){
 	
+	this->SetName("nt-" + this->GetName());
+	
 	//peripherals	
 	_socket = new TNetSocket(_name + ".sock");
 	
