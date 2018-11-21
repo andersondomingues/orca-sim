@@ -35,73 +35,32 @@
  * Default constructor.
  * Instantiate and bind internal hardware to each
  * other. */
-ProcessingTile::ProcessingTile(uint32_t x, uint32_t y){
+ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	
 	_name = "pe-" + std::to_string(x) + "-" + std::to_string(y);
+
 	
-	_mem1   = new UMemory(_name + ".mem1", MEM1_SIZE, MEM1_BASE); //read from noc 
-	_mem2   = new UMemory(_name + ".mem2", MEM2_SIZE, MEM2_BASE); //write to noc
-	
-	//create PE hardware
+	//create 
 	_mem0   = new UMemory(_name + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	
-	_router = new TRouter(_name + ".router", x, y);
 	_cpu    = new THellfireProcessor(_name + ".cpu");
-	_netif  = new TNetif(_name + ".netif");
-
-	//control signals to receive packets from netif
-	_cpudma_ack  = new UComm<int8_t>("cpunetif_ack",  0, COMM_NOC_ACK);
-	_cpudma_intr = new UComm<int8_t>("cpunetif_intr", 0, COMM_NOC_INTR);
-	
-	//control signals to send packets to the netif
-	_cpudma_start  = new UComm<int8_t>("cpunetif_start", 0, COMM_NOC_START);
-
-	//bind control signals to hardware (netif side)
-	_netif->SetCommAck(_cpudma_ack);
-	_netif->SetCommIntr(_cpudma_intr);
-	_netif->SetCommStart(_cpudma_start);
 	
 	//bind control signals to hardware (cpu side)
-	_cpu->SetCommAck(_cpudma_ack);
-	_cpu->SetCommIntr(_cpudma_intr);
-	_cpu->SetCommStart(_cpudma_start);
-	
-	//bind netif to router
-	_router->SetOutputBuffer(_netif->GetInputBuffer(), LOCAL);
-	_netif->SetOutputBuffer(_router->GetInputBuffer(LOCAL));
+	_cpu->SetCommAck(this->GetCommAck());
+	_cpu->SetCommIntr(this->GetCommIntr());
+	_cpu->SetCommStart(this->GetCommStart());
 	
 	//bind memory modules
 	_cpu->SetMem0(_mem0);
-	_cpu->SetMem1(_mem1);
-	_cpu->SetMem2(_mem2);
-	
-	_netif->SetMem1(_mem1);
-	_netif->SetMem2(_mem2);
+	_cpu->SetMem1(this->GetMem1());
+	_cpu->SetMem2(this->GetMem2());
 }
 
 ProcessingTile::~ProcessingTile(){
-	
-	delete(_router);
+
 	delete(_cpu);
-	delete(_netif);
-	
-	delete(_mem0);
-	delete(_mem1);
-	delete(_mem2);
-	
-	delete(_cpudma_ack);
-	delete(_cpudma_intr);
-	delete(_cpudma_start);
+	delete(_mem0);	
 }
 
-/* getters*/
-TRouter* ProcessingTile::GetRouter(){
-	return _router;
-}
-
-TNetif* ProcessingTile::GetNetif(){
-	return _netif;
-}
 
 THellfireProcessor* ProcessingTile::GetCpu(){
 	return _cpu;
@@ -111,14 +70,6 @@ UMemory* ProcessingTile::GetMem0(){
 	return _mem0;
 }
 
-UMemory* ProcessingTile::GetMem1(){
-	return _mem1;
-}
-
-UMemory* ProcessingTile::GetMem2(){
-	return _mem2;
-}
-
 std::string ProcessingTile::GetName(){
 	return _name;
 }
@@ -126,8 +77,8 @@ std::string ProcessingTile::GetName(){
 std::string ProcessingTile::ToString(){
 	stringstream ss;
 	ss << _name << "={" << _cpu->GetName() 
-	   << ", " << _router->GetName() 
-	   << ", " << _netif->GetName() << "}";
+	   << ", " << this->GetRouter()->GetName() 
+	   << ", " << this->GetNetif()->GetName() << "}";
 	
 	return ss.str();
 }

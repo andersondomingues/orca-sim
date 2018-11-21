@@ -23,7 +23,7 @@ SOURCEDIR :=./src
 
 #Path to the operating system. HellfireOS provide some scripts for compiling
 #a 3x3 noc platform.
-HELLFIREOS_PATH:=../../software/hellfireos/platform/noc_3x3
+HELLFIREOS_PATH:=../../software/hellfireos/platform/noc_4x4
 HELLFIREOS_ARCH:=../../software/hellfireos/arch/riscv/hf-riscv
 
 #This is the master recipie. It compiles all the stuff and launchs the simulation.
@@ -45,9 +45,9 @@ $(HELLFIREOS_PATH)/code0.bin:
 	@make -C $(HELLFIREOS_PATH) images
 	cp $(HELLFIREOS_PATH)/*.bin ./bin
 
-$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCEDIR)/Sulphane.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/NetworkTile.cpp
+$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCEDIR)/Tile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/Sulphane.cpp 
 	@echo "$'\e[036mBuilding target platform ($(PLATFORM_NAME))... \e[0m"
-	g++ $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/Sulphane.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe -Iinclude
+	g++ $(SOURCEDIR)/Tile.cpp $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/Sulphane.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe -Iinclude
 
 app:
 	@echo "$'\e[033mCleaning HellfireOS... \e[0m"

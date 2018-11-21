@@ -32,6 +32,9 @@
 #include <UMemory.h>
 #include <UComm.h>
 
+//simul specific
+#include <Tile.h>
+
 //netif mem mapping
 #define MEM1_SIZE 0x00000080 /* recv memory */
 #define MEM1_BASE 0x90000000
@@ -45,27 +48,12 @@
 #define COMM_NOC_START  0x80000003
 
 
-
-class NetworkTile{
+class NetworkTile : private Tile{
 
 private:
 
 	std::string _name;
-
 	TNetSocket* _socket; //hfrisv-core
-	TNetif*  _netif;  //network interface 
-	TRouter* _router; //hermes router
-	
-	UMemory* _mem1; //recv memory
-	UMemory* _mem2; //send memory
-	
-	
-	//recv signals 
-	UComm<int8_t>* _socket_ack;
-	UComm<int8_t>* _socket_intr;      
-	
-	//send signals
-	UComm<int8_t>* _socket_start;
 	
 public: 
 
@@ -73,21 +61,7 @@ public:
 	~NetworkTile();
 	
 	//getters
-	TRouter* GetRouter();
-	TNetif*  GetNetif();
 	TNetSocket* GetSocket();
-
-	UMemory* GetMem1();
-	UMemory* GetMem2();
-	
-	//comms
-	void SetCommAck(UComm<int8_t>*);
-	void SetCommIntr(UComm<int8_t>*);
-	void SetCommStart(UComm<int8_t>*);
-	
-	//getters for mems
-	UMemory* GetmMem1();
-	UMemory* GetmMem2();
 	
 	std::string GetName();
 	std::string ToString();

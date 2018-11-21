@@ -19,86 +19,76 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __TProcessingTile_H
-#define __TProcessingTile_H
+
+#ifndef __TILE_H
+#define __TILE_H
 
 //std API
 #include <iostream>
 
 //model API
-#include <THellfireProcessor.h>
 #include <TNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
 #include <UComm.h>
 
-//arch specifc
-#include <Tile.h>
-
-/* MEMORY LAYOUT
-------------------- 0x40000000
-
-       sram
-      (~2MB)
-
-------------------- 0x40400000
-     empty space
-------------------- 0x80000000
- COMM_NOC_ACK       0x80000001
- COMM_NOC_INTR      0x80000002
- COMM_NOC_START     0x80000003
-      .....
-------------------- 0x90000000
-    mem1 (recv)
-    (128 bytes)
-------------------- 0x90000080
-    mem2 (send)
-    (128 bytes)
--------------------------------*/
-
-//memory mapping
-#define MEM0_SIZE 0x00400000 /* main memory */
-#define MEM0_BASE 0x40000000
-
+//netif mem mapping
 #define MEM1_SIZE 0x00000080 /* recv memory */
 #define MEM1_BASE 0x90000000
 
 #define MEM2_SIZE 0x00000080 /* send memory */
 #define MEM2_BASE 0x90000080
 
+//comms
 #define COMM_NOC_ACK    0x80000001
 #define COMM_NOC_INTR   0x80000002
 #define COMM_NOC_START  0x80000003
 
 
-/**
- * @class TProcessingTile
- * @author Anderson Domingues
- * @date 10/04/18
- * @file TProcessingTile.h
- * @brief This class models an entire processing element that contains
- * RAM memory (3x), DMA, NoC Router, HFRiscV core and an SPI interface. 
- */
-class ProcessingTile : private Tile{
+
+class Tile{
 
 private:
 
 	std::string _name;
 
-	THellfireProcessor* _cpu; //hfrisv-core
-	UMemory* _mem0; //main memory
+	TNetif*  _netif;  //network interface 
+	TRouter* _router; //hermes router
+	
+	UMemory* _mem1; //recv memory
+	UMemory* _mem2; //send memory
+	
+	//recv signals 
+	UComm<int8_t>* _socket_ack;
+	UComm<int8_t>* _socket_intr;      
+	
+	//send signals
+	UComm<int8_t>* _socket_start;
 	
 public: 
 
-	ProcessingTile(uint32_t x, uint32_t y);
-	~ProcessingTile();
+	Tile(uint32_t x, uint32_t y);
+	~Tile();
 	
 	//getters
-	THellfireProcessor* GetCpu();
-	UMemory* GetMem0();
+	TRouter* GetRouter();
+	TNetif*  GetNetif();
+
+	UMemory* GetMem1();
+	UMemory* GetMem2();
+	
+	//comms
+	void SetCommAck(UComm<int8_t>*);
+	void SetCommIntr(UComm<int8_t>*);
+	void SetCommStart(UComm<int8_t>*);
+	
+	UComm<int8_t>* GetCommAck();
+	UComm<int8_t>* GetCommIntr();
+	UComm<int8_t>* GetCommStart();
 	
 	//getters for mems
-	void SetMem0(UMemory*);
+	UMemory* GetmMem1();
+	UMemory* GetmMem2();
 	
 	std::string GetName();
 	std::string ToString();

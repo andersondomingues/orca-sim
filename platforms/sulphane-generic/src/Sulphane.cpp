@@ -33,15 +33,18 @@
 #include <TNetif.h> 
 #include <TNetSocket.h>
 
+#include <Tile.h>
+
 #include <ProcessingTile.h>
+#include <NetworkTile.h>
 
 //10 milion cycles
 #define CYCLES_TO_SIM 10000000
-#define NOC_H_SIZE 3
-#define NOC_W_SIZE 3
+#define NOC_H_SIZE 4
+#define NOC_W_SIZE 4
 
 //instantiates a mesh of MxN PE
-ProcessingTile* pes[NOC_W_SIZE][NOC_H_SIZE];
+Tile* tiles[NOC_W_SIZE][NOC_H_SIZE];
 
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
@@ -55,32 +58,43 @@ int main(int argc, char** argv){
 	std::cout << "Sulphane: (H2S) Hermes-Hellfire SoC (Width=" << NOC_W_SIZE << ", Height=" << NOC_H_SIZE << ")" << std::endl;
 	std::cout << "Simulation step set to " << CYCLES_TO_SIM << " cycles." << std::endl;
 	
-	//populate PEs
-	for(int x = 0; x < NOC_W_SIZE; x++)
+	//populate tiles
+	for(int x = 0; x < NOC_W_SIZE; x++){
+		for(int y = 0; y < NOC_H_SIZE; y++){
+			
+			if(x == 0 && y ==0)
+				tiles[x][y] = (Tile*)new NetworkTile(x, y);
+			else
+				tiles[x][y] = (Tile*)new ProcessingTile(x, y);
+		}
+	}
+	
+	//connect tiles to each other (left-to-right, right-to-left connections)	
+	for(int x = 0; x < NOC_W_SIZE - 1; x++)
 		for(int y = 0; y < NOC_H_SIZE; y++)
-			pes[x][y] = new ProcessingTile(x, y);
-
-	//load binaries into main memories
+			connect_routers(tiles[x][y]->GetRouter(), EAST, tiles[x+1][y]->GetRouter(), WEST);
+			
+	//connect tiles to each other (bottom-to-top, top-to-bottom connections)
+	for(int x = 0; x < NOC_W_SIZE; x++)
+		for(int y = 0; y < NOC_H_SIZE - 1; y++)
+			connect_routers(tiles[x][y]->GetRouter(), NORTH, tiles[x][y+1]->GetRouter(), SOUTH);
+			
+	//load binaries into main memories (processing tiles only)
 	int index = 0;
 	std::string code_file;
 	for(int x = 0; x < NOC_W_SIZE; x++){
 		for(int y = 0; y < NOC_H_SIZE; y++){
-				index = x + NOC_W_SIZE * y;
-				code_file = std::string(argv[1]) + "code" + std::to_string(index) + ".bin";
-				pes[x][y]->GetMem0()->LoadBin(code_file, MEM0_BASE, MEM0_SIZE);
+			
+			//zero-zero is for network interface
+			if(x == 0 && y == 0) continue;
+		
+			index = x + NOC_W_SIZE * y;
+			code_file = std::string(argv[1]) + "code" + std::to_string(index) + ".bin";
+			
+			((ProcessingTile*)tiles[x][y])->GetMem0()->LoadBin(code_file, MEM0_BASE, MEM0_SIZE);
 		}
 	}
 
-	//connect PE to each other (left-to-right, right-to-left connections)	
-	for(int x = 0; x < NOC_W_SIZE - 1; x++)
-		for(int y = 0; y < NOC_H_SIZE; y++)
-			connect_routers(pes[x][y]->GetRouter(), EAST, pes[x+1][y]->GetRouter(), WEST);
-			
-	//connect PE to each other (bottom-to-top, top-to-bottom connections)
-	for(int x = 0; x < NOC_W_SIZE; x++)
-		for(int y = 0; y < NOC_H_SIZE - 1; y++)
-			connect_routers(pes[x][y]->GetRouter(), NORTH, pes[x][y+1]->GetRouter(), SOUTH);
-	
 	//instantiate simulation
 	Simulator* s = new Simulator();
 		
@@ -88,18 +102,19 @@ int main(int argc, char** argv){
 	for(int x = 0; x < NOC_W_SIZE; x++){
 		for(int y = 0; y < NOC_H_SIZE; y++){
 			
-			s->Schedule(Event(1, pes[x][y]->GetCpu()));
-			s->Schedule(Event(1, pes[x][y]->GetRouter()));
-			s->Schedule(Event(1, pes[x][y]->GetNetif()));
+			//netork tile
+			if(x == 0 && y == 0)
+				s->Schedule(Event(1, ((NetworkTile*)tiles[x][y])->GetSocket()));
+				
+			//processing tile
+			else
+				s->Schedule(Event(1, ((ProcessingTile*)tiles[x][y])->GetCpu()));
 			
-			std::cout << pes[x][y]->ToString() << std::endl;		
+			s->Schedule(Event(1, tiles[x][y]->GetRouter()));
+			s->Schedule(Event(1, tiles[x][y]->GetNetif()));
 		}
 	}
-//	
-//	//add a NetSocket to the simulation (not bound to the platform)
-//	TNetSocket* socket = new TNetSocket("ns-x");
-//	s->Schedule(Event(1, socket));
-//	
+
 	//keep simulating until something happen
 	try{
 		//while(1){
@@ -115,9 +130,11 @@ int main(int argc, char** argv){
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
 			
-			Metric* energy = pes[i][j]->GetCpu()->GetMetric(Metrics::ENERGY);
+			if(i == 0 && j ==0) continue;
 			
-			std::cout << pes[i][j]->GetCpu()->GetName() << ":"
+			Metric* energy = ((ProcessingTile*)tiles[i][j])->GetCpu()->GetMetric(Metrics::ENERGY);
+			
+			std::cout << ((ProcessingTile*)tiles[i][j])->GetCpu()->GetName() << ":"
 			          << "  samples=" << std::dec << energy->GetSamples() 
 					  << "  acc.=" << setprecision(4) << energy->GetAccumulative() << "mW"
 					  << "  avg.=" << (energy->GetAccumulative() / energy->GetSamples()) << "mW"<< std::endl;
@@ -128,9 +145,11 @@ int main(int argc, char** argv){
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
 			
-			Metric* energy = pes[i][j]->GetRouter()->GetMetric(Metrics::ENERGY);
+			if(i == 0 && j ==0) continue;
 			
-			std::cout << pes[i][j]->GetRouter()->GetName() << ":"
+			Metric* energy = tiles[i][j]->GetRouter()->GetMetric(Metrics::ENERGY);
+			
+			std::cout << tiles[i][j]->GetRouter()->GetName() << ":"
 			          << "  samples=" << std::dec << energy->GetSamples() 
 					  << "  acc.=" << setprecision(4) << energy->GetAccumulative() << "uW"
 					  << "  avg.=" << (energy->GetAccumulative() / energy->GetSamples()) << "uW"<< std::endl;
@@ -141,12 +160,13 @@ int main(int argc, char** argv){
 	return 0;
 	
 clean:
+	
 	delete(s); //sim
 	
 	//delete PE
 	for(int x = 0; x < NOC_W_SIZE; x++)
 		for(int y = 0; y < NOC_H_SIZE; y++)
-			delete(pes[x][y]);
+			delete(tiles[x][y]);
 
 	return 1;	
 }
