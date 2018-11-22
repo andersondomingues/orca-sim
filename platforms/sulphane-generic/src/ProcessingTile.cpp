@@ -40,8 +40,8 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->SetName("pe-" + this->GetName());
 	
 	//create 
-	_mem0   = new UMemory(_name + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu    = new THellfireProcessor(_name + ".cpu");
+	_mem0   = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
+	_cpu    = new THellfireProcessor(this->GetName() + ".cpu");
 	
 	//bind control signals to hardware (cpu side)
 	_cpu->SetCommAck(this->GetCommAck());
@@ -67,10 +67,6 @@ THellfireProcessor* ProcessingTile::GetCpu(){
 
 UMemory* ProcessingTile::GetMem0(){
 	return _mem0;
-}
-
-std::string ProcessingTile::GetName(){
-	return _name;
 }
 
 std::string ProcessingTile::ToString(){

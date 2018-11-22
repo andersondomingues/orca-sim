@@ -48,7 +48,7 @@
 #define COMM_NOC_START  0x80000003
 
 
-class NetworkTile : private Tile{
+class NetworkTile : public Tile{
 
 private:
 
@@ -63,7 +63,6 @@ public:
 	//getters
 	TNetSocket* GetSocket();
 	
-	std::string GetName();
 	std::string ToString();
 };
 

@@ -40,7 +40,7 @@ NetworkTile::NetworkTile(uint32_t x, uint32_t y) : Tile(x, y){
 	this->SetName("nt-" + this->GetName());
 	
 	//peripherals	
-	_socket = new TNetSocket(_name + ".sock");
+	_socket = new TNetSocket(this->GetName() + ".sock");
 	
 	//bind control signals to hardware (socket side)
 	_socket->SetCommAck(this->GetCommAck());

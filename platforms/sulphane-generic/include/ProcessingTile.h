@@ -100,7 +100,6 @@ public:
 	//getters for mems
 	void SetMem0(UMemory*);
 	
-	std::string GetName();
 	std::string ToString();
 };
 

@@ -91,6 +91,8 @@ public:
 	UMemory* GetmMem2();
 	
 	std::string GetName();
+	void SetName(std::string);
+	
 	std::string ToString();
 };
 

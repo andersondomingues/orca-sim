@@ -92,6 +92,10 @@ UComm<int8_t>* Tile::GetCommAck(){ return _socket_ack; }
 UComm<int8_t>* Tile::GetCommIntr(){ return _socket_intr; }
 UComm<int8_t>* Tile::GetCommStart(){ return _socket_start; }
 
+void Tile::SetName(std::string name){
+	_name = name;
+}
+
 std::string Tile::GetName(){
 	return _name;
 }
