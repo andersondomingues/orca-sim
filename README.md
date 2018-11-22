@@ -32,6 +32,8 @@ In-House models
 
 - NETIF. A simple network interface that can be used to send/receive packets from/to an on-chip network. 
 
+- NETSOCKET. A virtual UDP socket that is capable of converting UDP packets to noc flits and vice-versa.
+
 - MEMORY. An memory-based memory module, that is, we store data from the simulated platform in host machine's memory. No file on disk is used.
 
 Some of the provided models comes from existing hardware. Documentation for these hardware is available at providers' website or repository. 
