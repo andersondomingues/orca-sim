@@ -5,8 +5,8 @@ PLATFORM_NAME:=Sulphane
 
 #Path to dependencies. This platform is similulated using
 #URSA, so libsim and libmod are required. 
-LIBSIM_PATH:=../../libs/simulator
-LIBMOD_PATH:=../../libs/models
+LIBSIM_PATH:=../../simulator
+LIBMOD_PATH:=../../models
 
 LIBMOD:=$(LIBMOD_PATH)/bin/libmod.a
 LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
