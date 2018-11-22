@@ -51,6 +51,8 @@ enum class NetSocketRecvState{ READY, LENGTH, DATA_OUT};
 class TNetSocket: public TimedModel{
 
 private:
+
+	ofstream output_debug;
    
 	//interface with memories from netif
     UMemory* _mem1; //packets to be received

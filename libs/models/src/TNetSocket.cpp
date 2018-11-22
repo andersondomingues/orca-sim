@@ -45,10 +45,13 @@
  * @param name A name to identify this module.
  */
 TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
-	/*
+	
 	//this code depends on linux's libraries. I warned you.
 	std::cout << this->GetName() << " (warning): this module is unable to run in Windows machines." << std::endl;
 	
+	
+	output_debug.open("logs/pe-0-0.cpu_debug.log", std::ofstream::out | std::ofstream::trunc);
+	/*
 	//initialize sending socket
     if ((_send_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
         
@@ -103,7 +106,9 @@ void TNetSocket::SetMem2(UMemory* mem2){
 /**
  * @brief Dtor. No dynamic allocation is being used. Keept by design.
  */
-TNetSocket::~TNetSocket(){}
+TNetSocket::~TNetSocket(){
+		output_debug.close();
+}
 
 /**
  * @brief Return the module to its initial state (if stateful).
@@ -116,20 +121,20 @@ void TNetSocket::Reset(){}
  */
 long long unsigned int TNetSocket::Run(){
     
-	//this->recvProcess(); //process for receiving from the UDP socket
-    //this->sendProcess(); //process for sending through the UDP socket
+	this->recvProcess(); //process for receiving from the UDP socket
+    this->sendProcess(); //process for sending through the UDP socket
     return 1; //takes exactly 1 cycle to run both processes
 }
 
 void TNetSocket::recvProcess(){
 	
-	
-	
+	output_debug << "netrecvproc" << std::endl;
 }
 
 
 void TNetSocket::sendProcess(){	
 
+	output_debug << "netsendproc" << std::endl;
     /*int len, n; 
 	
     n = recvfrom(sockfd, (char *)buffer, MAXLINE,  

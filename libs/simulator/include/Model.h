@@ -34,6 +34,12 @@ public:
 	 * @return The name, if any. */
 	std::string GetName();
 	
+	/**
+	 * @brief Sets a name for the current model
+	 * @param s Name to be set
+	 */
+	void SetName(std::string s);
+	
 	
 	double GetMetric(std::string metric);
 };
