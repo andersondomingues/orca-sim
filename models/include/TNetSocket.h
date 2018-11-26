@@ -24,6 +24,7 @@
 
 //std API
 #include <iostream>
+#include <thread>
 
 //simulator API
 #include <TimedModel.h>
@@ -38,6 +39,57 @@ typedef uint16_t FlitType;
 
 enum class NetSocketSendState{ READY, LENGTH, DATA_IN, INTR_AND_WAIT};
 enum class NetSocketRecvState{ READY, LENGTH, DATA_OUT};
+
+#define UDP_PORT (8080)
+#define TIMEOUT  (20)
+
+class udp_client_server_runtime_error : public std::runtime_error
+{
+public:
+    udp_client_server_runtime_error(const char *w) : std::runtime_error(w) {}
+};
+
+
+class udp_client{
+	
+private:
+    int                 f_socket;
+    int                 f_port;
+    std::string         f_addr;
+    struct addrinfo *   f_addrinfo;
+	
+public:
+	udp_client(const std::string& addr, int port);
+	~udp_client();
+
+	int get_socket() const;
+	int get_port() const;
+	std::string get_addr() const;
+
+	int send(const char *msg, size_t size);
+};
+
+
+class udp_server{
+
+public:
+	udp_server(const std::string& addr, int port);
+	~udp_server();
+
+	int get_socket() const;
+	int get_port() const;
+	std::string get_addr() const;
+
+	int recv(char *msg, size_t max_size);
+	int timed_recv(char *msg, size_t max_size, int max_wait_ms);
+
+private:
+    int                 f_socket;
+    int                 f_port;
+    std::string         f_addr;
+    struct addrinfo *   f_addrinfo;
+};
+
 
 /**
  * @class TNetSocket
@@ -63,23 +115,35 @@ private:
     NetSocketRecvState _recv_state; //state of receiver module
     NetSocketSendState _send_state; //state of sender module
 	
-	//file descriptor for the sending and receiving sockets
-	int32_t _send_socket;
-	int32_t _recv_socket;
-	
 	//control wires (netsocket <-> netif)
 	UComm<int8_t>* _comm_ack;
 	UComm<int8_t>* _comm_intr;
 	UComm<int8_t>* _comm_start;
-	
+		
 	//adresses for of the running host
-	//struct sockaddr_in _sock_addr; 
+	std::thread _recv_thread;
+	
+	//file descriptor for the sending and receiving sockets
+	int32_t _send_socket;
+	int32_t _recv_socket;
+	
+	udp_client* _udp_client;
+	udp_server* _udp_server;
+	
+	uint32_t _trafficOut;
+	uint32_t _trafficIn;
 	
 public:	
     
+	//returns current output
+	void LogWrite(std::string);
+	
     //internal processes
-    void sendProcess();
-    void recvProcess();
+    void udpToNocProcess();
+    void nocToUdpProcess();
+	
+	//thread for receiving (non-block)
+	static void udpRecvThread(TNetSocket*);
 
     //other 
     unsigned long long Run();
@@ -90,7 +154,6 @@ public:
 	UMemory* GetMem2();
 	void SetMem1(UMemory*);
 	void SetMem2(UMemory*);
-	
 	
 	//setter/getters for UComms
 	UComm<int8_t>* GetCommIntr();

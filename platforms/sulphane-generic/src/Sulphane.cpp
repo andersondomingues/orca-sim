@@ -121,9 +121,9 @@ int main(int argc, char** argv){
 
 	//keep simulating until something happen
 	try{
-		//while(1){
+		while(1){
 			s->Run(CYCLES_TO_SIM);
-		//}
+		}
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
 		goto clean;
