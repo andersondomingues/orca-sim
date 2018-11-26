@@ -37,11 +37,9 @@
 
 typedef uint16_t FlitType;
 
-enum class NetSocketSendState{ READY, LENGTH, DATA_IN, INTR_AND_WAIT};
-enum class NetSocketRecvState{ READY, LENGTH, DATA_OUT};
+enum class NetSocketRecvState{ READY, DATA_IN, FLUSH};
 
-#define UDP_PORT (8080)
-#define TIMEOUT  (20)
+#define RECV_BUFFER_LEN 128
 
 class udp_client_server_runtime_error : public std::runtime_error
 {
@@ -113,13 +111,14 @@ private:
     //as netif, this module supports sending and receiving
 	//packet simultaneously.
     NetSocketRecvState _recv_state; //state of receiver module
-    NetSocketSendState _send_state; //state of sender module
 	
 	//control wires (netsocket <-> netif)
 	UComm<int8_t>* _comm_ack;
 	UComm<int8_t>* _comm_intr;
 	UComm<int8_t>* _comm_start;
-		
+	
+	UComm<int8_t>* _comm_recv;
+	
 	//adresses for of the running host
 	std::thread _recv_thread;
 	
@@ -132,11 +131,17 @@ private:
 	
 	uint32_t _trafficOut;
 	uint32_t _trafficIn;
+	uint32_t _flits_to_recv; 
+	
+	int8_t* _recv_buffer;
 	
 public:	
     
 	//returns current output
 	void LogWrite(std::string);
+	
+	//returns a pointer to the receiving buffer
+	int8_t* GetBuffer();
 	
     //internal processes
     void udpToNocProcess();
@@ -144,6 +149,7 @@ public:
 	
 	//thread for receiving (non-block)
 	static void udpRecvThread(TNetSocket*);
+	udp_server* GetUdpServer();
 
     //other 
     unsigned long long Run();
@@ -159,6 +165,7 @@ public:
 	UComm<int8_t>* GetCommIntr();
 	UComm<int8_t>* GetCommStart();
 	UComm<int8_t>* GetCommAck();
+	UComm<int8_t>* GetCommRecv();
 	
 	void SetCommIntr(UComm<int8_t>* UComm);
 	void SetCommStart(UComm<int8_t>* UComm);
