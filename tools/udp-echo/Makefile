@@ -2,12 +2,12 @@
 .PHONY: server client
 
 server:
-	g++ udp_client_server.cpp server.cpp -o server
-	./server
+	g++ udp_client_server.cpp server.cpp -o server.exe
+	./server.exe
 
 client:
-	g++ udp_client_server.cpp client.cpp -o client
-	./client
+	g++ udp_client_server.cpp client.cpp -o client.exe
+	./client.exe
 	
 clear:
-	rm -rf *.out *.o
+	rm -rf *.exe *.o
