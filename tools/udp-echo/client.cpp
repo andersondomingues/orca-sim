@@ -13,9 +13,9 @@ int main(int argc, char** argv){
 	
 	//message
 	char* msg = new char[RECV_BUFFER_LEN];
-	msg[0] = 1;
-	msg[1] = 1;
-	msg[3] = 0x3e;
+	msg[0] = 2;
+	msg[1] = 2;
+	msg[2] = 0x3e;
 	
 	int sends = 0;
 
