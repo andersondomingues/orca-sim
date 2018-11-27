@@ -200,10 +200,10 @@ Metric* TRouter::GetMetric(Metrics m){
  * @return the port to where te packet must go*/
 uint32_t TRouter::GetRouteXY(FlitType flit){
     
-    FlitType tx = (flit & 0xF0) >> 4;
-    FlitType ty = (flit & 0x0F);
+    FlitType tx = flit >> 8;
+    FlitType ty = flit & 0x00FF;
 	
-	//std::cout << this->GetName() << ":0x" << flit << ":(x, y) => (" << tx << "," << ty << ")" << std::endl;
+	std::cout << this->GetName() << ":0x" << std::hex << flit << std::dec << ":(x, y) => (" << tx << "," << ty << ")" << std::endl;
 
     //if X=0, then route "vertically" (Y)
     if(_x == tx){

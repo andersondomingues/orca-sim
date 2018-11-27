@@ -46,6 +46,7 @@
  * @brief Default ctor. Name of the module must be informed.
  * @param name A name to identify this module.
  */
+class _recv_buffer;
 TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 
 	//open debug file
@@ -61,7 +62,7 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 	_trafficIn  = 0;
 	
 	//initialize recv buffer
-	_recv_buffer = new int8_t[RECV_BUFFER_LEN];
+	_recv_buffer = new uint8_t[RECV_BUFFER_LEN];
 	_recv_state = NetSocketRecvState::READY;
 	
 	//initialize a new client (client sends messages)
@@ -102,7 +103,7 @@ void TNetSocket::SetMem2(UMemory* mem2){
 	_mem2 = mem2;
 }
 
-int8_t* TNetSocket::GetBuffer(){
+uint8_t* TNetSocket::GetBuffer(){
 	return _recv_buffer;
 }
 
@@ -170,9 +171,9 @@ void TNetSocket::udpToNocProcess(){
 			if(_comm_recv->Read() == 0x1){
 				
 				//copy buffer to internal memory
-				_mem2->Write(_mem2->GetBase(), _recv_buffer, RECV_BUFFER_LEN);
+				_mem2->Write(_mem2->GetBase(), (int8_t*)_recv_buffer, RECV_BUFFER_LEN);
 				
-				uint32_t x = _recv_buffer[0] + (_recv_buffer[1] * 4);
+				int32_t x = _recv_buffer[0] + (_recv_buffer[1] * 4);
 				
 				output_debug << "incoming traffic (" << _trafficIn << ")"
 							 << " from " << _udp_server->get_addr() << ":"

@@ -133,7 +133,7 @@ private:
 	uint32_t _trafficIn;
 	uint32_t _flits_to_recv; 
 	
-	int8_t* _recv_buffer;
+	uint8_t* _recv_buffer;
 	
 public:	
     
@@ -141,7 +141,7 @@ public:
 	void LogWrite(std::string);
 	
 	//returns a pointer to the receiving buffer
-	int8_t* GetBuffer();
+	uint8_t* GetBuffer();
 	
     //internal processes
     void udpToNocProcess();

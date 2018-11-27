@@ -45,8 +45,8 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 	if(binname != "")
 		this->LoadBin(binname, _sram_base, _length);
 		
-    std::cout << this->GetName() << " at " << ((void*)(int*) _mem) << " mapped from 0x" 
-		      << std::hex << _sram_base << " to 0x" << std::hex << (_sram_base + _length - 1) <<std::endl;
+    //std::cout << this->GetName() << " at " << ((void*)(int*) _mem) << " mapped from 0x" 
+	//	      << std::hex << _sram_base << " to 0x" << std::hex << (_sram_base + _length - 1) <<std::endl;
 }
 
 /**

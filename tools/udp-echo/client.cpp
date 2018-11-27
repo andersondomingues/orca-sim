@@ -40,11 +40,38 @@ int main(int argc, char** argv){
 	const std::string& client_addr = "127.0.0.1";
 	udp_client* uclient = new udp_client(client_addr, 9999);
 	
-	//message
+	/*
+	
+  2 bytes   2 bytes           4 bytes  
+ -----------------------------------------
+ |    x    |     y   |    payload_len    |
+ -----------------------------------------
+	
+  2 bytes   2 bytes   2 bytes   2 bytes   2 bytes   2 bytes   2 bytes   2 bytes       ....
+ --------------------------------------------------------------------------------------------------
+ |tgt_cpu  |payload  |src_cpu  |src_port |tgt_port |msg_size |seq      |channel  |  ... data ...  |
+ --------------------------------------------------------------------------------------------------
+	*/
+	
 	char* msg = new char[RECV_BUFFER_LEN];
-	msg[0] = 2;
-	msg[1] = 2;
-	msg[2] = 0x3e;
+	
+	/* BEWARE THE ENDIANESSSSSS */
+	
+	msg[0] = 0x01; 
+	msg[1] = 0x01;  //(1,1) is core #5
+
+	msg[2] = 0x3e; 
+	msg[3] = 0x00;  //length flit: 0x3e = 62 flits
+
+	msg[4] = 0x00;  //payload
+	msg[5] = 0x05;  //target_cpu (5)
+
+	msg[6] = 0xe8;	//src_port (5000)
+	msg[7] = 0x00;  //src_cpu (0,0)
+	
+	//target_port
+	msg[8] = 0x88;
+	msg[9] = 0x13;  //0x1388 = 5000 dec
 	
 	int sends = 0;
 

@@ -39,6 +39,12 @@ NetworkTile::NetworkTile(uint32_t x, uint32_t y) : Tile(x, y){
 	
 	this->SetName("nt-" + this->GetName());
 	
+	//renaming hardware
+	this->GetRouter()->SetName(this->GetName() + ".router");
+	this->GetNetif()->SetName(this->GetName() + ".netif");
+	this->GetMem1()->SetName(this->GetName() + ".mem1");
+	this->GetMem2()->SetName(this->GetName() + ".mem2");
+	
 	//peripherals	
 	_socket = new TNetSocket(this->GetName() + ".sock");
 	

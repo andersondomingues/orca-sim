@@ -49,6 +49,9 @@ Tile* tiles[NOC_W_SIZE][NOC_H_SIZE];
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
 	r2->SetOutputBuffer(r1->GetInputBuffer(p1), p2);
+	
+	std::cout << "router_comm: " << r1->GetName() << " ----[" 
+			  << p1 << "/" << p2 << "]---- " << r2->GetName() << std::endl;
 }
 
 int main(int argc, char** argv){
@@ -59,19 +62,23 @@ int main(int argc, char** argv){
 	std::cout << "Simulation step set to " << CYCLES_TO_SIM << " cycles." << std::endl;
 	std::cout << "Instanting new hardware..." << std::endl;
 	
+	std::cout << "==============[ TILE LIST ]" << std::endl;
+	
 	//populate tiles
 	for(int x = 0; x < NOC_W_SIZE; x++){
 		for(int y = 0; y < NOC_H_SIZE; y++){
 			
 			if(x == 0 && y ==0){
-				std::cout << "\tnew network tile @ 0,0" << std::endl;
+				std::cout << "(0,0) is a network tile" << std::endl;
 				tiles[x][y] = (Tile*)new NetworkTile(x, y);				
 			}else{
-				std::cout << "\tnew processing tile @ " << x << "," << y << std::endl;
+				std::cout << "(" << x << "," << y << ") is a processing tile" << std::endl;
 				tiles[x][y] = (Tile*)new ProcessingTile(x, y);
 			}
 		}
 	}
+	
+	std::cout << "==============[ ROUTER CONNECTIONS ]" << std::endl;
 	
 	//connect tiles to each other (left-to-right, right-to-left connections)	
 	for(int x = 0; x < NOC_W_SIZE - 1; x++)
@@ -99,9 +106,13 @@ int main(int argc, char** argv){
 		}
 	}
 
+	std::cout << "==============[ SIMULATION ]" << std::endl;
+	
 	//instantiate simulation
 	Simulator* s = new Simulator();
 		
+	std::cout << "Scheduling..."	 << std::endl;
+	
 	//schedule hardware to be simulated
 	for(int x = 0; x < NOC_W_SIZE; x++){
 		for(int y = 0; y < NOC_H_SIZE; y++){
@@ -118,6 +129,8 @@ int main(int argc, char** argv){
 			s->Schedule(Event(1, tiles[x][y]->GetNetif()));
 		}
 	}
+
+	std::cout << "Running..."	 << std::endl;
 
 	//keep simulating until something happen
 	try{

@@ -49,6 +49,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetMem2()->SetName(this->GetName() + ".mem2");
 	
 	
+	
 	//bind control signals to hardware (cpu side)
 	_cpu->SetCommAck(this->GetCommAck());
 	_cpu->SetCommIntr(this->GetCommIntr());
