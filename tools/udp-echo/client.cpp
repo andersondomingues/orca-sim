@@ -57,8 +57,8 @@ int main(int argc, char** argv){
 	
 	/* BEWARE THE ENDIANESSSSSS */
 	
-	msg[0] = 0x01; 
-	msg[1] = 0x01;  //(1,1) is core #5
+	msg[0] = 0x11;  //(1,1) is core #5
+	msg[1] = 0x00; 
 
 	msg[2] = 0x3e; 
 	msg[3] = 0x00;  //length flit: 0x3e = 62 flits
@@ -69,8 +69,7 @@ int main(int argc, char** argv){
 	msg[6] = 0xe8;	//src_port (5000)
 	msg[7] = 0x00;  //src_cpu (0,0)
 	
-	//target_port
-	msg[8] = 0x88;
+	msg[8] = 0x88;  //msg_size
 	msg[9] = 0x13;  //0x1388 = 5000 dec
 	
 	int sends = 0;

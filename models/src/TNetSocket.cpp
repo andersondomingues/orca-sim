@@ -173,7 +173,12 @@ void TNetSocket::udpToNocProcess(){
 				//copy buffer to internal memory
 				_mem2->Write(_mem2->GetBase(), (int8_t*)_recv_buffer, RECV_BUFFER_LEN);
 				
-				int32_t x = _recv_buffer[0] + (_recv_buffer[1] * 4);
+				uint16_t addr_flit;
+				_mem2->Read(_mem2->GetBase(), (int8_t*)&addr_flit, 2);
+				
+				int32_t x = (addr_flit | 0x00f0) >> 4;
+				int32_t y = (addr_flit | 0x000f);
+				x = x + y * 4;
 				
 				output_debug << "incoming traffic (" << _trafficIn << ")"
 							 << " from " << _udp_server->get_addr() << ":"
