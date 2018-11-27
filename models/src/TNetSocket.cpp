@@ -176,14 +176,14 @@ void TNetSocket::udpToNocProcess(){
 				uint16_t addr_flit;
 				_mem2->Read(_mem2->GetBase(), (int8_t*)&addr_flit, 2);
 				
-				int32_t x = (addr_flit | 0x00f0) >> 4;
-				int32_t y = (addr_flit | 0x000f);
-				x = x + y * 4;
+				int32_t x = (addr_flit & 0xf0) >> 4;
+				int32_t y = (addr_flit & 0x0f);
+				int32_t z = x + y * 4;
 				
 				output_debug << "incoming traffic (" << _trafficIn << ")"
 							 << " from " << _udp_server->get_addr() << ":"
 							 << _udp_server->get_port() 
-							 << " (to #" << x << ")" << std::endl << std::flush;
+							 << " (to #" << z << "; " << x << "," << y << ")" << std::endl << std::flush;
 
 				//start bursting packets into the noc
 				_recv_state = NetSocketRecvState::DATA_IN;
