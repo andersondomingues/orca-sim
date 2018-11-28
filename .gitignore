@@ -7,3 +7,7 @@
 .codelite
 ursa.*
 perf.*
+tools/ros_integration/.catkin_workspace
+tools/ros_integration/build/
+tools/ros_integration/devel/
+
