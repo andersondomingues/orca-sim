@@ -17,7 +17,7 @@
 
 //buffer size, not sure the effect cause by larger buffers
 //but the waste of memory
-#define UDP_BUFFER_LEN 200
+#define UDP_BUFFER_LEN 128
 
 //ros references
 ros::Publisher  pub_mpsoc_out;
@@ -27,35 +27,39 @@ ros::Subscriber pub_mpsoc_in;
 udp_client* uclient;
 udp_server* userver;
 
-
 //function that add noc headers to the buffer and 
 //return the initial address of the payload
 char* add_noc_headers(char* buffer){
 	
-	//care the endianess!
+	/* BEWARE THE ENDIANESSSSSS */
+	
 	buffer[0] = 0x11;  //(1,1) is core #5
-	buffer[1] = 0x00;  //reserved
+	buffer[1] = 0x00; 
 
-	//length flit: 0x3e = 62 flits (124 bytes)
-	buffer[2] = 0x3e;  
-	buffer[3] = 0x00;  
+	buffer[2] = 0x3e; 
+	buffer[3] = 0x00;  //length flit: 0x3e = 62 flits
 
 	buffer[4] = 0x00;  //payload
 	buffer[5] = 0x05;  //target_cpu (5)
 
-	buffer[6] = 0x00;  //src_port (unused,)
-	buffer[7] = 0x00;  //src_cpu  (0,0 is the gateway addr)
+	buffer[6] = 0xe8;	//src_port (5000)
+	buffer[7] = 0x00;  //src_cpu (0,0)
 	
-	//target_port (0x1388 = 5000 dec)
-	buffer[8] = 0x88;  
-	buffer[9] = 0x13;  
+	buffer[8] = 0x88;  //msg_size
+	buffer[9] = 0x13;  //0x1388 = 5000 dec
+	
+	buffer[10] = 0x64;
+	buffer[11] = 0x00;
+	
+	buffer[12] = 0x01;
+	buffer[16] = 0x20;
 	
 	//TODO: double check headers 
-	return &buffer[20];
+	return &buffer[17];
 }
 
 char* remove_noc_headers(char* buffer){
-	return &buffer[20];
+	return &buffer[17];
 }
 
 //Callback that consumes message on the input topic and process
@@ -68,9 +72,14 @@ void mpsoc_in_callback(const geometry_msgs::Vector3::ConstPtr& msg){
 	char buffer[UDP_BUFFER_LEN];
 
 	//add noc headers 
-	//char* start_addr = add_noc_headers(buffer);
+	char* start_addr = add_noc_headers(buffer);
 	
 	//add payload (TODO: serialization)
+	for(int i = 0; i < 20; i++)
+		buffer[17 + i] = 0x64;
+	
+	buffer[40] = 0x0a;
+	
 	//*(float*)start_addr = msg.getX();
 	//start_addr += 8;
 	
@@ -98,6 +107,7 @@ int main(int argc,char **argv)
 	
 	ros::NodeHandle n;
 	
+	//ROS_INFO();
 	//subscribe and advertise to input and output topics. 
 	pub_mpsoc_in  = n.subscribe("/mpsoc_in", 1, mpsoc_in_callback); 
 	pub_mpsoc_out = n.advertise<geometry_msgs::Vector3>("/mpsoc_out", 1);

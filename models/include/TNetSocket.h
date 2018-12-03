@@ -24,7 +24,7 @@
 
 //std API
 #include <iostream>
-#include <thread>
+#include <pthread.h>
 
 //simulator API
 #include <TimedModel.h>
@@ -120,7 +120,7 @@ private:
 	UComm<int8_t>* _comm_recv;
 	
 	//adresses for of the running host
-	std::thread _recv_thread;
+	//std::thread _recv_thread;
 	
 	//file descriptor for the sending and receiving sockets
 	int32_t _send_socket;
@@ -148,7 +148,7 @@ public:
     void nocToUdpProcess();
 	
 	//thread for receiving (non-block)
-	static void udpRecvThread(TNetSocket*);
+	static void* udpRecvThread(void*);
 	udp_server* GetUdpServer();
 
     //other 

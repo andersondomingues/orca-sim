@@ -72,8 +72,16 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 	const std::string& server_addr = "127.0.0.1";
 	_udp_server = new udp_server(server_addr, 9999);
 	
-	//start a new thread for receiving packets
-	_recv_thread = std::thread(this->udpRecvThread, this);
+	#define GCC_VERSION (__GNUC__ * 10000 \
+                     + __GNUC_MINOR__ * 100 \
+                     + __GNUC_PATCHLEVEL__)
+	
+	pthread_t t;
+
+	if(pthread_create(&t, NULL, TNetSocket::udpRecvThread, this)){
+		std::cout << "unable to create new thread using lpthread." << std:: endl;
+	}
+	
 
 	//this code depends on linux's libraries. I warned you.
 	output_debug << "UDP bridge is up" << std::endl;
@@ -137,7 +145,9 @@ long long unsigned int TNetSocket::Run(){
     return 1; //takes exactly 1 cycle to run both processes
 }
 
-void TNetSocket::udpRecvThread(TNetSocket* ns){
+void* TNetSocket::udpRecvThread(void* gs){
+	
+	TNetSocket* ns = ( TNetSocket*) gs;
 
 		
 	//recv while the program lives
