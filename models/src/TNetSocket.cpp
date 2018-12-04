@@ -71,11 +71,7 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 
 	const std::string& server_addr = "127.0.0.1";
 	_udp_server = new udp_server(server_addr, 9999);
-	
-	#define GCC_VERSION (__GNUC__ * 10000 \
-                     + __GNUC_MINOR__ * 100 \
-                     + __GNUC_PATCHLEVEL__)
-	
+		
 	pthread_t t;
 
 	if(pthread_create(&t, NULL, TNetSocket::udpRecvThread, this)){
@@ -149,9 +145,8 @@ void* TNetSocket::udpRecvThread(void* gs){
 	
 	TNetSocket* ns = ( TNetSocket*) gs;
 
-		
 	//recv while the program lives
-	do{
+	while(1){
 		
 		//recv only when interface is not busy
 		if(ns->GetCommRecv()->Read() == 0x0){
@@ -161,9 +156,8 @@ void* TNetSocket::udpRecvThread(void* gs){
 			
 			//start interface
 			ns->GetCommRecv()->Write(0x1);
-		}
-		
-	}while(1);
+		}	
+	}
 }
 
 void TNetSocket::LogWrite(std::string ss){
@@ -231,7 +225,7 @@ void TNetSocket::udpToNocProcess(){
 void TNetSocket::nocToUdpProcess(){	
     
 	//stateless send
-	if(_comm_intr->Read() != 0){ //has packets 
+	if(_comm_intr->Read() == 0x1){ //has packets 
 				
 		int8_t* msg = new int8_t[RECV_BUFFER_LEN]; //64 flits = 1 msg
 		_mem1->Read(_mem1->GetBase(), msg, RECV_BUFFER_LEN);
@@ -246,6 +240,7 @@ void TNetSocket::nocToUdpProcess(){
 					 << " (from core #" << x << ")" << std::endl;
 		
 		_comm_ack->Write(0x01);
+		_comm_intr->Write(0x00);
 		_trafficOut++;
 	}
 	
