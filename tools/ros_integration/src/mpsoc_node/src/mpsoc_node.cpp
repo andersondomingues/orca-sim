@@ -81,17 +81,17 @@ void* pack_data(char* addr, const topic_t::ConstPtr& msg){
 	//add x val
 	uint32_t z_val = msg->z * 100000;
 	*(uint32_t*)ptr = z_val;
-
 }
 
 //unserialize
 topic_t unpack_data(char* addr){
 	
 	topic_t t;
+	t.x = *(int32_t*)(&addr[0]);
+	t.y = *(int32_t*)(&addr[4]);
+	t.z = *(int32_t*)(&addr[8]);
 	
-	
-	ROS_INFO("unknown type, cannot unpack data");
-	
+	return t;
 }
 
 //Callback that consumes message on the input topic and process
@@ -139,12 +139,13 @@ void mpsoc_in_callback(const topic_t::ConstPtr& msg){
 	//send via udp
 	uclient->send((const char*)buffer, UDP_BUFFER_LEN);
 	
+	ROS_INFO("data sent");
 	dump(buffer, 0, UDP_BUFFER_LEN);
 	printf("\n");
 	
 	//do whatever has to be done with the data
 	//start_addr = remove_noc_headers(buffer);
-	ROS_INFO("data sent");
+	
 }
 
 //Non-blocking function for receiveing packets from 
@@ -170,7 +171,8 @@ void* mpsoc_out(void* v){
 		pub_mpsoc_out.publish(data);
 		
 		ROS_INFO("data recv'd");
-	
+		dump(buffer, 0, UDP_BUFFER_LEN);
+		printf("\n");
 	}
 }
 
