@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package>
+  <name>diff_drive_gazebo</name>
+  <version>1.0.0</version>
+  <description>An example of how to build a differential drive in Gazebo with ROS support</description>
+
+  <maintainer email="rtellez@theconstructsim.com">Ricardo Tellez</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
