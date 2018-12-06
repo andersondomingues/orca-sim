@@ -135,7 +135,7 @@ include_directories(
 # add_executable(${PROJECT_NAME}_node src/mpsoc_node_node.cpp)
 
 
-add_executable(${PROJECT_NAME}_node src/udp_client_server.cpp src/mpsoc_node.cpp)
+add_executable(${PROJECT_NAME}_node src/udp_client_server.cpp src/mpsoc_node.cpp src/mpsoc_helper.cpp)
 
 
 ## Rename C++ executable without prefix
@@ -200,3 +200,5 @@ add_executable(${PROJECT_NAME}_node src/udp_client_server.cpp src/mpsoc_node.cpp
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+SET(CMAKE_BUILD_TYPE Debug)
