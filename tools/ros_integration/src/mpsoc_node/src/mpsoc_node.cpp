@@ -73,6 +73,8 @@ void mpsoc_in_callback(const topic_t::ConstPtr& msg){
 				if(j % 2 == 0){
 				
 					buffer[20] = msg->ranges[j] * 100;
+					
+					buffer[24] = j;
 						
 					uclient->send((const char*)buffer, UDP_BUFFER_LEN);		
 					//dump(buffer, 0, UDP_BUFFER_LEN);
@@ -86,8 +88,10 @@ void mpsoc_in_callback(const topic_t::ConstPtr& msg){
 		}
 		
 		ROS_INFO("data sent");	
-		
+		exit(0);
 	}
+	
+	
 }
 
 //Non-blocking function for receiveing packets from 

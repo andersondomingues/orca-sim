@@ -433,7 +433,8 @@ fail:
 	#endif /* DISABLE_METRICS */
 	
 	//returns 4 of Store or Load, else returns 3
-	return (opcode == 0x23 || opcode == 0x3) ? 4 : 3;
+//	return (opcode == 0x23 || opcode == 0x3) ? 4 : 3;
+	return 1; //same clock as the rest of the platform
 }
 
 risc_v_state THellfireProcessor::GetState(){
