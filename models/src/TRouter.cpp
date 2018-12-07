@@ -103,7 +103,7 @@ unsigned long long TRouter::Run(){
 				//get target port from first flit
 				_source_port = _round_robin;
 				
-				FlitType flit = _ib[_source_port]->top(); _ib[_source_port]->pop();
+				FlitType flit = _ib[_source_port]->top(); 
 				//std::cout << GetName() << ": first flit = " << flit << std::endl;
 				
 				_target_port = this->GetRouteXY(flit); 
@@ -119,10 +119,15 @@ unsigned long long TRouter::Run(){
 				#endif
 				
 				//foward header flit
-				_ob[_target_port]->push(flit);
+				if(_ob[_target_port]->size() < ROUTER_BUFFER_LEN){
+					
+					_ob[_target_port]->push(flit);
+					_ib[_source_port]->pop();
 				
-				//change state
-				_state = RouterState::PKTLEN;
+					//change state
+					_state = RouterState::PKTLEN;
+				
+				}
 			}
 			
 		} break;
@@ -134,17 +139,14 @@ unsigned long long TRouter::Run(){
 				//to push after the third flit 
 				_packets_to_send = _ib[_source_port]->top();
 				
-				//forward third flit and clean from input
-				_ob[_target_port]->push(_ib[_source_port]->top());
-				_ib[_source_port]->pop();
+				if(_ob[_target_port]->size() < ROUTER_BUFFER_LEN){
+					
+					//forward third flit and clean from input
+					_ob[_target_port]->push(_ib[_source_port]->top());
+					_ib[_source_port]->pop();
 				
-				/*std::cout << GetName() << ": flits_to_send = 0x" << std::hex << _packets_to_send 
-						  << "(" << std::dec << _packets_to_send << ") from port " << _source_port 
-						  << " to " << _target_port << std::endl;*/
-				
-				//change state
-				_state = RouterState::BURST;
-				//std::cout << this->GetName() << ": PKTLEN" << std::endl;
+					_state = RouterState::BURST;	
+				}
 			}
 			
         } break;
@@ -154,16 +156,22 @@ unsigned long long TRouter::Run(){
 		//router returns to ROUNDROBIN state.
         case RouterState::BURST: {
 			
+			//no more flits to send, change state
 			if(_packets_to_send == 0)
                 _state = RouterState::ROUNDROBIN;
 				
+			//otherwise, send one flit through the network
 			else if(_ib[_round_robin]->size() > 0){
-			
-				//forward the next flit and clean from input
-				_ob[_target_port]->push(_ib[_source_port]->top());
-				_ib[_source_port]->pop();
-				
-				_packets_to_send--;
+
+				//prevent from sending flits to full buffers
+				if(_ob[_target_port]->size() < ROUTER_BUFFER_LEN){
+					
+					//forward the next flit and clean from input
+					_ob[_target_port]->push(_ib[_source_port]->top());
+					_ib[_source_port]->pop();
+					
+					_packets_to_send--;
+				}
 			}
 			
         } break;

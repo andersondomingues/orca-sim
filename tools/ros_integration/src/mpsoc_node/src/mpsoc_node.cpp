@@ -74,9 +74,11 @@ void mpsoc_in_callback(const topic_t::ConstPtr& msg){
 				
 					buffer[20] = msg->ranges[j] * 100;
 						
-						
 					uclient->send((const char*)buffer, UDP_BUFFER_LEN);		
+					//dump(buffer, 0, UDP_BUFFER_LEN);
 					printf("%d = %f, inc = %f\n", j, i, msg->angle_increment);
+					
+					usleep(100000);
 				}
 			}
 			j++;

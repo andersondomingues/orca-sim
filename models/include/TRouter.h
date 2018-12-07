@@ -44,6 +44,10 @@ enum class RouterState{
 
 #define LOCAL 4
 
+//buffer len (in flits)
+#define ROUTER_BUFFER_LEN 16
+
+
 class TRouter: public TimedModel
 #ifndef DISABLE_METRICS
 , public ObservableModel
