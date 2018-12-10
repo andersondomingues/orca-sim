@@ -1,5 +1,7 @@
 #include "ros/ros.h"
-#include "sensor_msgs/LaserScan.h"   // Motion
+#include "sensor_msgs/LaserScan.h"
+#include "geometry_msgs/Twist.h"
+#include "geometry_msgs/Point.h"
 
 #include "../include/udp_client_server.h"
 #include "../include/mpsoc_helper.h"
@@ -17,34 +19,27 @@
 #define ROSNODE_PORT 8888
 
 //buffer size, not sure the effect cause by larger buffers
-//but the waste of memory
+//but the waste of memory (50000 = 2msgs/min)
 #define UDP_BUFFER_LEN 128
-#define DELAY_BETWEEN_PACKETS 50000
-
+#define DELAY_BETWEEN_PACKETS 30000 
 
 //ros references
 ros::Publisher  pub_mpsoc_out;
 ros::Subscriber pub_mpsoc_in;
 
-//definition of topic type; Include directive
-//must be changed as well
-typedef sensor_msgs::LaserScan topic_t;
-
-//conection to udp network
 udp_client* uclient;
 udp_server* userver;
-
 
 #define MOD_SKIP_PACKET 100
 unsigned int packet_counter = 0;
 
-//Callback that consumes message on the input topic and process
-//information. Message is published back into output topic at
-//the end of processing.
-void mpsoc_in_callback(const topic_t::ConstPtr& msg){
-
+//send several packets containing ranges from laser readings to 
+//the mpsoc
+void send_laser_to_mpsoc(const sensor_msgs::LaserScan::ConstPtr& msg){
+	
 	//make sure packet counter is always between 0 and MOD_SKIP_PACKET
 	packet_counter = (packet_counter + 1) % MOD_SKIP_PACKET;
+	int sent = 0;
 	
 	//ignore MOD_SKIP_PACKET packets
 	if(packet_counter == 0){
@@ -68,33 +63,52 @@ void mpsoc_in_callback(const topic_t::ConstPtr& msg){
 			if(msg->ranges[j] >= msg->range_min && msg->ranges[j] <= msg->range_max){
 				
 				//send 3xx ranges intead of 6xx
-				if(j % 2 == 0){
+				if(j % 10 == 0){
 				
-					int16_t range = msg->ranges[j] * 100;
-					int16_t index = j;
+					uint16_t index = j;
+					uint16_t range = msg->ranges[j] * 100;					
 					
-					*(int16_t*)&buffer[16] = index;
-					*(int16_t*)&buffer[18] = range;
+					*(uint16_t*)&buffer[16] = index;
+					*(uint16_t*)&buffer[18] = range;
+					
+					//ROS_INFO("%d = %d", index, range);
 					
 					uclient->send((const char*)buffer, UDP_BUFFER_LEN);				
 					usleep(DELAY_BETWEEN_PACKETS);
+					
+					sent++;
 				}
-				
-				
 			}
 			j++;
 		}
 		
-		exit(0);
-		ROS_INFO("data sent");
+		ROS_INFO("sent %d messages", sent);
+		sent = 0;
 	}
+}
+
+//msg.x is the index, msg.y is the range
+void mpsoc_send_to_cmdvel(const geometry_msgs::Point msg){
 	
+	//generate angle from index
+	ROS_INFO("received index is: %d", msg.x);
 	
+	//calculate twist
+	
+	//update cmdvel
+	
+}
+
+//Callback that consumes message on the input topic and process
+//information. Message is published back into output topic at
+//the end of processing.
+void laser_recv_callback(const sensor_msgs::LaserScan::ConstPtr& msg){
+	send_laser_to_mpsoc(msg);
 }
 
 //Non-blocking function for receiveing packets from 
 //the network
-void* mpsoc_out(void* v){
+void* server_thread(void* v){
 	
 	//buffes must be in the callback, otherwise
 	//data will be overwritter by next iterations
@@ -104,16 +118,22 @@ void* mpsoc_out(void* v){
 	
 		//recv packet from the network
 		userver->recv(buffer, UDP_BUFFER_LEN);
+
+		//pack into a ros structure
+		geometry_msgs::Point p;
 		
-		char* start_addr = &buffer[20];
+		uint16_t index = *(uint16_t*)&buffer[16];
+		//index = (index >> 8) | (index << 8);
 		
-		//unpack data
-		topic_t data;
+		uint16_t value = *(uint16_t*)&buffer[18];
+		p.x = index;
+		p.y = value;
 		
-		//publish through ros 
-		pub_mpsoc_out.publish(data);
 		
-		ROS_INFO("data recv'd");
+		ROS_INFO("%d = %d", p.x, p.y);
+
+		//calc new values for cmd_vel
+		mpsoc_send_to_cmdvel(p);
 	}
 }
 
@@ -127,8 +147,8 @@ int main(int argc,char **argv)
 	
 	//ROS_INFO();
 	//subscribe and advertise to input and output topics. 
-	pub_mpsoc_in  = n.subscribe("/hokuyo_laser", 10, mpsoc_in_callback); 
-	pub_mpsoc_out = n.advertise<topic_t>("/mpsoc_out", 10);
+	pub_mpsoc_in  = n.subscribe("/hokuyo_laser", 10, laser_recv_callback); 
+	pub_mpsoc_out = n.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
 
 	//initialize udp bridge
 	const std::string& client_addr = MPSOC_ADDR;
@@ -139,11 +159,9 @@ int main(int argc,char **argv)
 
 	//start receiving thread
 	pthread_t thread;
-	pthread_create(&thread, NULL, mpsoc_out, NULL);
+	pthread_create(&thread, NULL, server_thread, NULL);
 
 	ros::spin(); 
 
 	return 0;
 }
-
-
