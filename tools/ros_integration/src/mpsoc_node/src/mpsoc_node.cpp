@@ -1,7 +1,10 @@
 #include "ros/ros.h"
 #include "sensor_msgs/LaserScan.h"
+#include "nav_msgs/Odometry.h"
 #include "geometry_msgs/Twist.h"
 #include "geometry_msgs/Point.h"
+#include "geometry_msgs/Pose.h"
+#include "geometry_msgs/Pose2D.h"
 
 #include "../include/udp_client_server.h"
 #include "../include/mpsoc_helper.h"
@@ -23,15 +26,47 @@
 #define UDP_BUFFER_LEN 128
 #define DELAY_BETWEEN_PACKETS 30000 
 
+//hokuyo specific definitions
+#define HOKUYO_ANGLE_MIN -2.268890
+#define HOKUYO_ANGLE_MAX  2.268900
+#define HOKUYO_ANGLE_INC  0.007101 
+
 //ros references
 ros::Publisher  pub_mpsoc_out;
 ros::Subscriber pub_mpsoc_in;
+ros::Subscriber pub_odometry;
 
 udp_client* uclient;
 udp_server* userver;
 
+//current pos
+geometry_msgs::Pose2D curr_pose;
+
 #define MOD_SKIP_PACKET 100
 unsigned int packet_counter = 0;
+
+//quarternion to eular angles (in radians already)
+double toEulerAngle(double x, double y, double z, double w){
+	double siny = +2.0 * 		(w * z + x * y);
+	double cosy = +1.0 - 2.0 * 	(y * y + z * z);  
+	return atan2(siny, cosy); 
+}
+
+//stores updated position 
+void odom_callback(const nav_msgs::Odometry::ConstPtr& msg){
+		
+	//update location
+	curr_pose.x	= msg->pose.pose.position.x;
+	curr_pose.y	= msg->pose.pose.position.y;
+
+	//update angle
+	curr_pose.theta = toEulerAngle(
+		msg->pose.pose.orientation.x, 
+		msg->pose.pose.orientation.y,
+		msg->pose.pose.orientation.z,
+		msg->pose.pose.orientation.w //already in radians
+	);	
+}
 
 //send several packets containing ranges from laser readings to 
 //the mpsoc
@@ -57,8 +92,10 @@ void send_laser_to_mpsoc(const sensor_msgs::LaserScan::ConstPtr& msg){
 		
 		//add laser info
 		int j = 1;
-		for(float i = msg->angle_min; i < msg->angle_max; i += msg->angle_increment){
-			
+		for(float i = msg->angle_min; i < msg->angle_max && sent <= 52; i += msg->angle_increment){
+
+			//ROS_INFO("min: %f, max: %f, inc: %f", msg->angle_min, msg->angle_max, msg->angle_increment);
+	
 			//ignoring outranged values
 			if(msg->ranges[j] >= msg->range_min && msg->ranges[j] <= msg->range_max){
 				
@@ -75,26 +112,61 @@ void send_laser_to_mpsoc(const sensor_msgs::LaserScan::ConstPtr& msg){
 					
 					uclient->send((const char*)buffer, UDP_BUFFER_LEN);				
 					usleep(DELAY_BETWEEN_PACKETS);
-					
+
 					sent++;
 				}
 			}
 			j++;
 		}
+					
+		//when not enough rays to form a pack, complete the 
+		//current pack with dummy rays, copied from the last
+		//valid ray
 		
-		ROS_INFO("sent %d messages", sent);
+		while(sent <= 52){
+			uclient->send((const char*)buffer, UDP_BUFFER_LEN);	
+			sent++;
+		}
+		
+		ROS_INFO("sent %d messages", sent -1);
 		sent = 0;
 	}
 }
 
 //msg.x is the index, msg.y is the range
-void mpsoc_send_to_cmdvel(const geometry_msgs::Point msg){
+void mpsoc_send_to_cmdvel(uint16_t index, uint16_t val){
+	
+	ROS_INFO("received %d = %d", index, val);
 	
 	//generate angle from index
-	ROS_INFO("received index is: %d", msg.x);
+	float angle = HOKUYO_ANGLE_MIN;
+	for(int i = 0; i < index; i++)
+		angle += HOKUYO_ANGLE_INC;
+		
+	ROS_INFO("angle is %f radians", angle, val);	
 	
 	//calculate twist
+	geometry_msgs::Twist t;
 	
+	//copy pose to avoid it to be overwritten by odom's callback
+	geometry_msgs::Pose2D p = curr_pose;
+	
+	//determine how much to rotate given the current angle
+	float target_angle = angle + curr_pose.theta;
+	
+	#define TOLERANCE 0.2
+	
+	//rotate until reach the target angle
+	while(abs(abs(curr_pose.theta) - abs(target_angle)) < TOLERANCE){
+		
+		t.linear.x  = 0;
+		t.angular.z = (curr_pose.theta < target_angle) ? 0.5 : -0.5;
+		pub_mpsoc_out.publish(t);	
+	}
+	
+	//keep moving forward
+	t.linear.x = -0.15;
+	pub_mpsoc_out.publish(t);
 	//update cmdvel
 	
 }
@@ -119,21 +191,19 @@ void* server_thread(void* v){
 		//recv packet from the network
 		userver->recv(buffer, UDP_BUFFER_LEN);
 
-		//pack into a ros structure
-		geometry_msgs::Point p;
-		
-		uint16_t index = *(uint16_t*)&buffer[16];
-		//index = (index >> 8) | (index << 8);
-		
-		uint16_t value = *(uint16_t*)&buffer[18];
-		p.x = index;
-		p.y = value;
-		
-		
-		ROS_INFO("%d = %d", p.x, p.y);
+		//dump(buffer, 0, 100);
 
+		//convert value from little to big endian
+		uint16_t* buf16 = (uint16_t*)&buffer[16];
+		
+		uint16_t index = buf16[0];
+		index = (index >> 8) | ((index & 0x0F)<< 8);
+		
+		uint16_t value = buf16[1];
+		value = (value >> 8) | ((value & 0x0F)<< 8);
+		
 		//calc new values for cmd_vel
-		mpsoc_send_to_cmdvel(p);
+		mpsoc_send_to_cmdvel(index, value);
 	}
 }
 
@@ -148,6 +218,7 @@ int main(int argc,char **argv)
 	//ROS_INFO();
 	//subscribe and advertise to input and output topics. 
 	pub_mpsoc_in  = n.subscribe("/hokuyo_laser", 10, laser_recv_callback); 
+	pub_odometry  = n.subscribe("/odom", 10, odom_callback); 
 	pub_mpsoc_out = n.advertise<geometry_msgs::Twist>("/cmd_vel", 10);
 
 	//initialize udp bridge
