@@ -38,7 +38,7 @@ int main(int argc, char** argv){
 
 	//connects to 8887 to send packets to the noc 
 	const std::string& server_addr = "127.0.0.1";
-	udp_server* userver = new udp_server(server_addr, 8888);
+	udp_server* userver = new udp_server(server_addr, 9999);
 	
 	//message
 	char* msg = new char[RECV_BUFFER_LEN];

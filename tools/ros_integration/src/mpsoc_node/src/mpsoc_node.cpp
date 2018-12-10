@@ -70,19 +70,22 @@ void mpsoc_in_callback(const topic_t::ConstPtr& msg){
 				//send 3xx ranges intead of 6xx
 				if(j % 2 == 0){
 				
-					*(int32_t*)&(buffer[20]) = msg->ranges[j] * 100;
-					*(int32_t*)&(buffer[24]) = j; //
-						
-					uclient->send((const char*)buffer, UDP_BUFFER_LEN);		
-					//dump(buffer, 0, UDP_BUFFER_LEN);
-					//printf("%d = %f, inc = %f\n", j, i, msg->angle_increment);
+					int16_t range = msg->ranges[j] * 100;
+					int16_t index = j;
 					
+					*(int16_t*)&buffer[16] = index;
+					*(int16_t*)&buffer[18] = range;
+					
+					uclient->send((const char*)buffer, UDP_BUFFER_LEN);				
 					usleep(DELAY_BETWEEN_PACKETS);
 				}
+				
+				
 			}
 			j++;
 		}
 		
+		exit(0);
 		ROS_INFO("data sent");
 	}
 	
