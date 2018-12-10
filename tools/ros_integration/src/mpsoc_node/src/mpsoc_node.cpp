@@ -19,9 +19,7 @@
 //buffer size, not sure the effect cause by larger buffers
 //but the waste of memory
 #define UDP_BUFFER_LEN 128
-
-//laser specific definition
-#define HOKUYO_NUM_RANGES 
+#define DELAY_BETWEEN_PACKETS 50000
 
 
 //ros references
@@ -30,7 +28,7 @@ ros::Subscriber pub_mpsoc_in;
 
 //definition of topic type; Include directive
 //must be changed as well
-typedef sensor_msgs::LaserScan topic_t ;
+typedef sensor_msgs::LaserScan topic_t;
 
 //conection to udp network
 udp_client* uclient;
@@ -72,23 +70,20 @@ void mpsoc_in_callback(const topic_t::ConstPtr& msg){
 				//send 3xx ranges intead of 6xx
 				if(j % 2 == 0){
 				
-					buffer[20] = msg->ranges[j] * 100;
-					
-					buffer[24] = j;
+					*(int32_t*)&(buffer[20]) = msg->ranges[j] * 100;
+					*(int32_t*)&(buffer[24]) = j; //
 						
 					uclient->send((const char*)buffer, UDP_BUFFER_LEN);		
 					//dump(buffer, 0, UDP_BUFFER_LEN);
-					printf("%d = %f, inc = %f\n", j, i, msg->angle_increment);
+					//printf("%d = %f, inc = %f\n", j, i, msg->angle_increment);
 					
-					usleep(100000);
+					usleep(DELAY_BETWEEN_PACKETS);
 				}
 			}
 			j++;
-			
 		}
 		
-		ROS_INFO("data sent");	
-		exit(0);
+		ROS_INFO("data sent");
 	}
 	
 	

@@ -177,17 +177,17 @@ void TNetSocket::udpToNocProcess(){
 				//copy buffer to internal memory
 				_mem2->Write(_mem2->GetBase(), (int8_t*)_recv_buffer, RECV_BUFFER_LEN);
 				
-				uint16_t addr_flit;
-				_mem2->Read(_mem2->GetBase(), (int8_t*)&addr_flit, 2);
+//				uint16_t addr_flit;
+//				_mem2->Read(_mem2->GetBase(), (int8_t*)&addr_flit, 2);
+//				
+//				int32_t x = (addr_flit & 0xf0) >> 4;
+//				int32_t y = (addr_flit & 0x0f);
+//				int32_t z = x + y * 4;
 				
-				int32_t x = (addr_flit & 0xf0) >> 4;
-				int32_t y = (addr_flit & 0x0f);
-				int32_t z = x + y * 4;
-				
-				output_debug << "incoming traffic (" << _trafficIn << ")"
-							 << " from " << _udp_server->get_addr() << ":"
-							 << _udp_server->get_port() 
-							 << " (to #" << z << "; " << x << "," << y << ")" << std::endl << std::flush;
+//				output_debug << "incoming traffic (" << _trafficIn << ")"
+//							 << " from " << _udp_server->get_addr() << ":"
+//							 << _udp_server->get_port() 
+//							 << " (to #" << z << "; " << x << "," << y << ")" << std::endl << std::flush;]
 
 				//start bursting packets into the noc
 				_recv_state = NetSocketRecvState::DATA_IN;
@@ -232,12 +232,13 @@ void TNetSocket::nocToUdpProcess(){
 
 		_udp_client->send((const char*)msg, RECV_BUFFER_LEN);
 				
-		uint32_t x = msg[4];
+		//uint32_t x = msg[4];
 				
-		output_debug << "outgoing traffic (" << _trafficOut << ")"
-                     << " to " << _udp_client->get_addr() << ":"
-                     << _udp_client->get_port() 
-					 << " (from core #" << x << ")" << std::endl;
+//		output_debug << "outgoing traffic (" << _trafficOut << ")"
+//                     << " to " << _udp_client->get_addr() << ":"
+//                     << _udp_client->get_port() 
+//					 << " (from core #" << x << ")" << std::endl;
+		
 		
 		_comm_ack->Write(0x01);
 		_comm_intr->Write(0x00);
