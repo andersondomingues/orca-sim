@@ -31,6 +31,11 @@
 #define HOKUYO_ANGLE_MAX  2.268900
 #define HOKUYO_ANGLE_INC  0.007101 
 
+#define SECONDS_TO_MOVE_FORWARD 1
+#define MOVE_SPEED 0.1
+#define TURN_SPEED 0.05
+#define TOLERANCE 0.02
+
 //ros references
 ros::Publisher  pub_mpsoc_out;
 ros::Subscriber pub_mpsoc_in;
@@ -38,6 +43,9 @@ ros::Subscriber pub_odometry;
 
 udp_client* uclient;
 udp_server* userver;
+
+//determine whether the vehicle is moving
+bool move_is_locked = false;
 
 //current pos
 geometry_msgs::Pose2D curr_pose;
@@ -79,6 +87,14 @@ void send_laser_to_mpsoc(const sensor_msgs::LaserScan::ConstPtr& msg){
 	//ignore MOD_SKIP_PACKET packets
 	if(packet_counter == 0){
 		
+		//fix moving and turning at the same time
+		if(move_is_locked){
+			ROS_INFO("scan dropped due previously unfinished scan");
+			return;
+		}else{
+			move_is_locked = true;
+		}
+				
 		//buffes must be in the callback, otherwise
 		//data will be overwritter by next iterations
 		char buffer[UDP_BUFFER_LEN];
@@ -122,7 +138,6 @@ void send_laser_to_mpsoc(const sensor_msgs::LaserScan::ConstPtr& msg){
 		//when not enough rays to form a pack, complete the 
 		//current pack with dummy rays, copied from the last
 		//valid ray
-		
 		while(sent <= 52){
 			uclient->send((const char*)buffer, UDP_BUFFER_LEN);	
 			sent++;
@@ -133,8 +148,32 @@ void send_laser_to_mpsoc(const sensor_msgs::LaserScan::ConstPtr& msg){
 	}
 }
 
+void lock_move(){
+	geometry_msgs::Twist t;
+	t.linear.x  = 0;
+	t.angular.z = 0;
+	pub_mpsoc_out.publish(t);
+	
+	move_is_locked = true;
+}
+
+void unlock_move(){
+	
+	geometry_msgs::Twist t;
+	t.linear.x  = -MOVE_SPEED;
+	t.angular.z = 0;
+	pub_mpsoc_out.publish(t);
+	
+	sleep(SECONDS_TO_MOVE_FORWARD);
+	move_is_locked = false;
+}
+	
+
+
 //msg.x is the index, msg.y is the range
 void mpsoc_send_to_cmdvel(uint16_t index, uint16_t val){
+	
+	lock_move();
 	
 	ROS_INFO("received %d = %d", index, val);
 	
@@ -147,28 +186,38 @@ void mpsoc_send_to_cmdvel(uint16_t index, uint16_t val){
 	
 	//calculate twist
 	geometry_msgs::Twist t;
-	
-	//copy pose to avoid it to be overwritten by odom's callback
-	geometry_msgs::Pose2D p = curr_pose;
-	
-	//determine how much to rotate given the current angle
-	float target_angle = angle + curr_pose.theta;
-	
-	#define TOLERANCE 0.2
-	
-	//rotate until reach the target angle
-	while(abs(abs(curr_pose.theta) - abs(target_angle)) < TOLERANCE){
 		
-		t.linear.x  = 0;
-		t.angular.z = (curr_pose.theta < target_angle) ? 0.5 : -0.5;
-		pub_mpsoc_out.publish(t);	
+	//rotate until reach the target angle
+	float distance = 0; 
+	float pos_angle = 0; 
+			
+	//determine how much to rotate given the current angle
+	float target_angle = 0;
+	target_angle = (angle > 0) 
+		? angle
+		: M_PI + (M_PI - angle);
+
+	while(1){
+			
+		//correct positive angle for curr_pos
+		pos_angle = (curr_pose.theta > 0) 
+			? curr_pose.theta 
+			: M_PI + (M_PI - curr_pose.theta);
+		
+		distance = target_angle - pos_angle;
+				
+		t.angular.z = (distance < 0) ? TURN_SPEED : -TURN_SPEED;
+		
+		ROS_INFO("t: %f, p: %f, d: %f", target_angle, pos_angle, distance);
+				
+		pub_mpsoc_out.publish(t);
+		
+		if(abs(distance) < TOLERANCE)
+			break;
 	}
 	
-	//keep moving forward
-	t.linear.x = -0.15;
-	pub_mpsoc_out.publish(t);
-	//update cmdvel
-	
+	//make the vehicle move again
+	unlock_move();
 }
 
 //Callback that consumes message on the input topic and process
