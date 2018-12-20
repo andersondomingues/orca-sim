@@ -125,6 +125,9 @@ void send_laser_to_mpsoc(const sensor_msgs::LaserScan::ConstPtr& msg){
 					*(uint16_t*)&buffer[18] = range;
 					
 					//ROS_INFO("%d = %d", index, range);
+					//ROS_INFO();
+					
+					//ros::Time::now()
 					
 					uclient->send((const char*)buffer, UDP_BUFFER_LEN);				
 					usleep(DELAY_BETWEEN_PACKETS);
@@ -208,7 +211,7 @@ void mpsoc_send_to_cmdvel(uint16_t index, uint16_t val){
 				
 		t.angular.z = (distance < 0) ? TURN_SPEED : -TURN_SPEED;
 		
-		ROS_INFO("t: %f, p: %f, d: %f", target_angle, pos_angle, distance);
+		//ROS_INFO("t: %f, p: %f, d: %f", target_angle, pos_angle, distance);
 				
 		pub_mpsoc_out.publish(t);
 		

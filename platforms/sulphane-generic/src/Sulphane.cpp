@@ -38,11 +38,6 @@
 #include <ProcessingTile.h>
 #include <NetworkTile.h>
 
-//10 milion cycles
-#define CYCLES_TO_SIM 10000000
-#define NOC_H_SIZE 4
-#define NOC_W_SIZE 4
-
 //instantiates a mesh of MxN PE
 Tile* tiles[NOC_W_SIZE][NOC_H_SIZE];
 
@@ -93,13 +88,15 @@ int main(int argc, char** argv){
 	//load binaries into main memories (processing tiles only)
 	int index = 0;
 	std::string code_file;
+	
 	for(int x = 0; x < NOC_W_SIZE; x++){
 		for(int y = 0; y < NOC_H_SIZE; y++){
 			
 			//zero-zero is for network interface
 			if(x == 0 && y == 0) continue;
 		
-			index = x + NOC_W_SIZE * y;
+			//index = x + NOC_W_SIZE * y;
+			index = 0;
 			code_file = std::string(argv[1]) + "code" + std::to_string(index) + ".bin";
 			
 			((ProcessingTile*)tiles[x][y])->GetMem0()->LoadBin(code_file, MEM0_BASE, MEM0_SIZE);

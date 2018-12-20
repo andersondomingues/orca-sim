@@ -2,6 +2,7 @@
 #to name the generated executable file and to be
 #displayed during execution of this makefile
 PLATFORM_NAME:=Sulphane
+CONFIG:= -DCYCLES_TO_SIM=1000000 -DNOC_H_SIZE=4 -DNOC_W_SIZE=4
 
 #Path to dependencies. This platform is similulated using
 #URSA, so libsim and libmod are required. 
@@ -21,9 +22,8 @@ LDFLAGS   := -L$(LIBSIM_PATH)/bin -L$(LIBMOD_PATH)/bin -lmod -lsim
 OUTPUTDIR :=./bin
 SOURCEDIR :=./src
 
-#Path to the operating system. HellfireOS provide some scripts for compiling
-#a 3x3 noc platform.
-HELLFIREOS_PATH:=../../software/hellfireos/platform/noc_4x4
+#Path to the operating system. 
+HELLFIREOS_PATH:=../../software/hellfireos/platform/ursa
 HELLFIREOS_ARCH:=../../software/hellfireos/arch/riscv/hf-riscv
 
 #This is the master recipie. It compiles all the stuff and launchs the simulation.
@@ -47,7 +47,7 @@ $(HELLFIREOS_PATH)/code0.bin:
 
 $(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCEDIR)/Tile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/Sulphane.cpp 
 	@echo "$'\e[036mBuilding target platform ($(PLATFORM_NAME))... \e[0m"
-	g++ $(SOURCEDIR)/Tile.cpp $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/Sulphane.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe -Iinclude
+	g++ $(CONFIG) $(SOURCEDIR)/Tile.cpp $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/Sulphane.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe -Iinclude 
 
 app:
 	@echo "$'\e[033mCleaning HellfireOS... \e[0m"

@@ -74,6 +74,9 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	if(address == s->comm_intr->GetAddr())   return s->comm_intr->Read();
 	if(address == s->comm_start->GetAddr())  return s->comm_start->Read();
 	
+	//self-id
+	if(address == s->comm_id->GetAddr())     return s->comm_id->Read();
+	
 	UMemory* sel_mem = nullptr;
 	
 	//memread to mem0
@@ -463,6 +466,10 @@ void THellfireProcessor::SetMem2(UMemory* m){
 //setters for comms
 void THellfireProcessor::SetCommAck(UComm<int8_t>* comm){
 	s->comm_ack = comm;
+}
+
+void THellfireProcessor::SetCommId(UComm<int32_t>* comm){
+	s->comm_id = comm;
 }
 
 void THellfireProcessor::SetCommIntr(UComm<int8_t>* comm){
