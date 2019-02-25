@@ -115,7 +115,7 @@ void send_laser_to_mpsoc(const sensor_msgs::LaserScan::ConstPtr& msg){
 			//ignoring outranged values
 			if(msg->ranges[j] >= msg->range_min && msg->ranges[j] <= msg->range_max){
 				
-				//send 3xx ranges intead of 6xx
+				//send 3xx ranges instead of 6xx
 				if(j % 10 == 0){
 				
 					uint16_t index = j;
