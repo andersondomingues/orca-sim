@@ -38,11 +38,6 @@
 #include <ProcessingTile.h>
 #include <NetworkTile.h>
 
-//10 milion cycles
-#define CYCLES_TO_SIM 10000000
-#define NOC_H_SIZE 4
-#define NOC_W_SIZE 4
-
 //instantiates a mesh of MxN PE
 Tile* tiles[NOC_W_SIZE][NOC_H_SIZE];
 
@@ -93,13 +88,15 @@ int main(int argc, char** argv){
 	//load binaries into main memories (processing tiles only)
 	int index = 0;
 	std::string code_file;
+	
 	for(int x = 0; x < NOC_W_SIZE; x++){
 		for(int y = 0; y < NOC_H_SIZE; y++){
 			
 			//zero-zero is for network interface
 			if(x == 0 && y == 0) continue;
 		
-			index = x + NOC_W_SIZE * y;
+			//index = x + NOC_W_SIZE * y;
+			index = 0;
 			code_file = std::string(argv[1]) + "code" + std::to_string(index) + ".bin";
 			
 			((ProcessingTile*)tiles[x][y])->GetMem0()->LoadBin(code_file, MEM0_BASE, MEM0_SIZE);
@@ -123,7 +120,7 @@ int main(int argc, char** argv){
 				
 			//processing tile
 			else
-				s->Schedule(Event(1, ((ProcessingTile*)tiles[x][y])->GetCpu()));
+				s->Schedule(Event(4, ((ProcessingTile*)tiles[x][y])->GetCpu()));
 			
 			s->Schedule(Event(1, tiles[x][y]->GetRouter()));
 			s->Schedule(Event(1, tiles[x][y]->GetNetif()));
@@ -134,16 +131,48 @@ int main(int argc, char** argv){
 
 	//keep simulating until something happen
 	try{
-		while(1){
+		//while(1){
 			s->Run(CYCLES_TO_SIM);
-		}
+		//}
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
 		goto clean;
 	}
 	
+	std::cout << "Simulation ended without errors."	 << std::endl;
+	
+	//show buffer status
+	std::cout << "==============[ BUFFERS' STATUSES ]" << std::endl;
+	for(int x = 0; x < NOC_W_SIZE; x++){
+		for(int y = 0; y < NOC_H_SIZE; y++){
+		
+			TRouter* r = tiles[x][y]->GetRouter();
+			std::cout << r->GetName() << ":"
+				<< " S=" << r->GetInputBuffer(SOUTH)->size()
+				<< " N=" << r->GetInputBuffer(NORTH)->size() 
+				<< " W=" << r->GetInputBuffer(WEST)->size()
+				<< " E=" << r->GetInputBuffer(EAST)->size()
+				<< " L=" << r->GetInputBuffer(LOCAL)->size() 
+				<< " RR=" << r->GetRR()
+				<< std::endl;
+		}
+	}
+	
+	//NI states
+	std::cout << "==============[ NI' STATUSES ]" << std::endl;
+	for(int x = 0; x < NOC_W_SIZE; x++){
+		for(int y = 0; y < NOC_H_SIZE; y++){
+		
+			TNetif* n = tiles[x][y]->GetNetif();
+			std::cout << n->GetName() << ":"
+				<< " Send=" << static_cast<int>(n->GetSendState())
+				<< " Recv=" << static_cast<int>(n->GetRecvState())
+				<< std::endl;
+		}
+	}
+		
 	//show simulation statistics
-	std::cout << "========== CPU POWER STATISTICS =========" << std::endl;
+	std::cout << "==============[ CPU POWER/ENERGY STATISTICS ]" << std::endl;
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
 			
@@ -158,7 +187,7 @@ int main(int argc, char** argv){
 		}
 
 	}
-	std::cout << "========== ROUTER POWER STATISTICS =========" << std::endl;
+	std::cout << "==============[ ROUTING POWER/ENERGY STATISTICS ]" << std::endl;
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
 			

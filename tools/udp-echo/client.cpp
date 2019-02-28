@@ -72,6 +72,18 @@ int main(int argc, char** argv){
 	msg[8] = 0x88;  //msg_size
 	msg[9] = 0x13;  //0x1388 = 5000 dec
 	
+	msg[10] = 0x64;
+	msg[11] = 0x00;
+	
+	msg[12] = 0x01;
+	msg[16] = 0x20;
+	
+	
+	for(int i = 0; i < 20; i++)
+		msg[17 + i] = 0x64;
+	
+	msg[40] = 0x0a;
+	
 	int sends = 0;
 
 	while(1){

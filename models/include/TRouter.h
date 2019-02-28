@@ -44,6 +44,10 @@ enum class RouterState{
 
 #define LOCAL 4
 
+//buffer len (in flits)
+#define ROUTER_BUFFER_LEN 16
+
+
 class TRouter: public TimedModel
 #ifndef DISABLE_METRICS
 , public ObservableModel
@@ -55,23 +59,19 @@ private:
 		Metric* _metric_energy;
 		#endif
 
+		//stores info about actively sending ports. For intance, position zero representing 
+		//the status of LOCAL port. The value in the position indicate to which port the LOCAL
+		//port is sending to. Inactive ports have -1 written to their position.
+		int8_t _switch_control[5];
 
+		//stores how many flits the must be forwarded to the destination port
+        uint8_t _flits_to_send[5];
+
+		//stores which port has the priority acconding to the round robin policy
         uint32_t _round_robin;
-        uint32_t _packets_to_send;
-        uint32_t _target_port, _source_port;
-        
+
         //address of the router
-        uint32_t _x;
-        uint32_t _y;
-		
-		//when this gla is enabled the router is 
-		//routing the first flit af a packet. This is 
-		//the only case in which the flit takes 4 cycles
-		//to be sent.
-		bool _is_first_flit;
-        
-        //state
-        RouterState _state;
+        uint32_t _x, _y;
         
         //output buffers
         UBuffer<FlitType>* _ob[5];
@@ -83,6 +83,8 @@ public:
 		#ifndef DISABLE_METRICS
 		Metric* GetMetric(Metrics m);
 		#endif
+		
+		uint32_t GetRR();
 		
         UBuffer<FlitType>* GetOutputBuffer(uint32_t p);
         UBuffer<FlitType>* GetInputBuffer(uint32_t p);
@@ -105,6 +107,5 @@ public:
 		void Reset();
 		std::string ToString();
 };
-
 
 #endif /* TROUTER_H */

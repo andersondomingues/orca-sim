@@ -1,11 +1,33 @@
-#include "udp_client_server.h"
 #include <iostream>
-#include <unistd.h>
-#include <stdio.h>
 
-#define RECV_BUFFER_LEN 128
-#define MICRO 1000000
+//write 
+void add_noc_header(unsigned char* buffer, int dest){
+	unsigned char pos = (dest % 4)  << 4 | dest/4; 
 
+	//add noc headers 
+	buffer[0] = pos;  //(1,0) is core #1
+	buffer[1] = 0x00; 
+
+	buffer[2] = 0x3e; 
+	buffer[3] = 0x00;  //length flit: 0x3e = 62 flits
+
+	buffer[4] = 0x00;  //payload
+	buffer[5] = (unsigned char)dest;  //target_cpu (5)
+
+	buffer[6] = 0xe8;	//src_port (5000)
+	buffer[7] = 0x00;  //src_cpu (0,0)
+	
+	buffer[8] = 0x88;  //msg_size
+	buffer[9] = 0x13;  //0x1388 = 5000 dec
+	
+	buffer[10] = 0x64;
+	buffer[11] = 0x00;
+	
+	buffer[12] = 0x01;
+	buffer[16] = 0x20;
+}
+
+//shorthand print
 void dump(char* _mem, uint32_t base, uint32_t length){
 	uint32_t k, l;
 	
@@ -31,29 +53,5 @@ void dump(char* _mem, uint32_t base, uint32_t length){
 				putchar('.');
 		}
 		putchar('|');
-	}
-}
-
-int main(int argc, char** argv){
-
-	//connects to 8887 to send packets to the noc 
-	const std::string& server_addr = "127.0.0.1";
-	udp_server* userver = new udp_server(server_addr, 9999);
-	
-	//message
-	char* msg = new char[RECV_BUFFER_LEN];
-	msg[0] = 0;
-	msg[1] = 1;
-	
-	int recs = 0;
-
-	while(1){
-		userver->recv(msg, RECV_BUFFER_LEN);
-		
-		std::cout << "recv'd (" << recs << ") :";
-		dump(msg, 0, RECV_BUFFER_LEN);
-		std::cout << std::endl << std::endl;
-				
-		recs++;
 	}
 }

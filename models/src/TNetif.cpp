@@ -39,7 +39,7 @@ TNetif::TNetif(std::string name) : TimedModel(name) {
 	_mem1 = nullptr;
 	_mem2 = nullptr;
     
-    _ib = new UBuffer<FlitType>(name + ".IN");
+    _ib = new UBuffer<FlitType>(name + ".IN", NI_BUFFER_LEN);
 	
 	this->Reset();
 }
@@ -49,19 +49,12 @@ TNetif::~TNetif(){
 }
 
 void TNetif::Reset(){
-    
-	
+    	
 	_recv_state = NetifRecvState::READY;
 	_flits_to_recv = 0;
 	
     _send_state = NetifSendState::READY;
 	_flits_to_send = 0;
-    
-    //if(_comm_ack != nullptr) _comm_ack->Write(0);
-    //if(_comm_intr != nullptr) _comm_intr->Write(0);
-    //if(_comm_start != nullptr) _comm_start->Write(0);
-    
-    //_ib->Reset();
 }
 
 void TNetif::SetOutputBuffer(UBuffer<FlitType>* ob){
@@ -71,6 +64,16 @@ void TNetif::SetOutputBuffer(UBuffer<FlitType>* ob){
 UBuffer<FlitType>* TNetif::GetInputBuffer(){
 	return _ib;
 }
+
+//state getters
+NetifRecvState TNetif::GetRecvState(){
+	return _recv_state;
+}
+
+NetifSendState TNetif::GetSendState(){
+	return _send_state;
+}
+
 
 //recv mem
 void TNetif::SetMem1(UMemory* m1){ 
@@ -91,7 +94,8 @@ void TNetif::SetCommStart(UComm<int8_t>* c){ _comm_start = c; }
 
 long long unsigned int TNetif::Run(){
     this->recvProcess();
-    this->sendProcess();
+    this->sendProcess();   
+    
     return 1; //takes only 1 cycle to change both states
 }
 
@@ -110,7 +114,8 @@ void TNetif::recvProcess(){
 				//writes addr header to mem
 				_next_recv_addr = _mem1->GetBase();
 				
-				FlitType flit = _ib->top(); _ib->pop();
+				FlitType flit = _ib->top(); 
+				_ib->pop();
 				_mem1->Write(_next_recv_addr, (int8_t*)&flit, 2);
 				
 				_next_recv_addr += sizeof(FlitType);
@@ -123,9 +128,10 @@ void TNetif::recvProcess(){
 			
 			if(_ib->size() > 0){
 				
-				FlitType len_flit = _ib->top(); _ib->pop();
-				_mem1->Write(_next_recv_addr, (int8_t*)&len_flit, 2);
+				FlitType len_flit = _ib->top(); 
+				_ib->pop();
 				
+				_mem1->Write(_next_recv_addr, (int8_t*)&len_flit, 2);
 				_next_recv_addr += sizeof(FlitType);
 				
 				_flits_to_recv = len_flit;
@@ -140,14 +146,15 @@ void TNetif::recvProcess(){
 			
 			//no more flits to recv, change state
 			if(_flits_to_recv == 0){
-				//interrupts CPU
-				_comm_intr->Write(1);
+
+				_comm_intr->Write(1); //interrupts CPU
 				_recv_state = NetifRecvState::INTR_AND_WAIT;
 			
 			}else if(_ib->size() > 0){
 				
 				//get next flit
-				FlitType next = _ib->top(); _ib->pop();
+				FlitType next = _ib->top(); 
+				_ib->pop();
 				
 				//writes to memory
 				_mem1->Write(_next_recv_addr, (int8_t*)&next, 2);
@@ -155,21 +162,18 @@ void TNetif::recvProcess(){
 				_next_recv_addr += sizeof(FlitType);
 				_flits_to_recv--;
 			}
-			//
-			//else{
-			//	std::cout << "data is not ready at buffers output" << std::endl;
-			//}
-		
+			
 		} break;
 				
 		case NetifRecvState::INTR_AND_WAIT:{
 			
 			//wait until CPU finishes copying. Then, disable both flags
-			if(_comm_ack->Read() == true){
-				
-				_recv_state = NetifRecvState::READY;
+			if(_comm_ack->Read() == 0x1){
+
 				_comm_intr->Write(0);
-				_comm_ack ->Write(0);
+				_comm_ack->Write(0);
+				_recv_state = NetifRecvState::READY;
+				
 			}
 			
 		} break;
@@ -177,52 +181,64 @@ void TNetif::recvProcess(){
 }
 
 void TNetif::sendProcess(){	
-//	
-//	if(_send_state != NetifSendState::READY )
-//		std::cout << _next_send_addr << std::endl;
-//
-//	
+
 	switch(_send_state){
-		
+			
 		case NetifSendState::READY:{
-				
-			if(_comm_start->Read() == 0x1){
+			
+			//cpu asked to start AND router has enough room to receive flits
+			if(_comm_start->Read() == 0x1 && _ob->size() < _ob->capacity()){
 				
 				_next_send_addr = _mem2->GetBase();
-				
+			
 				//push first packet to router's input buffer
 				FlitType header;
 				_mem2->Read(_next_send_addr, (int8_t*)&header, sizeof(FlitType));
+
 				_ob->push(header);
 				_next_send_addr += sizeof(FlitType);
-				
+			
 				//change state
 				_send_state = NetifSendState::LENGTH;
+			
+				//std::cout << GetName() << ": READY OK" << std::endl;
+			
 			}
+			
 		} break;
 
 		case NetifSendState::LENGTH:{
+
+			//check whether the router can receive another flit			
+			if(_ob->size() < _ob->capacity()){
 			
-			FlitType flit;
+				FlitType flit;
+
+				//push length flit into router's buffer
+				_mem2->Read(_next_send_addr, (int8_t*)&flit, sizeof(FlitType));
+				_ob->push(flit);
+				_next_send_addr += sizeof(FlitType);
 			
-			//push length flit into router's buffer
-			_mem2->Read(_next_send_addr, (int8_t*)&flit, sizeof(FlitType));
-			_ob->push(flit);
-			_next_send_addr += sizeof(FlitType);
-			
-			_flits_to_send = flit;
-			_send_state = NetifSendState::DATA_OUT;
+				_flits_to_send = flit;
+				_send_state = NetifSendState::DATA_OUT;
+			}
 			
 		}break;
 		
 		//burst send next flits
 		case NetifSendState::DATA_OUT:{
 
-			if(_flits_to_send < 1) {
+			//no more flits to send
+			if(_flits_to_send == 0) {
+
 				_send_state = NetifSendState::READY;
-				_comm_start->Write(0); //start = 0 means "IF inactive"
-			}else{			
-				//send next
+				_comm_start->Write(0); //start = 0 means "ready to send another packet"
+				
+				//std::cout << GetName() << ": DATA_OUT OK" << std::endl;
+				
+			//in case not all flits where sent, keep sending
+			}else if(_ob->size() < _ob->capacity()){
+
 				FlitType flit;
 				_mem2->Read(_next_send_addr, (int8_t*)&flit, 2);
 				_ob->push(flit);

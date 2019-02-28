@@ -66,6 +66,10 @@ Tile::Tile(uint32_t x, uint32_t y){
 	//bind memories
 	_netif->SetMem1(_mem1);
 	_netif->SetMem2(_mem2);
+	
+	//bind comm id (W * column + line)
+	int id = (NOC_W_SIZE * y) + x;
+	_comm_id = new UComm<int32_t>("self_id", id, COMM_ID);
 }
 
 Tile::~Tile(){
@@ -87,6 +91,8 @@ TRouter* Tile::GetRouter(){ return _router; }
 TNetif*  Tile::GetNetif(){  return _netif; }
 UMemory* Tile::GetMem1(){   return _mem1;}
 UMemory* Tile::GetMem2(){ 	return _mem2;}
+
+UComm<int32_t>* Tile::GetCommId(){ return _comm_id; }
 
 UComm<int8_t>* Tile::GetCommAck(){ return _socket_ack; }
 UComm<int8_t>* Tile::GetCommIntr(){ return _socket_intr; }

@@ -70,7 +70,6 @@
 #define COMM_NOC_INTR   0x80000002
 #define COMM_NOC_START  0x80000003
 
-
 /**
  * @class TProcessingTile
  * @author Anderson Domingues

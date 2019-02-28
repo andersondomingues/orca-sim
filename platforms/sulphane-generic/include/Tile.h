@@ -39,12 +39,12 @@
 #define MEM2_SIZE 0x00000080 /* send memory */
 #define MEM2_BASE 0x90000080
 
-//comms
+//comms (00 to 0F reserved for gp wires)
 #define COMM_NOC_ACK    0x80000001
 #define COMM_NOC_INTR   0x80000002
 #define COMM_NOC_START  0x80000003
 
-
+#define COMM_ID   0x80000010 /* self id addr */
 
 class Tile{
 
@@ -65,6 +65,9 @@ private:
 	//send signals
 	UComm<int8_t>* _socket_start;
 	
+	//self id
+	UComm<int32_t>* _comm_id;
+	
 public: 
 
 	Tile(uint32_t x, uint32_t y);
@@ -82,9 +85,14 @@ public:
 	void SetCommIntr(UComm<int8_t>*);
 	void SetCommStart(UComm<int8_t>*);
 	
+	void SetCommId(UComm<int32_t>*);
+	
 	UComm<int8_t>* GetCommAck();
 	UComm<int8_t>* GetCommIntr();
 	UComm<int8_t>* GetCommStart();
+	
+	UComm<int32_t>* GetCommId();
+	
 	
 	//getters for mems
 	UMemory* GetmMem1();

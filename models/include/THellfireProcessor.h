@@ -27,7 +27,7 @@
 #include <UMemory.h>
 #include <UComm.h>
 
-//#define SRAM_BASE         	0x40000000
+//#define SRAM_BASE         0x40000000
 //#define MEM_SIZE			0x00100000
 //#define MEM_SIZE			0x00100400
 //#define MEM_SIZE			0x00400000
@@ -67,6 +67,8 @@ typedef struct {
 	UComm<int8_t>* comm_ack;
 	UComm<int8_t>* comm_intr;
 	UComm<int8_t>* comm_start;
+	
+	UComm<int32_t>* comm_id;
 	
 } risc_v_state;
 
@@ -113,6 +115,9 @@ public:
 	void SetCommAck(UComm<int8_t>*);
 	void SetCommIntr(UComm<int8_t>*);
 	void SetCommStart(UComm<int8_t>*);
+	
+	//self id wire
+	void SetCommId(UComm<int32_t>*);
 	
 	unsigned long long Run();
 	
