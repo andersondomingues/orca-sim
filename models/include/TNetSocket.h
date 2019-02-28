@@ -165,6 +165,7 @@ public:
 	UComm<int8_t>* GetCommIntr();
 	UComm<int8_t>* GetCommStart();
 	UComm<int8_t>* GetCommAck();
+	
 	UComm<int8_t>* GetCommRecv();
 	
 	void SetCommIntr(UComm<int8_t>* UComm);

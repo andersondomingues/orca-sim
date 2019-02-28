@@ -26,10 +26,11 @@
  * @param name A unique name for the buffer (optional)
  */
 template <typename T>
-UBuffer<T>::UBuffer(std::string name) : UntimedModel(name){
+UBuffer<T>::UBuffer(std::string name, uint32_t capacity) : UntimedModel(name){
     _name = name;
 	_size = 0;
     _queue = new std::queue<T>();
+    _capacity = capacity;
 }
 
 /**
@@ -47,6 +48,12 @@ UBuffer<T>::~UBuffer(){
  */
 template <typename T>
 void UBuffer<T>::pop(){
+
+	//prevents underflow
+	if(_size == 0){
+		throw std::runtime_error(GetName() + ": cannot pop from an empty queue");		
+	}
+
     _size--;
 	_queue->pop();
 	
@@ -58,8 +65,22 @@ void UBuffer<T>::pop(){
  */
 template <typename T>
 void UBuffer<T>::push(T e){
+
+	//prevents overflow
+	if(_size == _capacity)
+		throw std::runtime_error("cannot push to a full queue");
+
 	_size++;
     _queue->push(e);
+}
+
+/**
+ * @brief Return the next element to be popped from the buffer.
+ * @return the element
+ */
+template <typename T>
+uint32_t UBuffer<T>::capacity(){
+    return _capacity;
 }
 
 /**

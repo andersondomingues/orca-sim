@@ -84,11 +84,13 @@ public:
 	void SetCommAck(UComm<int8_t>*);
 	void SetCommIntr(UComm<int8_t>*);
 	void SetCommStart(UComm<int8_t>*);
+	
 	void SetCommId(UComm<int32_t>*);
 	
 	UComm<int8_t>* GetCommAck();
 	UComm<int8_t>* GetCommIntr();
 	UComm<int8_t>* GetCommStart();
+	
 	UComm<int32_t>* GetCommId();
 	
 	

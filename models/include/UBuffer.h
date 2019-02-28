@@ -46,12 +46,13 @@ private:
     std::string _name;
     std::queue<T>* _queue;
 	uint32_t _size;
+	uint32_t _capacity;
 
 public:
     /**
      * @brief Constructor. 
      * @param name (optional) An arbitrary name for the instance of Buffer.*/
-    UBuffer(std::string name = "");
+    UBuffer(std::string name = "", uint32_t capacity = 16);
     
     /**
      * @brief Destructor. Cleans dynamic allocated memory before disposing the object.*/
@@ -69,6 +70,10 @@ public:
     /**
      * @brief Pushes an object to the back of the buffer */
     void push(T);
+    
+    /**
+    * @brief Returns max size of the buffer */
+    uint32_t capacity();
     
     /**
      * @brief Counts elements from the buffer.

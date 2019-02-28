@@ -22,6 +22,9 @@
 #ifndef __TNETIF_H
 #define __TNETIF_H
 
+//usually equals to routers' buffer len
+#define NI_BUFFER_LEN 16
+
 //std API
 #include <iostream>
 
@@ -78,13 +81,16 @@ private:
     //network router interface
     UBuffer<FlitType>* _ib;
     UBuffer<FlitType>* _ob;
-    
 public:	
     
+    //getters
+    NetifRecvState GetRecvState();
+	NetifSendState GetSendState();
+    
+    //setters
     void SetCommAck(UComm<int8_t>* comm);
 	void SetCommIntr(UComm<int8_t>* comm);
 	void SetCommStart(UComm<int8_t>* comm);
-    
     
     //internal processes
     void sendProcess();

@@ -32,19 +32,17 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
    
     _x = x_pos;
     _y = y_pos;
-	_is_first_flit = false; //starts in roundrobin mode, not flit to be routed
     
 	#ifndef DISABLE_METRICS
 	_metric_energy = new Metric(Metrics::ENERGY);
 	#endif
-	
-	
+		
 	//for all ports, create a new input buffer; Note that data is bufferred by
 	//input buffers, since output buffers come from somewhere else;
     for(int i = 0; i < 5; i++){
-        std::string bname = "(" + std::to_string(_x) + "," + std::to_string(_y) + ").IN" + std::to_string(i);
+        std::string bname = GetName() +  ".IN" + std::to_string(i);
         _ob[i] = nullptr;
-        _ib[i] = new UBuffer<FlitType>(bname);
+        _ib[i] = new UBuffer<FlitType>(bname, ROUTER_BUFFER_LEN);
     }
     
     this->Reset();
@@ -63,12 +61,17 @@ TRouter::~TRouter(){
     	delete(_ib[i]);
 }
 
-
-
 void TRouter::Reset(){
     _round_robin = LOCAL; //starts checking on local port
-    _state = RouterState::ROUNDROBIN;
-    _packets_to_send = 0;
+    
+    for(int i = 0; i < 5; i++){
+    	_flits_to_send[i]  = 0;
+    	_switch_control[i] = -1;
+    }
+}
+
+uint32_t TRouter::GetRR(){
+	return _round_robin;
 }
 
 /**
@@ -77,119 +80,71 @@ void TRouter::Reset(){
  * @return The next time to schedule the event.*/
 unsigned long long TRouter::Run(){
     
-    switch(_state){
-		
-		//In ROUNDROBIN state, the router wait for some of the 
-		//input ports to have packages to be sent. The order is, 
-		//of course, defined by the RR algorithm. When some of the 
-		//ports have packages to be sent, the router changes to 
-		//WHORMHOLE state.
-		case RouterState::ROUNDROBIN:{
-			
-            //prevent from serving unconnected ports (e.g. border). However,
-			//it still consumed one cycle for changing to next port
-			//TODO: discuss if it is necessary to clone unused ports
-            if(_ib[_round_robin] == nullptr || _ib[_round_robin]->size() == 0)
-				_round_robin = (_round_robin + 1) % 5; 
-			else
-				_state = RouterState::FORWARD1;
-			
-		}break;
-		
-		case RouterState::FORWARD1:{
-			
-			if(_ib[_round_robin]->size() > 0){
-				
-				//get target port from first flit
-				_source_port = _round_robin;
-				
-				FlitType flit = _ib[_source_port]->top(); 
-				//std::cout << GetName() << ": first flit = " << flit << std::endl;
-				
-				_target_port = this->GetRouteXY(flit); 
-				
-				#ifndef NO_GUARDS
-				if(_ob[_target_port] == nullptr){
-					stringstream ss;
-					ss << this->GetName() << ": unable to route to unconnected port (";
-					ss << _target_port << ")";
-					
-					throw std::runtime_error(ss.str());
-				}
-				#endif
-				
-				//foward header flit
-				if(_ob[_target_port]->size() < ROUTER_BUFFER_LEN){
-					
-					_ob[_target_port]->push(flit);
-					_ib[_source_port]->pop();
-				
-					//change state
-					_state = RouterState::PKTLEN;
-				
-				}
-			}
-			
-		} break;
-		
-		case RouterState::PKTLEN:{
-			
-			if(_ib[_round_robin]->size() > 0){
-				//read length flit to determine how many
-				//to push after the third flit 
-				_packets_to_send = _ib[_source_port]->top();
-				
-				if(_ob[_target_port]->size() < ROUTER_BUFFER_LEN){
-					
-					//forward third flit and clean from input
-					_ob[_target_port]->push(_ib[_source_port]->top());
-					_ib[_source_port]->pop();
-				
-					_state = RouterState::BURST;	
-				}
-			}
-			
-        } break;
-  
-		//keeps sending flits until there is no more flits to be
-		//sent. When the last flit is sent, the 
-		//router returns to ROUNDROBIN state.
-        case RouterState::BURST: {
-			
-			//no more flits to send, change state
-			if(_packets_to_send == 0)
-                _state = RouterState::ROUNDROBIN;
-				
-			//otherwise, send one flit through the network
-			else if(_ib[_round_robin]->size() > 0){
-
-				//prevent from sending flits to full buffers
-				if(_ob[_target_port]->size() < ROUTER_BUFFER_LEN){
-					
-					//forward the next flit and clean from input
-					_ob[_target_port]->push(_ib[_source_port]->top());
-					_ib[_source_port]->pop();
-					
-					_packets_to_send--;
-				}
-			}
-			
-        } break;
-    }
-	
-	//First flit takes 4 cycles to be sent due the time consumed 
-	//by the routing algorithm. When the rr finds no canditate to
-	//send flits or the flit is other than the first, it takes only
-	//one cycle to happen.
-	
 	#ifndef DISABLE_METRICS
-	if(_state != RouterState::ROUNDROBIN)
-		_metric_energy->Sample(364.64 + 575.64);
-	else
-		_metric_energy->Sample(755.56 + 2655.25);
+	bool sampled_already = false;
 	#endif
+    
+	//CROSSBAR CONTROL: connect priority port to destination if it has any packet to 
+	//send but is waiting for the destination to free
+   	if(_ib[_round_robin]->size() > 0 && _switch_control[_round_robin] == -1){
+    	
+		//find the destination using the address in the first flit
+		uint8_t target_port = this->GetRouteXY(_ib[_round_robin]->top()); 
+		
+		//check whether the destination port is bound to some other source port
+		bool bound = false;
+		
+		for(int i = 0; i < 5; i++){
+			if(_switch_control[i] == target_port){
+				bound = true;
+				break;
+			}
+		}
+
+		//if the port is not bind, binds it to the source			
+		if(!bound){
+			_switch_control[_round_robin] = target_port; //set crossbar connection
+			_flits_to_send[_round_robin] = 64; //TODO: get the packet size from the second flit			
+			
+			#ifndef DISABLE_METRICS
+			_metric_energy->Sample(755.56 + 2655.25);
+			sampled_already = true;
+			#endif
+		}
+  	}
+  	
+    //TODO: add the 4 cycles delay before start sending the burst of flits
+    
+	//FORWARDING: drive flits into destination ports
+	for(int i = 0; i < 5; i++){
 	
-	return (_state == RouterState::FORWARD1) ? 4 : 1;
+    	//check whether the switch control is closed for some port
+		if(_switch_control[i] != -1){
+		
+			//if so, check whether the output is able to receive new flits. buffer must have some room
+			if(_ob[_switch_control[i]]->size() < _ob[_switch_control[i]]->capacity() && _ib[i]->size() > 0){
+			
+				_ob[_switch_control[i]]->push(_ib[i]->top()); //push one flit to destination port
+				_ib[i]->pop(); //remove flit from source port
+				
+				_flits_to_send[i] -= 1; //decrement the number of flits to send
+			}
+		}
+	}
+    	
+	//FREE UNUSED PORTS. must run every cycle
+	for(int i = 0; i < 5; i++)
+		if(_flits_to_send[i] == 0) _switch_control[i] = -1;
+	
+	//ROUND ROBIN (prevents starvation)
+	_round_robin = (_round_robin + 1) % 5;
+    	
+	#ifndef DISABLE_METRICS
+	if(!sampled_already)
+		_metric_energy->Sample(364.64 + 575.64);
+	#endif
+    	    
+    return 1;
 }
 
 #ifndef DISABLE_METRICS
@@ -200,7 +155,6 @@ Metric* TRouter::GetMetric(Metrics m){
 		return nullptr;
 }
 #endif
-
 
 /**
  * @brief Calculate the port to route a given flit

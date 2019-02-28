@@ -435,9 +435,11 @@ fail:
 	}
 	#endif /* DISABLE_METRICS */
 	
-	//returns 4 of Store or Load, else returns 3
-//	return (opcode == 0x23 || opcode == 0x3) ? 4 : 3;
-	return 1; //same clock as the rest of the platform
+	//Takes three cycles per instruction, except for those of 
+	//memory I/O. In the later case. Since we simulate the pipeline
+	//by executing one instruction per cycle (starting from the 3th cycle),
+	//we add 1 cycle to simulate I/O delay.
+	return (opcode == 0x23 || opcode == 0x3) ? 2 : 1;
 }
 
 risc_v_state THellfireProcessor::GetState(){
@@ -479,7 +481,6 @@ void THellfireProcessor::SetCommIntr(UComm<int8_t>* comm){
 void THellfireProcessor::SetCommStart(UComm<int8_t>* comm){
 	s->comm_start = comm;
 }
-
 
 THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 
