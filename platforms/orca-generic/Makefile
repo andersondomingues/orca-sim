@@ -1,7 +1,7 @@
 #This is the name of the platform. It is used only 
 #to name the generated executable file and to be
 #displayed during execution of this makefile
-PLATFORM_NAME:=Sulphane
+PLATFORM_NAME:=ORCA
 CONFIG:= -DCYCLES_TO_SIM=10000000 -DNOC_H_SIZE=4 -DNOC_W_SIZE=4
 
 #Path to dependencies. This platform is similulated using
@@ -23,12 +23,12 @@ OUTPUTDIR :=./bin
 SOURCEDIR :=./src
 
 #Path to the operating system. 
-HELLFIREOS_PATH:=../../software/hellfireos/platform/ursa
+HELLFIREOS_PATH:=../../software/hellfireos/platform/orca-generic
 HELLFIREOS_ARCH:=../../software/hellfireos/arch/riscv/hf-riscv
 
 #This is the master recipie. It compiles all the stuff and launchs the simulation.
 all: $(LIBSIM) $(LIBMOD) $(OUTPUTDIR)/$(PLATFORM_NAME).exe
-	@echo "$'\e[032m==SULPHANE==\e[0m"
+	@echo "$'\e[032m==ORCA==\e[0m"
 	$(OUTPUTDIR)/$(PLATFORM_NAME).exe ./bin/
 
 #Recipies for compiling dependencies.
@@ -45,9 +45,9 @@ $(HELLFIREOS_PATH)/code0.bin:
 	@make -C $(HELLFIREOS_PATH) images
 	cp $(HELLFIREOS_PATH)/*.bin ./bin
 
-$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCEDIR)/Tile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/Sulphane.cpp 
+$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCEDIR)/Tile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/Orca.cpp 
 	@echo "$'\e[036mBuilding target platform ($(PLATFORM_NAME))... \e[0m"
-	g++ $(CONFIG) $(SOURCEDIR)/Tile.cpp $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/Sulphane.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe -Iinclude 
+	g++ $(CONFIG) $(SOURCEDIR)/Tile.cpp $(SOURCEDIR)/NetworkTile.cpp $(SOURCEDIR)/ProcessingTile.cpp $(SOURCEDIR)/Orca.cpp $(GCCFLAGS) $(LDFLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe -Iinclude 
 
 app:
 	@echo "$'\e[033mCleaning HellfireOS... \e[0m"
