@@ -8,39 +8,42 @@ URSA comprises a discrete event simulator that enables the cycle-accurate simula
 
 ![Components of URSA and their interaction.](https://raw.githubusercontent.com/andersondomingues/ursa/stable/docs/URSA.png?raw=true)
 
+- The simulation API provides the primitives for modeling hardware as C++ classes;
+- Models are compiled into a single class library and serve as basis for different simulators;
+
+## Project organisation
+
+- ``/bin`` : compiled binaries and external libraries
+- ``/docs`` : contains a tutorial and images used in this MD file
+- ``/logs`` : output from the hardware models, as well as other implementation-specific outputs
+- ``/models`` : general purpose hardware models
+- ``/platforms`` : platform-specific hardware models (mostly top-level modules)
+- ``/simulator`` : URSA's core
+- ``/software`` : software to be deployed to emulated platforms
+- ``/tools`` : several scripts and helpers
+
+## Project Status
+
+- We have succefully emulated a fully-functional MPSoC platform comprising of a mesh-based NoC architecture interconnecting up to 16x16 processing elements (256 cores). We currently support only the ORCA platform (see ``/platform/orca-generic`` and ``/models`` folders), although other platforms can be emulated as well.
+
+## Project Roadmap
+
+- Develop software components to provide self-adaptive traits to ORCA platform. We rely on a fork of the [HellfireOS](https://github.com/andersondomingues/hellfireos) operating system. 
+- Develop benchmarks, so that we can accurately measure the performance of the simulation
+- Study other models to speed-up the simulation
+- Debugging and visualization tools
+
 ## Getting Started
 
-- First of all, make sure you have make and gcc installed in your system. URSA is being developed using ``GNU Make 4.1``, ``GCC version 6.3.0``. We run it on a ``Debian 6.3.0-18+deb9u1`` machine, but it should work with other distros as well.
+- A tutorial is included at ``docs/URSA_Sulphane - The Lazy Manual``. 
 
-- Examples of platforms reside under ``platforms`` folder. Select a platform to run and type ``make clean; make`` from the inside the platform directory. For instance, you can navigate to sulphane-generic plataform dir using ``cd <path_to_ursa>/platforms/sulphane-generic``. Once there, type ``make clean; make`` to build and run a simulator for the platform. The results of the simulation will be written to ``<path_to_ursa/platforms/sulphane-generic/logs`` folder. To stop the simulation, input ``CRTL + c`` to your terminal.
-
-## Project Status and Roadmap
-
-- We just finished sulphane-generic platform for good. As next step, we hope to deliver one or more of the following features. Sugestions are welcome as well. 
-
-    - Distributed and parallel simulation (because it is faster than single-core simulation)
-    - Functional, instruction accurate models (to gain simulation time and to speed-up software development for simulated platforms)
-    - Debugging and visualization tools 
-    - Drive detection
-    - Breakpoints and snapshots
-    - Simulation history, rollback and forward of simulation steps
-    - More hardware models, including a file-based memory module
-
-## Provided Models
-
-In-House models
-
-- NETIF. A simple network interface that can be used to send/receive packets from/to an on-chip network. 
-
-- NETSOCKET. A virtual UDP socket that is capable of converting UDP packets to noc flits and vice-versa.
-
-- MEMORY. An memory-based memory module, that is, we store data from the simulated platform in host machine's memory. No file on disk is used.
-
-Some of the provided models comes from existing hardware. Documentation for these hardware is available at providers' website or repository. 
+## Third-Party Work
 
 - HF-RISCV. The hf-riscv core is maintained by Sergio Johann (sjohann81). More information on his work can be found at [his repository](https://github.com/sjohann81). Also, our model of hf-riscv core is very based on the one provided by him. 
 
 - HEMPS (and HERMES). The GAPH group maintains the HEMPS project. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html). Provided network-on-chip router model is based on the RTL models available at [their repository](https://github.com/GaphGroup/hemps). 
+
+- HELLFIREOS. We use [sjohann81's HellfireOS operating system](https://github.com/sjohann81) within the processing elements of the ORCA platform. 
 
 ## Licensing
 
