@@ -25,6 +25,10 @@ void sender(void)
 		crc = hf_crc32(buf, sizeof(buf)-4);
 		memcpy(buf+sizeof(buf)-4, &crc, 4);
 		val = hf_send(2, 5000, buf, sizeof(buf), channel);
+		val = hf_send(3, 5000, buf, sizeof(buf), channel);
+		val = hf_send(4, 5000, buf, sizeof(buf), channel);
+		val = hf_send(5, 5000, buf, sizeof(buf), channel);
+		val = hf_send(6, 5000, buf, sizeof(buf), channel);
 
 		if (val)
 			printf("hf_send(): error %d\n", val);
@@ -68,14 +72,16 @@ void receiver(void)
 
 void app_main(void)
 {
+
+	hf_spawn(receiver, 0, 0, 0, "receiver", 4096);		
+
 	switch(hf_cpuid()){
-	//	case 2:
 		case 5:
 		case 15:
 			hf_spawn(sender, 0, 0, 0, "sender", 4096);			
 			break;
 		default:
-			hf_spawn(receiver, 0, 0, 0, "receiver", 4096);		
+//			hf_spawn(receiver, 0, 0, 0, "receiver", 4096);		
 			break;
 	}
 }

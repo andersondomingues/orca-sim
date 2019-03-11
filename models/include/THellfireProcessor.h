@@ -27,11 +27,6 @@
 #include <UMemory.h>
 #include <UComm.h>
 
-//#define SRAM_BASE         0x40000000
-//#define MEM_SIZE			0x00100000
-//#define MEM_SIZE			0x00100400
-//#define MEM_SIZE			0x00400000
-
 #define EXIT_TRAP			0xe0000000
 #define IRQ_VECTOR			0xf0000000
 #define IRQ_CAUSE			0xf0000010

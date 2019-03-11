@@ -104,12 +104,12 @@ void TNetif::recvProcess(){
 	//recv state machine
 	switch(_recv_state){
 		
-		//wait for data to arrive at input buffer. cannot
-		//receive while interrupt is up
+		//STATE 1: wait for data to arrive at the buffer. 
 		case NetifRecvState::READY:{
 		
 			//buffer has data and interruption flag is not set
-			if(_comm_intr->Read() == 0 && _ib->size() > 0){
+			//ack must be down as well
+			if(_ib->size() > 0){
 				
 				//writes addr header to mem
 				_next_recv_addr = _mem1->GetBase();
@@ -120,10 +120,14 @@ void TNetif::recvProcess(){
 				
 				_next_recv_addr += sizeof(FlitType);
 				_recv_state = NetifRecvState::LENGTH;
+				
+				//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());
+				
 			}
 			
 		}break;		
 		
+		//check for the length of arrived data. Cannot greater than buffer size
 		case NetifRecvState::LENGTH:{
 			
 			if(_ib->size() > 0){
@@ -137,6 +141,8 @@ void TNetif::recvProcess(){
 				_flits_to_recv = len_flit;
 				
 				_recv_state = NetifRecvState::DATA_IN;
+				
+				//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());
 			}
 			
 		}break;
@@ -147,7 +153,7 @@ void TNetif::recvProcess(){
 			//no more flits to recv, change state
 			if(_flits_to_recv == 0){
 
-				_comm_intr->Write(1); //interrupts CPU
+				_comm_intr->Write(0x1); //interrupts CPU
 				_recv_state = NetifRecvState::INTR_AND_WAIT;
 			
 			}else if(_ib->size() > 0){
@@ -163,19 +169,31 @@ void TNetif::recvProcess(){
 				_flits_to_recv--;
 			}
 			
+			//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());				
+			
 		} break;
 				
+		//wait until CPU finishes copying. then, disable interruption
 		case NetifRecvState::INTR_AND_WAIT:{
 			
-			//wait until CPU finishes copying. Then, disable both flags
 			if(_comm_ack->Read() == 0x1){
-
-				_comm_intr->Write(0);
-				_comm_ack->Write(0);
-				_recv_state = NetifRecvState::READY;
-				
+				_comm_intr->Write(0x0);//lowers interruption
+				_recv_state = NetifRecvState::FLUSH;
 			}
 			
+			//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());
+			
+		} break;
+		
+		//wait for cpu to acknowdledge the operation (by lowering the acknowledge)
+		case NetifRecvState::FLUSH:{
+		
+			if(_comm_ack->Read() == 0x0){
+				_recv_state = NetifRecvState::READY;
+				//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());				
+			}
+
+				
 		} break;
 	}
 }
@@ -246,7 +264,7 @@ void TNetif::sendProcess(){
 				
 				_flits_to_send--;
 			}
-			
+
 		} break;
 
 	}

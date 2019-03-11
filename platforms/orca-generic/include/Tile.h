@@ -40,11 +40,11 @@
 #define MEM2_BASE 0x90000080
 
 //comms (00 to 0F reserved for gp wires)
-#define COMM_NOC_ACK    0x80000001
-#define COMM_NOC_INTR   0x80000002
-#define COMM_NOC_START  0x80000003
+#define COMM_NOC_ACK    0x80000000
+#define COMM_NOC_INTR   0x80000001
+#define COMM_NOC_START  0x80000002
 
-#define COMM_ID   0x80000010 /* self id addr */
+#define COMM_ID         0x80000010 /* self id addr */
 
 class Tile{
 

@@ -166,8 +166,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	}
 	
 	//comms
-	if(address == s->comm_intr->GetAddr()){ s->comm_intr->Write(value); return; }
-	if(address == s->comm_ack->GetAddr()){ s->comm_ack->Write(value); return; }
+	if(address == s->comm_ack->GetAddr()){ s->comm_ack->Write(value); return; }	
 	if(address == s->comm_start->GetAddr()){ s->comm_start->Write(value); return; }
 	
 	UMemory* sel_mem = nullptr;
@@ -375,7 +374,7 @@ fail:
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;     /*IRQ_COUNTER_NOT*/
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
 	
-	if (s->comm_intr->Read() == 1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
+	if (s->comm_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
 		
 	//ENERGY MONITORING
 	#ifndef OPT_HFRISC_DISABLE_METRICS

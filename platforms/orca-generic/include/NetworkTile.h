@@ -42,11 +42,6 @@
 #define MEM2_SIZE 0x00000080 /* send memory */
 #define MEM2_BASE 0x90000080
 
-//comms
-#define COMM_NOC_ACK    0x80000001
-#define COMM_NOC_INTR   0x80000002
-#define COMM_NOC_START  0x80000003
-
 class NetworkTile : public Tile{
 
 private:
