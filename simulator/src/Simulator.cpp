@@ -20,8 +20,22 @@ unsigned long long Simulator::Run(unsigned long long time){
 	
 	_timeout = _globalTime + time;
 
-	while(_queue.size() > 0 && _globalTime < _timeout)
-		this->executeNext();
+	while(_queue.size() > 0 && _globalTime <= _timeout){
+
+		//get next event to be processed
+		Event e = _queue.top();
+	
+		_globalTime = e.time;
+
+		_queue.push( //push new event to queue
+			Event(	 //event is scheduled to X cycles ahead of current time
+				_globalTime + e.timedModel->Run(), 
+				e.timedModel
+			)
+		);
+		
+		_queue.pop();
+	}
 	
 	return _globalTime;
 }
@@ -31,7 +45,7 @@ unsigned long long Simulator::Run(unsigned long long time){
  * @param Event to run.*/
 void Simulator::Schedule(const Event& e){
 
-	#ifndef NOGUARDS
+	#ifndef OPT_SKIP_ZERO_TIME_CHECKING
 	if(e.time == 0){
 		throw std::runtime_error("Simulator: unable to schedule "
 			+ e.timedModel->GetName() + " to run in the past. " +
@@ -42,20 +56,6 @@ void Simulator::Schedule(const Event& e){
 	_queue.push(e);
 }
 
-/**
- * @brief Removes the event on top of the queue and executes it */
-void Simulator::executeNext(){
-	
-	//get next event to be processed
-	Event e = _queue.top();
-	_queue.pop();
-	
-	_globalTime = e.time;
-
-	//process it
-	long long int interv = e.timedModel->Run();
-	_queue.push(Event(_globalTime + interv, e.timedModel));
-}
 
 /**
  * @brief Dtor. */

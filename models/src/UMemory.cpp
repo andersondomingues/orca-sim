@@ -57,7 +57,7 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
  */
 void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
-	#ifndef NOGUARDS
+	#ifndef OPT_MEMORY_SKIP_WRITE_ADDRESS_CHECKING
 	if(addr < _sram_base){
 		stringstream s;
 		s << this->GetName() << ": unable to write to addr (0x" << std::hex
@@ -91,7 +91,7 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
  */
 void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 
-	#ifndef NOGUARDS
+	#ifndef OPT_MEMORY_SKIP_READ_ADDRESS_CHECKING
 	if(addr < _sram_base){
 		stringstream s;
 		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
@@ -152,7 +152,7 @@ uint32_t UMemory::GetLastAddr(){
  */
 void UMemory::Wipe(uint32_t base, uint32_t size){
 	
-	#ifndef NOGUARDS
+	#ifndef OPT_MEMORY_SKIP_WIPE_ADDRESS_CHECKING
 	if(base < _sram_base)
 		throw std::runtime_error(this->GetName() + ": unable to wipe from base (" + std::to_string(base) + ") lower than sram base .");
 

@@ -3,6 +3,7 @@
 
 //lib dependencies
 #include <iostream>
+#include <array>
 #include <queue>
 #include <string>
 

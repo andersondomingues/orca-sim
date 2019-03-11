@@ -86,9 +86,6 @@ int main(int argc, char** argv){
 			connect_routers(tiles[x][y]->GetRouter(), NORTH, tiles[x][y+1]->GetRouter(), SOUTH);
 			
 	//load binaries into main memories (processing tiles only)
-	int index = 0;
-	std::string code_file;
-	
 	for(int x = 0; x < NOC_W_SIZE; x++){
 		for(int y = 0; y < NOC_H_SIZE; y++){
 			
@@ -96,10 +93,7 @@ int main(int argc, char** argv){
 			if(x == 0 && y == 0) continue;
 		
 			//index = x + NOC_W_SIZE * y;
-			index = 0;
-			code_file = std::string(argv[1]) + "code" + std::to_string(index) + ".bin";
-			
-			((ProcessingTile*)tiles[x][y])->GetMem0()->LoadBin(code_file, MEM0_BASE, MEM0_SIZE);
+			((ProcessingTile*)tiles[x][y])->GetMem0()->LoadBin(std::string(argv[1]), MEM0_BASE, MEM0_SIZE);
 		}
 	}
 
@@ -170,7 +164,8 @@ int main(int argc, char** argv){
 				<< std::endl;
 		}
 	}
-		
+	
+	#ifndef OPT_HFRISC_DISABLE_METRICS
 	//show simulation statistics
 	std::cout << "==============[ CPU POWER/ENERGY STATISTICS ]" << std::endl;
 	for(int i = 0; i < NOC_W_SIZE; i++){
@@ -187,6 +182,9 @@ int main(int argc, char** argv){
 		}
 
 	}
+	#endif
+	
+	#ifndef OPT_ROUTER_DISABLE_METRICS
 	std::cout << "==============[ ROUTING POWER/ENERGY STATISTICS ]" << std::endl;
 	for(int i = 0; i < NOC_W_SIZE; i++){
 		for(int j = 0; j < NOC_H_SIZE; j++){
@@ -202,6 +200,7 @@ int main(int argc, char** argv){
 		}
 		
 	}
+	#endif
 	
 	return 0;
 	

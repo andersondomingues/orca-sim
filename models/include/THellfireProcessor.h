@@ -74,7 +74,7 @@ typedef struct {
 
 
 class THellfireProcessor : public TimedModel
-#ifndef DISABLE_METRICS
+#ifndef OPT_HFRISC_DISABLE_METRICS
 , public ObservableModel
 #endif
 {
@@ -87,7 +87,7 @@ uint32_t _last_pc;
 	risc_v_state *s;
 	int i;
 	
-	#ifndef DISABLE_METRICS
+	#ifndef OPT_HFRISC_DISABLE_METRICS
 	Metric* _metric_energy;
 	#endif
 
@@ -127,7 +127,7 @@ public:
 	
     void Reset();
 	
-	#ifndef DISABLE_METRICS
+	#ifndef OPT_HFRISC_DISABLE_METRICS
 	Metric* GetMetric(Metrics m);
 	#endif
 	

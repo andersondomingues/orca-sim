@@ -33,7 +33,7 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
     _x = x_pos;
     _y = y_pos;
     
-	#ifndef DISABLE_METRICS
+	#ifndef OPT_ROUTER_DISABLE_METRICS
 	_metric_energy = new Metric(Metrics::ENERGY);
 	#endif
 		
@@ -53,7 +53,7 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
  */
 TRouter::~TRouter(){
     
-    #ifndef DISABLE_METRICS
+    #ifndef OPT_ROUTER_DISABLE_METRICS
     delete _metric_energy;
     #endif
     
@@ -80,7 +80,7 @@ uint32_t TRouter::GetRR(){
  * @return The next time to schedule the event.*/
 unsigned long long TRouter::Run(){
     
-	#ifndef DISABLE_METRICS
+	#ifndef OPT_ROUTER_DISABLE_METRICS
 	bool sampled_already = false;
 	#endif
     
@@ -106,7 +106,7 @@ unsigned long long TRouter::Run(){
 			_switch_control[_round_robin] = target_port; //set crossbar connection
 			_flits_to_send[_round_robin] = 64; //TODO: get the packet size from the second flit			
 			
-			#ifndef DISABLE_METRICS
+			#ifndef OPT_ROUTER_DISABLE_METRICS
 			_metric_energy->Sample(755.56 + 2655.25);
 			sampled_already = true;
 			#endif
@@ -139,7 +139,7 @@ unsigned long long TRouter::Run(){
 	//ROUND ROBIN (prevents starvation)
 	_round_robin = (_round_robin + 1) % 5;
     	
-	#ifndef DISABLE_METRICS
+	#ifndef OPT_ROUTER_DISABLE_METRICS
 	if(!sampled_already)
 		_metric_energy->Sample(364.64 + 575.64);
 	#endif
@@ -147,7 +147,7 @@ unsigned long long TRouter::Run(){
     return 1;
 }
 
-#ifndef DISABLE_METRICS
+#ifndef OPT_ROUTER_DISABLE_METRICS
 Metric* TRouter::GetMetric(Metrics m){
 	if(m == Metrics::ENERGY)
 		return _metric_energy;

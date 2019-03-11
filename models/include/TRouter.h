@@ -49,13 +49,13 @@ enum class RouterState{
 
 
 class TRouter: public TimedModel
-#ifndef DISABLE_METRICS
+#ifndef OPT_ROUTER_DISABLE_METRICS
 , public ObservableModel
 #endif
 {
 
 private:
-		#ifndef DISABLE_METRICS
+		#ifndef OPT_ROUTER_DISABLE_METRICS
 		Metric* _metric_energy;
 		#endif
 
@@ -80,7 +80,7 @@ private:
         UBuffer<FlitType>* _ib[5];        
 public: 
 		
-		#ifndef DISABLE_METRICS
+		#ifndef OPT_ROUTER_DISABLE_METRICS
 		Metric* GetMetric(Metrics m);
 		#endif
 		

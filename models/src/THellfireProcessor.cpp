@@ -89,7 +89,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		sel_mem = s->mem1;
 	}
 		
-	#ifndef NOGUARDS
+	#ifndef OPT_HFRISC_DISABLE_READ_ADDRESS_CHECKING
 	if(sel_mem == nullptr){
 		dumpregs(s);
 		stringstream ss;
@@ -182,7 +182,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		sel_mem = s->mem2;
 	}
 		
-	#ifndef NOGUARDS
+	#ifndef DOPT_HFRISC_DISABLE_WRITE_ADDRESS_CHECKING
 	if(sel_mem == nullptr){
 		dumpregs(s);
 		stringstream ss;
@@ -378,7 +378,7 @@ fail:
 	if (s->comm_intr->Read() == 1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
 		
 	//ENERGY MONITORING
-	#ifndef DISABLE_METRICS
+	#ifndef OPT_HFRISC_DISABLE_METRICS
 	switch(opcode){
 		
 		case 0x37: //LUI
@@ -504,7 +504,7 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
 	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
 	
-	#ifndef DISABLE_METRICS
+	#ifndef OPT_HFRISC_DISABLE_METRICS
 	_metric_energy = new Metric(Metrics::ENERGY);
 	#endif
 }
@@ -512,7 +512,7 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 //TODO: clear allocated memory if any
 THellfireProcessor::~THellfireProcessor(){
 	
-	#ifndef DISABLE_METRICS
+	#ifndef OPT_HFRISC_DISABLE_METRICS
 	delete _metric_energy;
 	#endif
 }
@@ -522,7 +522,7 @@ void THellfireProcessor::Reset(){
     return;
 }
 
-#ifndef DISABLE_METRICS
+#ifndef OPT_HFRISC_DISABLE_METRICS
 Metric* THellfireProcessor::GetMetric(Metrics m){
 		
 	if(m == Metrics::ENERGY)

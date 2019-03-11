@@ -1,28 +1,29 @@
+#directory configuration
 SOURCEDIR :=./src
 OUTPUTDIR :=./bin
-
-CPP:=g++
-
-#some useful flags:
-#"-DNOGUARDS" disables all IFs (not kidding, all guards down!)
-CPPFLAGS :=-I./include -I../simulator/include -c -g -O3 -Wall -Wextra -Werror
-#-fsanitize=address
-
 LIBNAME :=libmod.a
 
+#include flags (plus external flags)
+CPPFLAGS :=-I./include -I../simulator/include -c $(COMPILER_FLAGS) $(OPT_MODEL_FLAGS)
 
-TARGET_DEPS := $(OUTPUTDIR)/TNetSocket.o $(OUTPUTDIR)/UComm.o $(OUTPUTDIR)/UBuffer.o $(OUTPUTDIR)/UMemory.o $(OUTPUTDIR)/TNetif.o $(OUTPUTDIR)/TRouter.o $(OUTPUTDIR)/THellfireProcessor.o
+#list of dependencies (source files)
+TARGET_DEPS := \
+	$(OUTPUTDIR)/TNetSocket.o \
+	$(OUTPUTDIR)/UComm.o \
+	$(OUTPUTDIR)/UBuffer.o \
+	$(OUTPUTDIR)/UMemory.o \
+	$(OUTPUTDIR)/TNetif.o \
+	$(OUTPUTDIR)/TRouter.o \
+	$(OUTPUTDIR)/THellfireProcessor.o
 
-
-all: $(OUTPUTDIR)/$(LIBNAME)
-	@echo "all done!"
-
+#compress all generated object files into a pack
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
 
-#compile all classes into %.o files
+#compile all classes (.cpp) into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp 
-	$(CPP) $(CPPFLAGS) $< -o $@ 
+	g++ $(CPPFLAGS) $< -o $@ 
 
+#remove any preoviosly generated file
 clean:
 	rm -rf bin/*.a 	rm -rf bin/*.o
