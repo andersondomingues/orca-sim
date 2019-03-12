@@ -17,7 +17,8 @@ BINARY_DIR    := $(CURDIR)/bin
 PLATFORMS_DIR := $(CURDIR)/platforms
 MODELS_DIR    := $(CURDIR)/models
 TOOLS_DIR     := $(CURDIR)/tools
-APP_DIR       := $(CURDIR)/software/hellfireos/platform/orca-generic
+#APP_DIR       := $(CURDIR)/software/hellfireos/platform/orca-generic
+APP_DIR       := $(CURDIR)/software
 
 #compile everything if necessary and run
 #simulatotion requires the simulator and software 
