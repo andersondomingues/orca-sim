@@ -121,13 +121,12 @@ int main(int argc, char** argv){
 		}
 	}
 
-	std::cout << "Running..."	 << std::endl;
+	std::cout << "Simulating " << CYCLES_TO_SIM << " cycles. Please wait..." << std::endl;
 
 	//keep simulating until something happen
 	try{
-		//while(1){
-			s->Run(CYCLES_TO_SIM);
-		//}
+		s->Run(CYCLES_TO_SIM);
+		
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
 		goto clean;

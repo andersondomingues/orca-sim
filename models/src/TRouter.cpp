@@ -62,6 +62,7 @@ TRouter::~TRouter(){
 }
 
 void TRouter::Reset(){
+
     _round_robin = LOCAL; //starts checking on local port
     
     for(int i = 0; i < 5; i++){

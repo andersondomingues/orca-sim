@@ -1,5 +1,5 @@
 #apps and arch confs.
-APP = noc_test4
+APP = $(APPLICATION)
 ARCH = riscv/hf-riscv
 
 #dir config.
@@ -22,6 +22,8 @@ include $(HFOS_DIR)/drivers/noc.mak
 include $(HFOS_DIR)/sys/kernel.mak
 include $(APPS_DIR)/$(APP)/app.mak
 
+include orca-spawner/app.mak
+
 INC_DIRS += -I $(HFOS_DIR)/lib/include -I $(HFOS_DIR)/sys/include -I $(HFOS_DIR)/drivers/noc/include
 CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
 	-DMAX_TASKS=$(MAX_TASKS) -DMEM_ALLOC=$(MEM_ALLOC) \
@@ -36,6 +38,7 @@ images:
 	make libc
 	make noc
 	make kernel
+	make spawner
 	make app
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o code0.elf *.o
 	$(DUMP) --disassemble --reloc code0.elf > code0.lst
@@ -44,7 +47,7 @@ images:
 	$(OBJ) -O binary code0.elf code0.bin
 	$(SIZE) code0.elf
 	hexdump -v -e '4/1 "%02x" "\n"' code0.bin > code0.txt
-
+	mv *.o ./bin
 clean:
 	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt
 
