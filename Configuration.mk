@@ -11,6 +11,10 @@
 # -DOPT_HFRISC_DISABLE_READ_ADDRESS_CHECKING	#disable checking on unmapped addressess when reading from memory
 # -DOPT_HFRISC_DISABLE_WRITE_ADDRESS_CHECKING	#disable checking on unmapped addressess when writing to memory
 # -DOPT_HFRISC_DISABLE_METRICS					#disable data sampling code from compilation (affects hfrisc model only)
+# -DCFG_NETSOCKET_CLIENT_ADDR="127.0.0.1"		#ip address for the external network interface client
+# -DCFG_NETSOCKET_CLIENT_PORT=8888				#client port
+# -DCFG_NETSOCKET_SERVER_ADDR="127.0.0.1"		#ip address for the external network interface server
+# -DCFG_NETSOCKET_SERVER_PORT=9999				#server port
 OPT_MODEL_FLAGS := -DOPT_URSA \
 	-DOPT_MEMORY_SKIP_WRITE_ADDRESS_CHECKING \
 	-DOPT_MEMORY_SKIP_READ_ADDRESS_CHECKING \
@@ -22,7 +26,11 @@ OPT_MODEL_FLAGS := -DOPT_URSA \
 	-DOPT_NETSOCKET_DISABLE_INCOMING_PACKETS_LOG \
 	-DOPT_HFRISC_DISABLE_READ_ADDRESS_CHECKING \
 	-DOPT_HFRISC_DISABLE_WRITE_ADDRESS_CHECKING \
-	-DOPT_HFRISC_DISABLE_METRICS
+	-DOPT_HFRISC_DISABLE_METRICS \
+	-DCFG_NETSOCKET_CLIENT_ADDR=\"127.0.0.1\" \
+	-DCFG_NETSOCKET_CLIENT_PORT=8888 \
+	-DCFG_NETSOCKET_SERVER_ADDR=\"127.0.0.1\" \
+	-DCFG_NETSOCKET_SERVER_PORT=9999
 
 # ==============================================================[ SIMULATOR ]
 # -DOPT_URSA									#enable cheats

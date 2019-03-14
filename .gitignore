@@ -1,13 +1,31 @@
+#generated libraries and object files
 *.a
 *.o
+
+#simulation logs
 *.log
+
+#executable code and application binaries 
 *.bin
 *.exe
+
+#codelite configuration files
 .clang
 .codelite
+
+#perf and valgrind logs
 ursa.*
 perf.*
+
+#catkin generated files
 tools/ros_integration/.catkin_workspace
 tools/ros_integration/build/
 tools/ros_integration/devel/
+
+#compilation intermediate files
+software/*.cnt
+software/*.elf
+software/*.lst
+software/*.sec
+software/*.txt
 
