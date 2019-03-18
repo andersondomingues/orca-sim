@@ -41,7 +41,7 @@ OPT_SIMUL_FLAGS := -DOPT_URSA \
 # ===============================================================[ PLATFORM ]
 OPT_PLAT_FLAGS := $(OPT_MODEL_FLAGS) $(OPT_SIMUL_FLAGS)
 
-SYSTEM_FLAGS := -DNOC_H_SIZE=4 -DNOC_W_SIZE=4 -DCYCLES_TO_SIM=20000000
+SYSTEM_FLAGS := -DNOC_H_SIZE=4 -DNOC_W_SIZE=4 -DCYCLES_TO_SIM=10000000
 
 # -03: optmize to run as faster as possible
 # -g: generate debugging information

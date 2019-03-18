@@ -22,7 +22,7 @@ include $(HFOS_DIR)/drivers/noc.mak
 include $(HFOS_DIR)/sys/kernel.mak
 include $(APPS_DIR)/$(APP)/app.mak
 
-include orca-spawner/app.mak
+include orca-launcher/orca-launcher.mak
 
 INC_DIRS += -I $(HFOS_DIR)/lib/include -I $(HFOS_DIR)/sys/include -I $(HFOS_DIR)/drivers/noc/include
 CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
@@ -38,8 +38,7 @@ images:
 	make libc
 	make noc
 	make kernel
-	make spawner
-	make app
+	make orca-launcher
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o code0.elf *.o
 	$(DUMP) --disassemble --reloc code0.elf > code0.lst
 	$(DUMP) -h code0.elf > code0.sec
@@ -47,7 +46,12 @@ images:
 	$(OBJ) -O binary code0.elf code0.bin
 	$(SIZE) code0.elf
 	hexdump -v -e '4/1 "%02x" "\n"' code0.bin > code0.txt
-	mv *.o ./bin
+	mv *.o *.elf *.bin *.cnt *.lst *.sec *.txt ../bin
+
+app: 
+	make app
+
 clean:
-	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt
+	rm -rf ../bin/*.o ../bin/*~ ../bin/*.elf ../bin/*.bin \
+	../bin/*.cnt ../bin/*.lst ../bin/*.sec ../bin/*.txt
 

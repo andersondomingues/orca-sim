@@ -63,14 +63,13 @@ $(BINARY_DIR)/$(APPLICATION_IMAGE):
 	@echo "$'\e[7m Building software (kernel + apps)\e[0m"
 	@echo "$'\e[7m==================================\e[0m"
 	make -C $(APP_DIR) images
-	cp $(APP_DIR)/$(APPLICATION_IMAGE) $(BINARY_DIR)/$(APPLICATION_IMAGE)
 
 clean:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m          Cleaning up...          \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	@rm -rf $(BINARY_DIR)/*
 	@make -C $(SIMULATOR_DIR) clean
 	@make -C $(MODELS_DIR) clean
 	@make -C $(PLATFORMS_DIR)/$(PLATFORM) clean
 	@make -C $(APP_DIR) clean	
+	#@rm -rf $(BINARY_DIR)/*

@@ -21,6 +21,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <iostream>
 #include <iomanip>
+#include <chrono>
 
 //simulation API
 #include <Event.h>
@@ -121,11 +122,34 @@ int main(int argc, char** argv){
 		}
 	}
 
-	std::cout << "Simulating " << CYCLES_TO_SIM << " cycles. Please wait..." << std::endl;
+	std::cout << "Simulation pulse set to " << CYCLES_TO_SIM << " cycles. Please wait..." << std::endl;
 
 	//keep simulating until something happen
+	uint32_t gigacycles = 0;
 	try{
-		s->Run(CYCLES_TO_SIM);
+		while(1){
+			
+			std::chrono::high_resolution_clock::time_point t1 = 
+				std::chrono::high_resolution_clock::now();
+			
+			gigacycles++;
+			s->Run(CYCLES_TO_SIM);			
+			
+			std::chrono::high_resolution_clock::time_point t2 =
+				std::chrono::high_resolution_clock::now();
+				
+			auto duration = 
+				std::chrono::duration_cast
+				<std::chrono::milliseconds>( t2 - t1 ).count();
+			
+			//converts mili to seconds before calculating the frequency
+			double hertz = CYCLES_TO_SIM / (double)(duration / 1000);
+			
+			//divide frequency by 1k (Hz -> KHz)
+			std::cout << "notice: pulse #" << gigacycles << " took " 
+				<< (duration / 1000.0)<< " seconds @ "
+				<< (hertz / 1000.0) <<" KHz)" << std::endl;
+		}
 		
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
