@@ -8,6 +8,16 @@
 #include <fstream>
 
 #define NOC_PACKET_SIZE 64
+#define PKT_HEADER_SIZE		8
+
+#define PKT_TARGET_CPU		0
+#define PKT_PAYLOAD		1
+#define PKT_SOURCE_CPU		2
+#define PKT_SOURCE_PORT		3
+#define PKT_TARGET_PORT		4
+#define PKT_MSG_SIZE		5
+#define PKT_SEQ			6
+#define PKT_CHANNEL		7
 
 #define LOADER_SERVICE_PORT 5001
 #define LOADER_SERVICE_CHANNEL 5001

@@ -1,13 +1,12 @@
 #configuration
-PLATFORM     := orca-generic
-APPLICATION  := noc_test4
-export APPLICATION
+PLATFORM         := orca-generic
+APPLICATIONS_DIR := applications
 
 #libnames
 PLATFORM_BIN      := orca-generic.exe
 SIMULATOR_LIB     := libsim.a
 MODELS_LIB        := libmod.a
-APPLICATION_IMAGE := code0.bin
+IMAGE_BIN         := image.bin
 
 #include optmizations
 include Configuration.mk
@@ -18,7 +17,10 @@ BINARY_DIR    := $(CURDIR)/bin
 PLATFORMS_DIR := $(CURDIR)/platforms
 MODELS_DIR    := $(CURDIR)/models
 TOOLS_DIR     := $(CURDIR)/tools
-APP_DIR       := $(CURDIR)/software
+SOFTWARE_DIR  := $(CURDIR)/software
+
+#phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
+.PHONY: clean apps
 
 #compile everything if necessary and run
 #simulatotion requires the simulator and software 
@@ -26,12 +28,12 @@ APP_DIR       := $(CURDIR)/software
 # - simulator has no dependencies
 # - hardware models depends on the simulator
 # - platform depends on simulator and hardware models
-all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(APPLICATION_IMAGE)
+all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN)
 	@echo "$'\e[7m====================================\e[0m"
 	@echo "$'\e[7m  All done! Starting simulation...  \e[0m"
 	@echo "$'\e[7m====================================\e[0m"
 	@echo $(OPTMIZATION_FLAGS)
-	$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(APPLICATION_IMAGE) 
+	$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) 
 
 #URSA's simulation library
 $(BINARY_DIR)/$(SIMULATOR_LIB):
@@ -57,12 +59,12 @@ $(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(SIMULATOR_LIB) $(BINARY_DIR)/$(MO
 	make -C $(PLATFORMS_DIR)/$(PLATFORM)
 	cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
 
-#software (kernel + application)
-$(BINARY_DIR)/$(APPLICATION_IMAGE):
+#software (kernel + loader)
+$(BINARY_DIR)/$(IMAGE_BIN):
 	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m Building software (kernel + apps)\e[0m"
+	@echo "$'\e[7m Building software (kernel + loader)\e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(APP_DIR) images
+	make -C $(SOFTWARE_DIR) image
 
 clean:
 	@echo "$'\e[7m==================================\e[0m"
@@ -71,5 +73,7 @@ clean:
 	@make -C $(SIMULATOR_DIR) clean
 	@make -C $(MODELS_DIR) clean
 	@make -C $(PLATFORMS_DIR)/$(PLATFORM) clean
-	@make -C $(APP_DIR) clean	
-	#@rm -rf $(BINARY_DIR)/*
+	@make -C $(SOFTWARE_DIR) clean	
+	@rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
+		$(BINARY_DIR)/*~ $(BINARY_DIR)/*.elf $(BINARY_DIR)/*.bin \
+		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec $(BINARY_DIR)/*.txt

@@ -1,10 +1,12 @@
-#apps and arch confs.
-APP = $(APPLICATION)
+#arch confs.
 ARCH = riscv/hf-riscv
+IMAGE_NAME = image
+
+#applications file 
+SELECTED_APPS = noc_test4_sender noc_test4_receiver
 
 #dir config.
-HFOS_DIR = ./hellfireos
-APPS_DIR = ./applications
+HFOS_DIR = hellfireos
 
 CPU_ARCH = \"$(ARCH)\"
 MAX_TASKS = 30
@@ -16,13 +18,20 @@ KERNEL_LOG = 0
 
 SRC_DIR = $(HFOS_DIR)
 
+#includes for kernel parts
 include $(HFOS_DIR)/arch/$(ARCH)/arch.mak
 include $(HFOS_DIR)/lib/lib.mak
 include $(HFOS_DIR)/drivers/noc.mak
 include $(HFOS_DIR)/sys/kernel.mak
-include $(APPS_DIR)/$(APP)/app.mak
 
+#includes for loader and other software
 include orca-launcher/orca-launcher.mak
+
+#include for applications
+include $(HFOS_DIR)/../applications/noc_test4/app.mak
+
+#phonies
+.PHONY: clean image_apps
 
 INC_DIRS += -I $(HFOS_DIR)/lib/include -I $(HFOS_DIR)/sys/include -I $(HFOS_DIR)/drivers/noc/include
 CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
@@ -33,25 +42,37 @@ CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
 
 NOC_FLAGS = -DNOC_INTERCONNECT -DNOC_WIDTH=4 -DNOC_HEIGHT=4 -DNOC_PACKET_SIZE=64 -DNOC_PACKET_SLOTS=64
 
-images: 
+image:
 	make hal
 	make libc
 	make noc
 	make kernel
-	make orca-launcher
-	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o code0.elf *.o
-	$(DUMP) --disassemble --reloc code0.elf > code0.lst
-	$(DUMP) -h code0.elf > code0.sec
-	$(DUMP) -s code0.elf > code0.cnt
-	$(OBJ) -O binary code0.elf code0.bin
-	$(SIZE) code0.elf
-	hexdump -v -e '4/1 "%02x" "\n"' code0.bin > code0.txt
+	make orca-launcher.o
+	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(IMAGE_NAME).elf *.o
+	$(DUMP) --disassemble --reloc $(IMAGE_NAME).elf > $(IMAGE_NAME).lst
+	$(DUMP) -h $(IMAGE_NAME).elf > $(IMAGE_NAME).sec
+	$(DUMP) -s $(IMAGE_NAME).elf > $(IMAGE_NAME).cnt
+	$(OBJ) -O binary $(IMAGE_NAME).elf $(IMAGE_NAME).bin
+	$(SIZE) $(IMAGE_NAME).elf
+	hexdump -v -e '4/1 "%02x" "\n"' $(IMAGE_NAME).bin > $(IMAGE_NAME).txt
+	make image_apps
 	mv *.o *.elf *.bin *.cnt *.lst *.sec *.txt ../bin
 
-app: 
-	make app
-
+.PHONY: image_apps
+image_apps:
+	for app in $(SELECTED_APPS) ; do \
+		make $$app.o ; \
+		$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $$app.elf *.o ; \
+		$(OBJ) $$app.elf $$app.elf --only-section=.tasks ; \
+		$(DUMP) --disassemble --reloc $$app.elf > $$app.lst ; \
+		$(DUMP) -h $$app.elf > $$app.sec ; \
+		$(DUMP) -s $$app.elf > $$app.cnt ; \
+		$(OBJ) -O binary $$app.elf $$app.bin ; \
+		$(SIZE) $$app.elf ; \
+		hexdump -v -e '4/1 "%02x" "\n"' $$app.bin > $$app.txt ; \
+		rm -rf $$app ; \
+	done
+	
 clean:
-	rm -rf ../bin/*.o ../bin/*~ ../bin/*.elf ../bin/*.bin \
-	../bin/*.cnt ../bin/*.lst ../bin/*.sec ../bin/*.txt
+	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt
 

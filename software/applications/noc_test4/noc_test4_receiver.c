@@ -1,7 +1,8 @@
 #include "noc_test4.h"
 
-void receiver(void)
+void noc_test4_receiver(void)
 {
+	
 	int8_t buf[1500];
 	uint16_t cpu, port, size;
 	int16_t val;

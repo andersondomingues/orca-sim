@@ -4,7 +4,10 @@
 #include <hellfire.h>
 #include <noc.h>
 
-void sender(void);
-void receiver(void);
 
-#endif
+//#define TASK_ATTRIBUTE __attribute__ ((used))
+
+void noc_test4_sender(void)		__attribute__((section (".tasks")));
+void noc_test4_receiver (void)	__attribute__((section (".tasks")));
+
+#endif /* _NOC_TEST4_H */

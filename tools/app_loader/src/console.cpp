@@ -78,8 +78,11 @@ int main(int argc, char** argv){
 	std::cout << "Read " << bin_size << " bytes from binary file." << std::endl;
 
 	//load file contents
+	//buffer must be greater than file size due a simplification
+	//made in the copy algorithm
+	//TODO: make a better copy algorithm (see libhf.c)
 	int8_t* buffer;
-	buffer = new int8_t[bin_size];
+	buffer = new int8_t[bin_size * 2];
 	
 	//TODO: task name must be sent 
 	load_bin(buffer, bin_path, bin_size);
