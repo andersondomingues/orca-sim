@@ -42,17 +42,19 @@ void dump(char* _mem, uint32_t base, uint32_t length){
  |tgt_cpu  |payload  |src_cpu  |src_port |tgt_port |msg_size |seq      |channel  |  ... data ...  |
  --------------------------------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////////////////////////*/
-int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t size, uint16_t channel)
+int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t size, uint16_t channel,
+	std::string server_addr, uint32_t server_port)
 {
-	std::cout << target_cpu << target_port << buf[0] << size << channel << std::endl;
+	//std::cout << target_cpu << target_port << buf[0] << size << channel << server_addr << server_port << std::endl;
 
 	char* msg = new char[NOC_PACKET_SIZE];
 	
 	//connects to 8887 to send packets to the noc 
-	const std::string& client_addr = "127.0.0.1";
-	udp_client* uclient = new udp_client(client_addr, 9999);
+	//const std::string& client_addr = "127.0.0.1";
+	udp_client* uclient = new udp_client(server_addr, server_port); //9999
 	
-	msg[0] = 0x11;  //(1,1) is core #5
+	//msg[0] = 0x11;  //(1,1) is core #5
+	msg[0] = target_cpu;
 	msg[1] = 0x00; 
 
 	msg[2] = 0x3e; //length flit: 0x3e = 62 flits
@@ -63,22 +65,23 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 
 	msg[6] = 0xe8;	//src_port (5000) ----- task
 	msg[7] = 0x03;  
+
+	msg[8] = (target_port & 0x000000FF); //target port
+	msg[9] = (target_port & 0x0000FF00) >> 4;
 	
-	msg[8] = 0x88;  //target port
-	msg[9] = 0x13;  
-	
-	printf("total message size = %d (0x%04x)\n", size, size); 
+	//printf("total message size = %d (0x%04x)\n", size, size); 
 
 	msg[10] = (size & 0x000000FF); //msg len
 	msg[11] = (size & 0x0000FF00) >> 4;
 	
-	printf("first byte: %2x, second byte: %2x\n", (size & 0x000000FF), msg[11]);
+	//printf("first byte: %2x, second byte: %2x\n", (size & 0x000000FF), msg[11]);
 	
 	msg[12] = 0x01; //seq number
 	msg[13] = 0x00; 
 	
-	msg[14] = 0x00; //channel
-	msg[15] = 0x00; 
+	msg[14] = (channel & 0x000000FF); //channel
+	msg[15] = (channel & 0x0000FF00) >> 4;
+	
 		
 	//calculate the number of packets
 	//packet size = 64 flits = 128 bytes
@@ -89,14 +92,14 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 	
 	uint32_t num_packets = size / payload_size;
 	
-	printf("size:%d packets_len:%d packets:%d\n", size, payload_size, num_packets);
+	//printf("size:%d packets_len:%d packets:%d\n", size, payload_size, num_packets);
 	
 	//add one more packet to handle parts of the payload
 	//not added in previous packets
 	if(size % PAYLOAD_SIZE != 0) 
 		num_packets++;
 		
-	std::cout << "generating " << num_packets << " packets" <<std::endl;
+	//std::cout << "generating " << num_packets << " packets" <<std::endl;
 
 	//copy content into package (while remaining bytes)
 	for(uint32_t i = 0; i < num_packets; i++){
@@ -116,7 +119,7 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 		sleep(1);
 	}
 	
-	std::cout << std::endl << "done. " <<std::endl;
+	//std::cout << std::endl << "done. " <<std::endl;
 	
 	return 0;
 

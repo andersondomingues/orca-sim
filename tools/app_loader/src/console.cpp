@@ -42,14 +42,21 @@ int main(int argc, char** argv){
 	//argv[1] = core number
 	//argv[2] = task file (path to binary)
 	//argv[3] = task name (name will be used by the kernel)
-	if(argc != 4){
-		std::cout 
-			<< std::endl << "Usage:" << std::endl
-			<< "\t" << argv[0] << " $1 $2 $3" << std::endl << std::endl
-			<< "$1 = CORE NUMBER : the id of the core to receive the application." << std::endl
-			<< "$2 = TASK FILE : task file: path to the file containing the task." << std::endl
-			<< "$3 = TASK NAME : an identifier to be used by the kernel." << std::endl;
-		exit(0);
+	//argv[4] = server addr
+	//argv[5] = server port
+
+	if(argc != 6){
+		std::cout <<
+			"Usage: " << argv[0] << " core binpath name ipaddr ipport " << std::endl << std::endl <<
+			"All parameters must be informed." << std::endl <<
+			"Example: " << argv[0] << " 2 ./bin/image.bin image 127.0.0.1 9999" << std::endl << std::endl <<
+			"Description of parameters:" << std::endl <<
+			"     core:   Number of the tile to which the task would be loaded." << std::endl <<
+			"  binpath:   Path to the file containing task binary core." << std::endl <<
+			"     name:   A name for the task. Must be unique per core." << std::endl <<
+			"   ipaddr:   IP address of the platform gateway." << std::endl <<
+			"   ipport:   IP port of the platform gateway." << std::endl;
+		return 0;
 	}
 
 	//parse core number
@@ -72,7 +79,6 @@ int main(int argc, char** argv){
 	std::cout << "Loading task \"" << task_name << "\" into core #" << core_num
 		<< ", from [file:/" <<  bin_path << "]." << std::endl;
 
-
 	//print binary size
 	uint32_t bin_size = file_size(bin_path);
 	std::cout << "Read " << bin_size << " bytes from binary file." << std::endl;
@@ -87,6 +93,11 @@ int main(int argc, char** argv){
 	//TODO: task name must be sent 
 	load_bin(buffer, bin_path, bin_size);
 	
+	std::string server_addr = std::string(argv[4]);
+	int server_port = atoi(argv[5]);	
+	
+	std::cout << "server running at " << server_addr << ":" << server_port << std::endl;
+	
 	//send via api
-	hf_send(core_num, LOADER_SERVICE_PORT, buffer, bin_size, LOADER_SERVICE_CHANNEL);
+	hf_send(core_num, LOADER_SERVICE_PORT, buffer, bin_size, LOADER_SERVICE_CHANNEL, server_addr, server_port);
 }

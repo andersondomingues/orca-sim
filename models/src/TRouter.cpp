@@ -121,7 +121,16 @@ unsigned long long TRouter::Run(){
 	
     	//check whether the switch control is closed for some port
 		if(_switch_control[i] != -1){
-		
+
+			//prevent routing to a non-existing router
+			#ifndef OPT_ROUTER_DISABLE_GHOST_ROUTER_CHECKING0
+			if(_ob[_switch_control[i]] == nullptr){
+				stringstream ss;
+				ss << this->GetName() << ": unable to route to unknown address" << std::endl;
+				std::runtime_error(ss.str());
+			}
+			#endif
+				
 			//if so, check whether the output is able to receive new flits. buffer must have some room
 			if(_ob[_switch_control[i]]->size() < _ob[_switch_control[i]]->capacity() && _ib[i]->size() > 0){
 			

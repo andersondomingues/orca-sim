@@ -72,10 +72,28 @@ void receiver(void)
 	}
 }
 
+void spawn_task(int8_t* task, uint16_t size){
+	
+	printf("task received (size:%d)\n", size);
+		
+	//alloc space for incoming application
+	//hf_malloc(size);
+	
+	//copy application from buffer to memory
+	//hf_memcopy();
+	
+	//spawn task
+	//hf_spawn(sender, 0, 0, 0, "sender", 4096);
+	
+	//printf("recv'd: size=%d, cpu=%d, task=%d\n", size, cpu, task);
+	
+	//hexdump(buf, size);
+	//printf("\n");
 
-void spawner(void)
+}
+
+void spawner_listener(void)
 {
-
 	int8_t buf[2500];
 	uint16_t cpu, task, size;
 	int32_t val, i;
@@ -96,33 +114,19 @@ void spawner(void)
 			if (val){
 				printf("hf_recv(): error %d\n", val);
 			}else{
-			
-				printf("cpu=%d, task=%d, size=%d\n", cpu, task, size);
+				spawn_task(&buf[0], size);			
+				//printf("cpu=%d, task=%d, size=%d\n", cpu, task, size);
 			}
-				
-			//alloc space for incoming application
-			//hf_malloc(size);
-			
-			//copy application from buffer to memory
-			//hf_memcopy();
-			
-			//spawn task
-			//hf_spawn(sender, 0, 0, 0, "sender", 4096);
-			
-			//printf("recv'd: size=%d, cpu=%d, task=%d\n", size, cpu, task);
-			
-			//hexdump(buf, size);
-			//printf("\n");
 		}
 	}
 }
 
 void app_main(void)
 {
-	hf_spawn(spawner, 0, 0, 0, "spawner", 4096);		
+	hf_spawn(spawner_listener, 0, 0, 0, "spawner", 4096);		
 	
-	if(hf_cpuid() == 2)
-		hf_spawn(sender, 0, 0, 0, "sender", 4096);		
-	else if (hf_cpuid() == 3)
-		hf_spawn(receiver, 0, 0, 0, "receiver", 4096);	
+	//if(hf_cpuid() == 2)
+	//	hf_spawn(sender, 0, 0, 0, "sender", 4096);		
+	//else if (hf_cpuid() == 3)
+	//	hf_spawn(receiver, 0, 0, 0, "receiver", 4096);	
 }

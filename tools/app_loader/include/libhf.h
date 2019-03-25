@@ -37,6 +37,7 @@ void dump(char* _mem, uint32_t base, uint32_t length);
  |tgt_cpu  |payload  |src_cpu  |src_port |tgt_port |msg_size |seq      |channel  |  ... data ...  |
  --------------------------------------------------------------------------------------------------
 ///////////////////////////////////////////////////////////////////////////////////////////////////*/
-int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t size, uint16_t channel);
+int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t size, uint16_t channel,
+	std::string server_addr, uint32_t server_port);
 
 #endif /*_LIBHF_H*/
