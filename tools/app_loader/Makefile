@@ -16,7 +16,7 @@ $(BINDIR)/%.o: $(SRCDIR)/%.cpp
 #make application executable
 all: $(TRGTDEPS)
 	g++ $(BINDIR)/*.o -o $(BINDIR)/$(APPNAME).exe $(CPPFLAGS)
-	$(BINDIR)/$(APPNAME).exe 2 ./bin/noc_test4_receiver.o.bin noc_test4_receiver
+	$(BINDIR)/$(APPNAME).exe 2 ./bin/noc_test4_sender.bin noc_test4_sender
 
 clear:
 	rm -rf ./bin/*.exe ./bin/*.o

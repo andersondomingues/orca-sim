@@ -19,6 +19,7 @@
 #define PKT_SEQ				6
 #define PKT_CHANNEL			7
 
+/* should be 64-8 = 56*/
 #define PAYLOAD_SIZE (NOC_PACKET_SIZE - PKT_HEADER_SIZE)
 
 #define LOADER_SERVICE_PORT 5001

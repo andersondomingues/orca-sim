@@ -67,33 +67,29 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 	msg[8] = 0x88;  //target port
 	msg[9] = 0x13;  
 	
-	msg[10] = (size & 0x00FF) << 2; //msg len
-	msg[11] = (size & 0xFF00) >> 2;
+	printf("total message size = %d (0x%04x)\n", size, size); 
+
+	msg[10] = (size & 0x000000FF); //msg len
+	msg[11] = (size & 0x0000FF00) >> 4;
 	
-	msg[12] = 0x64; //seq number
+	printf("first byte: %2x, second byte: %2x\n", (size & 0x000000FF), msg[11]);
+	
+	msg[12] = 0x01; //seq number
 	msg[13] = 0x00; 
 	
 	msg[14] = 0x00; //channel
 	msg[15] = 0x00; 
-	
-//	#define NOC_PACKET_SIZE 	64
-//	#define PKT_HEADER_SIZE		8
-
-//	#define PKT_TARGET_CPU		0
-//	#define PKT_PAYLOAD			1
-//	#define PKT_SOURCE_CPU		2
-//	#define PKT_SOURCE_PORT		3
-//	#define PKT_TARGET_PORT		4
-//	#define PKT_MSG_SIZE		5
-//	#define PKT_SEQ				6
-//	#define PKT_CHANNEL			7
-
-	
-	#define PAYLOAD_SIZE (NOC_PACKET_SIZE - PKT_HEADER_SIZE)
-
+		
 	//calculate the number of packets
-	//maximum of 102 flits of payload per packet (56 flits)
-	uint32_t num_packets = (size / PAYLOAD_SIZE);
+	//packet size = 64 flits = 128 bytes
+	//header size =  8 flits =  32 bytes
+	//payload size= 128-32 bytes = 96 bytes
+	//maximum of 96 bytes of payload per packet (56 flits)
+	int payload_size = (PAYLOAD_SIZE * sizeof(uint16_t));
+	
+	uint32_t num_packets = size / payload_size;
+	
+	printf("size:%d packets_len:%d packets:%d\n", size, payload_size, num_packets);
 	
 	//add one more packet to handle parts of the payload
 	//not added in previous packets
@@ -115,12 +111,12 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 		uclient->send((const char*)msg, RECV_BUFFER_LEN);
 		
 		dump(msg, 0, NOC_PACKET_SIZE);
-		std::cout << std::endl << "sent " << i << std::endl;
+		//std::cout << std::endl << "sent " << i << std::endl;
 			
 		sleep(1);
 	}
 	
-	std::cout << "done. " <<std::endl;
+	std::cout << std::endl << "done. " <<std::endl;
 	
 	return 0;
 

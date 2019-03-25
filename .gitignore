@@ -23,9 +23,19 @@ tools/ros_integration/build/
 tools/ros_integration/devel/
 
 #compilation intermediate files
+#please note that files from software
+#folder may eventually be moved into
+#bin folder, so we may want to remove 
+#them from both folders before commiting
 software/*.cnt
 software/*.elf
 software/*.lst
 software/*.sec
 software/*.txt
+
+bin/*.cnt
+bin/*.elf
+bin/*.lst
+bin/*.sec
+bin/*.txt
 

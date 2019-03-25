@@ -6,7 +6,7 @@ void sender(void)
 {
 	int32_t i;
 	uint32_t crc;
-	int8_t buf[500];
+	int8_t buf[1000];
 	int16_t val, channel;
 	
 	if (hf_comm_create(hf_selfid(), 1000, 0))
@@ -33,8 +33,11 @@ void sender(void)
 			printf("hf_send(): channel=%d\n", channel);
 			
 		delay_ms(10);
-			
+		
+		while(1);
 	}
+	
+
 }
 
 void receiver(void)
@@ -94,7 +97,7 @@ void spawner(void)
 				printf("hf_recv(): error %d\n", val);
 			}else{
 			
-				printf("oi\n");
+				printf("cpu=%d, task=%d, size=%d\n", cpu, task, size);
 			}
 				
 			//alloc space for incoming application
