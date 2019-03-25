@@ -96,7 +96,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		ss << this->GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
 		throw std::runtime_error(ss.str());
 	}
-	#endif	
+	#endif
 	
 	switch(size){
 		case 4:

@@ -56,6 +56,7 @@ void receiver(void)
 				printf("hf_recv(): error %d\n", val);
 			} else {
 				memcpy(&crc, buf+size-4, 4);
+								
 				printf("cpu %d, port %d, channel %d, size %d, crc %08x [free queue: %d]", cpu, port, i, size, crc, hf_queue_count(pktdrv_queue));
 
 				if (hf_crc32(buf, size-4) == crc)
@@ -91,7 +92,9 @@ void spawner(void)
 	
 			if (val){
 				printf("hf_recv(): error %d\n", val);
-				continue;
+			}else{
+			
+				printf("oi\n");
 			}
 				
 			//alloc space for incoming application
