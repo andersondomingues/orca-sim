@@ -3,7 +3,7 @@ ARCH = riscv/hf-riscv
 IMAGE_NAME = image
 
 #applications file 
-SELECTED_APPS = noc_test4_sender noc_test4_receiver
+SELECTED_APPS = noc_test4_sender noc_test4_receiver test_task_no_dependency
 
 #dir config.
 HFOS_DIR = hellfireos

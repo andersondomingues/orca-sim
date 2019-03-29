@@ -9,9 +9,10 @@
 *.bin
 *.exe
 
-#codelite configuration files
+#tool-sṕecific buulshit
 .clang
 .codelite
+.vscode*
 
 #perf and valgrind logs
 ursa.*

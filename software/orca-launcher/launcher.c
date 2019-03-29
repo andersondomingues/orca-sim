@@ -72,26 +72,6 @@ void receiver(void)
 	}
 }
 
-void spawn_task(int8_t* task, uint16_t size){
-	
-	printf("task received (size:%d)\n", size);
-		
-	//alloc space for incoming application
-	//hf_malloc(size);
-	
-	//copy application from buffer to memory
-	//hf_memcopy();
-	
-	//spawn task
-	//hf_spawn(sender, 0, 0, 0, "sender", 4096);
-	
-	//printf("recv'd: size=%d, cpu=%d, task=%d\n", size, cpu, task);
-	
-	//hexdump(buf, size);
-	//printf("\n");
-
-}
-
 void spawner_listener(void)
 {
 	int8_t buf[2500];
@@ -106,7 +86,7 @@ void spawner_listener(void)
 	
 		i = hf_recvprobe();
 
-		//read received packet		
+		//read received packet	
 		if (i >= 0) {
 	
 			val = hf_recv(&cpu, &task, buf, &size, i);
@@ -114,8 +94,12 @@ void spawner_listener(void)
 			if (val){
 				printf("hf_recv(): error %d\n", val);
 			}else{
-				spawn_task(&buf[0], size);			
-				//printf("cpu=%d, task=%d, size=%d\n", cpu, task, size);
+				printf("cpu=%d, task=%d, size=%d\n", cpu, task, size);
+				
+				void (*fun_ptr)(void) = (void (*)(void))buf;
+				
+				hexdump(buf, size);
+				hf_spawn(fun_ptr, 0, 0, 0, "migrated_task_001", 4096);
 			}
 		}
 	}

@@ -123,7 +123,8 @@ unsigned long long TRouter::Run(){
 		if(_switch_control[i] != -1){
 
 			//prevent routing to a non-existing router
-			#ifndef OPT_ROUTER_DISABLE_GHOST_ROUTER_CHECKING0
+			//TODO: double check the code below. It seems that doesn't work properly.
+			#ifndef OPT_ROUTER_DISABLE_GHOST_ROUTER_CHECKING
 			if(_ob[_switch_control[i]] == nullptr){
 				stringstream ss;
 				ss << this->GetName() << ": unable to route to unknown address" << std::endl;

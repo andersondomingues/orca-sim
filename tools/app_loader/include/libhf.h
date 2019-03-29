@@ -8,7 +8,8 @@
 #include <fstream>
 
 #define NOC_PACKET_SIZE		64
-#define PKT_HEADER_SIZE		8
+//#define PKT_HEADER_SIZE		8
+#define PKT_HEADER_SIZE		16
 
 #define PKT_TARGET_CPU		0
 #define PKT_PAYLOAD			1
@@ -22,8 +23,8 @@
 /* should be 64-8 = 56*/
 #define PAYLOAD_SIZE (NOC_PACKET_SIZE - PKT_HEADER_SIZE)
 
-#define LOADER_SERVICE_PORT 5001
-#define LOADER_SERVICE_CHANNEL 5001
+#define LOADER_SERVICE_PORT 5000
+#define LOADER_SERVICE_CHANNEL 5000
 
 #define MICRO 1000000
 #define RECV_BUFFER_LEN 128
