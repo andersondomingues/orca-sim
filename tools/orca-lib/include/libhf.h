@@ -7,8 +7,13 @@
 #include <iostream>
 #include <fstream>
 
+#define NOC_WIDTH 4
+#define NOC_HEIGHT 4
+
+#define NOC_COLUMN(core_n)	((core_n) % NOC_WIDTH)
+#define NOC_LINE(core_n)	((core_n) / NOC_WIDTH)
+
 #define NOC_PACKET_SIZE		64
-//#define PKT_HEADER_SIZE		8
 #define PKT_HEADER_SIZE		16
 
 #define PKT_TARGET_CPU		0
@@ -20,7 +25,6 @@
 #define PKT_SEQ				6
 #define PKT_CHANNEL			7
 
-/* should be 64-8 = 56*/
 #define PAYLOAD_SIZE (NOC_PACKET_SIZE - PKT_HEADER_SIZE)
 
 #define LOADER_SERVICE_PORT 5000

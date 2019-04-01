@@ -3,12 +3,6 @@
 #include "libhf.h"
 #include "udp_client_server.h"
 
-#define NOC_WIDTH 4
-#define NOC_HEIGHT 4
-
-#define NOC_COLUMN(core_n)	((core_n) % NOC_WIDTH)
-#define NOC_LINE(core_n)	((core_n) / NOC_WIDTH)
-
 void dump(char* _mem, uint32_t base, uint32_t length){
 	uint32_t k, l;
 	

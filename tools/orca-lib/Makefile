@@ -1,4 +1,4 @@
-APPNAME = orca-lib
+LIBNAME = liborca.a
 SRCDIR  = ./src
 BINDIR  = ./bin
 INCDIR  = ./include
@@ -13,8 +13,11 @@ $(BINDIR)/%.o: $(SRCDIR)/%.cpp
 	g++ $(CPPFLAGS) $< -o $@ -c 
 
 #make application executable
-all: $(TRGTDEPS)
+$(BINDIR)/$(LIBNAME): $(TRGTDEPS)
 	ar rcs $(BINDIR)/liborca.a $(TRGTDEPS)
 
-clear:
+all: $(BINDIR)/$(LIBNAME)
+	echo "done."
+
+clean:
 	rm -rf ./bin/*.exe ./bin/*.o
