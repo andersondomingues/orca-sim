@@ -16,7 +16,7 @@ all: $(TRGTDEPS)
 	make -C ../orca-lib
 	cp ../orca-lib/bin/liborca.a $(BINDIR)
 	g++ $(BINDIR)/*.o $(BINDIR)/liborca.a -o $(BINDIR)/$(APPNAME).exe $(CPPFLAGS)
-	$(BINDIR)/$(APPNAME).exe 5 ./bin/noc_test4_sender.bin noc_test4_sender 127.0.0.1 9999
+	$(BINDIR)/$(APPNAME).exe 5 ../../bin/noc_test4_sender.bin noc_test4_sender 127.0.0.1 9999
 
 clean:
 	rm -rf ./bin/*.exe ./bin/*.o

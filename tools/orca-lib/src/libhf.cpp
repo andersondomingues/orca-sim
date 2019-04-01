@@ -47,7 +47,7 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 {
 	//std::cout << target_cpu << target_port << buf[0] << size << channel << server_addr << server_port << std::endl;
 
-	char* msg = new char[NOC_PACKET_SIZE];
+	char* msg = new char[NOC_PACKET_SIZE_BYTES];
 	
 	dump((char*)buf,  0, size);
 		
@@ -74,13 +74,13 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 	msg[9] = (target_port >> 8) & 0x000000FF;
 	
 	msg[10] = (size & 0x000000FF); //msg len
-	msg[11] = (size & 0x0000FF00) >> 4; //TODO: maybe >> 8
+	msg[11] = (size & 0x0000FF00) >> 8; //TODO: maybe >> 8
 	
 	msg[12] = 0x01; //seq number
 	msg[13] = 0x00; 
 	
 	msg[14] = (channel & 0x000000FF); //channel
-	msg[15] = (channel & 0x0000FF00) >> 4;
+	msg[15] = (channel & 0x0000FF00) >> 8;
 	
 	printf("Sending packet to core #%d (%d, %d) on port %d\n", 
 		target_cpu, x, y, target_port);
@@ -92,13 +92,11 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 	//maximum of 96 bytes of payload per packet (56 flits)
 	//int payload_size = (PAYLOAD_SIZE * sizeof(uint16_t));
 	
-	uint32_t num_packets = size / PAYLOAD_SIZE;
-	
-	//printf("size:%d packets_len:%d packets:%d\n", size, payload_size, num_packets);
-	
+	uint32_t num_packets = size / NOC_PAYLOAD_SIZE_BYTES;
+		
 	//add one more packet to handle parts of the payload
 	//not added in previous packets
-	if(size % PAYLOAD_SIZE != 0) 
+	if(size % NOC_PAYLOAD_SIZE_BYTES != 0) 
 		num_packets++;
 		
 	std::cout << "generating " << num_packets << " packets" <<std::endl;
@@ -106,33 +104,24 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 	//copy content into package (while remaining bytes)
 	for(uint32_t i = 0; i < num_packets; i++){
 		
+		//sleep(1);
+		
+		int offset = i * NOC_PAYLOAD_SIZE_BYTES;
+		std::cout << std::endl << "offset: " << offset;
+		
 		//copy next 102 (if any)
-		memcpy(&(msg[16]), &(buf[(i * PAYLOAD_SIZE)]), PAYLOAD_SIZE);
+		memcpy(&(msg[16]), &(buf[offset]), NOC_PAYLOAD_SIZE_BYTES);
 		
 		//adjust sequence number (zero recvs ok)
 		msg[12] = i + 1;
 		
+		dump(msg, 0, NOC_PACKET_SIZE_BYTES);
+		std::cout << "- - -" << std::flush;
+		
 		//send
-		uclient->send((const char*)msg, RECV_BUFFER_LEN);
-		
-		//correct endianess
-		for(int j = 0; j < PAYLOAD_SIZE; j+=2){
-			
-			int16_t* word = (int16_t*)&(msg[16 + j]);
-			
-			msg[16 + j] = (*word & 0x000000FF);
-			msg[17 + j] = (*word & 0x0000FF00) >> 8;
-		}
-		
-		dump(msg, 0, NOC_PACKET_SIZE);
-		//std::cout << std::endl << "sent " << i << std::endl;
-			
-		sleep(1);
+		uclient->send((const char*)msg, RECV_BUFFER_LEN);			
 	}
 	
-	//std::cout << std::endl << "done. " <<std::endl;
-	
+	std::cout << std::endl;	
 	return 0;
-
 }
-

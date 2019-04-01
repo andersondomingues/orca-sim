@@ -3,7 +3,7 @@ ARCH = riscv/hf-riscv
 IMAGE_NAME = image
 
 #applications file 
-SELECTED_APPS = noc_test4_sender noc_test4_receiver test_task_no_dependency
+SELECTED_APPS = noc_test4_sender noc_test4_receiver
 
 #dir config.
 HFOS_DIR = hellfireos
@@ -58,7 +58,6 @@ image:
 	make image_apps
 	mv *.o *.elf *.bin *.cnt *.lst *.sec *.txt ../bin
 
-.PHONY: image_apps
 image_apps:
 	for app in $(SELECTED_APPS) ; do \
 		make $$app.o ; \
@@ -70,7 +69,7 @@ image_apps:
 		$(OBJ) -O binary $$app.elf $$app.bin ; \
 		$(SIZE) $$app.elf ; \
 		hexdump -v -e '4/1 "%02x" "\n"' $$app.bin > $$app.txt ; \
-		rm -rf $$app ; \
+		mv $$app.o ../bin ; \
 	done
 	
 clean:
