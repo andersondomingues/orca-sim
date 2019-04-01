@@ -18,5 +18,6 @@ all: $(TRGTDEPS)
 	g++ $(BINDIR)/*.o -o $(BINDIR)/$(APPNAME).exe $(CPPFLAGS)
 	$(BINDIR)/$(APPNAME).exe 5 ./bin/noc_test4_sender.bin noc_test4_sender 127.0.0.1 9999
 
-clear:
+clean:
 	rm -rf ./bin/*.exe ./bin/*.o
+	

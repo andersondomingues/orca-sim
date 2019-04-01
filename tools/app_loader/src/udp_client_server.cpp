@@ -333,7 +333,7 @@ int udp_server::timed_recv(char *msg, size_t max_size, int max_wait_ms)
     struct timeval timeout;
     timeout.tv_sec = max_wait_ms / 1000;
     timeout.tv_usec = (max_wait_ms % 1000) * 1000;
-    int retval = select(f_socket + 1, &s, &s, &s, &timeout);
+    int retval = select(f_socket + 1, &s, 0, 0, &timeout);
     if(retval == -1)
     {
         // select() set errno accordingly

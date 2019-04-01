@@ -99,7 +99,7 @@ void spawner_listener(void)
 				void (*fun_ptr)(void) = (void (*)(void))buf;
 				
 				hexdump(buf, size);
-				hf_spawn(fun_ptr, 0, 0, 0, "migrated_task_001", 4096);
+				//hf_spawn(fun_ptr, 0, 0, 0, "migrated_task_001", 4096);
 			}
 		}
 	}
