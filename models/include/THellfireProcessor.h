@@ -83,7 +83,8 @@ uint32_t _last_pc;
 	int i;
 	
 	#ifndef OPT_HFRISC_DISABLE_METRICS
-	Metric* _metric_energy;
+	Metric* _metric_power_dynamic;	
+	void UpdateMetrics(int opcode, int funct3);	
 	#endif
 
 public:

@@ -225,6 +225,76 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 }
 
 
+#ifndef OPT_HFRISC_DISABLE_METRICS
+/**
+ * Update metrics
+ * Sample avg. power (mW) and energy per instruction (pJ)
+ * metrics (leakage and dynamic). Sampling depends on the 
+ * class of instructions being executed.
+*/
+void THellfireProcessor::UpdateMetrics(int opcode, int funct3){
+	
+	//dynamic avg. power (mW) must be collect once per instruction,
+	//depending on the instruction class. please note that loads and
+	//stores take 2 cycles, and thus we multiply the power by 2.
+	switch(opcode){
+		
+		case 0x37: //LUI
+		case 0x17: //ALUI
+		case 0x6f: //JAL
+		case 0x67: //JALR
+			_metric_power_dynamic->Sample(4.175);
+			break;
+		
+		case 0x63: //all branches
+			_metric_power_dynamic->Sample(5.723);
+			break;
+			
+		case 0x3:  //loads
+		case 0x23: //stores
+			_metric_power_dynamic->Sample(5.507 * 2); //LW and SW takes 2 cycles
+			break;
+
+		//type R
+		case 0x13:
+			switch(funct3){
+				case 0x0: //addi
+					_metric_power_dynamic->Sample(5.894);
+					break;
+					
+				case 0x4: //xori
+				case 0x6: //ori
+				case 0x7: //andi
+					_metric_power_dynamic->Sample(5.176);
+					break;
+
+				default: //shifts i
+					_metric_power_dynamic->Sample(4.940);
+					break;
+			}
+			break;
+			
+		case 0x33:
+			switch(funct3){
+				case 0x0: //add, sub
+					_metric_power_dynamic->Sample(5.894);
+					break;
+				case 0x4: //xor
+				case 0x6: //or
+				case 0x7: //and
+					_metric_power_dynamic->Sample(5.176);
+					break;
+				default: //all shifts
+					_metric_power_dynamic->Sample(4.940);
+			}
+			break;
+			
+		default:
+			break;
+	}
+	#endif /* DISABLE_METRICS */
+}
+
 unsigned long long THellfireProcessor::Run(){
 		
 	uint32_t inst, i;
@@ -375,64 +445,10 @@ fail:
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
 	
 	if (s->comm_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
-		
-	//ENERGY MONITORING
+
 	#ifndef OPT_HFRISC_DISABLE_METRICS
-	switch(opcode){
-		
-		case 0x37: //LUI
-		case 0x17: //ALUI
-		case 0x6f: //JAL
-		case 0x67: //JALR
-			_metric_energy->Sample(4.175);
-			break;
-		
-		case 0x63: //all branches
-			_metric_energy->Sample(5.723);
-			break;
-			
-		case 0x3:  //loads
-		case 0x23: //stores
-			_metric_energy->Sample(5.507);
-			break;
-		
-		//type R
-		case 0x13:
-			switch(funct3){
-				case 0x0: //addi
-					_metric_energy->Sample(5.894);
-					break;
-				case 0x4: //xori
-				case 0x6: //ori
-				case 0x7: //andi
-					_metric_energy->Sample(5.176);
-					break;
-				default: //shifts i
-					_metric_energy->Sample(4.940);
-					break;
-			}
-			break;
-			
-		case 0x33:
-			switch(funct3){
-				case 0x0: //add, sub
-					_metric_energy->Sample(5.894);
-					break;
-				case 0x4: //xor
-				case 0x6: //or
-				case 0x7: //and'
-					_metric_energy->Sample(5.176);
-					break;
-				default: //all shifts
-					_metric_energy->Sample(4.940);
-				
-			}
-			break;
-			
-		default:
-			break;
-	}
-	#endif /* DISABLE_METRICS */
+	UpdateMetrics(opcode, funct3);
+	#endif
 	
 	//Takes three cycles per instruction, except for those of 
 	//memory I/O. In the later case. Since we simulate the pipeline
@@ -504,7 +520,7 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
 	
 	#ifndef OPT_HFRISC_DISABLE_METRICS
-	_metric_energy = new Metric(Metrics::ENERGY);
+	_metric_power_dynamic  = new Metric(Metrics::AVG_POWER_DYNAMIC);
 	#endif
 }
 
@@ -512,7 +528,7 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 THellfireProcessor::~THellfireProcessor(){
 	
 	#ifndef OPT_HFRISC_DISABLE_METRICS
-	delete _metric_energy;
+	delete _metric_power_dynamic;
 	#endif
 }
 
@@ -523,11 +539,11 @@ void THellfireProcessor::Reset(){
 
 #ifndef OPT_HFRISC_DISABLE_METRICS
 Metric* THellfireProcessor::GetMetric(Metrics m){
-		
-	if(m == Metrics::ENERGY)
-		return _metric_energy;
-	else 
-		return nullptr;
+
+	switch(m){
+		case Metrics::AVG_POWER_DYNAMIC: return _metric_power_dynamic; break;
+		default: return nullptr; break;
+	}
 }
 #endif /* DISABLE_METRICS */
 

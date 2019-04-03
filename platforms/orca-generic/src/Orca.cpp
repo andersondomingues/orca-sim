@@ -23,17 +23,20 @@
 #include <iomanip>
 #include <chrono>
 
-//simulation API
+//simulation artifacts (from URSA)
 #include <Event.h>
 #include <Simulator.h>
 
-//model API
+//built-in models (from URSA)
 #include <UMemory.h>
+
+//reusable models
 #include <THellfireProcessor.h>
 #include <TRouter.h>
 #include <TNetif.h> 
 #include <TNetSocket.h>
 
+//orca-specific hardware
 #include <Tile.h>
 
 #include <ProcessingTile.h>
@@ -41,6 +44,58 @@
 
 //instantiates a mesh of MxN PE
 Tile* tiles[NOC_W_SIZE][NOC_H_SIZE];
+
+#ifndef OPT_HFRISC_DISABLE_METRICS
+/**
+ * Report Metrics for CPUs
+ * @param metric Metric which to report
+ * @param unit String representation of measurement unit (for printing purpose)
+*/ 
+void report_metrics_cpu(){
+
+	ProcessingTile* t;
+	Metric* m;
+	
+	//prints header
+	std::cout << "==============[ CPU POWER/ENERGY STATISTICS ]" << std::endl;
+	printf("(x,y)\tPower(mW)\n");
+	
+	//show simulation statistics
+	
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+			
+			//network interface has no caracterization
+			if(i == 0 && j ==0) continue;
+			
+			//get current processing tile
+			t = (ProcessingTile*)tiles[i][j];
+			
+			//print position on noc
+			printf("(%d,%d)\t", i, j);
+			
+			//print estimated energy
+			m = t->GetCpu()->GetMetric(Metrics::AVG_POWER_DYNAMIC); //mW
+			printf("%.6f\t", m->GetAccumulative()); //pJ -> nJ (pico to nano)
+			
+			printf("\n");
+			
+			/*
+				
+			_power_dynamic = t->GetCpu()->GetMetric(Metrics::AVG_POWER_DYNAMIC);
+	
+			printf("S:\t%d\t %d\t %d\t %d\t\n",
+				_power_dynamic->GetSamples(),
+				_power_leakage->GetSamples(),
+				_energy_dynamic->GetSamples(),
+				_energy_leakage->GetSamples()			
+			);
+			 */
+		}
+	}
+}
+#endif
+
 
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
@@ -50,11 +105,13 @@ void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 			  << p1 << "/" << p2 << "]---- " << r2->GetName() << std::endl;
 }
 
+
+
 int main(int argc, char** argv){
 
     argc = argc; //workaround to use -Wextra
 
-	std::cout << "ORCA: (H2S) Hermes-Hellfire SoC (Width=" << NOC_W_SIZE << ", Height=" << NOC_H_SIZE << ")" << std::endl;
+	std::cout << "ORCA Platform (Width=" << NOC_W_SIZE << ", Height=" << NOC_H_SIZE << ")" << std::endl;
 	std::cout << "Simulation step set to " << CYCLES_TO_SIM << " cycles." << std::endl;
 	std::cout << "Instanting new hardware..." << std::endl;
 	
@@ -127,7 +184,7 @@ int main(int argc, char** argv){
 	//keep simulating until something happen
 	uint32_t gigacycles = 0;
 	try{
-		while(1){
+		//while(1){
 			
 			std::chrono::high_resolution_clock::time_point t1 = 
 				std::chrono::high_resolution_clock::now();
@@ -149,7 +206,7 @@ int main(int argc, char** argv){
 			std::cout << "notice: pulse #" << gigacycles << " took " 
 				<< (duration / 1000.0)<< " seconds @ "
 				<< (hertz / 1000.0) <<" KHz)" << std::endl;
-		}
+		//}
 		
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
@@ -189,22 +246,7 @@ int main(int argc, char** argv){
 	}
 	
 	#ifndef OPT_HFRISC_DISABLE_METRICS
-	//show simulation statistics
-	std::cout << "==============[ CPU POWER/ENERGY STATISTICS ]" << std::endl;
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			
-			if(i == 0 && j ==0) continue;
-			
-			Metric* energy = ((ProcessingTile*)tiles[i][j])->GetCpu()->GetMetric(Metrics::ENERGY);
-			
-			std::cout << ((ProcessingTile*)tiles[i][j])->GetCpu()->GetName() << ":"
-			          << "  samples=" << std::dec << energy->GetSamples() 
-					  << "  acc.=" << setprecision(4) << energy->GetAccumulative() << "mW"
-					  << "  avg.=" << (energy->GetAccumulative() / energy->GetSamples()) << "mW"<< std::endl;
-		}
-
-	}
+	report_metrics_cpu();	
 	#endif
 	
 	#ifndef OPT_ROUTER_DISABLE_METRICS

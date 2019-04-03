@@ -1,4 +1,4 @@
-LIBNAME = liborca.a
+LIBNAME = orca-lib.a
 SRCDIR  = ./src
 BINDIR  = ./bin
 INCDIR  = ./include
@@ -6,7 +6,7 @@ INCDIR  = ./include
 CPPFLAGS = -O3 -g -Wall -Wextra -Werror -I$(INCDIR) -c
 TRGTDEPS = \
 	$(BINDIR)/udp_client_server.o \
-	$(BINDIR)/libhf.o
+	$(BINDIR)/orca-lib.o
 
 #compile all classes (.cpp) into %.o files
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp 
@@ -14,7 +14,7 @@ $(BINDIR)/%.o: $(SRCDIR)/%.cpp
 
 #make application executable
 $(BINDIR)/$(LIBNAME): $(TRGTDEPS)
-	ar rcs $(BINDIR)/liborca.a $(TRGTDEPS)
+	ar rcs $(BINDIR)/$(LIBNAME) $(TRGTDEPS)
 
 all: $(BINDIR)/$(LIBNAME)
 	echo "done."

@@ -25,7 +25,8 @@ include $(HFOS_DIR)/drivers/noc.mak
 include $(HFOS_DIR)/sys/kernel.mak
 
 #includes for loader and other software
-include orca-launcher/orca-launcher.mak
+#include orca-launcher/orca-launcher.mak
+include orca-mapper/orca-mapper.mak
 
 #include for applications
 include $(HFOS_DIR)/../applications/noc_test4/app.mak
@@ -47,7 +48,8 @@ image:
 	make libc
 	make noc
 	make kernel
-	make orca-launcher.o
+	make orca-mapper.o
+	make image_dependent
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(IMAGE_NAME).elf *.o
 	$(DUMP) --disassemble --reloc $(IMAGE_NAME).elf > $(IMAGE_NAME).lst
 	$(DUMP) -h $(IMAGE_NAME).elf > $(IMAGE_NAME).sec
@@ -55,13 +57,18 @@ image:
 	$(OBJ) -O binary $(IMAGE_NAME).elf $(IMAGE_NAME).bin
 	$(SIZE) $(IMAGE_NAME).elf
 	hexdump -v -e '4/1 "%02x" "\n"' $(IMAGE_NAME).bin > $(IMAGE_NAME).txt
-	make image_apps
 	mv *.o *.elf *.bin *.cnt *.lst *.sec *.txt ../bin
+	
+#make image_apps	
+image_dependent:
+	for app in $(SELECTED_APPS) ; do \
+		make $$app.o ; \
+	done
 
 image_apps:
 	for app in $(SELECTED_APPS) ; do \
 		make $$app.o ; \
-		$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $$app.elf *.o ; \
+		$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $$app.elf *.o -limage -L../bin ; \
 		$(OBJ) $$app.elf $$app.elf --only-section=.tasks ; \
 		$(DUMP) --disassemble --reloc $$app.elf > $$app.lst ; \
 		$(DUMP) -h $$app.elf > $$app.sec ; \

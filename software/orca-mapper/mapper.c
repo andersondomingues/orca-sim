@@ -8,7 +8,7 @@
  * @param task_code Buffer containing the executable code for the task
  * @param task_size The length of the task in bytes
 */
-void spawner_spawn_task(int8_t* task_code, uint32_t task_size){
+void mapper_map_task(int8_t* task_code, uint32_t task_size){
 
 	//alloc memory for placing the task
 	int8_t* task_base_ptr;
@@ -34,12 +34,12 @@ void spawner_spawn_task(int8_t* task_code, uint32_t task_size){
 }
 
 /**
- * TASK Spawner listener
- * This task keeps listening for tasks, which can be sent either from
- * outside the network, or from some other node. Once some task is re-
- * ceived, the spawn listener instantiates the task.
+ * TASK Task Mapper
+ * This task is capable of transfering tasks states and 
+ * start those tasks remotely, similarly to task migration
+ * but migrating only the state
 */
-void spawner_listener(void)
+void mapper_listener(void)
 {
 	int8_t buf[MAX_TASK_SIZE];
 
@@ -62,7 +62,7 @@ void spawner_listener(void)
 
 			if (!val){
 				printf("SPAWNER: task migration request from cpu=%d, task=%d (requester), task size=%d\n", cpu, task, size);
-				spawner_spawn_task(buf, size);
+				mapper_map_task(buf, size);
 			}else{
 				printf("hf_recv(): error %d\n", val);
 			}
@@ -75,5 +75,8 @@ void app_main(void)
 {
 	//the spawner is instantiated as a best-effort task to 
 	//nagate any impact on currently executing tasks
-	hf_spawn(spawner_listener, 0, 0, 0, "spawner", 4096);
+	if(hf_cpuid() == 2)
+		hf_spawn(mapper_listener, 0, 0, 0, "mapper", 4096);
+	
+	//printf("task_id => %d", hf_id("idle"));	
 }

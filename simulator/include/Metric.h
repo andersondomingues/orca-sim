@@ -4,8 +4,10 @@
 #include <string>
 
 enum class Metrics{
-	CYCLE, 
-	ENERGY	
+	AVG_POWER_LEAKAGE, 
+	AVG_POWER_DYNAMIC,
+	ENERGY_PER_INSTRUCTION_LEAKAGE,
+	ENERGY_PER_INSTRUCTION_DYNAMIC
 };
 
 class Metric{
