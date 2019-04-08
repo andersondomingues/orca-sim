@@ -78,7 +78,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	if(address == s->comm_id->GetAddr())     return s->comm_id->Read();
 	
 	#ifndef OPT_MEMORY_DISABLE_COUNTERS
-	if(address == s->sram->GetCommCounterStore()->GetAddr()) return s->sram->GetCommCounterStore()->Read();
+	if(address == s->sram->GetCommCounterStore()->GetAddr()) { return s->sram->GetCommCounterStore()->Read(); }
 	if(address == s->sram->GetCommCounterLoad()->GetAddr())  return s->sram->GetCommCounterLoad()->Read();
 	if(address == s->mem1->GetCommCounterStore()->GetAddr()) return s->mem1->GetCommCounterStore()->Read();
 	if(address == s->mem1->GetCommCounterLoad()->GetAddr())  return s->mem1->GetCommCounterLoad()->Read();

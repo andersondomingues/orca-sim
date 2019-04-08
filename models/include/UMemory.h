@@ -55,15 +55,15 @@ private:
 	uint32_t _sram_base;
 
 	#ifndef OPT_MEMORY_DISABLE_COUNTERS
-	UComm<uint16_t>* _counter_nload;
-	UComm<uint16_t>* _counter_nstore;
+	UComm<uint32_t>* _counter_nload;
+	UComm<uint32_t>* _counter_nstore;
 	#endif
 
 public:
 
 	#ifndef OPT_MEMORY_DISABLE_COUNTERS
-	UComm<uint16_t>* GetCommCounterLoad();
-	UComm<uint16_t>* GetCommCounterStore();
+	UComm<uint32_t>* GetCommCounterLoad();
+	UComm<uint32_t>* GetCommCounterStore();
 	void InitCounters(uint32_t store_counter_addr, uint32_t load_counter_addr);
 	#endif
 

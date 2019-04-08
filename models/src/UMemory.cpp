@@ -49,16 +49,16 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 
 #ifndef OPT_MEMORY_DISABLE_COUNTERS
 void UMemory::InitCounters(uint32_t store_counter_addr, uint32_t load_counter_addr){
-	_counter_nload = new UComm<uint16_t>(GetName() + ".counters.load", 0, store_counter_addr);
-	_counter_nstore = new UComm<uint16_t>(GetName() + ".counters.store", 0, load_counter_addr);
+	_counter_nstore = new UComm<uint32_t>(GetName() + ".counters.store", 0, store_counter_addr);
+	_counter_nload = new UComm<uint32_t>(GetName() + ".counters.load", 0, load_counter_addr);
 }
 
-UComm<uint16_t>* UMemory::GetCommCounterStore(){
-	return _counter_nload;
-}
-
-UComm<uint16_t>* UMemory::GetCommCounterLoad(){
+UComm<uint32_t>* UMemory::GetCommCounterStore(){
 	return _counter_nstore;
+}
+
+UComm<uint32_t>* UMemory::GetCommCounterLoad(){
+	return _counter_nload;
 }
 #endif
 
