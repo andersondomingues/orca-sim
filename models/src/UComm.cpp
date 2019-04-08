@@ -70,6 +70,25 @@ void UComm<T>::Write(T val){
 }
 
 /**
+ * @brief Set the value of the bus
+ * @param val the value
+ */
+template <typename T>
+void UComm<T>::Inc(T val){
+	_val += val;
+}
+
+
+/**
+ * @brief Set the value of the bus
+ * @param val the value
+ */
+template <typename T>
+void UComm<T>::Dec(T val){
+	_val -= val;
+}
+
+/**
  * @brief Return the bus to their default value
  */
 template <typename T>

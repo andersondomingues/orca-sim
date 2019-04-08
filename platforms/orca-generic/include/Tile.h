@@ -39,12 +39,23 @@
 #define MEM2_SIZE 0x00000080 /* send memory */
 #define MEM2_BASE 0x90000080
 
-//comms (00 to 0F reserved for gp wires)
+//comms (80xx.. to 80ff.. reserved for gp wires)
 #define COMM_NOC_ACK    0x80000000
 #define COMM_NOC_INTR   0x80000001
 #define COMM_NOC_START  0x80000002
 
-#define COMM_ID         0x80000010 /* self id addr */
+//self id addr
+#define COMM_ID         0x80000010 
+
+//counters (81xx.. to 81ff..) reserved for internal counters
+#ifndef OPT_MEMORY_DISABLE_COUNTERS
+#define MEM0_COUNTERS_STORE_ADDR 0x81000000
+#define MEM0_COUNTERS_LOAD_ADDR  0x81000002
+#define MEM1_COUNTERS_STORE_ADDR 0x81000004
+#define MEM1_COUNTERS_LOAD_ADDR  0x81000006
+#define MEM2_COUNTERS_STORE_ADDR 0x81000008
+#define MEM2_COUNTERS_LOAD_ADDR  0x8100000A
+#endif
 
 class Tile{
 

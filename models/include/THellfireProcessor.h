@@ -20,8 +20,11 @@
 
 //simulator libs
 #include <TimedModel.h>
+
+#ifndef OPT_HFRISC_DISABLE_METRICS
 #include <ObservableModel.h>
 #include <Metric.h>
+#endif
 
 //models libs
 #include <UMemory.h>

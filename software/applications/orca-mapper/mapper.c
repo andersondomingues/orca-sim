@@ -3,6 +3,7 @@
 
 #define MAX_TASK_SIZE 2500
 
+
 /**
  * Allocate memory for some task and spawn it.
  * @param task_code Buffer containing the executable code for the task
@@ -77,6 +78,8 @@ void app_main(void)
 	//nagate any impact on currently executing tasks
 	if(hf_cpuid() == 2)
 		hf_spawn(mapper_listener, 0, 0, 0, "mapper", 4096);
+	
+	hf_spawn(test_counters_memory, 0, 0, 0, "test_counters", 4096);
 	
 	//printf("task_id => %d", hf_id("idle"));	
 }

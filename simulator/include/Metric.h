@@ -4,10 +4,14 @@
 #include <string>
 
 enum class Metrics{
+	//processor metrics
 	AVG_POWER_LEAKAGE, 
 	AVG_POWER_DYNAMIC,
 	ENERGY_PER_INSTRUCTION_LEAKAGE,
-	ENERGY_PER_INSTRUCTION_DYNAMIC
+	ENERGY_PER_INSTRUCTION_DYNAMIC,
+	
+	//router metrics
+	ENERGY_PER_CYCLE
 };
 
 class Metric{

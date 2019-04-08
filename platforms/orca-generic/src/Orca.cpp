@@ -45,12 +45,34 @@
 //instantiates a mesh of MxN PE
 Tile* tiles[NOC_W_SIZE][NOC_H_SIZE];
 
+
+
+#ifndef OPT_ROUTER_DISABLE_METRICS
+/** Report Metrics for Routers */ 
+void report_metrics_routers(){
+
+	std::cout << "==============[ ROUTING ENERGY STATISTICS ]" << std::endl;
+	printf("(x,y)\tEnergy(uW)\n");
+	for(int i = 0; i < NOC_W_SIZE; i++){
+		for(int j = 0; j < NOC_H_SIZE; j++){
+			
+			Tile* t = tiles[i][j];
+			Metric* m;
+			m = t->GetRouter()->GetMetric(Metrics::ENERGY_PER_CYCLE);
+			
+			//print position on noc
+			printf("(%d,%d)\t", i, j);
+			
+			//print metric
+			printf("%.6f\t", m->GetAccumulative());
+			printf("\n");
+		}
+	}
+}
+#endif
+
 #ifndef OPT_HFRISC_DISABLE_METRICS
-/**
- * Report Metrics for CPUs
- * @param metric Metric which to report
- * @param unit String representation of measurement unit (for printing purpose)
-*/ 
+/** Report Metrics for CPUs */ 
 void report_metrics_cpu(){
 
 	ProcessingTile* t;
@@ -79,18 +101,6 @@ void report_metrics_cpu(){
 			printf("%.6f\t", m->GetAccumulative()); //pJ -> nJ (pico to nano)
 			
 			printf("\n");
-			
-			/*
-				
-			_power_dynamic = t->GetCpu()->GetMetric(Metrics::AVG_POWER_DYNAMIC);
-	
-			printf("S:\t%d\t %d\t %d\t %d\t\n",
-				_power_dynamic->GetSamples(),
-				_power_leakage->GetSamples(),
-				_energy_dynamic->GetSamples(),
-				_energy_leakage->GetSamples()			
-			);
-			 */
 		}
 	}
 }
@@ -248,23 +258,8 @@ int main(int argc, char** argv){
 	#ifndef OPT_HFRISC_DISABLE_METRICS
 	report_metrics_cpu();	
 	#endif
-	
 	#ifndef OPT_ROUTER_DISABLE_METRICS
-	std::cout << "==============[ ROUTING POWER/ENERGY STATISTICS ]" << std::endl;
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			
-			if(i == 0 && j ==0) continue;
-			
-			Metric* energy = tiles[i][j]->GetRouter()->GetMetric(Metrics::ENERGY);
-			
-			std::cout << tiles[i][j]->GetRouter()->GetName() << ":"
-			          << "  samples=" << std::dec << energy->GetSamples() 
-					  << "  acc.=" << setprecision(4) << energy->GetAccumulative() << "uW"
-					  << "  avg.=" << (energy->GetAccumulative() / energy->GetSamples()) << "uW"<< std::endl;
-		}
-		
-	}
+	report_metrics_routers();
 	#endif
 	
 	return 0;

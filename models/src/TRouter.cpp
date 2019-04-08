@@ -34,7 +34,7 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
     _y = y_pos;
     
 	#ifndef OPT_ROUTER_DISABLE_METRICS
-	_metric_energy = new Metric(Metrics::ENERGY);
+	_metric_energy = new Metric(Metrics::ENERGY_PER_CYCLE);
 	#endif
 		
 	//for all ports, create a new input buffer; Note that data is bufferred by
@@ -105,23 +105,30 @@ unsigned long long TRouter::Run(){
 		//if the port is not bind, binds it to the source			
 		if(!bound){
 			_switch_control[_round_robin] = target_port; //set crossbar connection
-			_flits_to_send[_round_robin] = 64; //TODO: get the packet size from the second flit			
-			
-			#ifndef OPT_ROUTER_DISABLE_METRICS
-			_metric_energy->Sample(755.56 + 2655.25);
-			sampled_already = true;
-			#endif
+			_flits_to_send[_round_robin] = 64; //TODO: get the packet size from the second flit
 		}
   	}
   	
     //TODO: add the 4 cycles delay before start sending the burst of flits
     
+	#ifndef OPT_ROUTER_DISABLE_METRICS
+	double temp_power_sample = 0;	
+	bool temp_active = false;
+	#endif
+	
 	//FORWARDING: drive flits into destination ports
 	for(int i = 0; i < 5; i++){
 	
+		
     	//check whether the switch control is closed for some port
 		if(_switch_control[i] != -1){
-
+			
+			#ifndef OPT_ROUTER_DISABLE_METRICS
+			//samples 1 active buffer
+			temp_power_sample += 775.56;
+			temp_active = true;
+			#endif
+			
 			//prevent routing to a non-existing router
 			//TODO: double check the code below. It seems that doesn't work properly.
 			#ifndef OPT_ROUTER_DISABLE_GHOST_ROUTER_CHECKING
@@ -139,8 +146,22 @@ unsigned long long TRouter::Run(){
 				_ib[i]->pop(); //remove flit from source port
 				
 				_flits_to_send[i] -= 1; //decrement the number of flits to send
+				
+				
+				
 			}
 		}
+		#ifndef OPT_ROUTER_DISABLE_METRICS
+		else{
+			temp_power_sample += 364.64;
+		}
+		
+		//5 buffers + combinational logic + p_leak
+		if(temp_active) _metric_energy->Sample(temp_power_sample + 2655.25 + 223.08);
+		else _metric_energy->Sample(temp_power_sample + 575.64 + 223.08);
+			
+		#endif
+			
 	}
     	
 	//FREE UNUSED PORTS. must run every cycle
@@ -160,7 +181,7 @@ unsigned long long TRouter::Run(){
 
 #ifndef OPT_ROUTER_DISABLE_METRICS
 Metric* TRouter::GetMetric(Metrics m){
-	if(m == Metrics::ENERGY)
+	if(m == Metrics::ENERGY_PER_CYCLE)
 		return _metric_energy;
 	else
 		return nullptr;

@@ -22,7 +22,6 @@
 #include <iostream>
 #include <sstream>
 
-
 //model API
 #include <THellfireProcessor.h>
 #include <TNetif.h>
@@ -61,6 +60,11 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_cpu->SetMem0(_mem0);
 	_cpu->SetMem1(this->GetMem1());
 	_cpu->SetMem2(this->GetMem2());
+	
+	//counter initialization
+	#ifndef	OPT_MEMORY_DISABLE_COUNTERS
+	_mem0->InitCounters(MEM0_COUNTERS_STORE_ADDR, MEM0_COUNTERS_LOAD_ADDR);
+	#endif
 }
 
 ProcessingTile::~ProcessingTile(){

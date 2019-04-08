@@ -25,13 +25,19 @@
 //simulation API
 #include <UntimedModel.h>
 
+//counter-specific definitions
+#ifndef OPT_MEMORY_DISABLE_COUNTERS
+#include <UComm.h>
+#endif
+
 #include <iostream>
 #include <fstream>
 
 #include <cstdlib>
 #include <cstdint>
 
-//Remeber: a memory is an arrays of int8_t...
+//Remeber: a memory is an arrays of int8_t, and
+//addresses are 32-bit length
 #define MemoryType int8_t
 #define MemoryAddr uint32_t
 
@@ -40,22 +46,33 @@
 // encapsulate it inside a class. Thus, memory manipu-   
 // lation is done through the static methods of the
 // MemoryHelper class.
-class UMemory: public UntimedModel{
+class UMemory: public UntimedModel
+{
 
 private:
-  
     MemoryType* _mem;
     uint32_t _length;
 	uint32_t _sram_base;
 
+	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	UComm<uint16_t>* _counter_nload;
+	UComm<uint16_t>* _counter_nstore;
+	#endif
+
 public:
-    
+
+	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	UComm<uint16_t>* GetCommCounterLoad();
+	UComm<uint16_t>* GetCommCounterStore();
+	void InitCounters(uint32_t store_counter_addr, uint32_t load_counter_addr);
+	#endif
+
     /** Creates a new memory area.	
      * @param size: Total length of the memory are to be created.
      * @param wipe (optional): If <true> is passed, wipes the are after creating. */
 	UMemory(std::string name, uint32_t size, uint32_t sram_base = 0, bool wipe = true, std::string binname = "");
 	~UMemory();
-    void Reset();
+    void Reset();  
     
     /** Writes data to a given memory location.
      * @param addr: Location to write to.

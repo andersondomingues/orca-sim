@@ -3,7 +3,8 @@ ARCH = riscv/hf-riscv
 IMAGE_NAME = image
 
 #applications file 
-SELECTED_APPS = noc_test4_sender noc_test4_receiver
+#SELECTED_APPS = noc_test4_sender noc_test4_receiver
+SELECTED_APPS = test_counters_memory
 
 #dir config.
 HFOS_DIR = hellfireos
@@ -24,15 +25,14 @@ include $(HFOS_DIR)/lib/lib.mak
 include $(HFOS_DIR)/drivers/noc.mak
 include $(HFOS_DIR)/sys/kernel.mak
 
-#includes for loader and other software
-#include orca-launcher/orca-launcher.mak
-include orca-mapper/orca-mapper.mak
+#includes app loader
+include orca-static-mapping/orca-static-mapping.mak
 
-#include for applications
-include $(HFOS_DIR)/../applications/noc_test4/app.mak
+#include tasks 
+include $(HFOS_DIR)/../applications/test_counters_memory/app.mak
 
 #phonies
-.PHONY: clean image_apps
+.PHONY: clean image_apps image_dependent
 
 INC_DIRS += -I $(HFOS_DIR)/lib/include -I $(HFOS_DIR)/sys/include -I $(HFOS_DIR)/drivers/noc/include
 CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
@@ -48,8 +48,8 @@ image:
 	make libc
 	make noc
 	make kernel
-	make orca-mapper.o
 	make image_dependent
+	make orca-static-mapping.o
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(IMAGE_NAME).elf *.o
 	$(DUMP) --disassemble --reloc $(IMAGE_NAME).elf > $(IMAGE_NAME).lst
 	$(DUMP) -h $(IMAGE_NAME).elf > $(IMAGE_NAME).sec
@@ -59,7 +59,6 @@ image:
 	hexdump -v -e '4/1 "%02x" "\n"' $(IMAGE_NAME).bin > $(IMAGE_NAME).txt
 	mv *.o *.elf *.bin *.cnt *.lst *.sec *.txt ../bin
 	
-#make image_apps	
 image_dependent:
 	for app in $(SELECTED_APPS) ; do \
 		make $$app.o ; \

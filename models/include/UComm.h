@@ -58,6 +58,15 @@ public:
      * @brief Removes the object at the front of the buffer. */
     void Write(T val);
     
+	/**
+	 * @brief Set the value of the bus
+	 * @param val the value */
+	void Inc(T val);
+
+	/**
+	 * @brief Set the value of the bus
+	 * @param val the value */
+	void Dec(T val);    
 	
 	/**
 	 * @brief Empties the queue */

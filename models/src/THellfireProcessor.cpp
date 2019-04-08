@@ -69,13 +69,22 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		case UART_DIVISOR:	return 0;
 	}
 	
-	//comms
+	//control cons
 	if(address == s->comm_ack->GetAddr())    return s->comm_ack->Read();
 	if(address == s->comm_intr->GetAddr())   return s->comm_intr->Read();
 	if(address == s->comm_start->GetAddr())  return s->comm_start->Read();
 	
 	//self-id
 	if(address == s->comm_id->GetAddr())     return s->comm_id->Read();
+	
+	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	if(address == s->sram->GetCommCounterStore()->GetAddr()) return s->sram->GetCommCounterStore()->Read();
+	if(address == s->sram->GetCommCounterLoad()->GetAddr())  return s->sram->GetCommCounterLoad()->Read();
+	if(address == s->mem1->GetCommCounterStore()->GetAddr()) return s->mem1->GetCommCounterStore()->Read();
+	if(address == s->mem1->GetCommCounterLoad()->GetAddr())  return s->mem1->GetCommCounterLoad()->Read();
+	if(address == s->mem2->GetCommCounterStore()->GetAddr()) return s->mem2->GetCommCounterStore()->Read();
+	if(address == s->mem2->GetCommCounterLoad()->GetAddr())  return s->mem2->GetCommCounterLoad()->Read();
+	#endif /* OPT_MEMORY_DISABLE_COUNTERS */
 	
 	UMemory* sel_mem = nullptr;
 	
@@ -166,8 +175,17 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	}
 	
 	//comms
-	if(address == s->comm_ack->GetAddr()){ s->comm_ack->Write(value); return; }	
+	if(address == s->comm_ack->GetAddr()){   s->comm_ack->Write(value);   return; }
 	if(address == s->comm_start->GetAddr()){ s->comm_start->Write(value); return; }
+	
+	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	if(address == s->sram->GetCommCounterStore()->GetAddr()){ s->sram->GetCommCounterStore()->Write(0); return; }
+	if(address == s->sram->GetCommCounterLoad()->GetAddr()){  s->sram->GetCommCounterLoad()->Write(0);  return; }
+	if(address == s->mem1->GetCommCounterStore()->GetAddr()){ s->mem1->GetCommCounterStore()->Write(0); return; }
+	if(address == s->mem1->GetCommCounterLoad()->GetAddr()){  s->mem1->GetCommCounterLoad()->Write(0);  return; }
+	if(address == s->mem2->GetCommCounterStore()->GetAddr()){ s->mem2->GetCommCounterStore()->Write(0); return; }
+	if(address == s->mem2->GetCommCounterLoad()->GetAddr()){  s->mem2->GetCommCounterLoad()->Write(0);  return; }
+	#endif /* OPT_MEMORY_DISABLE_COUNTERS */
 	
 	UMemory* sel_mem = nullptr;
 	
@@ -421,7 +439,7 @@ fail:
 			ss << this->GetName() << ":invalid opcode (pc=0x" << std::hex << s->pc;
 			ss << " opcode=0x" << std::hex << inst << ")";
 			
-			s->sram->Dump(0x40000150, 500);
+			s->sram->Dump(s->pc, 500);
 			
 			throw std::runtime_error(ss.str());
 			break;

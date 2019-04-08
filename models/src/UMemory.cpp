@@ -44,10 +44,24 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 
 	if(binname != "")
 		this->LoadBin(binname, _sram_base, _length);
-		
-    //std::cout << this->GetName() << " at " << ((void*)(int*) _mem) << " mapped from 0x" 
-	//	      << std::hex << _sram_base << " to 0x" << std::hex << (_sram_base + _length - 1) <<std::endl;
+
 }
+
+#ifndef OPT_MEMORY_DISABLE_COUNTERS
+void UMemory::InitCounters(uint32_t store_counter_addr, uint32_t load_counter_addr){
+	_counter_nload = new UComm<uint16_t>(GetName() + ".counters.load", 0, store_counter_addr);
+	_counter_nstore = new UComm<uint16_t>(GetName() + ".counters.store", 0, load_counter_addr);
+}
+
+UComm<uint16_t>* UMemory::GetCommCounterStore(){
+	return _counter_nload;
+}
+
+UComm<uint16_t>* UMemory::GetCommCounterLoad(){
+	return _counter_nstore;
+}
+#endif
+
 
 /**
  * @brief Writes a bytestream to the memory
@@ -73,8 +87,12 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 			<< GetLastAddr() << ").";
 		throw std::runtime_error(s.str());
 	}
-	
 	#endif
+	
+	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	//increment number of stores into nstore counter
+	_counter_nstore->Inc(1);
+	#endif 
 
     //same performance as memcpy but library independent
 	for(uint32_t i = 0; i < length; i++){
@@ -109,9 +127,13 @@ void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	#endif
 	
 	//same performance as memcpy but library independent
-	for(uint32_t i = 0; i < length; i++){
+	for(uint32_t i = 0; i < length; i++)
 		buffer[i] = _mem[(addr - _sram_base) + i];
-	}
+	
+	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	//increment number of loades into nstore counter
+	_counter_nload->Inc(1);
+	#endif 
 }
 
 /**
