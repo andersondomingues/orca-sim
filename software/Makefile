@@ -4,7 +4,7 @@ IMAGE_NAME = image
 
 #applications file 
 #SELECTED_APPS = noc_test4_sender noc_test4_receiver
-SELECTED_APPS = test_counters_memory
+SELECTED_APPS = example_counters
 
 #dir config.
 HFOS_DIR = hellfireos
@@ -29,7 +29,7 @@ include $(HFOS_DIR)/sys/kernel.mak
 include orca-static-mapping/orca-static-mapping.mak
 
 #include tasks 
-include $(HFOS_DIR)/../applications/test_counters_memory/app.mak
+include $(HFOS_DIR)/../applications/example_counters/app.mak
 
 #phonies
 .PHONY: clean image_apps image_dependent

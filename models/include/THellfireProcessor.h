@@ -21,11 +21,6 @@
 //simulator libs
 #include <TimedModel.h>
 
-#ifndef OPT_HFRISC_DISABLE_METRICS
-#include <ObservableModel.h>
-#include <Metric.h>
-#endif
-
 //models libs
 #include <UMemory.h>
 #include <UComm.h>
@@ -71,11 +66,7 @@ typedef struct {
 } risc_v_state;
 
 
-class THellfireProcessor : public TimedModel
-#ifndef OPT_HFRISC_DISABLE_METRICS
-, public ObservableModel
-#endif
-{
+class THellfireProcessor : public TimedModel{
 
 private:
 uint32_t _last_pc;
@@ -85,12 +76,37 @@ uint32_t _last_pc;
 	risc_v_state *s;
 	int i;
 	
-	#ifndef OPT_HFRISC_DISABLE_METRICS
-	Metric* _metric_power_dynamic;	
-	void UpdateMetrics(int opcode, int funct3);	
+	#ifndef OPT_HFRISC_DISABLE_COUNTERS
+	UComm<uint32_t>* _counter_iarith;
+	UComm<uint32_t>* _counter_ilogical;
+	UComm<uint32_t>* _counter_ishift;
+	UComm<uint32_t>* _counter_ibranches;
+	UComm<uint32_t>* _counter_ijumps;
+	UComm<uint32_t>* _counter_iloadstore;
 	#endif
 
 public:
+
+	#ifndef OPT_HFRISC_DISABLE_COUNTERS
+	UComm<uint32_t>* GetCommCounterArith();
+	UComm<uint32_t>* GetCommCounterLogical();
+	UComm<uint32_t>* GetCommCounterShift();
+	UComm<uint32_t>* GetCommCounterBranches();
+	UComm<uint32_t>* GetCommCounterJumps();
+	UComm<uint32_t>* GetCommCounterLoadStore();
+	
+	void InitCounters(
+		uint32_t arith_counter_addr, 
+		uint32_t logical_counter_addr,
+		uint32_t shift_counter_addr, 
+		uint32_t branches_counter_addr,
+		uint32_t jumps_counter_addr, 
+		uint32_t loadstore_counter_addr
+	);
+	
+	void UpdateCounters(int opcode, int func3);
+	
+	#endif
 
     risc_v_state GetState();
     
@@ -124,12 +140,7 @@ public:
 	ofstream output_debug;
 	ofstream output_uart;
 	
-    void Reset();
-	
-	#ifndef OPT_HFRISC_DISABLE_METRICS
-	Metric* GetMetric(Metrics m);
-	#endif
-	
+    void Reset();	
 };
 
 #endif /* __RISC_V_H */

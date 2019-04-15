@@ -45,68 +45,7 @@
 //instantiates a mesh of MxN PE
 Tile* tiles[NOC_W_SIZE][NOC_H_SIZE];
 
-
-
-#ifndef OPT_ROUTER_DISABLE_METRICS
-/** Report Metrics for Routers */ 
-void report_metrics_routers(){
-
-	std::cout << "==============[ ROUTING ENERGY STATISTICS ]" << std::endl;
-	printf("(x,y)\tEnergy(uW)\n");
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			
-			Tile* t = tiles[i][j];
-			Metric* m;
-			m = t->GetRouter()->GetMetric(Metrics::ENERGY_PER_CYCLE);
-			
-			//print position on noc
-			printf("(%d,%d)\t", i, j);
-			
-			//print metric
-			printf("%.6f\t", m->GetAccumulative());
-			printf("\n");
-		}
-	}
-}
-#endif
-
-#ifndef OPT_HFRISC_DISABLE_METRICS
-/** Report Metrics for CPUs */ 
-void report_metrics_cpu(){
-
-	ProcessingTile* t;
-	Metric* m;
-	
-	//prints header
-	std::cout << "==============[ CPU POWER/ENERGY STATISTICS ]" << std::endl;
-	printf("(x,y)\tPower(mW)\n");
-	
-	//show simulation statistics
-	
-	for(int i = 0; i < NOC_W_SIZE; i++){
-		for(int j = 0; j < NOC_H_SIZE; j++){
-			
-			//network interface has no caracterization
-			if(i == 0 && j ==0) continue;
-			
-			//get current processing tile
-			t = (ProcessingTile*)tiles[i][j];
-			
-			//print position on noc
-			printf("(%d,%d)\t", i, j);
-			
-			//print estimated energy
-			m = t->GetCpu()->GetMetric(Metrics::AVG_POWER_DYNAMIC); //mW
-			printf("%.6f\t", m->GetAccumulative()); //pJ -> nJ (pico to nano)
-			
-			printf("\n");
-		}
-	}
-}
-#endif
-
-
+//connect routers to each other
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
 	r2->SetOutputBuffer(r1->GetInputBuffer(p1), p2);
@@ -114,8 +53,6 @@ void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	std::cout << "router_comm: " << r1->GetName() << " ----[" 
 			  << p1 << "/" << p2 << "]---- " << r2->GetName() << std::endl;
 }
-
-
 
 int main(int argc, char** argv){
 
@@ -254,13 +191,6 @@ int main(int argc, char** argv){
 				<< std::endl;
 		}
 	}
-	
-	#ifndef OPT_HFRISC_DISABLE_METRICS
-	report_metrics_cpu();	
-	#endif
-	#ifndef OPT_ROUTER_DISABLE_METRICS
-	report_metrics_routers();
-	#endif
 	
 	return 0;
 	

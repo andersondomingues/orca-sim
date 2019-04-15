@@ -61,10 +61,25 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_cpu->SetMem1(this->GetMem1());
 	_cpu->SetMem2(this->GetMem2());
 	
-	//counter initialization
+	//initialize counters for memory modules
+	//NOTE: mem0 is initialized here, mem1 and mem2
+	//are initialized in Tile.cpp (due inheritance)
 	#ifndef	OPT_MEMORY_DISABLE_COUNTERS
 	_mem0->InitCounters(MEM0_COUNTERS_STORE_ADDR, MEM0_COUNTERS_LOAD_ADDR);
 	#endif
+	
+	//initialize counters for the cpu
+	#ifndef OPT_HFRISC_DISABLE_COUNTERS
+	_cpu->InitCounters(
+		CPU_COUNTERS_IARITH_ADDR,
+		CPU_COUNTERS_ILOGICAL_ADDR,
+		CPU_COUNTERS_ISHIFT_ADDR,
+		CPU_COUNTERS_IBRANCHES_ADDR,
+		CPU_COUNTERS_IJUMPS_ADDR,
+		CPU_COUNTERS_ILOADSTORE_ADDR
+	);
+	#endif
+	
 }
 
 ProcessingTile::~ProcessingTile(){
