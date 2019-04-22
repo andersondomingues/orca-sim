@@ -20,10 +20,16 @@ unsigned long long Simulator::Run(unsigned long long time){
 	
 	_timeout = _globalTime + time;
 
+	Event e;
+
+	#ifndef URSA_SKIP_EMPTY_QUEUE_CHECKING
+	while(_globalTime <= _timeout){
+	#else
 	while(_queue.size() > 0 && _globalTime <= _timeout){
+	#endif
 
 		//get next event to be processed
-		Event e = _queue.top();
+		e = _queue.top();
 	
 		_globalTime = e.time;
 
