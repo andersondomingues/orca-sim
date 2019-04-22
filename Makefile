@@ -68,11 +68,15 @@ $(BINARY_DIR)/$(IMAGE_BIN):
 
 
 #documentation
+#last line refers to a bug in tabu.sty. A replacement for
+#the file is provided within /tools folder and should be 
+#automaticallt applied while building
 documentation:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m    Building API Documentation    \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
 	doxygen
+	cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
 
 clean:
 	@echo "$'\e[7m==================================\e[0m"
