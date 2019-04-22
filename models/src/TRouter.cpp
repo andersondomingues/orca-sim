@@ -33,7 +33,7 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
     _x = x_pos;
     _y = y_pos;
     
-	#ifndef OPT_ROUTER_DISABLE_METRICS
+	#ifdef ROUTER_ENABLE_COUNTERS
 	_metric_energy = new Metric(Metrics::ENERGY_PER_CYCLE);
 	#endif
 		
@@ -53,7 +53,7 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
  */
 TRouter::~TRouter(){
     
-    #ifndef OPT_ROUTER_DISABLE_METRICS
+    #ifdef ROUTER_ENABLE_COUNTERS
     delete _metric_energy;
     #endif
     
@@ -81,7 +81,7 @@ uint32_t TRouter::GetRR(){
  * @return The next time to schedule the event.*/
 unsigned long long TRouter::Run(){
     
-	#ifndef OPT_ROUTER_DISABLE_METRICS
+	#ifdef ROUTER_ENABLE_COUNTERS
 	bool sampled_already = false;
 	#endif
     
@@ -111,7 +111,7 @@ unsigned long long TRouter::Run(){
   	
     //TODO: add the 4 cycles delay before start sending the burst of flits
     
-	#ifndef OPT_ROUTER_DISABLE_METRICS
+	#ifdef ROUTER_ENABLE_COUNTERS
 	double temp_power_sample = 0;	
 	bool temp_active = false;
 	#endif
@@ -123,7 +123,7 @@ unsigned long long TRouter::Run(){
     	//check whether the switch control is closed for some port
 		if(_switch_control[i] != -1){
 			
-			#ifndef OPT_ROUTER_DISABLE_METRICS
+			#ifdef ROUTER_ENABLE_COUNTERS
 			//samples 1 active buffer
 			temp_power_sample += 775.56;
 			temp_active = true;
@@ -131,7 +131,7 @@ unsigned long long TRouter::Run(){
 			
 			//prevent routing to a non-existing router
 			//TODO: double check the code below. It seems that doesn't work properly.
-			#ifndef OPT_ROUTER_DISABLE_GHOST_ROUTER_CHECKING
+			#ifdef OPT_ROUTER_DISABLE_GHOST_ROUTER_CHECKING
 			if(_ob[_switch_control[i]] == nullptr){
 				stringstream ss;
 				ss << this->GetName() << ": unable to route to unknown address" << std::endl;
@@ -151,7 +151,7 @@ unsigned long long TRouter::Run(){
 				
 			}
 		}
-		#ifndef OPT_ROUTER_DISABLE_METRICS
+		#ifdef ROUTER_ENABLE_COUNTERS
 		else{
 			temp_power_sample += 364.64;
 		}
@@ -171,7 +171,7 @@ unsigned long long TRouter::Run(){
 	//ROUND ROBIN (prevents starvation)
 	_round_robin = (_round_robin + 1) % 5;
     	
-	#ifndef OPT_ROUTER_DISABLE_METRICS
+	#ifdef ROUTER_ENABLE_COUNTERS
 	if(!sampled_already)
 		_metric_energy->Sample(364.64 + 575.64);
 	#endif
@@ -179,7 +179,7 @@ unsigned long long TRouter::Run(){
     return 1;
 }
 
-#ifndef OPT_ROUTER_DISABLE_METRICS
+#ifdef ROUTER_ENABLE_COUNTERS
 Metric* TRouter::GetMetric(Metrics m){
 	if(m == Metrics::ENERGY_PER_CYCLE)
 		return _metric_energy;

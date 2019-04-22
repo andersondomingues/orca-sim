@@ -68,11 +68,11 @@ Tile::Tile(uint32_t x, uint32_t y){
 	_netif->SetMem2(_mem2);
 	
 	//bind comm id (W * column + line)
-	int id = (NOC_W_SIZE * y) + x;
+	int id = (ORCA_NOC_WIDTH * y) + x;
 	_comm_id = new UComm<int32_t>("self_id", id, COMM_ID);
 	
 	//counter initialization
-	#ifndef	OPT_MEMORY_DISABLE_COUNTERS
+	#ifdef MEMORY_ENABLE_COUNTERS
 	_mem1->InitCounters(MEM1_COUNTERS_STORE_ADDR, MEM1_COUNTERS_LOAD_ADDR);
 	_mem2->InitCounters(MEM2_COUNTERS_STORE_ADDR, MEM2_COUNTERS_LOAD_ADDR);
 	#endif

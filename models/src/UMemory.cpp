@@ -47,7 +47,7 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 
 }
 
-#ifndef OPT_MEMORY_DISABLE_COUNTERS
+#ifdef MEMORY_ENABLE_COUNTERS
 void UMemory::InitCounters(uint32_t store_counter_addr, uint32_t load_counter_addr){
 	_counter_nstore = new UComm<uint32_t>(GetName() + ".counters.store", 0, store_counter_addr);
 	_counter_nload = new UComm<uint32_t>(GetName() + ".counters.load", 0, load_counter_addr);
@@ -71,7 +71,7 @@ UComm<uint32_t>* UMemory::GetCommCounterLoad(){
  */
 void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
-	#ifndef OPT_MEMORY_SKIP_WRITE_ADDRESS_CHECKING
+	#ifndef MEMORY_WRITE_ADDRESS_CHECKING
 	if(addr < _sram_base){
 		stringstream s;
 		s << this->GetName() << ": unable to write to addr (0x" << std::hex
@@ -88,8 +88,8 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 		throw std::runtime_error(s.str());
 	}
 	#endif
-	
-	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+
+	#ifdef MEMORY_ENABLE_COUNTERS
 	//increment number of stores into nstore counter
 	_counter_nstore->Inc(1);
 	#endif 
@@ -109,7 +109,7 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
  */
 void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 
-	#ifndef OPT_MEMORY_SKIP_READ_ADDRESS_CHECKING
+	#ifndef MEMORY_READ_ADDRESS_CHECKING
 	if(addr < _sram_base){
 		stringstream s;
 		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
@@ -130,7 +130,7 @@ void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	for(uint32_t i = 0; i < length; i++)
 		buffer[i] = _mem[(addr - _sram_base) + i];
 	
-	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	#ifdef MEMORY_ENABLE_COUNTERS
 	//increment number of loades into nstore counter
 	_counter_nload->Inc(1);
 	#endif 
@@ -174,7 +174,7 @@ uint32_t UMemory::GetLastAddr(){
  */
 void UMemory::Wipe(uint32_t base, uint32_t size){
 	
-	#ifndef OPT_MEMORY_SKIP_WIPE_ADDRESS_CHECKING
+	#ifdef MEMORY_WIPE_ADDRESS_CHECKING
 	if(base < _sram_base)
 		throw std::runtime_error(this->GetName() + ": unable to wipe from base (" + std::to_string(base) + ") lower than sram base .");
 

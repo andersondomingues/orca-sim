@@ -20,10 +20,10 @@ unsigned long long Simulator::Run(unsigned long long time){
 	
 	_timeout = _globalTime + time;
 
-	#ifndef URSA_SKIP_EMPTY_QUEUE_CHECKING
-	while(_globalTime <= _timeout){
-	#else
+	#ifdef URSA_QUEUE_SIZE_CHECKING
 	while(_queue.size() > 0 && _globalTime <= _timeout){
+	#else
+	while(_globalTime <= _timeout){
 	#endif
 
 		//get next event to be processed
@@ -49,7 +49,7 @@ unsigned long long Simulator::Run(unsigned long long time){
  * @param Event to run.*/
 void Simulator::Schedule(const Event& e){
 
-	#ifndef OPT_SKIP_ZERO_TIME_CHECKING
+	#ifdef URSA_ZERO_TIME_CHECKING
 	if(e.time == 0){
 		throw std::runtime_error("Simulator: unable to schedule "
 			+ e.timedModel->GetName() + " to run in the past. " +

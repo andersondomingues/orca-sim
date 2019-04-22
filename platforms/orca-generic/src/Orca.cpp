@@ -43,7 +43,7 @@
 #include <NetworkTile.h>
 
 //instantiates a mesh of MxN PE
-Tile* tiles[NOC_W_SIZE][NOC_H_SIZE];
+Tile* tiles[ORCA_NOC_WIDTH][ORCA_NOC_HEIGHT];
 
 //connect routers to each other
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
@@ -54,50 +54,185 @@ void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 			  << p1 << "/" << p2 << "]---- " << r2->GetName() << std::endl;
 }
 
+void check_params(){
+
+	//orca params 
+	#ifndef ORCA_NOC_HEIGHT
+	std::runtime_error("ORCA_NOC_HEIGHT must be defined in Configuration.mk\n");
+	#else
+	std::cout << "ORCA_NOC_HEIGHT set to " << ORCA_NOC_HEIGHT << std::endl;
+	#endif
+	
+	#ifndef ORCA_NOC_HEIGHT
+	std::runtime_error("ORCA_NOC_WIDTH must be defined in Configuration.mk\n");
+	#else
+	std::cout << "ORCA_NOC_WIDTH set to " << ORCA_NOC_HEIGHT << std::endl;
+	#endif
+
+	#ifndef ORCA_PULSE_LENGTH
+	std::runtime_error("ORCA_PULSE_LENGTH must be defined in Configuration.mk\n");
+	#else
+	std::cout << "ORCA_PULSE_LENGTH set to " << ORCA_PULSE_LENGTH << std::endl;
+	#endif
+
+	#ifndef ORCA_PULSES_TO_SIM
+	std::cout << "ORCA_PULSES_TO_SIM set to INFINITE" << std::endl;
+	#else
+	std::cout << "ORCA_PULSES_TO_SIM set to " << ORCA_PULSES_TO_SIM << std::endl;
+	#endif
+	
+	//ursa params
+	#ifndef URSA_ZERO_TIME_CHECKING
+	std::cout << "URSA_ZERO_TIME_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "URSA_ZERO_TIME_CHECKING set to " << URSA_ZERO_TIME_CHECKING << std::endl;
+	#endif
+
+	#ifndef URSA_QUEUE_SIZE_CHECKING
+	std::cout << "URSA_QUEUE_SIZE_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "URSA_QUEUE_SIZE_CHECKING set to " << URSA_QUEUE_SIZE_CHECKING << std::endl;
+	#endif
+	
+	//netsocket logs
+	#ifndef NETSOCKET_LOG_OUTGOING_PACKETS
+	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS disabled" << std::endl;
+	#else
+	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS enabled" << std::endl;
+	#endif
+
+	#ifndef NETSOCKET_LOG_INCOMING_PACKETS
+	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS disabled" << std::endl;
+	#else
+	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS enabled" << std::endl;
+	#endif
+	
+	#ifdef NETSOCKET_CLIENT_ADDRESS
+	std::cout << "NETSOCKET_CLIENT_ADDRESS is " << NETSOCKET_CLIENT_ADDRESS << std::endl;
+	#endif
+	
+	#ifdef NETSOCKET_CLIENT_PORT
+	std::cout << "NETSOCKET_CLIENT_PORT is " << NETSOCKET_CLIENT_PORT << std::endl;
+	#endif
+	
+	#ifdef NETSOCKET_SERVER_ADDRESS
+	std::cout << "NETSOCKET_SERVER_ADDRESS is " << NETSOCKET_SERVER_ADDRESS << std::endl;
+	#endif
+	
+	#ifdef NETSOCKET_SERVER_PORT
+	std::cout << "NETSOCKET_SERVER_PORT is " << NETSOCKET_SERVER_PORT << std::endl;
+	#endif
+	
+	//buffers
+	#ifndef BUFFER_OVERFLOW_CHECKING
+	std::cout << "BUFFER_OVERFLOW_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "BUFFER_OVERFLOW_CHECKING enabled" << std::endl;
+	#endif
+
+	#ifndef BUFFER_UNDERFLOW_CHECKING
+	std::cout << "BUFFER_UNDERFLOW_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "BUFFER_UNDERFLOW_CHECKING enabled" << std::endl;
+	#endif
+	
+	//memory
+	#ifndef MEMORY_WRITE_ADDRESS_CHECKING
+	std::cout << "MEMORY_WRITE_ADDRESS_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "MEMORY_WRITE_ADDRESS_CHECKING enabled" << std::endl;
+	#endif
+
+	#ifndef MEMORY_READ_ADDRESS_CHECKING
+	std::cout << "MEMORY_READ_ADDRESS_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "MEMORY_READ_ADDRESS_CHECKING enabled" << std::endl;
+	#endif
+
+	#ifndef MEMORY_WIPE_ADDRESS_CHECKING
+	std::cout << "MEMORY_WIPE_ADDRESS_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "MEMORY_WIPE_ADDRESS_CHECKING enabled" << std::endl;
+	#endif
+
+	#ifndef MEMORY_ENABLE_COUNTERS
+	std::cout << "MEMORY_ENABLE_COUNTERS disabled" << std::endl;
+	#else
+	std::cout << "MEMORY_ENABLE_COUNTERS enabled" << std::endl;
+	#endif
+	
+	//hfriscv
+	#ifndef HFRISCV_WRITE_ADDRESS_CHECKING
+	std::cout << "HFRISCV_WRITE_ADDRESS_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "HFRISCV_WRITE_ADDRESS_CHECKING enabled" << std::endl;
+	#endif
+
+	#ifndef HFRISCV_READ_ADDRESS_CHECKING
+	std::cout << "HFRISCV_READ_ADDRESS_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "HFRISCV_READ_ADDRESS_CHECKING enabled" << std::endl;
+	#endif
+
+	#ifndef HFRISCV_ENABLE_COUNTERS
+	std::cout << "HFRISCV_ENABLE_COUNTERS disabled" << std::endl;
+	#else
+	std::cout << "HFRISCV_ENABLE_COUNTERS enabled" << std::endl;
+	#endif
+}
+
 int main(int argc, char** argv){
 
     argc = argc; //workaround to use -Wextra
 
-	std::cout << "ORCA Platform (Width=" << NOC_W_SIZE << ", Height=" << NOC_H_SIZE << ")" << std::endl;
-	std::cout << "Simulation step set to " << CYCLES_TO_SIM << " cycles." << std::endl;
-	std::cout << "Instanting new hardware..." << std::endl;
+	std::cout << "URSA/ORCA Platform " << std::endl;
+
+	std::cout << "==============[ PARAMETERS ]" << std::endl;	
+	try{
+		check_params();
+	}catch(std::runtime_error& e){
+		std::cout << e.what() << std::endl;
+		return 1;
+	}
 	
-	std::cout << "==============[ TILE LIST ]" << std::endl;
+	std::cout << "==============[ TILE COMPOSITION ]" << std::endl;
 	
 	//populate tiles
-	for(int x = 0; x < NOC_W_SIZE; x++){
-		for(int y = 0; y < NOC_H_SIZE; y++){
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 			
 			if(x == 0 && y ==0){
-				std::cout << "(0,0) is a network tile" << std::endl;
+				std::cout << "[N]";
 				tiles[x][y] = (Tile*)new NetworkTile(x, y);				
 			}else{
-				std::cout << "(" << x << "," << y << ") is a processing tile" << std::endl;
+				std::cout << "[P]";
 				tiles[x][y] = (Tile*)new ProcessingTile(x, y);
 			}
 		}
+		
+		std::cout << std::endl;
 	}
 	
 	std::cout << "==============[ ROUTER CONNECTIONS ]" << std::endl;
 	
 	//connect tiles to each other (left-to-right, right-to-left connections)	
-	for(int x = 0; x < NOC_W_SIZE - 1; x++)
-		for(int y = 0; y < NOC_H_SIZE; y++)
+	for(int x = 0; x < ORCA_NOC_WIDTH - 1; x++)
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++)
 			connect_routers(tiles[x][y]->GetRouter(), EAST, tiles[x+1][y]->GetRouter(), WEST);
 			
 	//connect tiles to each other (bottom-to-top, top-to-bottom connections)
-	for(int x = 0; x < NOC_W_SIZE; x++)
-		for(int y = 0; y < NOC_H_SIZE - 1; y++)
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++)
+		for(int y = 0; y < ORCA_NOC_HEIGHT - 1; y++)
 			connect_routers(tiles[x][y]->GetRouter(), NORTH, tiles[x][y+1]->GetRouter(), SOUTH);
 			
 	//load binaries into main memories (processing tiles only)
-	for(int x = 0; x < NOC_W_SIZE; x++){
-		for(int y = 0; y < NOC_H_SIZE; y++){
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 			
 			//zero-zero is for network interface
 			if(x == 0 && y == 0) continue;
 		
-			//index = x + NOC_W_SIZE * y;
+			//index = x + ORCA_NOC_WIDTH * y;
 			((ProcessingTile*)tiles[x][y])->GetMem0()->LoadBin(std::string(argv[1]), MEM0_BASE, MEM0_SIZE);
 		}
 	}
@@ -110,8 +245,8 @@ int main(int argc, char** argv){
 	std::cout << "Scheduling..."	 << std::endl;
 	
 	//schedule hardware to be simulated
-	for(int x = 0; x < NOC_W_SIZE; x++){
-		for(int y = 0; y < NOC_H_SIZE; y++){
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 			
 			//netork tile
 			if(x == 0 && y == 0)
@@ -126,18 +261,18 @@ int main(int argc, char** argv){
 		}
 	}
 
-	std::cout << "Simulation pulse set to " << CYCLES_TO_SIM << " cycles. Please wait..." << std::endl;
+	std::cout << "Simulation pulse set to " << ORCA_PULSE_LENGTH << " cycles. Please wait..." << std::endl;
 
 	//keep simulating until something happen
 	uint32_t gigacycles = 0;
 	try{
-		//while(1){
+		while(1){
 			
 			std::chrono::high_resolution_clock::time_point t1 = 
 				std::chrono::high_resolution_clock::now();
 			
 			gigacycles++;
-			s->Run(CYCLES_TO_SIM);			
+			s->Run(ORCA_PULSE_LENGTH);			
 			
 			std::chrono::high_resolution_clock::time_point t2 =
 				std::chrono::high_resolution_clock::now();
@@ -147,13 +282,19 @@ int main(int argc, char** argv){
 				<std::chrono::milliseconds>( t2 - t1 ).count();
 			
 			//converts mili to seconds before calculating the frequency
-			double hertz = CYCLES_TO_SIM / (double)(duration / 1000);
+			double hertz = ORCA_PULSE_LENGTH / (double)(duration / 1000);
 			
 			//divide frequency by 1k (Hz -> KHz)
 			std::cout << "notice: pulse #" << gigacycles << " took " 
 				<< (duration / 1000.0)<< " seconds @ "
 				<< (hertz / 1000.0) <<" KHz)" << std::endl;
-		//}
+		
+			//simulate until reach the limit of pulses
+			#ifdef ORCA_PULSES_TO_SIM
+			if(gigacycles >= ORCA_PULSES_TO_SIM)
+				break;
+			#endif
+		}
 		
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
@@ -164,8 +305,8 @@ int main(int argc, char** argv){
 	
 	//show buffer status
 	std::cout << "==============[ BUFFERS' STATUSES ]" << std::endl;
-	for(int x = 0; x < NOC_W_SIZE; x++){
-		for(int y = 0; y < NOC_H_SIZE; y++){
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 		
 			TRouter* r = tiles[x][y]->GetRouter();
 			std::cout << r->GetName() << ":"
@@ -181,8 +322,8 @@ int main(int argc, char** argv){
 	
 	//NI states
 	std::cout << "==============[ NI' STATUSES ]" << std::endl;
-	for(int x = 0; x < NOC_W_SIZE; x++){
-		for(int y = 0; y < NOC_H_SIZE; y++){
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 		
 			TNetif* n = tiles[x][y]->GetNetif();
 			std::cout << n->GetName() << ":"
@@ -199,9 +340,13 @@ clean:
 	delete(s); //sim
 	
 	//delete PE
-	for(int x = 0; x < NOC_W_SIZE; x++)
-		for(int y = 0; y < NOC_H_SIZE; y++)
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++)
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++)
 			delete(tiles[x][y]);
 
 	return 1;	
 }
+
+
+
+

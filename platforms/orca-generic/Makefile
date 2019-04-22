@@ -2,7 +2,6 @@
 #to name the generated executable file and to be
 #displayed during execution of this makefile
 PLATFORM_NAME:=orca-generic
-CONFIG:= -DCYCLES_TO_SIM=10000000 -DNOC_H_SIZE=4 -DNOC_W_SIZE=4
 
 #Path to dependencies. This platform is similulated using
 #URSA, so libsim and libmod are required. 
@@ -18,7 +17,7 @@ LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
 #that they may be different form flags used for compiling
 #dependencies.
 GCC_FLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include -Iinclude \
-	-lpthread $(OPT_PLAT_FLAGS) $(COMPILER_FLAGS) $(SYSTEM_FLAGS)
+	-lpthread $(COMPLINE)
 
 LD_FLAGS   :=-L../../bin -lmod -lsim
 

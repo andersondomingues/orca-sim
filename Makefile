@@ -32,7 +32,6 @@ all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN)
 	@echo "$'\e[7m====================================\e[0m"
 	@echo "$'\e[7m  All done! Starting simulation...  \e[0m"
 	@echo "$'\e[7m====================================\e[0m"
-	@echo $(OPTMIZATION_FLAGS)
 	$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) 
 
 #URSA's simulation library
@@ -66,7 +65,6 @@ $(BINARY_DIR)/$(IMAGE_BIN):
 	@echo "$'\e[7m==================================\e[0m"
 	make -C $(SOFTWARE_DIR) image
 
-
 #documentation
 #last line refers to a bug in tabu.sty. A replacement for
 #the file is provided within /tools folder and should be 
@@ -79,6 +77,7 @@ documentation:
 	cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
 
 clean:
+	@echo $(COMPLINE)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m          Cleaning up...          \e[0m"
 	@echo "$'\e[7m==================================\e[0m"

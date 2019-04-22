@@ -49,8 +49,6 @@
 class _recv_buffer;
 TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 
-
-	
 	//open debug file
 	output_debug.open(
 		"logs/pe-0-0.cpu_debug.log", 
@@ -68,10 +66,10 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 	_recv_state = NetSocketRecvState::READY;
 	
 	//initialize a new client (client sends messages)
-	const std::string& client_addr = CFG_NETSOCKET_CLIENT_ADDR;
+	const std::string& client_addr = NETSOCKET_CLIENT_ADDRESS;
 	_udp_client = new udp_client(client_addr, 8888);
 
-	const std::string& server_addr = CFG_NETSOCKET_SERVER_ADDR;
+	const std::string& server_addr = NETSOCKET_SERVER_ADDRESS;
 	_udp_server = new udp_server(server_addr, 9999);
 		
 	pthread_t t;

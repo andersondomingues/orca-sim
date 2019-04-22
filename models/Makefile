@@ -4,7 +4,7 @@ OUTPUTDIR :=./bin
 LIBNAME :=libmod.a
 
 #include flags (plus external flags)
-CPPFLAGS :=-I./include -I../simulator/include -c $(COMPILER_FLAGS) $(OPT_MODEL_FLAGS)
+CPPFLAGS :=-I./include -I../simulator/include -c $(COMPLINE)
 
 #list of dependencies (source files)
 TARGET_DEPS := \

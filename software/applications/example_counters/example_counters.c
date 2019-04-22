@@ -38,7 +38,6 @@ void example_counters(void){
 	volatile uint32_t* cpu_ijumps     = CPU_COUNTERS_IJUMPS_ADDR;
 	volatile uint32_t* cpu_iloadstore = CPU_COUNTERS_ILOADSTORE_ADDR;
 	
-
 	//print counter value each N seconds
 	loop:
 		printf("MEM0: writes=%u, reads=%u\n", *mem0_store_ptr, *mem0_load_ptr);

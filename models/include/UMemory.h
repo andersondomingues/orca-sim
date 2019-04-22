@@ -26,7 +26,7 @@
 #include <UntimedModel.h>
 
 //counter-specific definitions
-#ifndef OPT_MEMORY_DISABLE_COUNTERS
+#ifdef MEMORY_ENABLE_COUNTERS
 #include <UComm.h>
 #endif
 
@@ -54,14 +54,14 @@ private:
     uint32_t _length;
 	uint32_t _sram_base;
 
-	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	#ifdef MEMORY_ENABLE_COUNTERS
 	UComm<uint32_t>* _counter_nload;
 	UComm<uint32_t>* _counter_nstore;
 	#endif
 
 public:
 
-	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	#ifdef MEMORY_ENABLE_COUNTERS
 	UComm<uint32_t>* GetCommCounterLoad();
 	UComm<uint32_t>* GetCommCounterStore();
 	void InitCounters(uint32_t store_counter_addr, uint32_t load_counter_addr);

@@ -77,23 +77,23 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	//self-id
 	if(address == s->comm_id->GetAddr())     return s->comm_id->Read();
 	
-	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	#ifdef MEMORY_ENABLE_COUNTERS
 	if(address == s->sram->GetCommCounterStore()->GetAddr()) return s->sram->GetCommCounterStore()->Read();
 	if(address == s->sram->GetCommCounterLoad()->GetAddr())  return s->sram->GetCommCounterLoad()->Read();
 	if(address == s->mem1->GetCommCounterStore()->GetAddr()) return s->mem1->GetCommCounterStore()->Read();
 	if(address == s->mem1->GetCommCounterLoad()->GetAddr())  return s->mem1->GetCommCounterLoad()->Read();
 	if(address == s->mem2->GetCommCounterStore()->GetAddr()) return s->mem2->GetCommCounterStore()->Read();
 	if(address == s->mem2->GetCommCounterLoad()->GetAddr())  return s->mem2->GetCommCounterLoad()->Read();
-	#endif /* OPT_MEMORY_DISABLE_COUNTERS */
+	#endif /* MEMORY_ENABLE_COUNTERS */
 	
-	#ifndef OPT_HFRISC_DISABLE_COUNTERS
+	#ifdef HFRISCV_ENABLE_COUNTERS
 	if(address == this->GetCommCounterArith()->GetAddr())     return this->GetCommCounterArith()->Read();
 	if(address == this->GetCommCounterLogical()->GetAddr())   return this->GetCommCounterLogical()->Read();
 	if(address == this->GetCommCounterShift()->GetAddr())     return this->GetCommCounterShift()->Read();
 	if(address == this->GetCommCounterBranches()->GetAddr())  return this->GetCommCounterBranches()->Read();
 	if(address == this->GetCommCounterJumps()->GetAddr())     return this->GetCommCounterJumps()->Read();
 	if(address == this->GetCommCounterLoadStore()->GetAddr()) return this->GetCommCounterLoadStore()->Read();
-	#endif /* OPT_HFRISC_DISABLE_COUNTERS */
+	#endif /* HFRISCV_ENABLE_COUNTERS */
 		
 	UMemory* sel_mem = nullptr;
 	
@@ -107,7 +107,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		sel_mem = s->mem1;
 	}
 		
-	#ifndef OPT_HFRISC_DISABLE_READ_ADDRESS_CHECKING
+	#ifndef HFRISCV_READ_ADDRESS_CHECKING
 	if(sel_mem == nullptr){
 		dumpregs(s);
 		stringstream ss;
@@ -187,7 +187,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	if(address == s->comm_ack->GetAddr()){   s->comm_ack->Write(value);   return; }
 	if(address == s->comm_start->GetAddr()){ s->comm_start->Write(value); return; }
 	
-	#ifndef OPT_MEMORY_DISABLE_COUNTERS
+	#ifdef MEMORY_ENABLE_COUNTERS
 	if(address == s->sram->GetCommCounterStore()->GetAddr()){s->sram->GetCommCounterStore()->Write(0); return;}
 	if(address == s->sram->GetCommCounterLoad()->GetAddr()) {s->sram->GetCommCounterLoad()->Write(0);  return;}
 	if(address == s->mem1->GetCommCounterStore()->GetAddr()){s->mem1->GetCommCounterStore()->Write(0); return;}
@@ -196,7 +196,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	if(address == s->mem2->GetCommCounterLoad()->GetAddr()) {s->mem2->GetCommCounterLoad()->Write(0);  return;}
 	#endif /* OPT_MEMORY_DISABLE_COUNTERS */
 	
-	#ifndef OPT_HFRISC_DISABLE_COUNTERS
+	#ifdef MEMORY_ENABLE_COUNTERS
 	if(address == this->GetCommCounterArith()->GetAddr())     {this->GetCommCounterArith()->Write(0);     return;}
 	if(address == this->GetCommCounterLogical()->GetAddr())   {this->GetCommCounterLogical()->Write(0);   return;}
 	if(address == this->GetCommCounterShift()->GetAddr())     {this->GetCommCounterShift()->Write(0);     return;}
@@ -217,7 +217,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		sel_mem = s->mem2;
 	}
 		
-	#ifndef DOPT_HFRISC_DISABLE_WRITE_ADDRESS_CHECKING
+	#ifdef HFRISCV_WRITE_ADDRESS_CHECKING
 	if(sel_mem == nullptr){
 		dumpregs(s);
 		stringstream ss;
@@ -260,7 +260,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	
 }
 
-#ifndef OPT_HFRISC_DISABLE_COUNTERS
+#ifdef HFRISCV_ENABLE_COUNTERS
 
 //Counters' getters
 UComm<uint32_t>* THellfireProcessor::GetCommCounterArith(){
@@ -368,7 +368,7 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 	}
 	
 }
-#endif /* OPT_HFRISC_DISABLE_COUNTERS */
+#endif /* HFRISCV_ENABLE_COUNTERS */
 
 
 unsigned long long THellfireProcessor::Run(){
@@ -522,9 +522,9 @@ fail:
 	
 	if (s->comm_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
 
-	#ifndef OPT_HFRISC_DISABLE_COUNTERS
+	#ifdef HFRISCV_ENABLE_COUNTERS
 	this->UpdateCounters(opcode, funct3);
-	#endif /*OPT_HFRISC_DISABLE_COUNTERS*/
+	#endif /*HFRISCV_ENABLE_COUNTERS*/
 	
 	//Takes three cycles per instruction, except for those of 
 	//memory I/O. In the later case. Since we simulate the pipeline
@@ -600,7 +600,7 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 //TODO: clear allocated memory if any
 THellfireProcessor::~THellfireProcessor(){
 	
-	#ifndef OPT_HFRISC_DISABLE_METRICS
+	#ifdef HFRISCV_ENABLE_COUNTERS
 	delete _counter_iarith;
 	delete _counter_ilogical;
 	delete _counter_ishift;

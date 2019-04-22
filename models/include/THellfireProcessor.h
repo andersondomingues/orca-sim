@@ -76,7 +76,7 @@ uint32_t _last_pc;
 	risc_v_state *s;
 	int i;
 	
-	#ifndef OPT_HFRISC_DISABLE_COUNTERS
+	#ifdef HFRISCV_ENABLE_COUNTERS
 	UComm<uint32_t>* _counter_iarith;
 	UComm<uint32_t>* _counter_ilogical;
 	UComm<uint32_t>* _counter_ishift;
@@ -87,7 +87,7 @@ uint32_t _last_pc;
 
 public:
 
-	#ifndef OPT_HFRISC_DISABLE_COUNTERS
+	#ifdef HFRISCV_ENABLE_COUNTERS
 	UComm<uint32_t>* GetCommCounterArith();
 	UComm<uint32_t>* GetCommCounterLogical();
 	UComm<uint32_t>* GetCommCounterShift();
@@ -105,7 +105,6 @@ public:
 	);
 	
 	void UpdateCounters(int opcode, int func3);
-	
 	#endif
 
     risc_v_state GetState();

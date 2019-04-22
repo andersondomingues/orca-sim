@@ -4,14 +4,13 @@ HEADERDIR :=./include
 OUTPUTDIR :=./bin
 LIBNAME := libsim.a 
 
-CPPFLAGS := -I$(HEADERDIR) -c $(COMPILER_FLAGS) $(OPT_SIMUL_FLAGS)
+CPPFLAGS := -I$(HEADERDIR) -c $(COMPLINE)
 
 TARGET_DEPS := \
 	$(OUTPUTDIR)/Event.o \
 	$(OUTPUTDIR)/Model.o \
 	$(OUTPUTDIR)/TimedModel.o \
 	$(OUTPUTDIR)/UntimedModel.o \
-	$(OUTPUTDIR)/Metric.o \
 	$(OUTPUTDIR)/Simulator.o 
 
 #pack file into a static library to be used later
