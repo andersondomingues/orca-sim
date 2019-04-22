@@ -20,7 +20,7 @@ TOOLS_DIR     := $(CURDIR)/tools
 SOFTWARE_DIR  := $(CURDIR)/software
 
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
-.PHONY: clean apps
+.PHONY: clean apps documentation
 
 #compile everything if necessary and run
 #simulatotion requires the simulator and software 
@@ -66,6 +66,14 @@ $(BINARY_DIR)/$(IMAGE_BIN):
 	@echo "$'\e[7m==================================\e[0m"
 	make -C $(SOFTWARE_DIR) image
 
+
+#documentation
+documentation:
+	@echo "$'\e[7m==================================\e[0m"
+	@echo "$'\e[7m    Building API Documentation    \e[0m"
+	@echo "$'\e[7m==================================\e[0m"
+	doxygen
+
 clean:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m          Cleaning up...          \e[0m"
@@ -74,6 +82,7 @@ clean:
 	@make -C $(MODELS_DIR) clean
 	@make -C $(PLATFORMS_DIR)/$(PLATFORM) clean
 	@make -C $(SOFTWARE_DIR) clean
-	@rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
+	rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
 		$(BINARY_DIR)/*~ $(BINARY_DIR)/*.elf $(BINARY_DIR)/*.bin \
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec $(BINARY_DIR)/*.txt
+	rm -rf docs/doxygen/
