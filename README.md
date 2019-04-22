@@ -14,10 +14,10 @@ URSA comprises a discrete event simulator that enables the cycle-accurate simula
 ## Project organisation
 
 - ``/bin`` : compiled binaries and external libraries
-- ``/docs`` : contains a tutorial and images used in this MD file
-- ``/logs`` : output from the hardware models, as well as other implementation-specific outputs
-- ``/models`` : general purpose hardware models
-- ``/platforms`` : platform-specific hardware models (mostly top-level modules)
+- ``/docs`` : contains a tutorial and images used in this MD file, also serving as output folder for doxygen
+- ``/logs`` : output from the hardware models, as well as other implementation-specific outputs and debugging
+- ``/models`` : general purpose hardware models (independent modules)
+- ``/platforms`` : platform-specific hardware models (top-level modules)
 - ``/simulator`` : URSA's core
 - ``/software`` : software to be deployed to emulated platforms
 - ``/tools`` : several scripts and helpers
@@ -35,7 +35,14 @@ URSA comprises a discrete event simulator that enables the cycle-accurate simula
 
 ## Getting Started
 
-- A tutorial is included at ``docs/URSA_Sulphane - The Lazy Manual``. 
+- A very short tutorail is included in ``docs/URSA_Sulphane - The Lazy Manual``. 
+
+## Generating API Docuemtnation
+
+- Make sure you have installed ``doxygen`` and ``rviz`` to your system.
+- In the root directory, type ``make documentation``. Documentation will be deployed to ``docs/doxygen`` folder.
+- You can access docs by opening ``docs/doxygen/html/index.html`` in any web browser (e.g., ``firefox``).
+- LaTeX documentation can be generate by  typeing ``make -C docs/doxygen/latex/``. The output file ``docs/doxygen/latex/refman.pdf`` contains the generated documentation. 
 
 ## Third-Party Work
 
@@ -43,7 +50,7 @@ URSA comprises a discrete event simulator that enables the cycle-accurate simula
 
 - HEMPS (and HERMES). The GAPH group maintains the HEMPS project. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html). Provided network-on-chip router model is based on the RTL models available at [their repository](https://github.com/GaphGroup/hemps). 
 
-- HELLFIREOS. We use [sjohann81's HellfireOS operating system](https://github.com/sjohann81) within the processing elements of the ORCA platform. 
+- HELLFIREOS. We use [sjohann81's HellfireOS operating system](https://github.com/sjohann81) within the processing tiles of the ORCA platform. 
 
 ## Licensing
 
