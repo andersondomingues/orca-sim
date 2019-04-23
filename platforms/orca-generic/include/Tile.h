@@ -66,6 +66,10 @@
 #define CPU_COUNTERS_ILOADSTORE_ADDR 0x81000114
 #endif
 
+#ifdef ROUTER_ENABLE_COUNTERS
+#define ROUTER_COUNTERS_ACTIVE_ADDR 0x81000200
+#endif
+
 class Tile{
 
 private:

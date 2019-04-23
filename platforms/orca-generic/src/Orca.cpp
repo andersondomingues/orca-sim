@@ -179,6 +179,20 @@ void check_params(){
 	#else
 	std::cout << "HFRISCV_ENABLE_COUNTERS enabled" << std::endl;
 	#endif
+	
+	//router	
+	#ifndef ROUTER_ENABLE_COUNTERS
+	std::cout << "ROUTER_ENABLE_COUNTERS disabled" << std::endl;
+	#else
+	std::cout << "ROUTER_ENABLE_COUNTERS enabled" << std::endl;
+	#endif
+	
+	#ifndef ROUTER_PORT_CONNECTED_CHECKING
+	std::cout << "ROUTER_PORT_CONNECTED_CHECKING disabled" << std::endl;
+	#else
+	std::cout << "ROUTER_PORT_CONNECTED_CHECKING enabled" << std::endl;
+	#endif
+	
 }
 
 int main(int argc, char** argv){

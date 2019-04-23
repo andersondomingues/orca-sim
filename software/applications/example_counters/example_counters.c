@@ -14,7 +14,7 @@
 #define CPU_COUNTERS_IJUMPS_ADDR     (uint32_t*) 0x81000110
 #define CPU_COUNTERS_ILOADSTORE_ADDR (uint32_t*) 0x81000114
 
-#define WAIT_PERIOD 1
+#define ROUTER_COUNTERS_ACTIVE_ADDR (uint32_t*) 0x81000200
 
 void example_counters(void){
 
@@ -38,6 +38,9 @@ void example_counters(void){
 	volatile uint32_t* cpu_ijumps     = CPU_COUNTERS_IJUMPS_ADDR;
 	volatile uint32_t* cpu_iloadstore = CPU_COUNTERS_ILOADSTORE_ADDR;
 	
+	//router
+	volatile uint32_t* router_active = ROUTER_COUNTERS_ACTIVE_ADDR;
+	
 	//print counter value each N seconds
 	loop:
 		printf("MEM0: writes=%u, reads=%u\n", *mem0_store_ptr, *mem0_load_ptr);
@@ -50,6 +53,8 @@ void example_counters(void){
 		printf("CPU: ijumps=%u, iloadstore=%u\n", *cpu_ijumps, *cpu_iloadstore);
 		printf("---\n");
 		
+		printf("ROUTER: active=%u\n", *router_active);
+		printf("---\n");
+		
 		goto loop;
-
 }

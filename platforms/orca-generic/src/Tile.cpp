@@ -76,6 +76,10 @@ Tile::Tile(uint32_t x, uint32_t y){
 	_mem1->InitCounters(MEM1_COUNTERS_STORE_ADDR, MEM1_COUNTERS_LOAD_ADDR);
 	_mem2->InitCounters(MEM2_COUNTERS_STORE_ADDR, MEM2_COUNTERS_LOAD_ADDR);
 	#endif
+	
+	#ifdef ROUTER_ENABLE_COUNTERS
+	_router->InitCounters(ROUTER_COUNTERS_ACTIVE_ADDR);
+	#endif
 }
 
 Tile::~Tile(){

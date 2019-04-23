@@ -28,6 +28,7 @@
 //simulator API
 #include <TimedModel.h>
 #include <UBuffer.h>
+#include <UComm.h>
 
 typedef uint16_t FlitType;
 
@@ -46,12 +47,11 @@ enum class RouterState{
 //buffer len (in flits)
 #define ROUTER_BUFFER_LEN 16
 
-
 class TRouter: public TimedModel{
 
 private:
 		#ifdef ROUTER_ENABLE_COUNTERS
-		Metric* _metric_energy;
+		UComm<uint32_t>* _counter_active;		
 		#endif
 
 		//stores info about actively sending ports. For intance, position zero representing 
@@ -76,7 +76,8 @@ private:
 public: 
 		
 		#ifdef ROUTER_ENABLE_COUNTERS
-		Metric* GetMetric(Metrics m);
+		UComm<uint32_t>* GetCommCounterActive();
+		void InitCounters(uint32_t active_counter_addr);
 		#endif
 		
 		uint32_t GetRR();

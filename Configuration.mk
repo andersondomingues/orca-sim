@@ -85,6 +85,15 @@ HFRISCV_READ_ADDRESS_CHECKING := NO
 # Enable counter for instructions' classes (depletes performance).
 HFRISCV_ENABLE_COUNTERS := YES
 
+# ==============================================================[ ROUTER ]
+# Enable counters for number of active cycles
+ROUTER_ENABLE_COUNTERS := YES
+
+# Check whether destination port is connected when tranfering flits.
+# Transfering flit to routers not mapped into the topology results in
+# crash. Set to YES to force checking (depletes performance).
+ROUTER_PORT_CONNECTED_CHECKING := NO
+
 # ========================================================================
 # GENERATION OF COMPILATION PARAMETERS STARTS HERE.
 # DO NOT MODIFY BELOW THIS LINE!
@@ -156,6 +165,14 @@ ifeq ($(HFRISCV_READ_ADDRESS_CHECKING), YES)
 endif
 ifeq ($(HFRISCV_ENABLE_COUNTERS), YES)
 	COMPLINE := $(COMPLINE) -DHFRISCV_ENABLE_COUNTERS
+endif
+
+#router parameters
+ifeq ($(ROUTER_ENABLE_COUNTERS), YES)
+	COMPLINE := $(COMPLINE) -DROUTER_ENABLE_COUNTERS
+endif
+ifeq ($(ROUTER_PORT_CONNECTED_CHECKING), YES)
+	COMPLINE := $(COMPLINE) -DROUTER_PORT_CONNECTED_CHECKING
 endif
 
 export COMPLINE

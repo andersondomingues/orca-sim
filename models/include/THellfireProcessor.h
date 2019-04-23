@@ -23,6 +23,7 @@
 
 //models libs
 #include <UMemory.h>
+#include <TRouter.h>
 #include <UComm.h>
 
 #define EXIT_TRAP			0xe0000000
@@ -76,6 +77,9 @@ uint32_t _last_pc;
 	risc_v_state *s;
 	int i;
 	
+	//TODO: remove instance of router from the inside the processor core
+	TRouter* _router; 
+	
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	UComm<uint32_t>* _counter_iarith;
 	UComm<uint32_t>* _counter_ilogical;
@@ -106,6 +110,8 @@ public:
 	
 	void UpdateCounters(int opcode, int func3);
 	#endif
+
+	void SetRouter(TRouter* t);
 
     risc_v_state GetState();
     

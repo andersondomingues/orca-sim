@@ -32,10 +32,6 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
    
     _x = x_pos;
     _y = y_pos;
-    
-	#ifdef ROUTER_ENABLE_COUNTERS
-	_metric_energy = new Metric(Metrics::ENERGY_PER_CYCLE);
-	#endif
 		
 	//for all ports, create a new input buffer; Note that data is bufferred by
 	//input buffers, since output buffers come from somewhere else;
@@ -54,7 +50,7 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
 TRouter::~TRouter(){
     
     #ifdef ROUTER_ENABLE_COUNTERS
-    delete _metric_energy;
+    delete _counter_active;
     #endif
     
     for(int i = 0; i < 5; i++)
@@ -82,7 +78,7 @@ uint32_t TRouter::GetRR(){
 unsigned long long TRouter::Run(){
     
 	#ifdef ROUTER_ENABLE_COUNTERS
-	bool sampled_already = false;
+	bool is_active = false;
 	#endif
     
 	//CROSSBAR CONTROL: connect priority port to destination if it has any packet to 
@@ -110,28 +106,19 @@ unsigned long long TRouter::Run(){
   	}
   	
     //TODO: add the 4 cycles delay before start sending the burst of flits
-    
-	#ifdef ROUTER_ENABLE_COUNTERS
-	double temp_power_sample = 0;	
-	bool temp_active = false;
-	#endif
-	
-	//FORWARDING: drive flits into destination ports
+    //FORWARDING: drive flits into destination ports
 	for(int i = 0; i < 5; i++){
 	
-		
     	//check whether the switch control is closed for some port
 		if(_switch_control[i] != -1){
 			
 			#ifdef ROUTER_ENABLE_COUNTERS
-			//samples 1 active buffer
-			temp_power_sample += 775.56;
-			temp_active = true;
+			is_active = true;
 			#endif
 			
 			//prevent routing to a non-existing router
 			//TODO: double check the code below. It seems that doesn't work properly.
-			#ifdef OPT_ROUTER_DISABLE_GHOST_ROUTER_CHECKING
+			#ifdef ROUTER_PORT_CONNECTED_CHECKING
 			if(_ob[_switch_control[i]] == nullptr){
 				stringstream ss;
 				ss << this->GetName() << ": unable to route to unknown address" << std::endl;
@@ -146,22 +133,8 @@ unsigned long long TRouter::Run(){
 				_ib[i]->pop(); //remove flit from source port
 				
 				_flits_to_send[i] -= 1; //decrement the number of flits to send
-				
-				
-				
 			}
-		}
-		#ifdef ROUTER_ENABLE_COUNTERS
-		else{
-			temp_power_sample += 364.64;
-		}
-		
-		//5 buffers + combinational logic + p_leak
-		if(temp_active) _metric_energy->Sample(temp_power_sample + 2655.25 + 223.08);
-		else _metric_energy->Sample(temp_power_sample + 575.64 + 223.08);
-			
-		#endif
-			
+		}			
 	}
     	
 	//FREE UNUSED PORTS. must run every cycle
@@ -172,20 +145,24 @@ unsigned long long TRouter::Run(){
 	_round_robin = (_round_robin + 1) % 5;
     	
 	#ifdef ROUTER_ENABLE_COUNTERS
-	if(!sampled_already)
-		_metric_energy->Sample(364.64 + 575.64);
+	if(is_active){
+		_counter_active->Inc(1);
+		is_active = false;		
+	}
 	#endif
     	    
     return 1;
 }
 
 #ifdef ROUTER_ENABLE_COUNTERS
-Metric* TRouter::GetMetric(Metrics m){
-	if(m == Metrics::ENERGY_PER_CYCLE)
-		return _metric_energy;
-	else
-		return nullptr;
+void TRouter::InitCounters(uint32_t couter_active_addr){
+	_counter_active = new UComm<uint32_t>(GetName() + ".counters.active", 0, couter_active_addr);
 }
+
+UComm<uint32_t>* TRouter::GetCommCounterActive(){
+	return this->_counter_active;
+}
+
 #endif
 
 /**

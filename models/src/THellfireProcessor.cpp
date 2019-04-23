@@ -95,6 +95,10 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	if(address == this->GetCommCounterLoadStore()->GetAddr()) return this->GetCommCounterLoadStore()->Read();
 	#endif /* HFRISCV_ENABLE_COUNTERS */
 		
+	#ifdef ROUTER_ENABLE_COUNTERS
+	if(address == _router->GetCommCounterActive()->GetAddr()) return _router->GetCommCounterActive()->Read();
+	#endif /* ROUTER_ENABLE_COUNTERS */
+		
 	UMemory* sel_mem = nullptr;
 	
 	//memread to mem0
@@ -204,6 +208,10 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	if(address == this->GetCommCounterJumps()->GetAddr())     {this->GetCommCounterJumps()->Write(0);     return;}
 	if(address == this->GetCommCounterLoadStore()->GetAddr()) {this->GetCommCounterLoadStore()->Write(0); return;}
 	#endif /* OPT_HFRISC_DISABLE_COUNTERS */
+	
+	#ifdef ROUTER_ENABLE_COUNTERS
+	if(address == _router->GetCommCounterActive()->GetAddr()) {_router->GetCommCounterActive()->Write(0); return;}
+	#endif /* ROUTER_ENABLE_COUNTERS */
 	
 	UMemory* sel_mem = nullptr;
 	
@@ -571,6 +579,13 @@ void THellfireProcessor::SetCommIntr(UComm<int8_t>* comm){
 
 void THellfireProcessor::SetCommStart(UComm<int8_t>* comm){
 	s->comm_start = comm;
+}
+
+/**
+TODO: remove router uinstance from the inside the processor core
+*/
+void THellfireProcessor::SetRouter(TRouter* r){
+	_router = r;
 }
 
 THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {

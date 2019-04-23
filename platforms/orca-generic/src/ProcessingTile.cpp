@@ -61,6 +61,9 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_cpu->SetMem1(this->GetMem1());
 	_cpu->SetMem2(this->GetMem2());
 	
+	//TODO: remove router instance from the inside the processor core
+	_cpu->SetRouter(this->GetRouter());
+	
 	//initialize counters for memory modules
 	//NOTE: mem0 is initialized here, mem1 and mem2
 	//are initialized in Tile.cpp (due inheritance)
@@ -78,7 +81,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 		CPU_COUNTERS_IJUMPS_ADDR,
 		CPU_COUNTERS_ILOADSTORE_ADDR
 	);
-	#endif	
+	#endif
 }
 
 ProcessingTile::~ProcessingTile(){
