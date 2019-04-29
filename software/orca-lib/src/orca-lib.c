@@ -5,6 +5,7 @@
 #include "orca-hardware-counters.h"
 
 //application-specific code
+//IMPORT_APP("morm_sp")
 #include "../../applications/morm_sp/morm_sp.h"
 
 //applications' entry-point (sort of)
