@@ -3,8 +3,7 @@ ARCH = riscv/hf-riscv
 IMAGE_NAME = image
 
 #applications file 
-#SELECTED_APPS = noc_test4_sender noc_test4_receiver
-SELECTED_APPS = example_counters
+SELECTED_APPS = morm_sp
 
 #dir config.
 HFOS_DIR = hellfireos
@@ -26,10 +25,13 @@ include $(HFOS_DIR)/drivers/noc.mak
 include $(HFOS_DIR)/sys/kernel.mak
 
 #includes app loader
-include orca-static-mapping/orca-static-mapping.mak
+#include orca-static-mapping/orca-static-mapping.mak
+
+#includes hardware-specific support
+include orca-lib/orca-lib.mak
 
 #include tasks 
-include $(HFOS_DIR)/../applications/example_counters/app.mak
+include $(HFOS_DIR)/../applications/*/app.mak
 
 #phonies
 .PHONY: clean image_apps image_dependent
@@ -49,7 +51,7 @@ image:
 	make noc
 	make kernel
 	make image_dependent
-	make orca-static-mapping.o
+	make orca-lib.o
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(IMAGE_NAME).elf *.o
 	$(DUMP) --disassemble --reloc $(IMAGE_NAME).elf > $(IMAGE_NAME).lst
 	$(DUMP) -h $(IMAGE_NAME).elf > $(IMAGE_NAME).sec

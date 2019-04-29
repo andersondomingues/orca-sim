@@ -5,11 +5,11 @@ GLOBAL_SETTINGS := -O3 -Wall -Wextra -Werror -g
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 4
+ORCA_NOC_HEIGHT := 6
 
 # Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_WIDTH  := 4
+ORCA_NOC_WIDTH  := 6
 
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
@@ -17,7 +17,7 @@ ORCA_NOC_WIDTH  := 4
 ORCA_PULSE_LENGTH  := 1000000
 
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
-ORCA_PULSES_TO_SIM := INF
+ORCA_PULSES_TO_SIM := 10
 
 # ===========================================================[ URSA ENGINE ]
 # Check whether some event has been schedule to run in some point of 

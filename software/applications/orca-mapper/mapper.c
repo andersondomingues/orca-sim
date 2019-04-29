@@ -76,10 +76,13 @@ void app_main(void)
 {
 	//the spawner is instantiated as a best-effort task to 
 	//nagate any impact on currently executing tasks
-	if(hf_cpuid() == 2)
-		hf_spawn(mapper_listener, 0, 0, 0, "mapper", 4096);
+	//if(hf_cpuid() == 2)
+	//	hf_spawn(mapper_listener, 0, 0, 0, "mapper", 4096);
 	
-	hf_spawn(test_counters_memory, 0, 0, 0, "test_counters", 4096);
+	hf_spawn(morm_sp_task, 0, 0, 0, "test_counters", 4096);
+	
+	//if cluster_master then spawn lm
+	//if global_master then spawn gp
 	
 	//printf("task_id => %d", hf_id("idle"));	
 }

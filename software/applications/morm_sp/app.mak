@@ -1,8 +1,4 @@
-APP_DIR = $(SRC_DIR)/../applications/noc_test4
+APP_DIR = $(SRC_DIR)/../applications/morm_sp
 
-noc_test4_sender.o:
-	$(CC) $(CFLAGS) -c $(APP_DIR)/noc_test4_sender.c  -o noc_test4_sender.o
-
-noc_test4_receiver.o:
-	$(CC) $(CFLAGS) -c $(APP_DIR)/noc_test4_receiver.c -o noc_test4_receiver.o
-	
+morm_sp.o:
+	$(CC) $(CFLAGS) -c $(APP_DIR)/morm_sp.c -o morm_sp.o
