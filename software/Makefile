@@ -3,7 +3,7 @@ ARCH = riscv/hf-riscv
 IMAGE_NAME = image
 
 #applications file 
-SELECTED_APPS = morm_sp
+SELECTED_APPS = narwal-launcher
 
 #dir config.
 HFOS_DIR = hellfireos

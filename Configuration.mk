@@ -1,6 +1,6 @@
 # =======================================================[ GLOBAL SETTINGS ]
 # Flags set here will be propagated to all modules, including
-GLOBAL_SETTINGS := -O3 -Wall -Wextra -Werror -g
+GLOBAL_SETTINGS := -O3 -Wall -Wextra -Werror -g -std=c++11
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
