@@ -30,13 +30,9 @@
 
 //model API
 #include <UMemory.h>
-#include <UFile.h>
-#include <ProcessingElement.h>
+#include <TArm7TDMI.h>
 
 int main(int argc, char** argv){
-
-	if(argc != 1)
-		throw runtime_exception("Usage: <??>.exe ROMNAME");
 
 	//memory modules
 	UMemory* mem_sysrom = new UMemory(RAM_SYSROM_BASE, RAM_SYSROM_SIZE);
@@ -49,33 +45,15 @@ int main(int argc, char** argv){
 	UMemory* mem_sysrom = new UMemory(RAM_PAK_BASE, RAM_PAK_SIZE);	
 	UMemory* mem_sysrom = new UMemory(RAM_CART_BASE, RAM_CART_SIZE);
 
-	Arm7tdmi* arm7cpu = new Arm7tdmi();
+	TArm7TDMI* arm7 = new TArm7TDMI("test-arm-elf");
 
 	//instantiate simulation
 	Simulator* s = new Simulator();
 	s->Schedule(Event(1, arm7cpu));
 	
-	
-			std::cout << pes[x][y]->ToString() << std::endl;		
-		}
-	}
-
-	//load binaries into main memories
-	int index = 0;
-	std::string code_file;
-	for(int x = 0; x < NOC_W_SIZE; x++){
-		for(int y = 0; y < NOC_H_SIZE; y++){
-				index = x + NOC_W_SIZE * y;
-				code_file = std::string(argv[1]) + "code" + std::to_string(index) + ".bin";
-				pes[x][y]->GetMem0()->LoadBin(code_file, MEM0_BASE, MEM0_SIZE);
-		}
-	}
-	
 	//keep simulating until something happen
 	try{
-		while(1){
-			s->Run(1);
-		}
+		s->Run(1);
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
 	}
