@@ -48,7 +48,81 @@ typedef enum{
     UND  = 0x1B /* 1 1011b */
 } ArmProcModes;
 
-//Banked registers (general purpose regs)
+//--------------------------------------------
+// Instructions
+//--------------------------------------------
+
+//moves
+#define MOV
+
+//arithmetic
+#define ADD
+#define ADC /* add with carry */
+#define SUB
+#define SBC /* sub with carry */
+#define NEG /* negate */
+#define MUL /* multiply */
+#define CMP /* compare */
+#define CMN /* compare negative */
+
+//logical
+#define AND 
+#define EOR
+#define OR
+#define BIC /* bit clear */
+#define MVN /* move not */
+#define TST /* test bits */
+
+//shifts/rotate
+#define LSL /* logical shift left */
+#define LSR /* logical shift right */
+#define ASR /* arithmetic shift right */
+#define ROR /* rotate right */
+
+//branches
+#define BEQ
+#define BNE
+#define BCS
+#define BCC
+#define BMI
+#define BPL
+#define BVS
+#define BVC
+#define BHI
+#define BLS
+#define BGE
+#define BLT
+#define BGT
+#define BLE
+#define B
+#define BL
+#define BX /* optional state change */
+
+//loades
+#define LDR
+#define LDRH
+#define LDRB
+#define LDRSH
+#define LDRSB
+#define LDMIA
+
+//store
+#define STR
+#define STRH
+#define STRB
+#define STMIA
+
+//push/pop
+#define PUSH
+#define POP
+
+//software interrupt
+#define SWI
+
+
+//--------------------------------------------
+// Banked registers (general purpose regs)
+//--------------------------------------------
 #define R0  _registers[0]
 #define R2  _registers[2]
 #define R1  _registers[1]
@@ -62,21 +136,13 @@ typedef enum{
 #define R10 _registers[10]
 #define R11 _registers[11]
 #define R12 _registers[12]
-
-//SP (stack pointer)
-#define R13 _registers[13]
+#define R13 _registers[13] /* SP (stack pointer) */
 #define SP  _registers[13]
-
-//LR (link register) 
-#define R14 _registers[14]
+#define R14 _registers[14] /* LR (link register) */
 #define LR  _registers[14]
-
-//PC 
-#define R15 _registers[15]
+#define R15 _registers[15] /* PC (program counter) */
 #define PC  _registers[15]
-
 #define CSPR _registers[16]
-
 #define R13SVC _registers[17]
 #define R14SVC _registers[18]
 #define R13ABT _registers[19]
@@ -85,7 +151,6 @@ typedef enum{
 #define R14UND _registers[22]
 #define R13IRQ _registers[23]
 #define R14IRQ _registers[24]
-
 #define R8FIQ  _registers[25]
 #define R9FIQ  _registers[26]
 #define R10FIQ _registers[27]
@@ -93,8 +158,7 @@ typedef enum{
 #define R12FIQ _registers[29]
 #define R13FIQ _registers[30]
 #define R14FIQ _registers[31]
-
-#define SPSRSVC _registers[32]
+#define SPSRSVC _registers[32] /* ?? */
 #define SPSRABT _registers[33]
 #define SPSRUND _registers[34]
 #define SPSRIRQ _registers[35]
@@ -115,7 +179,6 @@ typedef enum{
 #define PSR_T   /* thumb mode state -- 4T and above */
 #define PSR_M   /* processor mode (from modes) */
 
-
 /**
  * This class implements a model for an ARM7-TDMI processor, which 
  * implements the ARM-V4T instruction set (ARM v.4 plus THUMB v.1
@@ -127,9 +190,9 @@ class TArm7TDMI : TimedModel{
     private:
         int32_t _registers[37]; /* all registers' array */
 		
-        int32_t fetch();
-        int32_t decode();
-        int32_t execute();
+        int32_t _fetch();
+        int32_t _decode();
+        int32_t _execute();
 
     public:
 		void Reset();
