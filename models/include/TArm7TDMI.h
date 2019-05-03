@@ -6,8 +6,6 @@
  *
  * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
  * 
- * This file is adapted from HF-RISC SoC project, which can be found at johanns' 
- * reposiitory at GitHub: https://github.com/sjohann81/hf-risc
  *-------------------------------------------------------------------------------
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +35,25 @@ typedef enum{
     HALF = 16,
     WORD = 32
 } ArmDataTypes;
+
+enum ArmConds{
+              // FLAGS              MEANING
+	EQ = 0x0, // Z set              equals
+	NE = 0x1, // Z clear            not equals
+	CS = 0x2, // C set              unsigned higher or same
+	CC = 0x3, // C clear            unsigned lower
+	MI = 0x4, // N set              negative
+	PL = 0x5, // N clear            positive or zero
+	VS = 0x6, // V set              overflow
+	VC = 0x7, // V clear            not overflow
+	HI = 0x8, // C set and Z clear  unsigned higher
+	LS = 0x9, // C clearor Z clear  unsigned lower or same
+	GE = 0xA, // N = V              greater of equals
+	LT = 0xB, // N not equals V     less than
+	GT = 0xC, // Z clear and (N=V)  greater than
+	LE = 0xD, // Z ser or (N!=V)    lees than or equal
+	AL = 0xE  // (ignored)          always
+}
 
 //processor modes 
 typedef enum{
@@ -164,7 +181,7 @@ typedef enum{
 #define SPSRIRQ _registers[35]
 #define SPSRFIQ _registers[36]
 
-//PSR bits
+//PSR bits - Current Program Status Register
 #define PSR_N   /* negative */
 #define PSR_Z   /* zero */
 #define PSR_C   /* carry */
