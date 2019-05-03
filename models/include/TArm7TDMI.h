@@ -200,7 +200,9 @@ typedef enum{
  * This class implements a model for an ARM7-TDMI processor, which 
  * implements the ARM-V4T instruction set (ARM v.4 plus THUMB v.1
  * instructions. ARM ISA covers 32-bit width instructions, 
- * and THUMB ISA covers 16-bit and 8-bit width instructions.
+ * and THUMB ISA covers 16-bit and 8-bit width instructions. TDMI 
+ * stands for "16 bit [T]humb + JTAG [D]ebug + fast [M]ultiplier
+ * + enhanced [I]CE".
  */
 class TArm7TDMI : TimedModel{
 

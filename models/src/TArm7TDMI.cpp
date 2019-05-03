@@ -69,6 +69,11 @@ long long unsigned int TArm7TDMI::Run(){
 		// cond  imm  opcode set  RN     RD      operand2
 		case DP:
 		
+			if(I == 0) //operand 2 is a register
+				
+			else       //operand 2 is immediate
+				 
+		
 			switch(opcode){
 				case 0x0: RD = RN & OP2;        break; //AND
 				case 0x1: RD = RN <EOR> OP2;    break; //EOR (XOR)
@@ -90,10 +95,16 @@ long long unsigned int TArm7TDMI::Run(){
 					//unreachable 
 					break;
 			}
-			
 			break;
-	
-	
+		
+		case MUL: //multiply
+		case MLA: //multiply accumulate
+			break;
+			
+		case SWI: //software interrupt
+			
+		
+			break;
 	}
 
 	
