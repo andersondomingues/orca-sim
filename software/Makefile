@@ -6,7 +6,7 @@ ARCH = riscv/hf-riscv
 IMAGE_NAME = image
 
 #applications file 
-SELECTED_APPS = narwal-launcher example-counters
+SELECTED_APPS = producer-consumer
 
 #dir config.
 HFOS_DIR = hellfireos

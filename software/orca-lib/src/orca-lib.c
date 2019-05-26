@@ -25,8 +25,9 @@
 
 //application-specific header
 //TODO: generate automatically based on the IMPORT_APP("app_name") primitive
-#include "../../applications/example-counters/example-counters.h"
-#include "../../applications/narwal-launcher/narwal-launcher.h"
+//#include "../../applications/example-counters/example-counters.h"
+//#include "../../applications/narwal-launcher/narwal-launcher.h"
+#include "../../applications/producer-consumer/producer-consumer.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -35,19 +36,9 @@
 //routines that affect all applications can be handled here.
 void app_main(void)
 {
-	switch(hf_cpuid()){
-        
-    //tasks below will be loaded to node 2
-	case 2:
-	
-    //tasks below will be loaded to node 3
-    case 3:
+    //use hf_cpuid() to discrimate nodes
 
-    //tasks below will be loaded to all nodes
-	default:
-	    hf_spawn(receiver, 0, 0, 0, "narwal-launcher", 4096);
-        hf_spawn(counters_report, 0, 0, 0, "counters-report", 4096);
-        break;
-	}
+    hf_spawn(producer, 0, 0, 0, "producer", 4096);
+    hf_spawn(consumer, 0, 0, 0, "consumer", 4096);
 }
 
