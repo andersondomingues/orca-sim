@@ -6,7 +6,7 @@
 
 //application-specific code
 //IMPORT_APP("morm_sp")
-//#include "../../applications/morm_sp/morm_sp.h"
+#include "../../applications/morm_sp/morm_sp.h"
 #include "../../applications/narwal-launcher/narwal-launcher.h"
 
 //applications' entry-point (sort of)
@@ -16,7 +16,9 @@ void app_main(void)
 		case 2:
 		case 3:
 		default:
-			hf_spawn(receiver, 0, 0, 0, "narwal-launcher", 4096);			
+			hf_spawn(receiver, 0, 0, 0, "narwal-launcher", 4096);
+                        hf_spawn(morm_sp_task, 0, 0, 0, "morm-sp", 4096);
+
 			break;
 	}
 }
