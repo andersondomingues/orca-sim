@@ -3,7 +3,7 @@ ARCH = riscv/hf-riscv
 IMAGE_NAME = image
 
 #applications file 
-SELECTED_APPS = narwal-launcher morm_sp
+SELECTED_APPS = narwal-launcher example-counters
 
 #dir config.
 HFOS_DIR = hellfireos
@@ -33,7 +33,7 @@ include $(HFOS_DIR)/../applications/*/app.mak
 #phonies
 .PHONY: clean
 
-INC_DIRS += -I $(HFOS_DIR)/lib/include -I $(HFOS_DIR)/sys/include -I $(HFOS_DIR)/drivers/noc/include
+INC_DIRS += -I $(HFOS_DIR)/lib/include -I $(HFOS_DIR)/sys/include -I $(HFOS_DIR)/drivers/noc/include -I $(HFOS_DIR)/../orca-lib/include
 CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
 	-DMAX_TASKS=$(MAX_TASKS) -DMEM_ALLOC=$(MEM_ALLOC) \
 	-DHEAP_SIZE=$(HEAP_SIZE) -DMUTEX_TYPE=$(MUTEX_TYPE) \

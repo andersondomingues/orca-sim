@@ -1,6 +1,8 @@
 #ifndef __ORCA_LIB_H
 #define __ORCA_LIB_H
 
+#include "hellfire.h"
+
 //macro for including apps headers
 
 #define IMPORT_DEF(x) "#include x"

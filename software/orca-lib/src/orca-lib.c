@@ -1,60 +1,53 @@
+/*
+ * Implementation file for ORCA-LIB library.
+ * Copyright (C) 2018-2019 Anderson Domingues, <ti.andersondomingues@gmail.com>
+ * This file is part of project URSA (http://https://github.com/andersondomingues/ursa).
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
+ 
 //basic resources
 #include "orca-lib.h"
 
 //extended functionalities
 #include "orca-hardware-counters.h"
 
-//application-specific code
-//IMPORT_APP("morm_sp")
-#include "../../applications/morm_sp/morm_sp.h"
+//application-specific header
+//TODO: generate automatically based on the IMPORT_APP("app_name") primitive
+#include "../../applications/example-counters/example-counters.h"
 #include "../../applications/narwal-launcher/narwal-launcher.h"
 
-//applications' entry-point (sort of)
+//Task mapping routine and entry-point. Please note that 
+//task mapping is done through software and the code below
+//runs at the startup of each node. We select the tasks to 
+//be loaded into each node according to nodes' ID. Startup
+//routines that affect all applications can be handled here.
 void app_main(void)
 {
 	switch(hf_cpuid()){
-		case 2:
-		case 3:
-		default:
-			hf_spawn(receiver, 0, 0, 0, "narwal-launcher", 4096);
-                        hf_spawn(morm_sp_task, 0, 0, 0, "morm-sp", 4096);
+        
+    //tasks below will be loaded to node 2
+	case 2:
+	
+    //tasks below will be loaded to node 3
+    case 3:
 
-			break;
+    //tasks below will be loaded to all nodes
+	default:
+	    hf_spawn(receiver, 0, 0, 0, "narwal-launcher", 4096);
+        hf_spawn(counters_report, 0, 0, 0, "counters-report", 4096);
+        break;
 	}
 }
 
-
-/*
-
-void app_main(void)
-{
-
-	switch( hf_cpuid() ) {
-
-	case 15: 
-		hf_spawn(sender, 0, 0, 0, "sender", 4096);		
-	        hf_spawn(receiver, 0, 0, 0, "receiver", 4096);
-		break;
-
-	case 5: hf_spawn(sender, 0, 0, 0, "sender", 4096);
-		break;
-
-	case 12: hf_spawn(sender, 0, 0, 0, "sender", 4096);	
-		break;
-	
-	case RECV_ADDR: hf_spawn(receiver, 0, 0, 0, "receiver", 4096);
-		break;	
-
-	case 9: hf_spawn(receiver, 0, 0, 0, "receiver", 4096);
-		break;
-
-	default : break;
-
-	}
-	
-	//if(hf_cpuid() == 2)
-	//	hf_spawn(sender, 0, 0, 0, "sender", 4096);		
-	//else if (hf_cpuid() == 3)
-	//	hf_spawn(receiver, 0, 0, 0, "receiver", 4096);	
-}
-*/

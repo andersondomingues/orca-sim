@@ -17,7 +17,7 @@ ORCA_NOC_WIDTH  := 4
 ORCA_PULSE_LENGTH  := 1000000
 
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
-ORCA_PULSES_TO_SIM := 10
+ORCA_PULSES_TO_SIM := INF
 
 # ===========================================================[ URSA ENGINE ]
 # Check whether some event has been schedule to run in some point of 
