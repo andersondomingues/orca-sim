@@ -16,8 +16,8 @@ LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
 #Flags to be used during compilation of the platform. Note 
 #that they may be different form flags used for compiling
 #dependencies.
-GCC_FLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include -Iinclude \
-	-lpthread $(COMPLINE)
+GCC_FLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
+    -Iinclude -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
 
 LD_FLAGS   :=-L../../bin -lmod -lsim
 

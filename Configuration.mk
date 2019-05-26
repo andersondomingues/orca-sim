@@ -69,7 +69,7 @@ MEMORY_READ_ADDRESS_CHECKING := NO
 MEMORY_WIPE_ADDRESS_CHECKING := NO
 
 # Enable counter for read and write operations (depletes performance).
-MEMORY_ENABLE_COUNTERS := YES
+MEMORY_ENABLE_COUNTERS := NO
 
 # ==============================================================[ HFRISCV ]
 # Check whether address are mapped to some memory range before writing
@@ -83,11 +83,11 @@ HFRISCV_WRITE_ADDRESS_CHECKING := NO
 HFRISCV_READ_ADDRESS_CHECKING := NO
 
 # Enable counter for instructions' classes (depletes performance).
-HFRISCV_ENABLE_COUNTERS := YES
+HFRISCV_ENABLE_COUNTERS := NO
 
 # ==============================================================[ ROUTER ]
 # Enable counters for number of active cycles
-ROUTER_ENABLE_COUNTERS := YES
+ROUTER_ENABLE_COUNTERS := NO
 
 # Check whether destination port is connected when tranfering flits.
 # Transfering flit to routers not mapped into the topology results in
@@ -98,9 +98,6 @@ ROUTER_PORT_CONNECTED_CHECKING := NO
 # GENERATION OF COMPILATION PARAMETERS STARTS HERE.
 # DO NOT MODIFY BELOW THIS LINE!
 # ========================================================================
-
-#global parameters
-COMPLINE := $(COMPLINE)$(GLOBAL_SETTINGS)
 
 #ORCA parameters
 ifneq ($(ORCA_PULSES_TO_SIM), INF)
@@ -176,3 +173,4 @@ ifeq ($(ROUTER_PORT_CONNECTED_CHECKING), YES)
 endif
 
 export COMPLINE
+export GLOBAL_SETTINGS

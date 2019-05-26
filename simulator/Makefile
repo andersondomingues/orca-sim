@@ -4,7 +4,7 @@ HEADERDIR :=./include
 OUTPUTDIR :=./bin
 LIBNAME := libsim.a 
 
-CPPFLAGS := -I$(HEADERDIR) -c $(COMPLINE)
+CPPFLAGS := -I$(HEADERDIR) -c $(COMPLINE) $(GLOBAL_SETTINGS)
 
 TARGET_DEPS := \
 	$(OUTPUTDIR)/Event.o \

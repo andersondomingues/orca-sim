@@ -1,3 +1,6 @@
+#platform-specific configuration
+include ../Configuration.mk
+
 #arch confs.
 ARCH = riscv/hf-riscv
 IMAGE_NAME = image
@@ -34,11 +37,15 @@ include $(HFOS_DIR)/../applications/*/app.mak
 .PHONY: clean
 
 INC_DIRS += -I $(HFOS_DIR)/lib/include -I $(HFOS_DIR)/sys/include -I $(HFOS_DIR)/drivers/noc/include -I $(HFOS_DIR)/../orca-lib/include
+
 CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
 	-DMAX_TASKS=$(MAX_TASKS) -DMEM_ALLOC=$(MEM_ALLOC) \
 	-DHEAP_SIZE=$(HEAP_SIZE) -DMUTEX_TYPE=$(MUTEX_TYPE) \
-	-DFLOATING_POINT=$(FLOATING_POINT) -DKERNEL_LOG=$(KERNEL_LOG) \
-	$(NOC_FLAGS) -DDEBUG_PORT
+	-DFLOATING_POINT=$(FLOATING_POINT) \
+	-DKERNEL_LOG=$(KERNEL_LOG) \
+	$(COMPLINE) \
+	$(NOC_FLAGS) \
+	-DDEBUG_PORT
 
 NOC_FLAGS = -DNOC_INTERCONNECT -DNOC_PACKET_SIZE=64 -DNOC_PACKET_SLOTS=64 \
 	    -DNOC_WIDTH=4 -DNOC_HEIGHT=4

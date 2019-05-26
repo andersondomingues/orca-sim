@@ -26,6 +26,18 @@
 #include "orca-lib.h"
 #include "orca-hardware-counters.h"
 
+#ifndef HFRISC_ENABLE_COUNTERS
+#error "This application requires HFRISC_ENABLE_COUNTERS to be set."
+#endif
+
+#ifndef MEMORY_ENABLE_COUNTERS
+#error "This application requires MEMORY_ENABLE_COUNTERS to be set."
+#endif
+
+#ifndef ROUTER_ENABLE_COUNTERS
+#error "This application requires ROUTER_ENABLE_COUNTERS to be set."
+#endif
+
 void counters_report(void) __attribute__((section (".tasks")));
 
 #endif /* _MORM_SP_H */
