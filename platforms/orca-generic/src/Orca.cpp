@@ -1,8 +1,6 @@
 /** 
- * This file is part of project URSA. More information on the project
- * can be found at 
- *
- * URSA's repository at GitHub: http://https://github.com/andersondomingues/ursa
+ * Implementation file for ORCA-SIM program.
+ * This file is part of project URSA. http://https://github.com/andersondomingues/ursa
  *
  * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
  *
@@ -19,6 +17,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
+ 
 #include <iostream>
 #include <iomanip>
 #include <chrono>
@@ -195,9 +194,9 @@ void check_params(){
 	
 }
 
-int main(int argc, char** argv){
+int main(int __attribute__((unused)) argc, char** argv){
 
-    argc = argc; //workaround to use -Wextra
+    //argc = argc; //workaround to use -Wextra
 
 	std::cout << "URSA/ORCA Platform " << std::endl;
 
