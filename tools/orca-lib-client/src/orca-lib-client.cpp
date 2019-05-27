@@ -125,3 +125,31 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t
 	std::cout << std::endl;	
 	return 0;
 }
+
+//REMARK: in hfos, the channel is passed as parameter to hf_recv to 
+//receive the next message in the given channel. Here, we cannot 
+//foresee the channel of the next message, so the message is received 
+//regardless the channel. Thus, we changed channel parameter so that it
+//can return the channel in which the message has been received. With 
+//this information, top software is capable of demuxing the message and,
+//for example, discard messages that came from some channel. 
+int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port, 
+			int8_t *buffer, uint16_t *size, uint16_t *channel,
+			std::string server_addr, uint32_t server_port){
+
+	//instantiate a new udp server
+	udp_server* userver;
+	userver = new udp_server(server_addr, server_port);
+
+	//recv from udp network
+	userver->recv((char*)buffer, RECV_BUFFER_LEN);
+	
+	//decode header
+	*source_cpu  = 1;
+	*source_port = 2;
+	*size = 4;
+	*channel = 6;
+	
+	return 0;
+}
+

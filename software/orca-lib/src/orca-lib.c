@@ -40,6 +40,6 @@ void app_main(void)
 {
     //use hf_cpuid() to discrimate nodes
 
-    hf_spawn(example_echo_print, 0, 0, 0, "producer", 4096);
+    hf_spawn(example_echo_print, 0, 0, 0, "echo-print", 4096);
 }
 

@@ -1,5 +1,5 @@
-#ifndef _LIBHF_H
-#define _LIBHF_H
+#ifndef _ORCA_LIB_CLIENT_H
+#define _ORCA_LIB_CLIENT_H
 
 #include <unistd.h>
 #include <stdio.h>
@@ -41,7 +41,12 @@
 
 void dump(char* _mem, uint32_t base, uint32_t length);
 
-int32_t hf_send(uint16_t target_cpu, uint16_t target_port, int8_t *buf, uint16_t size, uint16_t channel,
+int32_t hf_send(uint16_t target_cpu, uint16_t target_port, 
+	int8_t *buf, uint16_t size, uint16_t channel,
+	std::string server_addr, uint32_t server_port);
+	
+int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port, 
+	int8_t *buf, uint16_t *size, uint16_t *channel,
 	std::string server_addr, uint32_t server_port);
 
-#endif /*_LIBHF_H*/
+#endif /*_ORCA_LIB_CLIENT_H */
