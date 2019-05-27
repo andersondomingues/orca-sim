@@ -22,6 +22,9 @@
 #include <iomanip>
 #include <chrono>
 
+//signal manip
+#include <signal.h>
+
 //simulation artifacts (from URSA)
 #include <Event.h>
 #include <Simulator.h>
@@ -43,6 +46,14 @@
 
 //instantiates a mesh of MxN PE
 Tile* tiles[ORCA_NOC_WIDTH][ORCA_NOC_HEIGHT];
+
+//interrupt signal catcher
+static volatile sig_atomic_t interruption = 0;
+
+static void sig_handler(int _){
+	(void)_;
+	interruption = 1;
+}
 
 //connect routers to each other
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
@@ -198,6 +209,9 @@ int main(int __attribute__((unused)) argc, char** argv){
 
     //argc = argc; //workaround to use -Wextra
 
+	//register interruption handler
+	signal(SIGINT, sig_handler);
+
 	std::cout << "URSA/ORCA Platform " << std::endl;
 
 	std::cout << "==============[ PARAMETERS ]" << std::endl;	
@@ -279,7 +293,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 	//keep simulating until something happen
 	uint32_t gigacycles = 0;
 	try{
-		while(1){
+		while(!interruption){
 			
 			std::chrono::high_resolution_clock::time_point t1 = 
 				std::chrono::high_resolution_clock::now();

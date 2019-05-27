@@ -19,9 +19,11 @@ ursa.*
 perf.*
 
 #catkin generated files
-tools/ros_integration/.catkin_workspace
-tools/ros_integration/build/
-tools/ros_integration/devel/
+tools/ros-integration/.catkin_workspace
+tools/ros-integration/.catkin_tools
+tools/ros-integration/build/
+tools/ros-integration/devel/
+
 
 #compilation intermediate files
 #please note that files from software
