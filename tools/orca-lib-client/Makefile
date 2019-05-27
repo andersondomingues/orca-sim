@@ -1,12 +1,13 @@
-LIBNAME = orca-lib.a
+LIBNAME = orca-lib-client.a
 SRCDIR  = ./src
 BINDIR  = ./bin
 INCDIR  = ./include
 
 CPPFLAGS = -O3 -g -Wall -Wextra -Werror -I$(INCDIR) -c
+
 TRGTDEPS = \
 	$(BINDIR)/udp_client_server.o \
-	$(BINDIR)/orca-lib.o
+	$(BINDIR)/orca-lib-client.o
 
 #compile all classes (.cpp) into %.o files
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp 

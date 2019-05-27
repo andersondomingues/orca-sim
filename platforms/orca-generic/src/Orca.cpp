@@ -296,11 +296,13 @@ int main(int __attribute__((unused)) argc, char** argv){
 			
 			//converts mili to seconds before calculating the frequency
 			double hertz = ORCA_PULSE_LENGTH / (double)(duration / 1000);
-			
+		
+                        unsigned long long int cycle = s->GetGlobalTime();
+
 			//divide frequency by 1k (Hz -> KHz)
-			std::cout << "notice: pulse #" << gigacycles << " took " 
+			std::cout << "notice: cycle #" << cycle << ", pulse #" << gigacycles << " took " 
 				<< (duration / 1000.0)<< " seconds @ "
-				<< (hertz / 1000.0) <<" KHz)" << std::endl;
+				<< (hertz / 1000.0) <<" KHz" << std::endl;
 		
 			//simulate until reach the limit of pulses
 			#ifdef ORCA_PULSES_TO_SIM

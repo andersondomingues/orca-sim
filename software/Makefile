@@ -1,12 +1,12 @@
+#applications file 
+SELECTED_APPS = producer-consumer example-echo-print
+
 #platform-specific configuration
 include ../Configuration.mk
 
 #arch confs.
 ARCH = riscv/hf-riscv
 IMAGE_NAME = image
-
-#applications file 
-SELECTED_APPS = producer-consumer
 
 #dir config.
 HFOS_DIR = hellfireos

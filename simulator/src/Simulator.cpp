@@ -44,6 +44,10 @@ unsigned long long Simulator::Run(unsigned long long time){
 	return _globalTime;
 }
 
+unsigned long long Simulator::GetGlobalTime(){
+    return _globalTime;
+}
+
 /**
  * @brief Schedule an event to run in a certain period of time
  * @param Event to run.*/

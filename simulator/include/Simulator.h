@@ -32,7 +32,8 @@ public:
 
 	unsigned long long Run(unsigned long long time = 100000);
     
-    void Reset();
+        void Reset();
+        unsigned long long GetGlobalTime();
 
 	/** schedules a event */
 	void Schedule(const Event& e);

@@ -62,7 +62,7 @@ $(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(SIMULATOR_LIB) $(BINARY_DIR)/$(MO
 $(BINARY_DIR)/$(IMAGE_BIN):
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m Building software (kernel + loader)\e[0m"
-	@echo "$'\e[7m==================================\e[0m"
+	@echo "$'\e[7m==================================\e[0m"	
 	make -C $(SOFTWARE_DIR) image
 
 #documentation
