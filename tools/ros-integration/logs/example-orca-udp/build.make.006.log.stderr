@@ -1,0 +1,7 @@
+[01m[K/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/src/OrcaNode.cpp:4:29:[m[K [01;31m[Kfatal error: [m[Korca-lib-client.h: No such file or directory
+ #include "orca-lib-client.h"
+                             [01;31m[K^[m[K
+compilation terminated.
+make[2]: *** [CMakeFiles/example-orca-udp_node.dir/src/OrcaNode.cpp.o] Error 1
+make[1]: *** [CMakeFiles/example-orca-udp_node.dir/all] Error 2
+make: *** [all] Error 2

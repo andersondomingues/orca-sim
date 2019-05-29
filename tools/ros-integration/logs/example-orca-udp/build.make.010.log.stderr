@@ -1,0 +1,16 @@
+[01m[K/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/src/OrcaNode.cpp:[m[K In function ‘[01m[Kvoid orca_ros_to_mpsoc_callback(const ConstPtr&)[m[K’:
+[01m[K/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/src/OrcaNode.cpp:76:45:[m[K [01;31m[Kerror: [m[Kinvalid conversion from ‘[01m[Kconst char*[m[K’ to ‘[01m[Kuint32_t {aka unsigned int}[m[K’ [[01;31m[K-fpermissive[m[K]
+         hf_send_setup(MPSOC_ADDR, MPSOC_PORT[01;31m[K)[m[K;
+                                             [01;31m[K^[m[K
+[01m[K/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/src/OrcaNode.cpp:76:45:[m[K [01;31m[Kerror: [m[Kcould not convert ‘[01m[K9999[m[K’ from ‘[01m[Kint[m[K’ to ‘[01m[Kstd::__cxx11::string {aka std::__cxx11::basic_string<char>}[m[K’
+[01m[K/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/src/OrcaNode.cpp:97:75:[m[K [01;31m[Kerror: [m[Ktoo many arguments to function ‘[01m[Kint32_t hf_send(uint16_t, uint16_t, int8_t*, uint16_t, uint16_t)[m[K’
+  hf_send(5, 5000, (int8_t*)&msg, sizeof(msg), 1000, MPSOC_ADDR, MPSOC_PORT[01;31m[K)[m[K;
+                                                                           [01;31m[K^[m[K
+In file included from [01m[K/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/../../../orca-lib-client/include/orca-lib.h:1:0[m[K,
+                 from [01m[K/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/src/OrcaNode.cpp:4[m[K:
+[01m[K/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/../../../orca-lib-client/include/orca-network-base.h:35:9:[m[K [01;36m[Knote: [m[Kdeclared here
+ int32_t [01;36m[Khf_send[m[K(uint16_t target_cpu, uint16_t target_port,
+         [01;36m[K^~~~~~~[m[K
+make[2]: *** [CMakeFiles/example-orca-udp_node.dir/src/OrcaNode.cpp.o] Error 1
+make[1]: *** [CMakeFiles/example-orca-udp_node.dir/all] Error 2
+make: *** [all] Error 2

@@ -330,7 +330,10 @@ int main(int __attribute__((unused)) argc, char** argv){
 		goto clean;
 	}
 	
-	std::cout << "Simulation ended without errors."	 << std::endl;
+	if(interruption == 1)
+		std::cout << std::endl << "Simulation interrupted."	 << std::endl;	
+	else
+		std::cout << "Simulation ended without errors."	 << std::endl;
 	
 	//show buffer status
 	std::cout << "==============[ BUFFERS' STATUSES ]" << std::endl;

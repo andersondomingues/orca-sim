@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "geometry_msgs/Twist.h"
 
-#include "orca-lib-client.h"
+#include "orca-lib.h"
 
 #include <iostream>
 
@@ -28,6 +28,8 @@ void* recv_from_mpsoc(void* v){
 	uint16_t source_cpu, source_port, data_size, channel;
 	geometry_msgs::Twist msg;
 	
+        hf_recv_setup(ROSNODE_PORT);
+
 	while(1){
 
 		// Receive one message from the mpsoc through udp network 
@@ -51,10 +53,10 @@ void* recv_from_mpsoc(void* v){
 		//
 		// Please note that there is no need to inform ip address and port
 		// as this information is compiled within the platform (see Configuration.mk)
-		int res = hf_recv(&source_cpu, &source_port,
-				 (int8_t*)&msg, &data_size, &channel,
-				 ROSNODE_ADDR, ROSNODE_PORT);
-		
+		int res = hf_recv(&source_cpu, &source_port, (int8_t*)&msg, &data_size, &channel);
+
+                while(1);
+
 		ROS_INFO("point [%f, %f, %f] , rotation [%f, %f, %f]", 
 			msg.linear.x, msg.linear.y, msg.linear.z,
 			msg.angular.x, msg.angular.y, msg.angular.z);
@@ -73,6 +75,8 @@ void orca_ros_to_mpsoc_callback(const geometry_msgs::Twist::ConstPtr& msg){
 		msg->linear.x, msg->linear.y, msg->linear.z,
 		msg->angular.x, msg->angular.y, msg->angular.z);
 		
+        hf_send_setup(MPSOC_ADDR, MPSOC_PORT);
+
 	// Forward the message to the mpsoc via udp using the 
 	// platform's client library. The function hf_send is similar to 
 	// the send function of udp with the addition of parameters 
@@ -92,7 +96,7 @@ void orca_ros_to_mpsoc_callback(const geometry_msgs::Twist::ConstPtr& msg){
 	// - channel			tag. can be used to demux when receiving from multiple nodes
 	// - mpsoc_addr			ip address of the mpsoc in the udp/ip network
 	// - mpsoc_port			port of the mpsoc in the udp/ip network
-	hf_send(5, 5000, (int8_t*)&msg, sizeof(msg), 1000, MPSOC_ADDR, MPSOC_PORT);		
+	hf_send(5, 5000, (int8_t*)&msg, sizeof(msg), 1000);	
 }
 
 //Main routine: setup publishers and subscribers. Data incoming from the 

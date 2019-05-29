@@ -1,0 +1,11 @@
+[01m[K/home/adomingues/gaph/ursa/tools/orca-lib-client/src/orca-network-base.cpp:[m[K In function ‘[01m[Kint32_t hf_send(uint16_t, uint16_t, int8_t*, uint16_t, uint16_t)[m[K’:
+[01m[K/home/adomingues/gaph/ursa/tools/orca-lib-client/src/orca-network-base.cpp:7:40:[m[K [01;31m[Kerror: [m[K‘[01m[KORCA_NOC_WIDTH[m[K’ was not declared in this scope
+ #define NOC_COLUMN(core_n) ((core_n) % [01;31m[KO[m[KRCA_NOC_WIDTH)
+                                        [01;31m[K^[m[K
+[01m[K/home/adomingues/gaph/ursa/tools/orca-lib-client/src/orca-network-base.cpp:102:15:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KNOC_COLUMN[m[K’
+  uint32_t x = [01;36m[KNOC_COLUMN[m[K(target_cpu);
+               [01;36m[K^~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/orca-lib-client.dir/home/adomingues/gaph/ursa/tools/orca-lib-client/src/orca-network-base.cpp.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [CMakeFiles/orca-lib-client.dir/all] Error 2
+make: *** [all] Error 2

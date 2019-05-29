@@ -147,16 +147,12 @@ add_executable(${PROJECT_NAME}_node src/OrcaNode.cpp)
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-#added path to platform's library
-add_library(
-	orca-lib-client 
-	"../../../orca-lib-client/src/orca-lib-client.cpp"
-	"../../../orca-lib-client/src/udp_client_server.cpp"
-)
-
-## Specify libraries to link a library or executable target against
- target_link_libraries(${PROJECT_NAME}_node
-   ${catkin_LIBRARIES} orca-lib-client
+#links mpsoc lib with generated executable
+# "/home/adomingues/gaph/ursa/tools/orca-lib-client/bin/liborca-client.a"
+target_link_libraries(
+   ${PROJECT_NAME}_node
+   ${catkin_LIBRARIES} 
+   ${CMAKE_CURRENT_LIST_DIR}/../../../orca-lib-client/bin/liborca-client.a
  )
 
 #############
