@@ -36,7 +36,7 @@ software/*.elf
 software/*.lst
 software/*.sec
 software/*.txt
-software/hellfireos
+#software/hellfireos
 
 bin/*.cnt
 bin/*.elf
