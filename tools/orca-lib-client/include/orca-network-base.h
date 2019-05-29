@@ -61,4 +61,12 @@ int32_t hf_recv_free(uint32_t port);
 int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port, 
 	int8_t *buf, uint16_t *size, uint16_t *channel);
 
+/**
+ * hf_end_data_copy
+ * @brief Apply endianess byte swap
+ * @param target Ptr to the are to write results
+ * @param source Data to have endianess applied
+ * @param bytes Size of data to be swapped */
+void hf_end_data_copy(char* target, char* source, size_t bytes);
+
 #endif /*_ORCA_NETWORK_BASE_H */

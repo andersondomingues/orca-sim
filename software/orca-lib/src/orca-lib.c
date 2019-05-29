@@ -39,7 +39,11 @@
 void app_main(void)
 {
     //use hf_cpuid() to discrimate nodes
-
-    hf_spawn(example_echo_print, 0, 0, 0, "echo-print", 4096);
+	 hf_spawn(example_echo_print, 10, 9, 10, "echo-print", 4096);
+	 
+	 //allocating real-time for ~90% (9/10)
+	 //10 : period
+	 // 9 : capacity
+	 //10 : dealine
 }
 

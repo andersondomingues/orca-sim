@@ -30,6 +30,8 @@
 #define NOC_COLUMN(core_n)	((core_n) % ORCA_NOC_WIDTH)
 #define NOC_LINE(core_n)	((core_n) / ORCA_NOC_WIDTH)
 
+#define UDP_MAX_MESSAGE_SIZE 128000
+
 std::string __orca_send_ip_addr;
 uint32_t    __orca_send_ip_port;
 udp_client*  __orca_udp_client = nullptr;
@@ -145,7 +147,7 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port,
 		int offset = i * NOC_PAYLOAD_SIZE_BYTES;
 		
 		//copy next 102 bytes
-		memcpy(&(msg[16]), &(buf[offset]), NOC_PAYLOAD_SIZE_BYTES);
+		hf_end_data_copy(&(msg[16]), (char*)&(buf[offset]), NOC_PAYLOAD_SIZE_BYTES);
 		
 		//adjust sequence number (zero recvs ok)
 		msg[12] = i + 1;
@@ -157,21 +159,64 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port,
 	return 0; //TODO: implement error messages
 }
 
+//treat endianess for the payload
+//TODO: maybe we can treat the endiness for the whole packet
+void hf_end_data_copy(char* target, char* source, size_t bytes){
+	
+	//TODO: check whether the last by is being inverted correctly
+	for(uint i = 0; i <= bytes; i+=2){
+			target[i] = source[i+1];
+			target[i+1] = source[i];
+	}
+	
+	//memcpy(&(msg[16]), &(buf[offset]), NOC_PAYLOAD_SIZE_BYTES);
+}
 
+//we store only the port number as the server address, in this case,
+//is always the same address as the one client process is running.
 int32_t hf_recv_setup(uint32_t port){
 	__orca_recv_ip_port = port;
+	
+	//this instance keeps is the same as long as 
+	//no one call hf_recv_free. 
 	__orca_udp_server = new udp_server(__orca_recv_ip_addr, __orca_recv_ip_port);
 	return 0;
 }
 
+//this function frees resources allocated previously through
+//hf_recv_setup functions. It is necessary to dealocate if the
+//port number changes
+//TODO: support multiple connections
 int32_t hf_recv_free(uint32_t port){
 	return port;
 }
 
+//receive a message using settings from hf_recv_setup
 int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port, 
-	int8_t *buf, uint16_t *size, uint16_t *channel){
+	int8_t *buf, uint16_t *size, uint16_t* channel) //care channel vs. channel*
+{
+	uint16_t seq = 0, packet = 0, packets;
+	int8_t* buf_ptr = new int8_t[UDP_MAX_MESSAGE_SIZE];
 	
-	return *source_cpu + *source_port + buf[0] + *size + *channel;		
+	__orca_udp_server->recv((char*)buf_ptr, UDP_MAX_MESSAGE_SIZE);
+	
+	*source_cpu = buf_ptr[PKT_SOURCE_CPU];
+	*source_port = buf_ptr[PKT_SOURCE_PORT];
+	*size = buf_ptr[PKT_MSG_SIZE];
+	seq = buf_ptr[PKT_SEQ];
+	
+	packets = (*size % NOC_PAYLOAD_SIZE_BYTES == 0) 
+		? (*size / NOC_PAYLOAD_SIZE_BYTES) 
+		: (*size / NOC_PAYLOAD_SIZE_BYTES + 1);
+
+	if(packet > 1){
+		printf("Warning: packet fragmentation not implemented yet. Possible loss of data.\n");
+	}
+
+	//size_t s = size;
+	memcpy(buf, buf_ptr, *size);
+	
+	return *channel = 0 + seq + packets;
 }
 
 
