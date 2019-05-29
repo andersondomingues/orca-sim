@@ -23,6 +23,7 @@ tools/ros-integration/.catkin_workspace
 tools/ros-integration/.catkin_tools
 tools/ros-integration/build/
 tools/ros-integration/devel/
+tools/ros-integration/logs/
 
 
 #compilation intermediate files

@@ -1,5 +1,0 @@
-[31m[1mCMake Error[0m at /home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/CMakeLists.txt:157:
-  Parse error.  Expected a command name, got unquoted argument with text ";".
-
-
-make: *** [cmake_check_build_system] Error 1

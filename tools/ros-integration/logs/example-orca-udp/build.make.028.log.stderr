@@ -1,3 +1,0 @@
-make[2]: *** No rule to make target '/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp"/../../../orca-lib-client/bin/liborca-client.a"', needed by '/home/adomingues/gaph/ursa/tools/ros-integration/devel/.private/example-orca-udp/lib/example-orca-udp/example-orca-udp_node'.  Stop.
-make[1]: *** [CMakeFiles/example-orca-udp_node.dir/all] Error 2
-make: *** [all] Error 2

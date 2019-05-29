@@ -1,7 +1,0 @@
-CMakeFiles/example-orca-udp_node.dir/src/OrcaNode.cpp.o: In function `recv_from_mpsoc(void*)':
-/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/src/OrcaNode.cpp:31: undefined reference to `hf_recv_setup(unsigned int)'
-/home/adomingues/gaph/ursa/tools/ros-integration/src/example-orca-udp/src/OrcaNode.cpp:56: undefined reference to `hf_recv(unsigned short*, unsigned short*, signed char*, unsigned short*, unsigned short*)'
-collect2: error: ld returned 1 exit status
-make[2]: *** [/home/adomingues/gaph/ursa/tools/ros-integration/devel/.private/example-orca-udp/lib/example-orca-udp/example-orca-udp_node] Error 1
-make[1]: *** [CMakeFiles/example-orca-udp_node.dir/all] Error 2
-make: *** [all] Error 2

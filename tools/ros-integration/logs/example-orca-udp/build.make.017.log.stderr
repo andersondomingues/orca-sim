@@ -1,5 +1,0 @@
-/usr/bin/ld: cannot find -lorca-client
-collect2: error: ld returned 1 exit status
-make[2]: *** [/home/adomingues/gaph/ursa/tools/ros-integration/devel/.private/example-orca-udp/lib/example-orca-udp/example-orca-udp_node] Error 1
-make[1]: *** [CMakeFiles/example-orca-udp_node.dir/all] Error 2
-make: *** [all] Error 2
