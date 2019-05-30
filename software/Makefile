@@ -1,6 +1,3 @@
-#applications file 
-SELECTED_APPS = producer-consumer example-echo-print
-
 #platform-specific configuration
 include ../Configuration.mk
 
