@@ -72,7 +72,6 @@ void orca_ros_to_mpsoc_callback(const std_msgs::String::ConstPtr& msg){
 	
 	ROS_INFO("s: \"%s\"", c_str);
 	
-	hf_send_setup(MPSOC_ADDR, MPSOC_PORT);
 	hf_send(5, 5000, (int8_t*)c_str, strlen(c_str), 1000);
 	
 	// Forward the message to the mpsoc via udp using the 
@@ -111,13 +110,14 @@ int main(int argc,char **argv){
 	
 	//subscribe to the "orca_ros_to_mpsoc topic". All messages in
 	//this topic are forwarded to the MPSoC
+	hf_send_setup(MPSOC_ADDR, MPSOC_PORT);
 	orca_ros_to_mpsoc = n.subscribe("/orca_ros_to_mpsoc", 10, orca_ros_to_mpsoc_callback); 
 
 	//start receiving thread
 	pthread_t thread;
 	pthread_create(&thread, NULL, recv_from_mpsoc, NULL);
 
-	ros::spin(); 
+	ros::spin(); 	
 
 	return 0;
 }

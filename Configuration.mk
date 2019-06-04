@@ -3,7 +3,7 @@
 GLOBAL_SETTINGS := -O3 -Wall -Wextra -Werror -g -std=c++14
 
 # Apps to be compiled within kernel image
-SELECTED_APPS := narwal-launcher
+SELECTED_APPS := example-echo-print
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
