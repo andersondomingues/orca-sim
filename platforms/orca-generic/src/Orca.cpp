@@ -21,6 +21,7 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <cmath>
 
 //signal manip
 #include <signal.h>
@@ -51,8 +52,21 @@ Tile* tiles[ORCA_NOC_WIDTH][ORCA_NOC_HEIGHT];
 static volatile sig_atomic_t interruption = 0;
 
 static void sig_handler(int _){
+	
 	(void)_;
-	interruption = 1;
+	
+	switch(interruption){
+	case 0:
+		interruption = 1;
+		std::cout << std::endl << "Simulation interrupted. Wait for the current epoch to finish or press CTRL+C again to force quit." << std::endl; 		
+		break;
+	case 1:
+		exit(0);
+		break;
+	case 2:
+		std::cout << std::endl << "Hold your horses!" << std::endl;
+		break;
+	}	
 }
 
 //connect routers to each other
@@ -79,16 +93,16 @@ void check_params(){
 	std::cout << "ORCA_NOC_WIDTH set to " << ORCA_NOC_HEIGHT << std::endl;
 	#endif
 
-	#ifndef ORCA_PULSE_LENGTH
-	std::runtime_error("ORCA_PULSE_LENGTH must be defined in Configuration.mk\n");
+	#ifndef ORCA_EPOCH_LENGTH
+	std::runtime_error("ORCA_EPOCH_LENGTH must be defined in Configuration.mk\n");
 	#else
-	std::cout << "ORCA_PULSE_LENGTH set to " << ORCA_PULSE_LENGTH << std::endl;
+	std::cout << "ORCA_EPOCH_LENGTH set to " << ORCA_EPOCH_LENGTH << std::endl;
 	#endif
 
-	#ifndef ORCA_PULSES_TO_SIM
-	std::cout << "ORCA_PULSES_TO_SIM set to INFINITE" << std::endl;
+	#ifndef ORCA_EPOCHS_TO_SIM
+	std::cout << "ORCA_EPOCHS_TO_SIM set to INFINITE" << std::endl;
 	#else
-	std::cout << "ORCA_PULSES_TO_SIM set to " << ORCA_PULSES_TO_SIM << std::endl;
+	std::cout << "ORCA_EPOCHS_TO_SIM set to " << ORCA_EPOCHS_TO_SIM << std::endl;
 	#endif
 	
 	//ursa params
@@ -288,39 +302,37 @@ int main(int __attribute__((unused)) argc, char** argv){
 		}
 	}
 
-	std::cout << "Simulation pulse set to " << ORCA_PULSE_LENGTH << " cycles. Please wait..." << std::endl;
+	std::cout << "Epoch set to " << ORCA_EPOCH_LENGTH << " cycles." << std::endl;
+	std::cout << "Please wait..." << std::endl;
 
-	//keep simulating until something happen
-	uint32_t gigacycles = 0;
 	try{
 		while(!interruption){
 			
-			std::chrono::high_resolution_clock::time_point t1 = 
-				std::chrono::high_resolution_clock::now();
+			std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
 			
-			gigacycles++;
-			s->Run(ORCA_PULSE_LENGTH);			
+			s->Run(ORCA_EPOCH_LENGTH);			
 			
-			std::chrono::high_resolution_clock::time_point t2 =
-				std::chrono::high_resolution_clock::now();
-				
-			auto duration = 
-				std::chrono::duration_cast
-				<std::chrono::milliseconds>( t2 - t1 ).count();
+			std::chrono::high_resolution_clock::time_point t2 =	std::chrono::high_resolution_clock::now();
+			auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+
+			std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
+
+			s->NextEpoch();
+			
+			std::chrono::high_resolution_clock::time_point t4 =	std::chrono::high_resolution_clock::now();
+			auto duration2 = std::chrono::duration_cast<std::chrono::milliseconds>( t4 - t3 ).count();
 			
 			//converts mili to seconds before calculating the frequency
-			double hertz = ORCA_PULSE_LENGTH / (double)(duration / 1000);
-		
-                        unsigned long long int cycle = s->GetGlobalTime();
+			double hertz = ORCA_EPOCH_LENGTH / (double)(duration / 1000);
 
 			//divide frequency by 1k (Hz -> KHz)
-			std::cout << "notice: cycle #" << cycle << ", pulse #" << gigacycles << " took " 
-				<< (duration / 1000.0)<< " seconds @ "
-				<< (hertz / 1000.0) <<" KHz" << std::endl;
-		
+			std::cout << "notice: epoch #" << s->GetEpochs() << " took ~" 
+				<< ceil(duration / 1000.0)<< "s @ " << (hertz / 1000.0) 
+				<< " KHz, cleanup time: ~" << duration2 << "ms" << std::endl;
+							
 			//simulate until reach the limit of pulses
-			#ifdef ORCA_PULSES_TO_SIM
-			if(gigacycles >= ORCA_PULSES_TO_SIM)
+			#ifdef ORCA_EPOCHS_TO_SIM
+			if(s->GetEpochs() >= ORCA_EPOCHS_TO_SIM)
 				break;
 			#endif
 		}
@@ -330,10 +342,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 		goto clean;
 	}
 	
-	if(interruption == 1)
-		std::cout << std::endl << "Simulation interrupted."	 << std::endl;	
-	else
-		std::cout << "Simulation ended without errors."	 << std::endl;
+	std::cout << "Simulation ended without errors."	 << std::endl;
 	
 	//show buffer status
 	std::cout << "==============[ BUFFERS' STATUSES ]" << std::endl;

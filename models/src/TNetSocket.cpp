@@ -67,10 +67,10 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 	
 	//initialize a new client (client sends messages)
 	const std::string& client_addr = NETSOCKET_CLIENT_ADDRESS;
-	_udp_client = new udp_client(client_addr, 8888);
+	_udp_client = new udp_client(client_addr, NETSOCKET_CLIENT_PORT);
 
 	const std::string& server_addr = NETSOCKET_SERVER_ADDRESS;
-	_udp_server = new udp_server(server_addr, 9999);
+	_udp_server = new udp_server(server_addr, NETSOCKET_SERVER_PORT);
 		
 	pthread_t t;
 
@@ -144,7 +144,7 @@ void* TNetSocket::udpRecvThread(void* gs){
 		if(ns->GetCommRecv()->Read() == 0x0){
 			
 			//recvs from external network
-			ns->GetUdpServer()->recv((char*)ns->GetBuffer(), RECV_BUFFER_LEN);
+			ns->GetUdpServer()->recv((char*)(ns->GetBuffer()), RECV_BUFFER_LEN);
 			
 			//start interface
 			ns->GetCommRecv()->Write(0x1);
@@ -208,9 +208,8 @@ void TNetSocket::udpToNocProcess(){
 			
 			//netif finished, we can receive another packet
 			if(_comm_start->Read() == 0){
-				
-				_comm_recv->Write(0x0);
 				_recv_state = NetSocketRecvState::READY;
+				_comm_recv->Write(0x0);
 			}
 			
 		}break;
@@ -235,10 +234,17 @@ void TNetSocket::nocToUdpProcess(){
                      << " to " << _udp_client->get_addr() << ":"
                      << _udp_client->get_port() 
 					 << " (from core #" << x << ")" << std::endl;
-		#endif		
+		#endif
 		
+		//acknowledge operation to the ni
 		_comm_ack->Write(0x01);
-		_comm_intr->Write(0x00);
+		
+		//hold until ack-ack
+		while(_comm_intr->Read() == 0x1);
+		
+		//lower ack
+		_comm_ack->Write(0x00);
+		
 		_trafficOut++;
 	}
 }
@@ -540,7 +546,7 @@ int udp_server::timed_recv(char *msg, size_t max_size, int max_wait_ms)
     struct timeval timeout;
     timeout.tv_sec = max_wait_ms / 1000;
     timeout.tv_usec = (max_wait_ms % 1000) * 1000;
-    
+  
     /**
      * 23/03/2019: Anderson
      * Removed last two parameters to avoid -Werror=restrict 

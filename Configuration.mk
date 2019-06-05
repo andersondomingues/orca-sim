@@ -17,10 +17,10 @@ ORCA_NOC_WIDTH  := 4
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
 # values may provide inaccurate measurements of the achieved frequency.
-ORCA_PULSE_LENGTH  := 1000000
+ORCA_EPOCH_LENGTH  := 2000000
 
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
-ORCA_PULSES_TO_SIM := INF
+ORCA_EPOCHS_TO_SIM := INF
 
 # ===========================================================[ URSA ENGINE ]
 # Check whether some event has been schedule to run in some point of 
@@ -103,14 +103,14 @@ ROUTER_PORT_CONNECTED_CHECKING := NO
 # ========================================================================
 
 #ORCA parameters
-ifneq ($(ORCA_PULSES_TO_SIM), INF)
-COMPLINE := $(COMPLINE) -DORCA_PULSES_TO_SIM=$(ORCA_PULSES_TO_SIM)
+ifneq ($(ORCA_EPOCHS_TO_SIM), INF)
+COMPLINE := $(COMPLINE) -DORCA_EPOCHS_TO_SIM=$(ORCA_EPOCHS_TO_SIM)
 endif
 
 COMPLINE := $(COMPLINE) \
 	-DORCA_NOC_HEIGHT=$(ORCA_NOC_HEIGHT) \
 	-DORCA_NOC_WIDTH=$(ORCA_NOC_WIDTH) \
-	-DORCA_PULSE_LENGTH=$(ORCA_PULSE_LENGTH)
+	-DORCA_EPOCH_LENGTH=$(ORCA_EPOCH_LENGTH)
 
 #URSA parameters
 ifeq ($(URSA_ZERO_TIME_CHECKING), YES)

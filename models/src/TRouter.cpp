@@ -105,8 +105,9 @@ unsigned long long TRouter::Run(){
 		}
   	}
   	
+    //drive flits into destination ports
     //TODO: add the 4 cycles delay before start sending the burst of flits
-    //FORWARDING: drive flits into destination ports
+   	//TODO: parallel for
 	for(int i = 0; i < 5; i++){
 	
     	//check whether the switch control is closed for some port
@@ -133,13 +134,13 @@ unsigned long long TRouter::Run(){
 				_ib[i]->pop(); //remove flit from source port
 				
 				_flits_to_send[i] -= 1; //decrement the number of flits to send
+				
+				//free port
+				if(_flits_to_send[i] == 0)
+					_switch_control[i] = -1;
 			}
 		}			
 	}
-    	
-	//FREE UNUSED PORTS. must run every cycle
-	for(int i = 0; i < 5; i++)
-		if(_flits_to_send[i] == 0) _switch_control[i] = -1;
 	
 	//ROUND ROBIN (prevents starvation)
 	_round_robin = (_round_robin + 1) % 5;
@@ -147,7 +148,7 @@ unsigned long long TRouter::Run(){
 	#ifdef ROUTER_ENABLE_COUNTERS
 	if(is_active){
 		_counter_active->Inc(1);
-		is_active = false;		
+		is_active = false;
 	}
 	#endif
     	    

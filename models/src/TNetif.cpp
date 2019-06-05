@@ -30,6 +30,8 @@
 
 #include <TNetif.h>
 
+//int xyz = 0;
+
 TNetif::TNetif(std::string name) : TimedModel(name) {
       
     _comm_ack = nullptr;
@@ -181,7 +183,7 @@ void TNetif::recvProcess(){
 				_recv_state = NetifRecvState::FLUSH;
 			}
 			
-			//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());
+			//printf("%d (ibs=%d) INTR=%d, ACK=%d\n", ++xyz, _ib->size(), _comm_intr->Read(), _comm_ack->Read());
 			
 		} break;
 		

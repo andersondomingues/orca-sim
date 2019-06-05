@@ -3,22 +3,15 @@
 using namespace std;
 
 Simulator::Simulator(){
-	Reset();
-}
-
-void Simulator::Reset(){
     _globalTime = 0;
 	_timeout = 1;
+	_epochs = 0;
 }
 
-/**
- * @brief Simulates scheduled events.
- * @param time Number of cycles to be simulate.
- * @return the current time by the end of simulation.
- */
-unsigned long long Simulator::Run(unsigned long long time){
+SimulationTime Simulator::Run(SimulationTime time){
 	
-	_timeout = _globalTime + time;
+	_globalTime = 0;
+	_timeout = time;
 
 	#ifdef URSA_QUEUE_SIZE_CHECKING
 	while(_queue.size() > 0 && _globalTime <= _timeout){
@@ -30,22 +23,59 @@ unsigned long long Simulator::Run(unsigned long long time){
 		Event e = _queue.top();
 	
 		_globalTime = e.time;
-
-		_queue.push( //push new event to queue
-			Event(	 //event is scheduled to X cycles ahead of current time
-				_globalTime + e.timedModel->Run(), 
-				e.timedModel
-			)
-		);
+		e.time += e.timedModel->Run();
+	
+		//remove old event
+		_queue.pop();		
 		
-		_queue.pop();
+		//push new one 
+		_queue.push(e);
 	}
 	
 	return _globalTime;
 }
 
-unsigned long long Simulator::GetGlobalTime(){
+SimulationTime Simulator::NextEpoch(){
+
+	//get the number of elements scheduled
+	uint32_t queue_size = _queue.size();
+
+	//time discount
+	SimulationTime discount = _globalTime;//-1;
+	
+	//std::cout << "discount: " << discount << std::endl;
+	
+	//create a new queue and reschedule events
+	Event tmp_queue[queue_size];
+	
+	//store events in an array so that we can update
+	//them without messing up with the priority queue	
+	for(uint32_t i = 0; i < queue_size; i++){
+		tmp_queue[i] = _queue.top();
+
+		//std::cout << "time = " << tmp_queue[i].time << std::endl;
+		tmp_queue[i].time -= discount;
+
+		_queue.pop();
+	}
+	
+	//put update events back in simulator's queue
+	for(uint32_t i = 0; i < queue_size; i++)
+		_queue.push(tmp_queue[i]);
+		
+	//update epochs counters
+	_epochs++;
+	
+	return _globalTime;
+}
+
+SimulationTime Simulator::GetGlobalTime(){
     return _globalTime;
+}
+
+
+SimulationTime Simulator::GetEpochs(){
+	return _epochs;
 }
 
 /**

@@ -9,10 +9,13 @@
 
 //own api dependencies
 #include <Event.h>
+#include <SimulationTime.h>
 
 class Simulator{
 
 private:
+
+	SimulationTime _epochs;
 
 	/** queue that stores all events */
 	std::priority_queue<Event> _queue;
@@ -27,13 +30,20 @@ private:
 	void executeNext();
 
 public:
-
+	/* ctor. */
 	Simulator();
 
-	unsigned long long Run(unsigned long long time = 100000);
+	/* run the simulation for <time> cycles. */
+	SimulationTime Run(SimulationTime time = 100000);
     
-        void Reset();
-        unsigned long long GetGlobalTime();
+	/* return current global time */
+    SimulationTime GetGlobalTime();
+    
+   	/* return total epochs */
+    SimulationTime GetEpochs();
+    
+    /* reset time, increment epochs and realign events */
+    SimulationTime NextEpoch();
 
 	/** schedules a event */
 	void Schedule(const Event& e);
