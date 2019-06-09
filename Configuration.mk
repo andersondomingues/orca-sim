@@ -22,6 +22,9 @@ ORCA_EPOCH_LENGTH  := 2000000
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
 ORCA_EPOCHS_TO_SIM := INF
 
+# Enable multithread simulation (experimental)
+ORCA_ENABLE_MULTITHREADING := YES
+
 # ===========================================================[ URSA ENGINE ]
 # Check whether some event has been schedule to run in some point of 
 # time prior to the beggining. First event must always be schedule to 
@@ -111,6 +114,10 @@ COMPLINE := $(COMPLINE) \
 	-DORCA_NOC_HEIGHT=$(ORCA_NOC_HEIGHT) \
 	-DORCA_NOC_WIDTH=$(ORCA_NOC_WIDTH) \
 	-DORCA_EPOCH_LENGTH=$(ORCA_EPOCH_LENGTH)
+
+ifeq ($(ORCA_ENABLE_MULTITHREADING), YES)
+	COMPLINE := $(COMPLINE) -DORCA_ENABLE_MULTITHREADING
+endif 
 
 #URSA parameters
 ifeq ($(URSA_ZERO_TIME_CHECKING), YES)
