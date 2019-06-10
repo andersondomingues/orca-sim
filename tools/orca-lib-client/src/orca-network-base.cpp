@@ -200,10 +200,13 @@ int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port,
 	
 	__orca_udp_server->recv((char*)buf_ptr, UDP_MAX_MESSAGE_SIZE);
 	
-	*source_cpu = buf_ptr[PKT_SOURCE_CPU];
-	*source_port = buf_ptr[PKT_SOURCE_PORT];
-	*size = buf_ptr[PKT_MSG_SIZE];
-	seq = buf_ptr[PKT_SEQ];
+	//copy next 102 bytes
+	hf_end_data_copy((char*)buf, (char*)buf_ptr, UDP_MAX_MESSAGE_SIZE);
+	
+	*source_cpu = buf[PKT_SOURCE_CPU];
+	*source_port = buf[PKT_SOURCE_PORT];
+	*size = buf[PKT_MSG_SIZE];
+	seq = buf[PKT_SEQ];
 	
 	packets = (*size % NOC_PAYLOAD_SIZE_BYTES == 0) 
 		? (*size / NOC_PAYLOAD_SIZE_BYTES) 
