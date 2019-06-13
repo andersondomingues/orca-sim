@@ -37,7 +37,9 @@
 
 typedef uint16_t FlitType;
 
-enum class NetSocketRecvState{ READY, DATA_IN, FLUSH};
+enum class TNetSocketRecvState{ READY, DATA_IN, FLUSH};
+
+enum class TNetSocketSendState{ WAIT, WAIT_FOR_ACK, LOWER_ACK };
 
 #define RECV_BUFFER_LEN 128
 
@@ -108,9 +110,10 @@ private:
     UMemory* _mem1; //packets to be received
     UMemory* _mem2; //packets to be sent
     
-    //as netif, this module supports sending and receiving
+	//as netif, this module supports sending and receiving
 	//packet simultaneously.
-    NetSocketRecvState _recv_state; //state of receiver module
+	TNetSocketSendState _send_state; 
+	TNetSocketRecvState _recv_state;
 	
 	//control wires (netsocket <-> netif)
 	UComm<int8_t>* _comm_ack;

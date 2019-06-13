@@ -32,7 +32,7 @@ void example_echo_print(void){
 				printf("\n");
 				
 				//zero = network interface
-				//val = hf_send(0, 5000, buf, sizeof(buf), 100);
+				val = hf_send(0, 5000, buf, sizeof(buf), 100);
 			}
 		}
 	}

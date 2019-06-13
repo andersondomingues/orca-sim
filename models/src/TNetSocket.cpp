@@ -63,7 +63,9 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 	
 	//initialize recv buffer
 	_recv_buffer = new uint8_t[RECV_BUFFER_LEN];
-	_recv_state = NetSocketRecvState::READY;
+	
+	_recv_state = TNetSocketRecvState::READY;
+	_send_state = TNetSocketSendState::WAIT;
 	
 	//initialize a new client (client sends messages)
 	const std::string& client_addr = NETSOCKET_CLIENT_ADDRESS;
@@ -161,7 +163,7 @@ void TNetSocket::udpToNocProcess(){
 	switch(_recv_state){
 		
 		//waiting for new packages
-		case NetSocketRecvState::READY:{
+		case TNetSocketRecvState::READY:{
 			
 			//packet has arrived and the network is not sending packets
 			if(_comm_recv->Read() == 0x1 && _comm_start->Read() == 0x0){
@@ -185,13 +187,13 @@ void TNetSocket::udpToNocProcess(){
 				#endif
 
 				//start bursting packets into the noc
-				_recv_state = NetSocketRecvState::DATA_IN;
+				_recv_state = TNetSocketRecvState::DATA_IN;
 				_trafficIn++;
 			}
 			
 		}break;
 		
-		case NetSocketRecvState::DATA_IN:{
+		case TNetSocketRecvState::DATA_IN:{
 			
 			//able to send
 			if(_comm_start->Read() == 0){
@@ -199,16 +201,16 @@ void TNetSocket::udpToNocProcess(){
 				_comm_start->Write(0x1); //enable netif
 				
 				//start bursting packets into the noc
-				_recv_state = NetSocketRecvState::FLUSH;
+				_recv_state = TNetSocketRecvState::FLUSH;
 			}
 			
 		}break;
 		
-		case NetSocketRecvState::FLUSH:{
+		case TNetSocketRecvState::FLUSH:{
 			
 			//netif finished, we can receive another packet
 			if(_comm_start->Read() == 0){
-				_recv_state = NetSocketRecvState::READY;
+				_recv_state = TNetSocketRecvState::READY;
 				_comm_recv->Write(0x0);
 			}
 			
@@ -218,34 +220,52 @@ void TNetSocket::udpToNocProcess(){
 
 void TNetSocket::nocToUdpProcess(){	
     
-	//stateless send
-	if(_comm_intr->Read() == 0x1){ //has packets 
+	
+	switch(_send_state){
+		
+		//wait until has some packet to send
+		case TNetSocketSendState::WAIT:{
+			
+			if(_comm_intr->Read() == 0x1){ 
+						
+				//64 flits = 1 msg
+				int8_t* msg = new int8_t[RECV_BUFFER_LEN]; 
 				
-		int8_t* msg = new int8_t[RECV_BUFFER_LEN]; //64 flits = 1 msg
-		_mem1->Read(_mem1->GetBase(), msg, RECV_BUFFER_LEN);
+				//get packet from the scratchpad
+				_mem1->Read(_mem1->GetBase(), msg, RECV_BUFFER_LEN);
 
-		_udp_client->send((const char*)msg, RECV_BUFFER_LEN);
+				//send packet (raw) via udp
+				_udp_client->send((const char*)msg, RECV_BUFFER_LEN);
+						
+				#ifndef OPT_NETSOCKET_DISABLE_OUTGOING_PACKETS_LOG
+				uint32_t x = msg[4];
+				output_debug << "outgoing traffic (" << _trafficOut << ")"
+									<< " to " << _udp_client->get_addr() << ":"
+									<< _udp_client->get_port() 
+							 << " (from core #" << x << ")" << std::endl;
+				#endif
 				
+				//signal the ni that the packet has been consumed
+				_comm_ack->Write(0x01);
+				_send_state = TNetSocketSendState::WAIT_FOR_ACK;
+			}
+		} break;
 		
-		#ifndef OPT_NETSOCKET_DISABLE_OUTGOING_PACKETS_LOG
-		uint32_t x = msg[4];
+		//and wait for ack-ack
+		case TNetSocketSendState::WAIT_FOR_ACK:{
+			
+			if(_comm_intr->Read() == 0x1)
+				_send_state = TNetSocketSendState::LOWER_ACK;
+		}
 		
-		output_debug << "outgoing traffic (" << _trafficOut << ")"
-                     << " to " << _udp_client->get_addr() << ":"
-                     << _udp_client->get_port() 
-					 << " (from core #" << x << ")" << std::endl;
-		#endif
-		
-		//acknowledge operation to the ni
-		_comm_ack->Write(0x01);
-		
-		//hold until ack-ack
-		while(_comm_intr->Read() == 0x1);
-		
-		//lower ack
-		_comm_ack->Write(0x00);
-		
-		_trafficOut++;
+		//lower ack signal
+		case TNetSocketSendState::LOWER_ACK:{
+			
+			//lower ack
+			_comm_ack->Write(0x00);
+			_trafficOut++;
+			_send_state = TNetSocketSendState::WAIT;
+		}
 	}
 }
 
