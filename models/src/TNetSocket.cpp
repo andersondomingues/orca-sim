@@ -220,7 +220,6 @@ void TNetSocket::udpToNocProcess(){
 
 void TNetSocket::nocToUdpProcess(){	
     
-	
 	switch(_send_state){
 		
 		//wait until has some packet to send
@@ -264,7 +263,13 @@ void TNetSocket::nocToUdpProcess(){
 			//lower ack
 			_comm_ack->Write(0x00);
 			_trafficOut++;
-			_send_state = TNetSocketSendState::WAIT;
+			_send_state = TNetSocketSendState::WAIT_NAK;
+		}
+		
+		case TNetSocketSendState::WAIT_NAK:{
+			
+			if(_comm_intr->Read() == 0x1)
+				_send_state = TNetSocketSendState::WAIT;			
 		}
 	}
 }

@@ -39,7 +39,7 @@ typedef uint16_t FlitType;
 
 enum class TNetSocketRecvState{ READY, DATA_IN, FLUSH};
 
-enum class TNetSocketSendState{ WAIT, WAIT_FOR_ACK, LOWER_ACK };
+enum class TNetSocketSendState{ WAIT_NAK, WAIT, WAIT_FOR_ACK, LOWER_ACK };
 
 #define RECV_BUFFER_LEN 128
 

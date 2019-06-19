@@ -30,7 +30,8 @@
 #define NOC_COLUMN(core_n)	((core_n) % ORCA_NOC_WIDTH)
 #define NOC_LINE(core_n)	((core_n) / ORCA_NOC_WIDTH)
 
-#define UDP_MAX_MESSAGE_SIZE 128000
+//messages ALWAYS have the same size
+#define UDP_MAX_MESSAGE_SIZE 512
 
 std::string __orca_send_ip_addr;
 uint32_t    __orca_send_ip_port;
@@ -163,13 +164,10 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port,
 //TODO: maybe we can treat the endiness for the whole packet
 void hf_end_data_copy(char* target, char* source, size_t bytes){
 	
-	//TODO: check whether the last by is being inverted correctly
-	for(uint i = 0; i <= bytes; i+=2){
+	for(uint i = 0; i < bytes; i+=2){
 			target[i] = source[i+1];
 			target[i+1] = source[i];
 	}
-	
-	//memcpy(&(msg[16]), &(buf[offset]), NOC_PAYLOAD_SIZE_BYTES);
 }
 
 //we store only the port number as the server address, in this case,
@@ -203,11 +201,13 @@ int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port,
 	//copy next 102 bytes
 	hf_end_data_copy((char*)buf, (char*)buf_ptr, UDP_MAX_MESSAGE_SIZE);
 	
+	hf_hexdump((char*)buf, 0, UDP_MAX_MESSAGE_SIZE);
+	
 	*source_cpu = buf[PKT_SOURCE_CPU];
 	*source_port = buf[PKT_SOURCE_PORT];
 	*size = buf[PKT_MSG_SIZE];
 	seq = buf[PKT_SEQ];
-	
+		
 	packets = (*size % NOC_PAYLOAD_SIZE_BYTES == 0) 
 		? (*size / NOC_PAYLOAD_SIZE_BYTES) 
 		: (*size / NOC_PAYLOAD_SIZE_BYTES + 1);

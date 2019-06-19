@@ -28,6 +28,7 @@ void* recv_from_mpsoc(void* v){
 	uint16_t source_cpu, source_port, data_size, channel;
 	std_msgs::String msg;
 	
+
 	hf_recv_setup(ROSNODE_PORT);
 
 	while(1){
@@ -55,7 +56,8 @@ void* recv_from_mpsoc(void* v){
 		// as this information is compiled within the platform (see Configuration.mk)
 		int res = hf_recv(&source_cpu, &source_port, (int8_t*)&msg, &data_size, &channel);
 
-		ROS_INFO("r: \"%s\"", msg);
+		ROS_INFO("r: \"%s\", %d bytes (%d:%d:%d)", msg, data_size, source_cpu, source_port, channel);
+		//ROS_INFO("r: \"%s\"", msg);
 		
 		//publish received data to the respective topic
 		orca_mpsoc_to_ros.publish(msg);
