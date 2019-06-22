@@ -255,7 +255,7 @@ void TNetSocket::nocToUdpProcess(){
 			
 			if(_comm_intr->Read() == 0x1)
 				_send_state = TNetSocketSendState::LOWER_ACK;
-		}
+		} break;
 		
 		//lower ack signal
 		case TNetSocketSendState::LOWER_ACK:{
@@ -264,13 +264,13 @@ void TNetSocket::nocToUdpProcess(){
 			_comm_ack->Write(0x00);
 			_trafficOut++;
 			_send_state = TNetSocketSendState::WAIT_NAK;
-		}
+		} break;
 		
 		case TNetSocketSendState::WAIT_NAK:{
 			
 			if(_comm_intr->Read() == 0x1)
 				_send_state = TNetSocketSendState::WAIT;			
-		}
+		} break;
 	}
 }
 
