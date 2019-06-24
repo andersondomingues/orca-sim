@@ -200,13 +200,13 @@ int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port,
 	
 	//copy next 102 bytes
 	hf_end_data_copy((char*)buf, (char*)buf_ptr, UDP_MAX_MESSAGE_SIZE);
-	
-	hf_hexdump((char*)buf, 0, UDP_MAX_MESSAGE_SIZE);
-	
+		
 	*source_cpu = buf[PKT_SOURCE_CPU];
 	*source_port = buf[PKT_SOURCE_PORT];
 	*size = buf[PKT_MSG_SIZE];
 	seq = buf[PKT_SEQ];
+	
+	//hf_hexdump((char*)buf, 0, UDP_MAX_MESSAGE_SIZE);
 		
 	packets = (*size % NOC_PAYLOAD_SIZE_BYTES == 0) 
 		? (*size / NOC_PAYLOAD_SIZE_BYTES) 
@@ -216,8 +216,8 @@ int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port,
 		printf("Warning: packet fragmentation not implemented yet. Possible loss of data.\n");
 	}
 
-	//size_t s = size;
-	memcpy(buf, buf_ptr, *size);
+	//!!!!! 
+	memcpy(buf, &(buf[16]), *size);
 	
 	return *channel = 0 + seq + packets;
 }
