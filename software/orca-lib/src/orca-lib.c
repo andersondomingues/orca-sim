@@ -24,12 +24,9 @@
 #include "orca-hardware-counters.h"
 
 //application-specific header
-//TODO: generate automatically based on the IMPORT_APP("app_name") primitive
-
-//#include "../../applications/example-counters/example-counters.h"
-//#include "../../applications/narwal-launcher/narwal-launcher.h"
-//#include "../../applications/producer-consumer/producer-consumer.h"
-#include "../../applications/example-echo-print/example-echo-print.h"
+#include "../../applications/drone-ekf/drone-ekf.h"
+#include "../../applications/drone-pid/drone-pid.h"
+#include "../../applications/drone-spammer/drone-spammer.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -38,13 +35,29 @@
 //routines that affect all applications can be handled here.
 void app_main(void)
 {
-    //use hf_cpuid() to discrimate nodes
-	 hf_spawn(example_echo_print, 0, 0, 0, "echo-print", 4096);
-	 //hf_spawn(producer, 0, 0, 0, "producer", 4096);
-	 
+	 //use hf_cpuid() to discrimate nodes
+	 switch(hf_cpuid()){
+	 case 1: 
+	 	 hf_spawn(dronespammer, 0, 0, 0, "drone spammer", 4096);
+	 	 break;
+	 case 3: 	 
+		 hf_spawn(droneekf, 0, 0, 0, "drone ekf", 4096);
+		 break;
+	 case 2:
+	 	 hf_spawn(dronepid, 0, 0, 0, "drone pid", 4096);
+	 	 break;
+	 default:
+		 printf("ORCAILB: No application deployed to current node");
+		 break;
+	 }
+
 	 //allocating real-time for ~90% (9/10)
 	 //10 : period
 	 // 9 : capacity
 	 //10 : dealine
+
+	 //to allocate best-effort tasks, use hf_spawn(tskname, 0, 0, 0, "name", stacksize);	 
 }
+	 
+	 
 

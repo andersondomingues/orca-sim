@@ -3,16 +3,18 @@
 GLOBAL_SETTINGS := -O3 -Wall -Wextra -Werror -g -std=c++14
 
 # Apps to be compiled within kernel image
-SELECTED_APPS := example-echo-print
+SELECTED_APPS := drone-ekf \
+                 drone-pid \
+                 drone-spammer
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 4
+ORCA_NOC_HEIGHT := 2
 
 # Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_WIDTH  := 4
+ORCA_NOC_WIDTH  := 2
 
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
@@ -23,7 +25,7 @@ ORCA_EPOCH_LENGTH  := 2000000
 ORCA_EPOCHS_TO_SIM := INF
 
 # Enable multithread simulation (experimental)
-ORCA_ENABLE_MULTITHREADING := YES
+ORCA_ENABLE_MULTITHREADING := NO
 
 # ===========================================================[ URSA ENGINE ]
 # Check whether some event has been schedule to run in some point of 
