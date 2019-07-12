@@ -26,7 +26,7 @@ void droneekf(void){
 
    	int8_t buf[500];
 	uint16_t cpu, port, size;
-	int16_t val, counter = 0;
+	int16_t val;
 	
 	//start new communication on port 5000
 	if (hf_comm_create(hf_selfid(), 5000, 0))
@@ -69,27 +69,4 @@ void droneekf(void){
 			}
 		}
 	}
-   
-   
-    for(;;){
-
-		
-		//create new data type to mimic received data
-		
-		drone_ekf_data_t val;
-		val.a = 1;
-		val.b = 2;
-
-		printf("val.a = %d, val.b = %d\n");
-		
-		//send data to pid process
-		
-		
-		
-		//delay next incoming packet data to mimic latency
-		delay_ms(10);
-		
-		
-		
-    }
 }

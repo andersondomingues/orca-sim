@@ -57,6 +57,6 @@ void dronespammer(void){
 		hf_send(3, 5000, (int8_t*)&data, sizeof(drone_ekf_data_t), 100);
 
 		//wait for some time before next send
-		//delay_ms(10);
+		delay_ms(10);
     }
 }

@@ -17,13 +17,19 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
  
+
 #include "drone-pid.h"
 
-void dronepid(void){
+#include <hellfire.h>
+#include <noc.h>
+
+void dronepid(){
+
+	dummy t();
 
     int8_t buf[500];
     uint16_t cpu, port, size;
-    int16_t val, counter = 0;
+    int16_t val;
 
     if(hf_comm_create(hf_selfid(), 5000, 0))
         panic(0xff);
