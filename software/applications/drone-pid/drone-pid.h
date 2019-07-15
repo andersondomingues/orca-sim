@@ -2,6 +2,7 @@
 #define __DRONE_PID_H
 
 #include <drone.h> /* includes drone_ekf_data_t type */
+#include <hellfire.h>
 
 #ifdef CPP
 extern "C" {
