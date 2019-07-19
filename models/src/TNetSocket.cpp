@@ -247,14 +247,19 @@ void TNetSocket::nocToUdpProcess(){
 				//signal the ni that the packet has been consumed
 				_comm_ack->Write(0x01);
 				_send_state = TNetSocketSendState::WAIT_FOR_ACK;
+				//std::cout << "to WAIT_FOR_ACK" << std::endl;
 			}
+			
 		} break;
 		
 		//and wait for ack-ack
 		case TNetSocketSendState::WAIT_FOR_ACK:{
 			
-			if(_comm_intr->Read() == 0x1)
+			if(_comm_intr->Read() == 0x0){
 				_send_state = TNetSocketSendState::LOWER_ACK;
+				//std::cout << "to WAIT" << std::endl;				
+			}
+				
 		} break;
 		
 		//lower ack signal
@@ -263,14 +268,11 @@ void TNetSocket::nocToUdpProcess(){
 			//lower ack
 			_comm_ack->Write(0x00);
 			_trafficOut++;
-			_send_state = TNetSocketSendState::WAIT_NAK;
+			_send_state = TNetSocketSendState::WAIT;
+			//std::cout << "to WAIT_NAK" << std::endl;				
+			
 		} break;
 		
-		case TNetSocketSendState::WAIT_NAK:{
-			
-			if(_comm_intr->Read() == 0x1)
-				_send_state = TNetSocketSendState::WAIT;			
-		} break;
 	}
 }
 

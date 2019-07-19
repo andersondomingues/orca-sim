@@ -65,7 +65,7 @@ void droneekf(void){
 				printf("drone-efk: %d\n", datap.d);
 				
 				//pid processes resides in node 2, port is 5000
-				val = hf_send(2, 5000, (int8_t*)&datap, sizeof(drone_pid_data_t), 100);
+				val = hf_send(2, 2000, (int8_t*)&datap, sizeof(drone_pid_data_t), 100);
 			}
 		}
 	}

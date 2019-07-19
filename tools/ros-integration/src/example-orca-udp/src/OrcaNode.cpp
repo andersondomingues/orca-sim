@@ -26,7 +26,8 @@ ros::Subscriber orca_ros_to_mpsoc;
 void* recv_from_mpsoc(void* v){
 	
 	uint16_t source_cpu, source_port, data_size, channel;
-	std_msgs::String msg;
+	char msg[255];
+	
 	
 
 	hf_recv_setup(ROSNODE_PORT);
@@ -55,12 +56,13 @@ void* recv_from_mpsoc(void* v){
 		// Please note that there is no need to inform ip address and port
 		// as this information is compiled within the platform (see Configuration.mk)
 		int res = hf_recv(&source_cpu, &source_port, (int8_t*)&msg, &data_size, &channel);
+		msg[data_size] = '\0';
 
 		ROS_INFO("r: \"%s\", %d bytes (%d:%d:%d)", msg, data_size, source_cpu, source_port, channel);
 		//ROS_INFO("r: \"%s\"", msg);
 		
 		//publish received data to the respective topic
-		orca_mpsoc_to_ros.publish(msg);
+		//orca_mpsoc_to_ros.publish(msg);
 	}
 }
 
@@ -74,7 +76,7 @@ void orca_ros_to_mpsoc_callback(const std_msgs::String::ConstPtr& msg){
 	
 	ROS_INFO("s: \"%s\"", c_str);
 	
-	hf_send(10, 5000, (int8_t*)c_str, strlen(c_str), 1000);
+	hf_send(2, 5000, (int8_t*)c_str, strlen(c_str), 1000);
 	
 	// Forward the message to the mpsoc via udp using the 
 	// platform's client library. The function hf_send is similar to 

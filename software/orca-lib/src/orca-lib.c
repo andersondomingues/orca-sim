@@ -27,6 +27,7 @@
 #include "../../applications/drone-ekf/drone-ekf.h"
 #include "../../applications/drone-pid/drone-pid.h"
 #include "../../applications/drone-spammer/drone-spammer.h"
+#include "../../applications/example-echo-print/example-echo-print.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -38,13 +39,14 @@ void app_main(void)
 	 //use hf_cpuid() to discrimate nodes
 	 switch(hf_cpuid()){
 	 case 1: 
-	 	 hf_spawn(dronespammer, 0, 0, 0, "drone spammer", 4096);
+	 	 //hf_spawn(dronespammer, 0, 0, 0, "drone spammer", 4096);
 	 	 break;
 	 case 3: 	 
-		 hf_spawn(droneekf, 0, 0, 0, "drone ekf", 4096);
+		 //hf_spawn(droneekf, 0, 0, 0, "drone ekf", 4096);
 		 break;
 	 case 2:
-	 	 hf_spawn(dronepid, 0, 0, 0, "drone pid", 4096);
+	 	 //hf_spawn(dronepid, 0, 0, 0, "drone pid", 4096);
+         hf_spawn(example_echo_print, 0, 0, 0, "echo-print", 4096);
 	 	 break;
 	 default:
 		 printf("ORCAILB: No application deployed to current node");

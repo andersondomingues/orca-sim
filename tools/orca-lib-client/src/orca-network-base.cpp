@@ -6,6 +6,8 @@
 //as defined for orca (see hermes noc documentation)
 #define FLIT_SIZE 2
 
+
+
 //message format define in hellfireos
 #define NOC_PACKET_SIZE_FLITS 64
 #define NOC_PACKET_SIZE_BYTES (NOC_PACKET_SIZE_FLITS * FLIT_SIZE)
@@ -86,17 +88,7 @@ int32_t hf_send_setup(std::string server_addr, uint32_t server_port){
 	return 0; //TODO: implement error messages
 }
 
-/*///////////////////////////////////////////////////////////////////////////////////////////////////
-  2 bytes   2 bytes           4 bytes  
- -----------------------------------------
- |    x    |     y   |    payload_len    |
- -----------------------------------------
-	
-  2 bytes   2 bytes   2 bytes   2 bytes   4 bytes   4 bytes   4 bytes   2 bytes       ....
- --------------------------------------------------------------------------------------------------
- |tgt_cpu  |payload  |src_cpu  |src_port |tgt_port |msg_size |seq      |channel  |  ... data ...  |
- --------------------------------------------------------------------------------------------------
-///////////////////////////////////////////////////////////////////////////////////////////////////*/
+
 int32_t hf_send(uint16_t target_cpu, uint16_t target_port,
 	int8_t *buf, uint16_t size, uint16_t channel)
 {
@@ -193,20 +185,30 @@ int32_t hf_recv_free(uint32_t port){
 int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port, 
 	int8_t *buf, uint16_t *size, uint16_t* channel) //care channel vs. channel*
 {
-	uint16_t seq = 0, packet = 0, packets;
-	int8_t* buf_ptr = new int8_t[UDP_MAX_MESSAGE_SIZE];
 	
+	uint16_t seq = 0, packet = 0, packets = 0;
+	
+	//recv from udp
+	int8_t* buf_ptr = new int8_t[UDP_MAX_MESSAGE_SIZE];
 	__orca_udp_server->recv((char*)buf_ptr, UDP_MAX_MESSAGE_SIZE);
 	
 	//copy next 102 bytes
 	hf_end_data_copy((char*)buf, (char*)buf_ptr, UDP_MAX_MESSAGE_SIZE);
-		
-	*source_cpu = buf[PKT_SOURCE_CPU];
-	*source_port = buf[PKT_SOURCE_PORT];
-	*size = buf[PKT_MSG_SIZE];
-	seq = buf[PKT_SEQ];
+
 	
-	//hf_hexdump((char*)buf, 0, UDP_MAX_MESSAGE_SIZE);
+	uint16_t* bbuf = (uint16_t*)buf_ptr;
+
+	*source_cpu = bbuf[PKT_SOURCE_CPU];
+	*source_port = bbuf[PKT_SOURCE_PORT];
+	*size = bbuf[PKT_MSG_SIZE];
+	
+	std::cout << "size = " << *size << std::endl;
+	std::cout << "source_port = " << *source_port << std::endl;
+	std::cout << "source_cpu = " << std::hex << *source_cpu << std::endl;
+	
+	//seq = buf[PKT_SEQ];
+	
+	hf_hexdump((char*)buf, 0, UDP_MAX_MESSAGE_SIZE);
 		
 	packets = (*size % NOC_PAYLOAD_SIZE_BYTES == 0) 
 		? (*size / NOC_PAYLOAD_SIZE_BYTES) 

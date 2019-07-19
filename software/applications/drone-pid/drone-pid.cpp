@@ -31,7 +31,7 @@ void dronepid(){
     uint16_t cpu, port, size;
     int16_t val;
 
-    if(hf_comm_create(hf_selfid(), 5000, 0))
+    if(hf_comm_create(hf_selfid(), 2000, 0))
         panic(0xff);
 
     while(1){
@@ -51,7 +51,7 @@ void dronepid(){
                 drone_pid_data_t data;
                 data = *(drone_pid_data_t*)buf;
 
-		printf("drone-pid: %d\n", data.d);
+				printf("drone-pid: %d\n", data.d);
 
             }
         }
