@@ -58,7 +58,7 @@ void* recv_from_mpsoc(void* v){
 		int res = hf_recv(&source_cpu, &source_port, (int8_t*)&msg, &data_size, &channel);
 		msg[data_size] = '\0';
 
-		ROS_INFO("r: \"%s\", %d bytes (%d:%d:%d)", msg, data_size, source_cpu, source_port, channel);
+		ROS_INFO("r: \"%s\", bytes=5d, cpu=%d, port=%d, channel=%d)", msg, data_size, source_cpu, source_port, channel);
 		//ROS_INFO("r: \"%s\"", msg);
 		
 		//publish received data to the respective topic

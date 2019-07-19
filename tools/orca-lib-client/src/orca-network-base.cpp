@@ -202,6 +202,10 @@ int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port,
 	*source_port = bbuf[PKT_SOURCE_PORT];
 	*size = bbuf[PKT_MSG_SIZE];
 	
+	*channel = bbuf[PKT_CHANNEL];
+	
+	*source_port = bbuf[PKT_SOURCE_PORT];
+	
 	std::cout << "size = " << *size << std::endl;
 	std::cout << "source_port = " << *source_port << std::endl;
 	std::cout << "source_cpu = " << std::hex << *source_cpu << std::endl;
@@ -221,7 +225,7 @@ int32_t hf_recv(uint16_t *source_cpu, uint16_t *source_port,
 	//!!!!! 
 	memcpy(buf, &(buf[16]), *size);
 	
-	return *channel = 0 + seq + packets;
+	return seq + packets;
 }
 
 
