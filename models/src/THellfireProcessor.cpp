@@ -149,9 +149,6 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	#ifdef ROUTER_ENABLE_COUNTERS
 	if(address == _router->GetCommCounterActive()->GetAddr()) return _router->GetCommCounterActive()->Read();
 	#endif /* ROUTER_ENABLE_COUNTERS */
-
-	//check for system time
-	//printf("comm_systime_addr: 0x%x\n", _comm_systime->GetAddr());
 	
 	if(address == _comm_systime->GetAddr()){
 		

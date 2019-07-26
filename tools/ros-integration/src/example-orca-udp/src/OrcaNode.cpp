@@ -76,7 +76,9 @@ void orca_ros_to_mpsoc_callback(const std_msgs::String::ConstPtr& msg){
 	
 	ROS_INFO("s: \"%s\"", c_str);
 	
+	hf_send(3, 5000, (int8_t*)c_str, strlen(c_str), 1000);
 	hf_send(2, 5000, (int8_t*)c_str, strlen(c_str), 1000);
+	hf_send(1, 5000, (int8_t*)c_str, strlen(c_str), 1000);
 	
 	// Forward the message to the mpsoc via udp using the 
 	// platform's client library. The function hf_send is similar to 
