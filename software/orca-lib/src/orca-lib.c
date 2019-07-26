@@ -33,7 +33,7 @@
 //routines that affect all applications can be handled here.
 void app_main(void)
 {
-	hf_spawn(report_systime, 0, 0, 0, "report systime", 4096);
+	hf_spawn(report_systime, 100, 99, 99, "report systime", 4096);
 
 	 //use hf_cpuid() to discrimate nodes
 	 switch(hf_cpuid()){

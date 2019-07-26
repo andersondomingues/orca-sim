@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <sstream>
 #include <THellfireProcessor.h>
+#include "sys/time.h"
 
 void THellfireProcessor::dumpregs(risc_v_state *s){
 	int32_t i;
@@ -153,9 +154,15 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	//printf("comm_systime_addr: 0x%x\n", _comm_systime->GetAddr());
 	
 	if(address == _comm_systime->GetAddr()){
-		time_t seconds;
-		seconds = time(NULL);
-		return seconds;
+		
+		//time_t seconds;
+		//seconds = time(NULL);
+		//return seconds;
+		
+		//requires sys/time.h
+		struct timeval tv;
+	    gettimeofday(&tv,NULL);
+    	return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
 	}
 	
 	//COULD NOT FIND AN ADDRESS WITHIN THE MAP
