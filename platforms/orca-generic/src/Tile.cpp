@@ -53,7 +53,7 @@ Tile::Tile(uint32_t x, uint32_t y){
 	
 	//control signals to send packets to the netif
 	_socket_start  = new UComm<int8_t>("socket_start", 0, COMM_NOC_START);
-
+	
 	//bind control signals to hardware (netif side)
 	_netif->SetCommAck(_socket_ack);
 	_netif->SetCommIntr(_socket_intr);
@@ -70,6 +70,9 @@ Tile::Tile(uint32_t x, uint32_t y){
 	//bind comm id (W * column + line)
 	int id = (ORCA_NOC_WIDTH * y) + x;
 	_comm_id = new UComm<int32_t>("self_id", id, COMM_ID);
+	
+	//systime
+	_comm_systime = new UComm<uint32_t>(this->GetName() + "/systime", 0, COMM_SYSTIME);
 	
 	//counter initialization
 	#ifdef MEMORY_ENABLE_COUNTERS
@@ -107,6 +110,8 @@ UComm<int32_t>* Tile::GetCommId(){ return _comm_id; }
 UComm<int8_t>* Tile::GetCommAck(){ return _socket_ack; }
 UComm<int8_t>* Tile::GetCommIntr(){ return _socket_intr; }
 UComm<int8_t>* Tile::GetCommStart(){ return _socket_start; }
+
+UComm<uint32_t>* Tile::GetCommSystime(){ return _comm_systime; }
 
 void Tile::SetName(std::string name){
 	_name = name;

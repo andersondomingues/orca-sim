@@ -56,6 +56,9 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	//bind self-id wire
 	_cpu->SetCommId(this->GetCommId());
 	
+	//bind systime wire			
+	_cpu->SetCommSystime(this->GetCommSystime());
+	
 	//bind memory modules
 	_cpu->SetMem0(_mem0);
 	_cpu->SetMem1(this->GetMem1());

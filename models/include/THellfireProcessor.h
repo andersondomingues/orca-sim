@@ -62,10 +62,10 @@ typedef struct {
 	UComm<int8_t>* comm_intr;
 	UComm<int8_t>* comm_start;
 	
-	UComm<int32_t>* comm_id;
+	UComm<int32_t>* comm_id; //has corrent noc id
+	UComm<int32_t>* comm_systime; ///has current host cpu time
 	
 } risc_v_state;
-
 
 class THellfireProcessor : public TimedModel{
 
@@ -88,6 +88,8 @@ uint32_t _last_pc;
 	UComm<uint32_t>* _counter_ijumps;
 	UComm<uint32_t>* _counter_iloadstore;
 	#endif
+	
+	UComm<uint32_t>* _comm_systime;
 
 public:
 
@@ -139,6 +141,8 @@ public:
 	//self id wire
 	void SetCommId(UComm<int32_t>*);
 	
+	void SetCommSystime(UComm<uint32_t>*);
+		
 	unsigned long long Run();
 	
 	//file output

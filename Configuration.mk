@@ -3,10 +3,7 @@
 GLOBAL_SETTINGS := -O3 -Wall -Wextra -Werror -g -std=c++14
 
 # Apps to be compiled within kernel image
-SELECTED_APPS := drone-ekf \
-                 drone-pid \
-                 drone-spammer \
-		 example-echo-print
+SELECTED_APPS := example-systime
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,

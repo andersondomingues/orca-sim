@@ -46,6 +46,7 @@
 
 //self id addr
 #define COMM_ID         0x80000010 
+#define COMM_SYSTIME    0x80000014
 
 //counters (81xx.. to 81ff..) reserved for internal counters
 #ifdef MEMORY_ENABLE_COUNTERS
@@ -91,7 +92,8 @@ private:
 	
 	//self id
 	UComm<int32_t>* _comm_id;
-	
+	UComm<uint32_t>* _comm_systime;
+
 public: 
 
 	Tile(uint32_t x, uint32_t y);
@@ -116,6 +118,7 @@ public:
 	UComm<int8_t>* GetCommStart();
 	
 	UComm<int32_t>* GetCommId();
+	UComm<uint32_t>* GetCommSystime();
 	
 	
 	//getters for mems

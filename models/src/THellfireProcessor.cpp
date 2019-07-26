@@ -56,6 +56,56 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	
 	uint32_t data;
 
+	UMemory* sel_mem = nullptr;
+	
+	//Check whether the address belongs to the main memory
+	if(address >= s->sram->GetBase() && address <= s->sram->GetLastAddr()){
+		sel_mem = s->sram;
+	}else 
+		
+	//Check whether the addres belongs to the noc-send memory
+	if(address >= s->mem1->GetBase() && address <= s->mem1->GetLastAddr()){
+		sel_mem = s->mem1;
+	}
+	
+	//Reads from memory (address is in one of the banks)
+	if(sel_mem != nullptr){
+		
+		switch(size){
+			case 4:
+				if(address & 3){
+					std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" 
+						+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+					throw std::runtime_error(err_msg);
+				}else{
+					sel_mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
+				}
+				break;
+			case 2:
+				if(address & 1){
+					std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" 
+						+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+					throw std::runtime_error(err_msg);
+				}else{
+					int16_t value;
+					sel_mem->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
+					data = value;
+				}
+				break;
+			case 1:
+				int8_t value;
+				sel_mem->Read(address, &value, 1); //1 x sizeof(uint8_t)
+				data = value;
+				break;
+			default:
+				std::string err_msg = this->GetName() + ": invalid data size requested";
+				throw std::runtime_error(err_msg);
+		}
+		
+		return data;
+	}
+	
+	//Address does not belong to any bank, check for special addresses
 	switch(address){
 		case IRQ_VECTOR:	return s->vector;
 		case IRQ_CAUSE:		return s->cause | 0x0080 | 0x0040;
@@ -69,12 +119,12 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		case UART_DIVISOR:	return 0;
 	}
 	
-	//control cons
+	//Check for noc-control cons
 	if(address == s->comm_ack->GetAddr())    return s->comm_ack->Read();
 	if(address == s->comm_intr->GetAddr())   return s->comm_intr->Read();
 	if(address == s->comm_start->GetAddr())  return s->comm_start->Read();
 	
-	//self-id
+	//Special wire for noc-selfid
 	if(address == s->comm_id->GetAddr())     return s->comm_id->Read();
 	
 	#ifdef MEMORY_ENABLE_COUNTERS
@@ -98,60 +148,21 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	#ifdef ROUTER_ENABLE_COUNTERS
 	if(address == _router->GetCommCounterActive()->GetAddr()) return _router->GetCommCounterActive()->Read();
 	#endif /* ROUTER_ENABLE_COUNTERS */
-		
-	UMemory* sel_mem = nullptr;
-	
-	//memread to mem0
-	if(address >= s->sram->GetBase() && address <= s->sram->GetLastAddr()){
-		sel_mem = s->sram;
-	}else 
-		
-	//memread to mem1 	
-	if(address >= s->mem1->GetBase() && address <= s->mem1->GetLastAddr()){
-		sel_mem = s->mem1;
-	}
-		
-	#ifndef HFRISCV_READ_ADDRESS_CHECKING
-	if(sel_mem == nullptr){
-		dumpregs(s);
-		stringstream ss;
-		ss << this->GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
-		throw std::runtime_error(ss.str());
-	}
-	#endif
-	
-	switch(size){
-		case 4:
-			if(address & 3){
-				std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" 
-					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
-				throw std::runtime_error(err_msg);
-			}else{
-				sel_mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
-			}
-			break;
-		case 2:
-			if(address & 1){
-				std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" 
-					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
-				throw std::runtime_error(err_msg);
-			}else{
-				int16_t value;
-				sel_mem->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
-				data = value;
-			}
-			break;
-		case 1:
-			int8_t value;
-			sel_mem->Read(address, &value, 1); //1 x sizeof(uint8_t)
-			data = value;
-			break;
-		default:
-			std::string err_msg = this->GetName() + ": unknown02";
-			throw std::runtime_error(err_msg);
-	}
 
-	return data;
+	//check for system time
+	//printf("comm_systime_addr: 0x%x\n", _comm_systime->GetAddr());
+	
+	if(address == _comm_systime->GetAddr()){
+		time_t seconds;
+		seconds = time(NULL);
+		return seconds;
+	}
+	
+	//COULD NOT FIND AN ADDRESS WITHIN THE MAP
+	dumpregs(s);
+	stringstream ss;
+	ss << this->GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
+	throw std::runtime_error(ss.str());
 }
 
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
@@ -581,6 +592,10 @@ void THellfireProcessor::SetCommStart(UComm<int8_t>* comm){
 	s->comm_start = comm;
 }
 
+void THellfireProcessor::SetCommSystime(UComm<uint32_t>* comm){
+	_comm_systime = comm;
+}
+
 /**
 TODO: remove router uinstance from the inside the processor core
 */
@@ -606,7 +621,7 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 	s->compare = 0;
 	s->compare2 = 0;
 	s->cycles = 0;
-		
+
 	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
 	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
 
