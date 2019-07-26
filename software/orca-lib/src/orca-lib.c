@@ -25,6 +25,7 @@
 
 //application-specific header
 #include "../../applications/example-systime/example-systime.h"
+#include "../../applications/example-echo-print/example-echo-print.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -33,8 +34,9 @@
 //routines that affect all applications can be handled here.
 void app_main(void)
 {
-	hf_spawn(report_systime, 100, 99, 99, "report systime", 4096);
-
+	hf_spawn(report_systime, 10, 4, 10, "report systime", 4096);
+	hf_spawn(example_echo_print, 10, 9, 10, "echo-print", 4096);
+	
 	 //use hf_cpuid() to discrimate nodes
 	 switch(hf_cpuid()){
 	 case 1: 

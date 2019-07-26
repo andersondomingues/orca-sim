@@ -306,29 +306,25 @@ int main(int __attribute__((unused)) argc, char** argv){
 	std::cout << "Please wait..." << std::endl;
 
 	try{
+	
+		std::chrono::high_resolution_clock::time_point t1, t2;
+	
 		while(!interruption){
 			
-			std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+			t1 = std::chrono::high_resolution_clock::now();
+			s->Run(ORCA_EPOCH_LENGTH);
+			t2 = std::chrono::high_resolution_clock::now();
 			
-			s->Run(ORCA_EPOCH_LENGTH);			
-			
-			std::chrono::high_resolution_clock::time_point t2 =	std::chrono::high_resolution_clock::now();
 			auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
-
-			std::chrono::high_resolution_clock::time_point t3 = std::chrono::high_resolution_clock::now();
-
 			s->NextEpoch();
 			
-			std::chrono::high_resolution_clock::time_point t4 =	std::chrono::high_resolution_clock::now();
-			auto duration2 = std::chrono::duration_cast<std::chrono::milliseconds>( t4 - t3 ).count();
-			
 			//converts mili to seconds before calculating the frequency
-			double hertz = ORCA_EPOCH_LENGTH / (double)(duration / 1000);
+			double hertz = ((double)ORCA_EPOCH_LENGTH) / ((double)(duration / 1000));
 
 			//divide frequency by 1k (Hz -> KHz)
 			std::cout << "notice: epoch #" << s->GetEpochs() << " took ~" 
 				<< ceil(duration / 1000.0)<< "s @ " << (hertz / 1000.0) 
-				<< " KHz, cleanup time: ~" << duration2 << "ms" << std::endl;
+				<< " KHz" << std::endl;
 							
 			//simulate until reach the limit of pulses
 			#ifdef ORCA_EPOCHS_TO_SIM
