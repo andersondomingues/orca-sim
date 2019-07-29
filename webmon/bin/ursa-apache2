@@ -1,0 +1,28 @@
+#!/bin/bash
+cat >temp/ursa-apache2.conf << EOF
+Include /etc/apache2/mods-enabled/*.load
+Include /etc/apache2/mods-enabled/*.conf
+ErrorLog $1/temp/ursa-apache2.log
+HostnameLookups Off
+ServerName ursa-apache2-webmon
+Listen $2
+PidFile $1/temp/ursa-apache2.pid
+<VirtualHost *:$2>
+    ServerAdmin http://github.com/andersondomingues
+    DocumentRoot $1/htdocs
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+    <Directory $1/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+    </Directory>
+    ErrorLog $1/temp/ursa-apache2.log
+    LogLevel warn
+</VirtualHost>
+
+EOF
+
+#launch apache
+apache2 -X -f $1/temp/ursa-apache2.conf
