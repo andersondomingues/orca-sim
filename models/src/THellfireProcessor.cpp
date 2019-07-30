@@ -25,6 +25,8 @@
  *---------------------------------------------------------------------------- */
 #include <cstdlib>
 #include <sstream>
+#include <chrono>
+
 #include <THellfireProcessor.h>
 #include "sys/time.h"
 
@@ -157,9 +159,14 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		//return seconds;
 		
 		//requires sys/time.h
-		struct timeval tv;
-	    gettimeofday(&tv,NULL);
-    	return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
+		//struct timeval tv;
+	    //gettimeofday(&tv,NULL);
+    	//return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);    	
+    		
+		std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
+		auto duration = now.time_since_epoch();
+		auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    	return millis;
 	}
 	
 	//COULD NOT FIND AN ADDRESS WITHIN THE MAP

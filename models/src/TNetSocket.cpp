@@ -23,6 +23,7 @@
 //std API
 #include <iostream>
 #include <sstream>
+#include <chrono>
 
 //simulator API
 #include <TimedModel.h>
@@ -179,11 +180,13 @@ void TNetSocket::udpToNocProcess(){
 				int32_t y = (addr_flit & 0x0f);
 				int32_t z = x + y * 4;
 				
-				output_debug << "incoming traffic (" << _trafficIn << ")"
-							 << " from " << _udp_server->get_addr() << ":"
-							 << _udp_server->get_port() 
-							 << " (to #" << z << "; " << x << "," << y << ")" << std::endl << std::flush;
-
+				std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
+				auto duration = now.time_since_epoch();
+				auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+				
+				output_debug << "[" << millis << "] IN " << _trafficIn
+							 << " FROM " << _udp_server->get_addr() << ":"	 << _udp_server->get_port() 
+							 << " TO #" << z << std::endl << std::flush;
 				#endif
 
 				//start bursting packets into the noc
@@ -238,10 +241,14 @@ void TNetSocket::nocToUdpProcess(){
 						
 				#ifndef OPT_NETSOCKET_DISABLE_OUTGOING_PACKETS_LOG
 				uint32_t x = msg[4];
-				output_debug << "outgoing traffic (" << _trafficOut << ")"
-									<< " to " << _udp_client->get_addr() << ":"
-									<< _udp_client->get_port() 
-							 << " (from core #" << x << ")" << std::endl;
+				
+				std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
+				auto duration = now.time_since_epoch();
+				auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+				
+				output_debug << "[" << millis << "] OUT " << _trafficOut
+							 << " TO " << _udp_client->get_addr() << ":" << _udp_client->get_port() 
+							 << " FROM #" << x << std::endl << std::flush;
 				#endif
 				
 				//signal the ni that the packet has been consumed
