@@ -35,12 +35,10 @@
  * @param addr A memory base to be used within memory mapping
  */
 template <typename T>
-UComm<T>::UComm(std::string name, T default_value, uint32_t addr) : UntimedModel(name){
-	
-	_default = default_value;
-	_addr = addr;
-	
-	this->Reset();
+UComm<T>::UComm(T* t_ptr, uint32_t addr, std::string name){
+	_t_ptr  = t_ptr;
+	_t_addr = addr;
+	_t_name = name;
 };
 
 /**
@@ -57,7 +55,7 @@ UComm<T>::~UComm(){
  */
 template <typename T>
 T UComm<T>::Read(){
-	return _val;
+	return *_t_ptr;
 }
     
 /**
@@ -66,7 +64,7 @@ T UComm<T>::Read(){
  */
 template <typename T>
 void UComm<T>::Write(T val){
-	_val = val;
+	*_t_ptr = val;
 }
 
 /**
@@ -75,9 +73,8 @@ void UComm<T>::Write(T val){
  */
 template <typename T>
 void UComm<T>::Inc(T val){
-	_val += val;
+	*_t_ptr = (*_t_ptr) + val;
 }
-
 
 /**
  * @brief Set the value of the bus
@@ -85,15 +82,7 @@ void UComm<T>::Inc(T val){
  */
 template <typename T>
 void UComm<T>::Dec(T val){
-	_val -= val;
-}
-
-/**
- * @brief Return the bus to their default value
- */
-template <typename T>
-void UComm<T>::Reset(){
-	_val = _default;
+	*_t_ptr = (*_t_ptr) + val;
 }
 
 /**
@@ -101,6 +90,15 @@ void UComm<T>::Reset(){
  * @return the address
  */
 template <typename T>
-uint32_t UComm<T>::GetAddr(){
-	return _addr;
+uint32_t UComm<T>::GetAddress(){
+	return _t_addr;
+}
+
+/**
+ * @brief Get the name of the comm
+ * @return the name (empty string if empty)
+ */
+template <typename T>
+std::string UComm<T>::GetName(){
+	return _t_name;
 }

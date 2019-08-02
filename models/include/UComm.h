@@ -1,5 +1,5 @@
 /** 
- * This file is part of project URSA. More information on the project
+ * This part of project URSA. More information on the project
  * can be found at 
  *
  * URSA's repository at GitHub: http://https://github.com/andersondomingues/ursa
@@ -30,51 +30,77 @@
 //api includes
 #include <UntimedModel.h>
 
+/**
+ * The UComm class models a generic bus of width equals to the sizeof(T)
+ */
 template <typename T>
-class UComm : public UntimedModel{
+class UComm{
 
 private:
-    std::string _name;
-    T _default;
-    T _val;
-	uint32_t _addr;
+	/** pointer to the place where the bus data will be stored*/
+    T* _t_ptr; 
+    
+    /** an optional name to identify this bus during runtime */
+    std::string _t_name;
+    
+	/** a memory address in case this is mapped using mmio */	
+	uint32_t _t_addr;
 
 public:
     /**
      * @brief Constructor. 
-     * @param name (optional) An arbitrary name for the instance of Buffer.*/
-    UComm(std::string name, T default_value, uint32_t addr = 0x0);
+     * @param t_ptr pointer to the location of the value of the bus.
+     * @param name (optional) An arbitrary name for the instance.
+     * @param addre (optinal) Address to which the bus is mapped in memory.
+     */
+	UComm(T* t_ptr, uint32_t addr, std::string name);
     
     /**
-     * @brief Destructor. Cleans dynamic allocated memory before disposing the object.*/
+     * @brief Destructor. 
+     * @note DO NOT free _t_ptr by any means as this pointer must be 
+     * freed by the class which allocated the space. 
+     */
     ~UComm();
 
     /**
-     * @brief Peeks at the top of the buffer.
-     * @return The object at the top of the buffer.*/
+     * @brief Get the last value writen to the bus.
+     * @return A value of type T.
+     */
     T Read();
     
     /**
-     * @brief Removes the object at the front of the buffer. */
+     * @brief Writes some value to the bus
+     * @param val Value to be writen to the bus
+     */
     void Write(T val);
     
 	/**
-	 * @brief Set the value of the bus
-	 * @param val the value */
+	 * @brief Increments the value of the bus by the given value.
+	 * @param val Value to be added to the current value of the bus 
+	 */
 	void Inc(T val);
 
 	/**
-	 * @brief Set the value of the bus
-	 * @param val the value */
-	void Dec(T val);    
+	 * @brief Descrements the value of the bus by the given value.
+	 * @param val Value to besubtracted from the current value of the bus 
+	 */
+	void Dec(T val);
 	
 	/**
-	 * @brief Empties the queue */
-	void Reset();
-	uint32_t GetAddr();
+	 * @brief Return the addres to which this comm is mapped. 
+	 * @returns The address of mmio (zero if not mapped)
+	*/
+	uint32_t GetAddress();
+	
+	/**
+	 * @brief Return the name of the comm. 
+	 * @returns The name of the comm or empty if no name has been set.
+	*/
+	std::string GetName();
 };
 
 //Some of the most used instances. More can be added later.
+//for larger data size, consider using a UMemory instead.
 template class UComm<bool>;  //wire
 template class UComm<uint8_t>;  //mem word
 template class UComm<uint16_t>; //dmni/noc word
@@ -85,6 +111,6 @@ template class UComm<int16_t>; //dmni/noc word
 template class UComm<int32_t>; //proc word
 template class UComm<int64_t>; //double word
 
-//for larger data size, consider using a UMemory instead.
+
 
 #endif /* UComm_H */
