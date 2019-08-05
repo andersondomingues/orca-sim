@@ -89,9 +89,7 @@ private:
 	
 	UMemory* _mem1; //recv memory
 	UMemory* _mem2; //send memory
-	
-	int8_t _sack, _sintr, _sstart, _sstatus;
-	
+		
 	//recv signals 
 	UComm<int8_t>* _comm_ack;
 	UComm<int8_t>* _comm_intr;
@@ -101,7 +99,6 @@ private:
 	UComm<int8_t>* _comm_status;
 	
 	//self-id wire
-	uint32_t _sid;
 	UComm<uint32_t>* _comm_id;
 	
 	//hosttime magic wire

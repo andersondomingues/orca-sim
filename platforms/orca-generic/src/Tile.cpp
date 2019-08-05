@@ -39,8 +39,11 @@
 Tile::Tile(uint32_t x, uint32_t y){
 	
 	//map id wire to memory (local storage)
+	uint32_t id = (ORCA_NOC_WIDTH * y) + x;
+	_name = "tile" + std::to_string(id);
+	
 	_comm_id = new UComm<uint32_t>(COMM_ID, this->GetName() + ".id");
-	_comm_id->Write((ORCA_NOC_WIDTH * y) + x);
+	_comm_id->Write(id);
 	
 	//hosttime comm
 	_comm_hosttime = new UComm<uint32_t>(COMM_HOSTTIME,this->GetName() + ".hosttime");
@@ -72,8 +75,6 @@ Tile::Tile(uint32_t x, uint32_t y){
 	//bind memories
 	_netif->SetMem1(_mem1);
 	_netif->SetMem2(_mem2);
-		
-	_name = "tile" + std::to_string(_sid);
 				
 	//counter initialization
 	#ifdef MEMORY_ENABLE_COUNTERS
