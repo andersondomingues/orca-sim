@@ -38,27 +38,27 @@
  **/
 Tile::Tile(uint32_t x, uint32_t y){
 	
-	//bind comm id (W * column + line)
-	_sid = (ORCA_NOC_WIDTH * y) + x;
-	_comm_id = new UComm<uint32_t>(&_sid, COMM_ID, ".id");
+	//map id wire to memory (local storage)
+	_comm_id = new UComm<uint32_t>(COMM_ID, this->GetName() + ".id");
+	_comm_id->Write((ORCA_NOC_WIDTH * y) + x);
+	
+	//hosttime comm
+	_comm_hosttime = new UComm<uint32_t>(COMM_HOSTTIME,this->GetName() + ".hosttime");
 	
 	//create new memories	
-	_mem1   = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, MEM1_BASE); //read from noc 
-	_mem2   = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, MEM2_BASE); //write to noc
+	_mem1 = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, MEM1_BASE); //read from noc 
+	_mem2 = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, MEM2_BASE); //write to noc
 
 	//peripherals	
 	_router = new TRouter(this->GetName() + ".router", x, y);
 	_netif  = new TNetif (this->GetName() + ".netif");
 
 	//ni wires
-	_comm_ack    = new UComm<int8_t>(&_sack,   COMM_NOC_ACK,   this->GetName() + ".ack");
-	_comm_intr   = new UComm<int8_t>(&_sintr,  COMM_NOC_INTR,  this->GetName() + ".intr");
-	_comm_start  = new UComm<int8_t>(&_sstart, COMM_NOC_START, this->GetName() + ".start");
-	_comm_status = new UComm<int8_t>(&_sstatus,COMM_NOC_STATUS,this->GetName() + ".status");
-	
-	//systime
-	_comm_hosttime = new UComm<uint32_t>(&_shosttime, COMM_SYSTIME, this->GetName() + ".systime");
-	
+	_comm_ack    = new UComm<int8_t>(COMM_NOC_ACK,   this->GetName() + ".ack");
+	_comm_intr   = new UComm<int8_t>(COMM_NOC_INTR,  this->GetName() + ".intr");
+	_comm_start  = new UComm<int8_t>(COMM_NOC_START, this->GetName() + ".start");
+	_comm_status = new UComm<int8_t>(COMM_NOC_STATUS,this->GetName() + ".status");
+		
 	//bind control signals to hardware (netif side)
 	_netif->SetCommAck   (_comm_ack);
 	_netif->SetCommIntr  (_comm_intr);
@@ -74,7 +74,7 @@ Tile::Tile(uint32_t x, uint32_t y){
 	_netif->SetMem2(_mem2);
 		
 	_name = "tile" + std::to_string(_sid);
-			
+				
 	//counter initialization
 	#ifdef MEMORY_ENABLE_COUNTERS
 	_mem1->InitCounters(MEM1_COUNTERS_STORE_ADDR, MEM1_COUNTERS_LOAD_ADDR);
@@ -175,6 +175,14 @@ UComm<int8_t>* Tile::GetCommIntr(){
  */
 UComm<int8_t>* Tile::GetCommStart(){
 	return _comm_start;
+}
+
+/**
+ * @brief Get current comm for status signal
+ * @return A pointer to the instance of comm
+ */
+UComm<int8_t>* Tile::GetCommStatus(){
+	return _comm_status;
 }
 
 /**

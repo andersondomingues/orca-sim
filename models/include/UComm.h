@@ -37,23 +37,33 @@ template <typename T>
 class UComm{
 
 private:
-	/** pointer to the place where the bus data will be stored*/
-    T* _t_ptr; 
+	/** pointer to the place where the bus data will be stored */
+   T* _t_ptr;
+	 
+	/** internal storage (necessary when mmio is not used) */
+	T _t_storage;
     
-    /** an optional name to identify this bus during runtime */
-    std::string _t_name;
+   /** an optional name to identify this bus during runtime */
+	std::string _t_name;
     
 	/** a memory address in case this is mapped using mmio */	
 	uint32_t _t_addr;
 
 public:
     /**
-     * @brief Constructor. 
+     * @brief Constructor. Creates a new comm using external storage
      * @param t_ptr pointer to the location of the value of the bus.
      * @param name (optional) An arbitrary name for the instance.
      * @param addre (optinal) Address to which the bus is mapped in memory.
      */
-	UComm(T* t_ptr, uint32_t addr, std::string name);
+	 UComm(T* t_ptr, uint32_t addr, std::string name);
+	
+	 /**
+     * @brief Constructor. Create new comm using internal storage
+     * @param name (optional) An arbitrary name for the instance.
+     * @param addre (optinal) Address to which the bus is mapped in memory.
+     */
+	 UComm(uint32_t addr, std::string name);
     
     /**
      * @brief Destructor. 
@@ -67,7 +77,26 @@ public:
      * @return A value of type T.
      */
     T Read();
-    
+	 
+	 /**
+	  * @brief Maps current comm to the internal storage
+	  */
+	 void MapTo();
+	 
+	 /**
+	  * @brief Maps current comm to an external storage and updates internal reference.
+	  * @param m External storage address
+	  */
+	 void MapTo(T* m);
+	 
+	 /**
+	  * @brief Maps current comm to an external storage, updates internal reference 
+	  * and sets a new address.
+	  * @param m External storage address
+	  * @param p Reference address
+	  */
+	 void MapTo(T* m, uint32_t p);
+	 
     /**
      * @brief Writes some value to the bus
      * @param val Value to be writen to the bus

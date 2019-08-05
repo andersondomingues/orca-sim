@@ -1,12 +1,6 @@
 #ifndef __ORCA_HARDWARE_COUNTERS_H
 #define __ORCA_HARDWARE_COUNTERS_H
 
-#define ERROR_REQUIRE_HFRISC_COUNTERS "Error: compilation cannot proceed due this application (" __FILE__ ") requires HFRISC_COUNTERS to be enabled."
-
-#define ERROR_REQUIRE_MEMORY_COUNTERS "Error: compilation cannot proceed due this application (" __FILE__ ") requires MEMORY_COUNTERS to be enabled."
-
-#define ERROR_REQUIRE_ROUTER_COUNTERS "Error: compilation cannot proceed due this application (" __FILE__ ") requires ROUTER_COUNTERS to be enabled."
-
 //counters for memory modules
 extern volatile uint32_t* M0_COUNTER_STORE;
 extern volatile uint32_t* M0_COUNTER_LOAD;

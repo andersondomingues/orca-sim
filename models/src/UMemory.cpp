@@ -144,6 +144,31 @@ void UMemory::Wipe(){
 }
 
 /**
+ * @brief 
+ * @param addr
+ * @return 
+ */
+MemoryType* UMemory::GetMap(uint32_t addr){
+	
+	if(addr < _sram_base){
+		stringstream s;
+		s << this->GetName() << ": unable to map from to addr (0x" << std::hex
+			<< addr << ") lower than sram base.";
+		throw std::runtime_error(s.str());
+	}
+
+	if(addr > GetLastAddr()){
+		stringstream s;
+		s << this->GetName() << ": unable to map from to addr (0x" << std::hex
+			<< addr << ") higher than last mapped address of (0x" << std::hex 
+			<< GetLastAddr() << ").";
+		throw std::runtime_error(s.str());
+	}
+	
+	return &(_mem[(addr - _sram_base)]);
+}
+
+/**
  * @brief Return the base address 
  * @return the base address
  */

@@ -50,8 +50,8 @@ class UMemory: public UntimedModel
 {
 
 private:
-    MemoryType* _mem;
-    uint32_t _length;
+   MemoryType* _mem;
+   uint32_t _length;
 	uint32_t _sram_base;
 
 	#ifdef MEMORY_ENABLE_COUNTERS
@@ -120,13 +120,19 @@ public:
 	    
 	unsigned long long Run();    
 	
-	
 	uint32_t GetBase(); //first address 
 	uint32_t GetSize(); //number of addresses 
 	
 	//last address; NOTE THAT the last address is NOT (_base + _length), since the 
 	//address zero still counts. Last address is (_base + _length - 1);
 	uint32_t GetLastAddr(); //last address
+	
+	/**
+	 * @brief Gets a pointer to given memory address
+	 * @param addr Address to get the pointer from
+	 * @return The pointer
+	 */
+	MemoryType* GetMap(uint32_t addr);
 	
 };
 

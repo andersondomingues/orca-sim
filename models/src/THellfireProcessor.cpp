@@ -65,9 +65,6 @@ int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 	
 	uint32_t data;
-	
-	std::cout << s->mem1->GetLastAddr() << std::endl;
-	
 	UMemory* sel_mem = nullptr;
 	
 	//Check whether the address belongs to the main memory

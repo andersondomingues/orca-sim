@@ -40,14 +40,20 @@
 #define MEM2_BASE 0x90000080
 
 //comms (80xx.. to 80ff.. reserved for gp wires)
-#define COMM_NOC_ACK    0x80000000
-#define COMM_NOC_INTR   0x80000001
-#define COMM_NOC_START  0x80000002
-#define COMM_NOC_STATUS 0x80000003
+//#define COMM_NOC_ACK    0x80000000
+//#define COMM_NOC_INTR   0x80000001
+//#define COMM_NOC_START  0x80000002
+//#define COMM_NOC_STATUS 0x80000003
+#define COMM_NOC_ACK    0x403F0000
+#define COMM_NOC_INTR   0x403F0001
+#define COMM_NOC_START  0x403F0002
+#define COMM_NOC_STATUS 0x403F0003
 
 //self id addr
-#define COMM_ID         0x80000010 
-#define COMM_SYSTIME    0x80000014
+//#define COMM_ID         0x80000010 
+//#define COMM_HOSTTIME   0x80000014
+#define COMM_ID         0x403F0010 
+#define COMM_HOSTTIME   0x403F0014
 
 //counters (81xx.. to 81ff..) reserved for internal counters
 #ifdef MEMORY_ENABLE_COUNTERS
@@ -118,6 +124,7 @@ public:
 	UComm<int8_t>* GetCommAck();
 	UComm<int8_t>* GetCommIntr();
 	UComm<int8_t>* GetCommStart();
+	UComm<int8_t>* GetCommStatus();
 	
 	UComm<uint32_t>* GetCommId();
 	UComm<uint32_t>* GetCommHostTime();

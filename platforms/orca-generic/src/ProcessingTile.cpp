@@ -48,27 +48,23 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetNetif()->SetName(this->GetName() + ".netif");
 	this->GetMem1()->SetName(this->GetName() + ".mem1");
 	this->GetMem2()->SetName(this->GetName() + ".mem2");
-			
+
 	//bind control signals to hardware (cpu side)
-	//_cpu->SetCommAck(this->GetCommAck());
-	//_cpu->SetCommIntr(this->GetCommIntr());
-	//_cpu->SetCommStart(this->GetCommStart());
-	//_cpu->SetCommStatus(this->GetCommStatus());
-	
+	this->GetCommAck()->MapTo(_mem0->GetMap(COMM_NOC_ACK), COMM_NOC_ACK);
+	this->GetCommStart()->MapTo(_mem0->GetMap(COMM_NOC_START), COMM_NOC_START);
+	this->GetCommStatus()->MapTo(_mem0->GetMap(COMM_NOC_STATUS), COMM_NOC_STATUS);
+		
 	//bind self-id wire
-	//_cpu->SetCommId(this->GetCommId());
+	this->GetCommId()->MapTo((uint32_t*)(_mem0->GetMap(COMM_ID)), COMM_ID);
 	
-	//bind systime wire			
-	//_cpu->SetCommSystime(this->GetCommSystime());
-	
+	//bind hosttime wire
+	this->GetCommHostTime()->MapTo((uint32_t*)(_mem0->GetMap(COMM_HOSTTIME)), COMM_HOSTTIME);
+		
 	//bind memory modules
 	_cpu->SetMem0(_mem0);
 	_cpu->SetMem1(this->GetMem1());
 	_cpu->SetMem2(this->GetMem2());
-	
-	//TODO: remove router instance from the inside the processor core
-	//_cpu->SetRouter(this->GetRouter());
-	
+		
 	//initialize counters for memory modules
 	//NOTE: mem0 is initialized here, mem1 and mem2
 	//are initialized in Tile.cpp (due inheritance)

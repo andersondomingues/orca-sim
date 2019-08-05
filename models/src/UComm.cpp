@@ -29,10 +29,23 @@
 #include <UComm.h>
 
 /**
- * @brief Instiate a new bus (wire)
+ * @brief Instiate a new bus with external storage (can be changed later via "MapTo(&)")
  * @param name A unique name to the bus (optional)
  * @param default_value A value to be read in case none has been set yet
  * @param addr A memory base to be used within memory mapping
+ */
+template <typename T>
+UComm<T>::UComm(uint32_t addr, std::string name){
+	_t_ptr  = &_t_storage;
+	_t_addr = addr;
+	_t_name = name;
+};
+
+/**
+ * @brief Instiate a new bus with external storage (can be changed later via "MapTo()")
+ * @param t_ptr
+ * @param addr
+ * @param name
  */
 template <typename T>
 UComm<T>::UComm(T* t_ptr, uint32_t addr, std::string name){
@@ -40,6 +53,34 @@ UComm<T>::UComm(T* t_ptr, uint32_t addr, std::string name){
 	_t_addr = addr;
 	_t_name = name;
 };
+
+/**
+* @brief Maps current comm to the internal storage
+*/
+template <typename T>
+void UComm<T>::MapTo(){
+	_t_ptr = &_t_storage;
+}
+
+/**
+* @brief Maps current comm to an external storage and updates internal reference.
+* @param addr
+*/
+template <typename T>
+void UComm<T>::MapTo(T* addr){
+	_t_ptr = addr;
+}
+
+/**
+* @brief Maps current comm to an external storage and updates internal reference.
+* @param addr
+* @param m
+*/
+template <typename T>
+void UComm<T>::MapTo(T* addr, uint32_t p){
+	_t_ptr = addr;
+	_t_addr = p;
+}
 
 /**
  * @brief Dtor.

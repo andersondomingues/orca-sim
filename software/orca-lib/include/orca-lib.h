@@ -3,10 +3,8 @@
 
 #include "hellfire.h"
 
-//macro for including apps headers
-
-#define IMPORT_DEF(x) "#include x"
-#define IMPORT_APP(x) IMPORT_DEF("../../applications/#x/#x.h")
+#define COMM_ID         0x403F0010 
+#define COMM_HOSTTIME   0x403F0014
 
 //apps' entry point
 void app_main(void);

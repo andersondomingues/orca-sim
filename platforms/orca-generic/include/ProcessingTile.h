@@ -60,11 +60,11 @@
 #define MEM0_SIZE 0x00400000 /* main memory */
 #define MEM0_BASE 0x40000000
 
-#define MEM1_SIZE 0x00000080 /* recv memory */
-#define MEM1_BASE 0x90000000
+//#define MEM1_SIZE 0x00000080 /* recv memory */
+//#define MEM1_BASE 0x90000000
 
-#define MEM2_SIZE 0x00000080 /* send memory */
-#define MEM2_BASE 0x90000080
+//#define MEM2_SIZE 0x00000080 /* send memory */
+//#define MEM2_BASE 0x90000080
 
 /**
  * @class ProcessingTile
