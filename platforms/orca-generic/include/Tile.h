@@ -43,6 +43,7 @@
 #define COMM_NOC_ACK    0x80000000
 #define COMM_NOC_INTR   0x80000001
 #define COMM_NOC_START  0x80000002
+#define COMM_NOC_STATUS 0x80000003
 
 //self id addr
 #define COMM_ID         0x80000010 
@@ -83,52 +84,61 @@ private:
 	UMemory* _mem1; //recv memory
 	UMemory* _mem2; //send memory
 	
+	int8_t _sack, _sintr, _sstart, _sstatus;
+	
 	//recv signals 
-	UComm<int8_t>* _socket_ack;
-	UComm<int8_t>* _socket_intr;      
+	UComm<int8_t>* _comm_ack;
+	UComm<int8_t>* _comm_intr;
 	
 	//send signals
-	UComm<int8_t>* _socket_start;
+	UComm<int8_t>* _comm_start;
+	UComm<int8_t>* _comm_status;
 	
-	//self id
-	UComm<int32_t>* _comm_id;
-	UComm<uint32_t>* _comm_systime;
+	//self-id wire
+	uint32_t _sid;
+	UComm<uint32_t>* _comm_id;
+	
+	//hosttime magic wire
+	uint32_t _shosttime;
+	UComm<uint32_t>* _comm_hosttime;
 
 public: 
 
+	/*** ctor. & dtor. ***/
 	Tile(uint32_t x, uint32_t y);
 	~Tile();
 	
-	//getters
+	/*** getters ***/
 	TRouter* GetRouter();
 	TNetif*  GetNetif();
 
 	UMemory* GetMem1();
 	UMemory* GetMem2();
 	
-	//comms
-	void SetCommAck(UComm<int8_t>*);
+	UComm<int8_t>* GetCommAck();
+	UComm<int8_t>* GetCommIntr();
+	UComm<int8_t>* GetCommStart();
+	
+	UComm<uint32_t>* GetCommId();
+	UComm<uint32_t>* GetCommHostTime();
+
+	UMemory* GetmMem1();
+	UMemory* GetmMem2();
+	
+	std::string GetName();
+	
+	/*** setters ***/
+	void SetName(std::string);
+	
+	/*void SetCommAck(UComm<int8_t>*);
 	void SetCommIntr(UComm<int8_t>*);
 	void SetCommStart(UComm<int8_t>*);
 	
 	void SetCommId(UComm<int32_t>*);
 	
-	UComm<int8_t>* GetCommAck();
-	UComm<int8_t>* GetCommIntr();
-	UComm<int8_t>* GetCommStart();
-	
-	UComm<int32_t>* GetCommId();
-	UComm<uint32_t>* GetCommSystime();
 	
 	
-	//getters for mems
-	UMemory* GetmMem1();
-	UMemory* GetmMem2();
-	
-	std::string GetName();
-	void SetName(std::string);
-	
-	std::string ToString();
+	std::string ToString();*/
 };
 
 

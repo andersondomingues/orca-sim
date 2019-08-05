@@ -32,32 +32,38 @@
 #include <Tile.h>
 
 /** 
- * Default constructor.
- * Instantiate and bind internal hardware to each
- * other. */
+ * @brief Initialize internal entities and binds hardware wires
+ * @param x X-coordinate of the tile in the NoC
+ * @param y Y-coordinate of the tile in the NoC
+ **/
 Tile::Tile(uint32_t x, uint32_t y){
 	
-	_name = std::to_string(x) + "-" + std::to_string(y);
+	//bind comm id (W * column + line)
+	_sid = (ORCA_NOC_WIDTH * y) + x;
+	_comm_id = new UComm<uint32_t>(&_sid, COMM_ID, ".id");
 	
 	//create new memories	
-	_mem1   = new UMemory(_name + ".mem1", MEM1_SIZE, MEM1_BASE); //read from noc 
-	_mem2   = new UMemory(_name + ".mem2", MEM2_SIZE, MEM2_BASE); //write to noc
+	_mem1   = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, MEM1_BASE); //read from noc 
+	_mem2   = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, MEM2_BASE); //write to noc
 
 	//peripherals	
-	_router = new TRouter(_name + ".router", x, y);
-	_netif  = new TNetif(_name + ".netif");
+	_router = new TRouter(this->GetName() + ".router", x, y);
+	_netif  = new TNetif (this->GetName() + ".netif");
 
-	//control signals to receive packets from netif
-	_socket_ack  = new UComm<int8_t>("socket_ack",  0, COMM_NOC_ACK);
-	_socket_intr = new UComm<int8_t>("socket_intr", 0, COMM_NOC_INTR);
+	//ni wires
+	_comm_ack    = new UComm<int8_t>(&_sack,   COMM_NOC_ACK,   this->GetName() + ".ack");
+	_comm_intr   = new UComm<int8_t>(&_sintr,  COMM_NOC_INTR,  this->GetName() + ".intr");
+	_comm_start  = new UComm<int8_t>(&_sstart, COMM_NOC_START, this->GetName() + ".start");
+	_comm_status = new UComm<int8_t>(&_sstatus,COMM_NOC_STATUS,this->GetName() + ".status");
 	
-	//control signals to send packets to the netif
-	_socket_start  = new UComm<int8_t>("socket_start", 0, COMM_NOC_START);
+	//systime
+	_comm_hosttime = new UComm<uint32_t>(&_shosttime, COMM_SYSTIME, this->GetName() + ".systime");
 	
 	//bind control signals to hardware (netif side)
-	_netif->SetCommAck(_socket_ack);
-	_netif->SetCommIntr(_socket_intr);
-	_netif->SetCommStart(_socket_start);
+	_netif->SetCommAck   (_comm_ack);
+	_netif->SetCommIntr  (_comm_intr);
+	_netif->SetCommStart (_comm_start);
+	_netif->SetCommStatus(_comm_status);
 	
 	//bind netif to router
 	_router->SetOutputBuffer(_netif->GetInputBuffer(), LOCAL);
@@ -66,14 +72,9 @@ Tile::Tile(uint32_t x, uint32_t y){
 	//bind memories
 	_netif->SetMem1(_mem1);
 	_netif->SetMem2(_mem2);
-	
-	//bind comm id (W * column + line)
-	int id = (ORCA_NOC_WIDTH * y) + x;
-	_comm_id = new UComm<int32_t>("self_id", id, COMM_ID);
-	
-	//systime
-	_comm_systime = new UComm<uint32_t>(this->GetName() + "/systime", 0, COMM_SYSTIME);
-	
+		
+	_name = "tile" + std::to_string(_sid);
+			
 	//counter initialization
 	#ifdef MEMORY_ENABLE_COUNTERS
 	_mem1->InitCounters(MEM1_COUNTERS_STORE_ADDR, MEM1_COUNTERS_LOAD_ADDR);
@@ -85,38 +86,112 @@ Tile::Tile(uint32_t x, uint32_t y){
 	#endif
 }
 
+/**
+ * @brief Destructor: cleans up allocated memory 
+ */
 Tile::~Tile(){
 	
+	//delete hardware modules
 	delete(_router);
-	
 	delete(_netif);
-	
 	delete(_mem1);
 	delete(_mem2);
 	
-	delete(_socket_ack);
-	delete(_socket_intr);
-	delete(_socket_start);
+	//delete comms 
+	delete(_comm_ack);
+	delete(_comm_intr);
+	delete(_comm_start);
+	delete(_comm_status);
 }
 
-/* getters*/
-TRouter* Tile::GetRouter(){ return _router; }
-TNetif*  Tile::GetNetif(){  return _netif; }
-UMemory* Tile::GetMem1(){   return _mem1;}
-UMemory* Tile::GetMem2(){ 	return _mem2;}
-
-UComm<int32_t>* Tile::GetCommId(){ return _comm_id; }
-
-UComm<int8_t>* Tile::GetCommAck(){ return _socket_ack; }
-UComm<int8_t>* Tile::GetCommIntr(){ return _socket_intr; }
-UComm<int8_t>* Tile::GetCommStart(){ return _socket_start; }
-
-UComm<uint32_t>* Tile::GetCommSystime(){ return _comm_systime; }
-
-void Tile::SetName(std::string name){
-	_name = name;
+/************************************* GETTERS **************************************/
+/**
+ * @brief Get current router of the PE
+ * @return A pointer to the instance of router
+ */
+TRouter* Tile::GetRouter(){ 
+	return _router; 
 }
 
+/**
+ * @brief Get current NI module
+ * @return A pointer to the instance of NI
+ */
+TNetif*  Tile::GetNetif(){
+	return _netif;
+}
+
+/**
+ * @brief Get sender memory module 
+ * @return A pointer to the instance of memory
+ */
+UMemory* Tile::GetMem1(){
+	return _mem1;
+}
+
+/**
+ * @brief Get recv memory module
+ * @return A pointer to the instance of memory
+ */
+UMemory* Tile::GetMem2(){
+	return _mem2;
+}
+
+/**
+ * @brief Get current tile name
+ * @return The name of the tile
+ */
 std::string Tile::GetName(){
 	return _name;
+}
+
+/**
+ * @brief Get current comm for tile ID
+ * @return A pointer to the instance of comm
+ */
+UComm<uint32_t>* Tile::GetCommId(){ 
+	return _comm_id; 
+}
+
+/**
+ * @brief Get current comm for ack signal
+ * @return A pointer to the instance of comm
+ */
+UComm<int8_t>* Tile::GetCommAck(){
+	return _comm_ack; 
+}
+
+/**
+ * @brief Get current comm for intr signal
+ * @return A pointer to the instance of comm
+ */
+UComm<int8_t>* Tile::GetCommIntr(){
+	return _comm_intr;
+}
+
+/**
+ * @brief Get current comm for start signal
+ * @return A pointer to the instance of comm
+ */
+UComm<int8_t>* Tile::GetCommStart(){
+	return _comm_start;
+}
+
+/**
+ * @brief Get current comm for systime signal
+ * @return A pointer to the instance of comm
+ */
+UComm<uint32_t>* Tile::GetCommHostTime(){
+	return _comm_hosttime;
+}
+
+/************************************* SETTERS **************************************/
+/**
+ * @brief Set a name to this tile
+ * @param name Name to be given to the tile. Please note that the name is autogenerated
+ * in accordance to the structure of the tile, so updating the name of the tile may 
+ * not reflect on the naming of internal structures (to fix)
+ */
+void Tile::SetName(std::string name){
+	_name = name;
 }

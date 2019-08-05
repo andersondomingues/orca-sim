@@ -55,24 +55,59 @@ int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 	return data;
 }
 
+/**
+ * @brief Reads data from the memory
+ * @param s Current state of the core
+ * @param size Size of data to be read. Must be 32, 16, or 8.
+ * @param address Starting address to read from
+ * @return Data read
+ */
 int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 	
 	uint32_t data;
-
+	
+	std::cout << s->mem1->GetLastAddr() << std::endl;
+	
 	UMemory* sel_mem = nullptr;
 	
 	//Check whether the address belongs to the main memory
-	if(address >= s->sram->GetBase() && address <= s->sram->GetLastAddr()){
+	if(address <= s->sram->GetLastAddr()){
 		sel_mem = s->sram;
-	}else 
 		
-	//Check whether the addres belongs to the noc-send memory
-	if(address >= s->mem1->GetBase() && address <= s->mem1->GetLastAddr()){
+	//Check whether the addres belongs to the noc-send memory	
+	}else if (address <= s->mem1->GetLastAddr()){
 		sel_mem = s->mem1;
 	}
 	
-	//Reads from memory (address is in one of the banks)
-	if(sel_mem != nullptr){
+	// NOTE:
+	// We ommit mem2 since the cpu will never read from mem2	
+	
+	//may the request memory space be out of the mapped memory range, we assume
+	//the code is pointing to some of the special addresses
+	if(sel_mem == nullptr){
+			
+		//Address does not belong to any bank, check for special addresses
+		switch(address){
+			case IRQ_VECTOR:	return s->vector;
+			case IRQ_CAUSE:		return s->cause | 0x0080 | 0x0040;
+			case IRQ_MASK:		return s->mask;
+			case IRQ_STATUS:	return s->status;
+			case IRQ_EPC:		return s->epc;
+			case COUNTER:		return s->counter;
+			case COMPARE:		return s->compare;
+			case COMPARE2:		return s->compare2;
+			case UART_READ:		return getchar();
+			case UART_DIVISOR:	return 0;
+		}
+		
+		//may the requested address fall in unmapped range, halt the simulation
+		dumpregs(s);
+		stringstream ss;
+		ss << this->GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
+		throw std::runtime_error(ss.str());
+	
+	//if memory space belongs to the range, proceed to reading	
+	}else{
 		
 		switch(size){
 			case 4:
@@ -101,58 +136,36 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 				data = value;
 				break;
 			default:
-				std::string err_msg = this->GetName() + ": invalid data size requested";
+				std::string err_msg = this->GetName() + ": could not read from memory, invalid data size requested";
 				throw std::runtime_error(err_msg);
 		}
 		
 		return data;
 	}
-	
-	//Address does not belong to any bank, check for special addresses
-	switch(address){
-		case IRQ_VECTOR:	return s->vector;
-		case IRQ_CAUSE:		return s->cause | 0x0080 | 0x0040;
-		case IRQ_MASK:		return s->mask;
-		case IRQ_STATUS:	return s->status;
-		case IRQ_EPC:		return s->epc;
-		case COUNTER:		return s->counter;
-		case COMPARE:		return s->compare;
-		case COMPARE2:		return s->compare2;
-		case UART_READ:		return getchar();
-		case UART_DIVISOR:	return 0;
-	}
-	
-	//Check for noc-control cons
-	if(address == s->comm_ack->GetAddr())    return s->comm_ack->Read();
-	if(address == s->comm_intr->GetAddr())   return s->comm_intr->Read();
-	if(address == s->comm_start->GetAddr())  return s->comm_start->Read();
-	
-	//Special wire for noc-selfid
-	if(address == s->comm_id->GetAddr())     return s->comm_id->Read();
-	
+
 	#ifdef MEMORY_ENABLE_COUNTERS
-	if(address == s->sram->GetCommCounterStore()->GetAddr()) return s->sram->GetCommCounterStore()->Read();
-	if(address == s->sram->GetCommCounterLoad()->GetAddr())  return s->sram->GetCommCounterLoad()->Read();
-	if(address == s->mem1->GetCommCounterStore()->GetAddr()) return s->mem1->GetCommCounterStore()->Read();
-	if(address == s->mem1->GetCommCounterLoad()->GetAddr())  return s->mem1->GetCommCounterLoad()->Read();
-	if(address == s->mem2->GetCommCounterStore()->GetAddr()) return s->mem2->GetCommCounterStore()->Read();
-	if(address == s->mem2->GetCommCounterLoad()->GetAddr())  return s->mem2->GetCommCounterLoad()->Read();
+	if(address == s->sram->GetCommCounterStore()->GetAddress()) return s->sram->GetCommCounterStore()->Read();
+	if(address == s->sram->GetCommCounterLoad()->GetAddress())  return s->sram->GetCommCounterLoad()->Read();
+	if(address == s->mem1->GetCommCounterStore()->GetAddress()) return s->mem1->GetCommCounterStore()->Read();
+	if(address == s->mem1->GetCommCounterLoad()->GetAddress())  return s->mem1->GetCommCounterLoad()->Read();
+	if(address == s->mem2->GetCommCounterStore()->GetAddress()) return s->mem2->GetCommCounterStore()->Read();
+	if(address == s->mem2->GetCommCounterLoad()->GetAddress())  return s->mem2->GetCommCounterLoad()->Read();
 	#endif /* MEMORY_ENABLE_COUNTERS */
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS
-	if(address == this->GetCommCounterArith()->GetAddr())     return this->GetCommCounterArith()->Read();
-	if(address == this->GetCommCounterLogical()->GetAddr())   return this->GetCommCounterLogical()->Read();
-	if(address == this->GetCommCounterShift()->GetAddr())     return this->GetCommCounterShift()->Read();
-	if(address == this->GetCommCounterBranches()->GetAddr())  return this->GetCommCounterBranches()->Read();
-	if(address == this->GetCommCounterJumps()->GetAddr())     return this->GetCommCounterJumps()->Read();
-	if(address == this->GetCommCounterLoadStore()->GetAddr()) return this->GetCommCounterLoadStore()->Read();
+	if(address == this->GetCommCounterArith()->GetAddress())     return this->GetCommCounterArith()->Read();
+	if(address == this->GetCommCounterLogical()->GetAddress())   return this->GetCommCounterLogical()->Read();
+	if(address == this->GetCommCounterShift()->GetAddress())     return this->GetCommCounterShift()->Read();
+	if(address == this->GetCommCounterBranches()->GetAddress())  return this->GetCommCounterBranches()->Read();
+	if(address == this->GetCommCounterJumps()->GetAddress())     return this->GetCommCounterJumps()->Read();
+	if(address == this->GetCommCounterLoadStore()->GetAddress()) return this->GetCommCounterLoadStore()->Read();
 	#endif /* HFRISCV_ENABLE_COUNTERS */
 		
 	#ifdef ROUTER_ENABLE_COUNTERS
-	if(address == _router->GetCommCounterActive()->GetAddr()) return _router->GetCommCounterActive()->Read();
+	if(address == _router->GetCommCounterActive()->GetAddress()) return _router->GetCommCounterActive()->Read();
 	#endif /* ROUTER_ENABLE_COUNTERS */
 	
-	if(address == _comm_systime->GetAddr()){
+	/*if(address == _comm_systime->GetAddress()){
 		
 		//time_t seconds;
 		//seconds = time(NULL);
@@ -167,127 +180,128 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		auto duration = now.time_since_epoch();
 		auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
     	return millis;
-	}
+	}*/
 	
-	//COULD NOT FIND AN ADDRESS WITHIN THE MAP
-	dumpregs(s);
-	stringstream ss;
-	ss << this->GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
-	throw std::runtime_error(ss.str());
 }
 
+/**
+ * @brief Reads data from memory
+ * @param s The current state of the processor
+ * @param size Size of data to be read. Must be 32, 16 or 8.
+ * @param address Starting address of data
+ * @param value Value to be written to the address
+ */
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
-	
-	switch(address){
 
-		case IRQ_STATUS:{
-			if (value == 0){ 
-				s->status = 0; 
-				for (int i = 0; i < 4; i++) 
-					s->status_dly[i] = 0; 
-				}else{ 
-					s->status_dly[3] = value; 
-			}
-			return;
-		}
-		case IRQ_VECTOR:	s->vector = value; return;
-		case IRQ_CAUSE:		s->cause = value; return;
-		case IRQ_MASK:		s->mask = value; return;
-		case IRQ_EPC:		s->epc = value; return;
-		case COUNTER:		s->counter = value; return;
-		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
-		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
-
-		case DEBUG_ADDR: output_debug << (int8_t)(value & 0xff) << std::flush; return;
-		case UART_WRITE: output_uart << (int8_t)(value & 0xff) << std::flush; return;
-		case UART_DIVISOR: return;
-
-		case EXIT_TRAP:
-			std::cout << this->GetName() <<": exit trap triggered! (" << std::dec << s->cycles << " cycles)" << std::endl;
-			output_debug.close();
-			output_uart.close();
-			return;
-	}
-	
-	//comms
-	if(address == s->comm_ack->GetAddr()){   s->comm_ack->Write(value);   return; }
-	if(address == s->comm_start->GetAddr()){ s->comm_start->Write(value); return; }
-	
-	#ifdef MEMORY_ENABLE_COUNTERS
-	if(address == s->sram->GetCommCounterStore()->GetAddr()){s->sram->GetCommCounterStore()->Write(0); return;}
-	if(address == s->sram->GetCommCounterLoad()->GetAddr()) {s->sram->GetCommCounterLoad()->Write(0);  return;}
-	if(address == s->mem1->GetCommCounterStore()->GetAddr()){s->mem1->GetCommCounterStore()->Write(0); return;}
-	if(address == s->mem1->GetCommCounterLoad()->GetAddr()) {s->mem1->GetCommCounterLoad()->Write(0);  return;}
-	if(address == s->mem2->GetCommCounterStore()->GetAddr()){s->mem2->GetCommCounterStore()->Write(0); return;}
-	if(address == s->mem2->GetCommCounterLoad()->GetAddr()) {s->mem2->GetCommCounterLoad()->Write(0);  return;}
-	#endif /* OPT_MEMORY_DISABLE_COUNTERS */
-	
-	#ifdef MEMORY_ENABLE_COUNTERS
-	if(address == this->GetCommCounterArith()->GetAddr())     {this->GetCommCounterArith()->Write(0);     return;}
-	if(address == this->GetCommCounterLogical()->GetAddr())   {this->GetCommCounterLogical()->Write(0);   return;}
-	if(address == this->GetCommCounterShift()->GetAddr())     {this->GetCommCounterShift()->Write(0);     return;}
-	if(address == this->GetCommCounterBranches()->GetAddr())  {this->GetCommCounterBranches()->Write(0);  return;}
-	if(address == this->GetCommCounterJumps()->GetAddr())     {this->GetCommCounterJumps()->Write(0);     return;}
-	if(address == this->GetCommCounterLoadStore()->GetAddr()) {this->GetCommCounterLoadStore()->Write(0); return;}
-	#endif /* OPT_HFRISC_DISABLE_COUNTERS */
-	
-	#ifdef ROUTER_ENABLE_COUNTERS
-	if(address == _router->GetCommCounterActive()->GetAddr()) {_router->GetCommCounterActive()->Write(0); return;}
-	#endif /* ROUTER_ENABLE_COUNTERS */
-	
 	UMemory* sel_mem = nullptr;
 	
 	//memwrite to sram
-	if(address >= s->sram->GetBase() && address <= s->sram->GetLastAddr()){
+	if(address <= s->sram->GetLastAddr()){
 		sel_mem = s->sram;
-	}else 
-	
-	//memwrite to mem2 	
-	if(address >= s->mem2->GetBase() && address <= s->mem2->GetLastAddr()){
-		sel_mem = s->mem2;
-	}
 		
-	#ifdef HFRISCV_WRITE_ADDRESS_CHECKING
+	//memwrite to send memory 		
+	}else if (address <= s->mem2->GetLastAddr()){
+		sel_mem = s->mem2;	
+	}
+	
+	// NOTE:
+	// We ommit mem1 since only the NI can write to the memory space of mem1.
+	
+	//may the request memory space be out of the mapped memory range, we assume
+	//the code is pointing to some of the special addresses		
 	if(sel_mem == nullptr){
+	
+		switch(address){
+			case IRQ_STATUS:{
+				if (value == 0){ 
+					s->status = 0; 
+					for (int i = 0; i < 4; i++) 
+						s->status_dly[i] = 0; 
+					}else{ 
+						s->status_dly[3] = value; 
+				}
+				return;
+			}
+			
+			case IRQ_VECTOR:	s->vector = value; return;
+			case IRQ_CAUSE:	s->cause = value; return;
+			case IRQ_MASK:		s->mask = value; return;
+			case IRQ_EPC:		s->epc = value; return;
+			case COUNTER:		s->counter = value; return;
+			case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
+			case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
+
+			case DEBUG_ADDR: output_debug << (int8_t)(value & 0xff) << std::flush; return;
+			case UART_WRITE: output_uart << (int8_t)(value & 0xff) << std::flush; return;
+			case UART_DIVISOR: return;
+
+			case EXIT_TRAP:
+				std::cout << this->GetName() <<": exit trap triggered! (" << std::dec << s->cycles << " cycles)" << std::endl;
+				output_debug.close();
+				output_uart.close();
+				return;
+		}
+		
+		//if none of the special address has been reach, the requested
+		//address if unknown to the system and we should halt the simulation
 		dumpregs(s);
 		stringstream ss;
 			
 		ss << this->GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
-		
 		throw std::runtime_error(ss.str());
-	}
-	#endif
 	
-	switch(size){
-		case 4:
-			if(address & 3){
-				std::string err_msg = this->GetName() + ": unaligned access (store word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
-				throw std::runtime_error(err_msg);
-			}else{
-				sel_mem->Write(address, (int8_t*)&value, size);
+	//may the address be into the mapped range, we read from memory as usual
+	}else{
+		
+		switch(size){
+			case 4:
+				if(address & 3){
+					std::string err_msg = this->GetName() + ": unaligned access (store word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+					throw std::runtime_error(err_msg);
+				}else{
+					s->sram->Write(address, (int8_t*)&value, size);
+				}
+				break;
+			case 2:
+				if(address & 1){
+					std::string err_msg = this->GetName() + ": unaligned access (store halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+					throw std::runtime_error(err_msg);
+				}else{
+					uint16_t data = (uint16_t)value;
+					s->sram->Write(address, (int8_t*)&data, size);
+				}
+				break;
+			case 1:{
+				uint8_t data;
+				data = (uint8_t)value;
+				s->sram->Write(address, (int8_t*)&data, size);
+				break;
 			}
-			break;
-		case 2:
-			if(address & 1){
-				std::string err_msg = this->GetName() + ": unaligned access (store halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+			default:{
+				std::string err_msg = this->GetName() + ": unable to write to memory (invalid data size)";
 				throw std::runtime_error(err_msg);
-			}else{
-				uint16_t data = (uint16_t)value;
-				sel_mem->Write(address, (int8_t*)&data, size);
 			}
-			break;
-		case 1:{
-			uint8_t data;
-			data = (uint8_t)value;
-			sel_mem->Write(address, (int8_t*)&data, size);
-			break;
 		}
-		default:
-			std::string err_msg = this->GetName() + ": unable to write to memory (unk02)";
-			throw std::runtime_error(err_msg);
 	}
 	
+	//TODO		
+	#ifdef MEMORY_ENABLE_COUNTERS
+	if(address == s->sram->GetCommCounterStore()->GetAddress()){s->sram->GetCommCounterStore()->Write(0); return;}
+	if(address == s->sram->GetCommCounterLoad()->GetAddress()) {s->sram->GetCommCounterLoad()->Write(0);  return;}
+	if(address == s->mem1->GetCommCounterStore()->GetAddress()){s->mem1->GetCommCounterStore()->Write(0); return;}
+	if(address == s->mem1->GetCommCounterLoad()->GetAddress()) {s->mem1->GetCommCounterLoad()->Write(0);  return;}
+	if(address == s->mem2->GetCommCounterStore()->GetAddress()){s->mem2->GetCommCounterStore()->Write(0); return;}
+	if(address == s->mem2->GetCommCounterLoad()->GetAddress()) {s->mem2->GetCommCounterLoad()->Write(0);  return;}
+	#endif /* OPT_MEMORY_DISABLE_COUNTERS */
 	
+	#ifdef MEMORY_ENABLE_COUNTERS
+	if(address == this->GetCommCounterArith()->GetAddress())     {this->GetCommCounterArith()->Write(0);     return;}
+	if(address == this->GetCommCounterLogical()->GetAddress())   {this->GetCommCounterLogical()->Write(0);   return;}
+	if(address == this->GetCommCounterShift()->GetAddress())     {this->GetCommCounterShift()->Write(0);     return;}
+	if(address == this->GetCommCounterBranches()->GetAddress())  {this->GetCommCounterBranches()->Write(0);  return;}
+	if(address == this->GetCommCounterJumps()->GetAddress())     {this->GetCommCounterJumps()->Write(0);     return;}
+	if(address == this->GetCommCounterLoadStore()->GetAddress()) {this->GetCommCounterLoadStore()->Write(0); return;}
+	#endif /* OPT_HFRISC_DISABLE_COUNTERS */
 }
 
 #ifdef HFRISCV_ENABLE_COUNTERS
@@ -399,7 +413,6 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 	
 }
 #endif /* HFRISCV_ENABLE_COUNTERS */
-
 
 unsigned long long THellfireProcessor::Run(){
 		
@@ -566,7 +579,7 @@ fail:
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;     /*IRQ_COUNTER_NOT*/
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
 	
-	if (s->comm_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
+	if (_comm_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
 
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	this->UpdateCounters(opcode, funct3);
@@ -602,35 +615,7 @@ void THellfireProcessor::SetMem2(UMemory* m){
 	s->mem2 = m;
 }
 
-//setters for comms
-void THellfireProcessor::SetCommAck(UComm<int8_t>* comm){
-	s->comm_ack = comm;
-}
-
-void THellfireProcessor::SetCommId(UComm<int32_t>* comm){
-	s->comm_id = comm;
-}
-
-void THellfireProcessor::SetCommIntr(UComm<int8_t>* comm){
-	s->comm_intr = comm;
-}
-
-void THellfireProcessor::SetCommStart(UComm<int8_t>* comm){
-	s->comm_start = comm;
-}
-
-void THellfireProcessor::SetCommSystime(UComm<uint32_t>* comm){
-	_comm_systime = comm;
-}
-
-/**
-TODO: remove router uinstance from the inside the processor core
-*/
-void THellfireProcessor::SetRouter(TRouter* r){
-	_router = r;
-}
-
-THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
+THellfireProcessor::THellfireProcessor(string name, UComm<int8_t>* intr) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
@@ -648,10 +633,12 @@ THellfireProcessor::THellfireProcessor(string name) : TimedModel(name) {
 	s->compare = 0;
 	s->compare2 = 0;
 	s->cycles = 0;
+	
+	//set interruption wire (to be managed by the top-level module)
+	_comm_intr = intr;
 
 	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
 	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
-
 }
 
 //TODO: clear allocated memory if any

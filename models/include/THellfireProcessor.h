@@ -23,22 +23,21 @@
 
 //models libs
 #include <UMemory.h>
-#include <TRouter.h>
 #include <UComm.h>
 
 #define EXIT_TRAP			0xe0000000
-#define IRQ_VECTOR			0xf0000000
+#define IRQ_VECTOR		0xf0000000
 #define IRQ_CAUSE			0xf0000010
 #define IRQ_MASK			0xf0000020
-#define IRQ_STATUS			0xf0000030
-#define IRQ_EPC				0xf0000040
-#define COUNTER				0xf0000050
-#define COMPARE				0xf0000060
+#define IRQ_STATUS		0xf0000030
+#define IRQ_EPC			0xf0000040
+#define COUNTER			0xf0000050
+#define COMPARE			0xf0000060
 #define COMPARE2			0xf0000070
 #define EXTIO_IN			0xf0000080
 #define EXTIO_OUT			0xf0000090
-#define DEBUG_ADDR			0xf00000d0
-#define UART_WRITE			0xf00000e0
+#define DEBUG_ADDR		0xf00000d0
+#define UART_WRITE		0xf00000e0
 #define UART_READ			0xf00000e0
 #define UART_DIVISOR		0xf00000f0
 
@@ -58,13 +57,6 @@ typedef struct {
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
 	
-	UComm<int8_t>* comm_ack;
-	UComm<int8_t>* comm_intr;
-	UComm<int8_t>* comm_start;
-	
-	UComm<int32_t>* comm_id; //has corrent noc id
-	UComm<int32_t>* comm_systime; ///has current host cpu time
-	
 } risc_v_state;
 
 class THellfireProcessor : public TimedModel{
@@ -72,13 +64,13 @@ class THellfireProcessor : public TimedModel{
 private:
 uint32_t _last_pc;
 
+	//interruption wire
+	UComm<int8_t>* _comm_intr;
+	
 	//context
 	risc_v_state context;
 	risc_v_state *s;
 	int i;
-	
-	//TODO: remove instance of router from the inside the processor core
-	TRouter* _router; 
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	UComm<uint32_t>* _counter_iarith;
@@ -89,8 +81,6 @@ uint32_t _last_pc;
 	UComm<uint32_t>* _counter_iloadstore;
 	#endif
 	
-	UComm<uint32_t>* _comm_systime;
-
 public:
 
 	#ifdef HFRISCV_ENABLE_COUNTERS
@@ -113,9 +103,7 @@ public:
 	void UpdateCounters(int opcode, int func3);
 	#endif
 
-	void SetRouter(TRouter* t);
-
-    risc_v_state GetState();
+   risc_v_state GetState();
     
 	void dumpregs(risc_v_state *s);
 	void bp(risc_v_state *s, uint32_t ir);
@@ -124,7 +112,7 @@ public:
 	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
 	//ctor./dtor.
-	THellfireProcessor(string name);
+	THellfireProcessor(string name, UComm<int8_t>* intr);
 	~THellfireProcessor();
 	
 	//setters for memories
@@ -137,6 +125,7 @@ public:
 	void SetCommAck(UComm<int8_t>*);
 	void SetCommIntr(UComm<int8_t>*);
 	void SetCommStart(UComm<int8_t>*);
+	void SetCommStatus(UComm<int8_t>*);
 	
 	//self id wire
 	void SetCommId(UComm<int32_t>*);
@@ -149,7 +138,7 @@ public:
 	ofstream output_debug;
 	ofstream output_uart;
 	
-    void Reset();	
+   void Reset();	
 };
 
 #endif /* __RISC_V_H */

@@ -68,8 +68,8 @@ private:
     uint32_t _flits_to_send; //to router
     uint32_t _next_send_addr; 
 	
-	uint32_t _flits_to_recv; //to memory
-	uint32_t _next_recv_addr; 
+	 uint32_t _flits_to_recv; //to memory
+	 uint32_t _next_recv_addr;
     
     //communication with CPU while receiving
     UComm<int8_t>* _comm_intr; //up when packet arrive, down when ack
@@ -77,6 +77,7 @@ private:
 
     //communication with CPU while sending
     UComm<int8_t>* _comm_start;  //cpu set up to send, down by netif when finished
+	 UComm<int8_t>* _comm_status; //status of sending process (required by cpu)
     
     //network router interface
     UBuffer<FlitType>* _ib;
@@ -85,12 +86,13 @@ public:
     
     //getters
     NetifRecvState GetRecvState();
-	NetifSendState GetSendState();
+	 NetifSendState GetSendState();
     
     //setters
     void SetCommAck(UComm<int8_t>* comm);
-	void SetCommIntr(UComm<int8_t>* comm);
-	void SetCommStart(UComm<int8_t>* comm);
+	 void SetCommIntr(UComm<int8_t>* comm);
+	 void SetCommStart(UComm<int8_t>* comm);
+	 void SetCommStatus(UComm<int8_t>* comm);
     
     //internal processes
     void sendProcess();

@@ -93,6 +93,7 @@ void TNetif::SetMem2(UMemory* m2){
 void TNetif::SetCommAck(UComm<int8_t>* c){ _comm_ack = c; }
 void TNetif::SetCommIntr(UComm<int8_t>* c){ _comm_intr = c; }
 void TNetif::SetCommStart(UComm<int8_t>* c){ _comm_start = c; }
+void TNetif::SetCommStatus(UComm<int8_t>* c){ _comm_start = c; }
 
 long long unsigned int TNetif::Run(){
     this->recvProcess();
@@ -121,10 +122,7 @@ void TNetif::recvProcess(){
 				_mem1->Write(_next_recv_addr, (int8_t*)&flit, 2);
 				
 				_next_recv_addr += sizeof(FlitType);
-				_recv_state = NetifRecvState::LENGTH;
-				
-				//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());
-				
+				_recv_state = NetifRecvState::LENGTH;	
 			}
 			
 		}break;		
@@ -141,10 +139,7 @@ void TNetif::recvProcess(){
 				_next_recv_addr += sizeof(FlitType);
 				
 				_flits_to_recv = len_flit;
-				
 				_recv_state = NetifRecvState::DATA_IN;
-				
-				//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());
 			}
 			
 		}break;
@@ -171,8 +166,6 @@ void TNetif::recvProcess(){
 				_flits_to_recv--;
 			}
 			
-			//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());				
-			
 		} break;
 				
 		//wait until CPU finishes copying. then, disable interruption
@@ -183,18 +176,13 @@ void TNetif::recvProcess(){
 				_recv_state = NetifRecvState::FLUSH;
 			}
 			
-			//printf("%d (ibs=%d) INTR=%d, ACK=%d\n", ++xyz, _ib->size(), _comm_intr->Read(), _comm_ack->Read());
-			
 		} break;
 		
 		//wait for cpu to acknowdledge the operation (by lowering the acknowledge)
 		case NetifRecvState::FLUSH:{
 		
-			if(_comm_ack->Read() == 0x0){
+			if(_comm_ack->Read() == 0x0)
 				_recv_state = NetifRecvState::READY;
-				//printf("INTR=%d, ACK=%d\n", _comm_intr->Read(), _comm_ack->Read());				
-			}
-
 				
 		} break;
 	}

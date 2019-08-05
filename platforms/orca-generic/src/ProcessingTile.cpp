@@ -36,28 +36,30 @@
  * other. */
 ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	
+	//update current name to have a PE at the front of the name
 	this->SetName("pe-" + this->GetName());
 	
-	//create 
+	//create a cpu and memory in addition to current tile hardware
 	_mem0   = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu    = new THellfireProcessor(this->GetName() + ".cpu");
+	_cpu    = new THellfireProcessor(this->GetName() + ".cpu", this->GetCommIntr());
 	
+	//update naming of internal hardware parts (from internal class)
 	this->GetRouter()->SetName(this->GetName() + ".router");
 	this->GetNetif()->SetName(this->GetName() + ".netif");
 	this->GetMem1()->SetName(this->GetName() + ".mem1");
 	this->GetMem2()->SetName(this->GetName() + ".mem2");
-	
-	
+			
 	//bind control signals to hardware (cpu side)
-	_cpu->SetCommAck(this->GetCommAck());
-	_cpu->SetCommIntr(this->GetCommIntr());
-	_cpu->SetCommStart(this->GetCommStart());
+	//_cpu->SetCommAck(this->GetCommAck());
+	//_cpu->SetCommIntr(this->GetCommIntr());
+	//_cpu->SetCommStart(this->GetCommStart());
+	//_cpu->SetCommStatus(this->GetCommStatus());
 	
 	//bind self-id wire
-	_cpu->SetCommId(this->GetCommId());
+	//_cpu->SetCommId(this->GetCommId());
 	
 	//bind systime wire			
-	_cpu->SetCommSystime(this->GetCommSystime());
+	//_cpu->SetCommSystime(this->GetCommSystime());
 	
 	//bind memory modules
 	_cpu->SetMem0(_mem0);
@@ -65,7 +67,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_cpu->SetMem2(this->GetMem2());
 	
 	//TODO: remove router instance from the inside the processor core
-	_cpu->SetRouter(this->GetRouter());
+	//_cpu->SetRouter(this->GetRouter());
 	
 	//initialize counters for memory modules
 	//NOTE: mem0 is initialized here, mem1 and mem2
@@ -104,7 +106,7 @@ UMemory* ProcessingTile::GetMem0(){
 
 std::string ProcessingTile::ToString(){
 	stringstream ss;
-	ss << _name << "={" << _cpu->GetName() 
+	ss << this->GetName() << "={" << _cpu->GetName() 
 	   << ", " << this->GetRouter()->GetName() 
 	   << ", " << this->GetNetif()->GetName() << "}";
 	

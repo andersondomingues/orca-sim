@@ -47,7 +47,6 @@
  * @brief Default ctor. Name of the module must be informed.
  * @param name A name to identify this module.
  */
-class _recv_buffer;
 TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 
 	//open debug file
@@ -55,16 +54,16 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 		"logs/pe-0-0.cpu_debug.log", 
 		std::ofstream::out | std::ofstream::trunc);
 	
-	//wire for external recving
-	_comm_recv = new UComm<int8_t>(this->GetName() + ".comm_ext", 0, 0);
+	//create a new comm so that the module can be interrupted by
+	//the external network when a new packet arrives
+	_comm_recv = new UComm<int8_t>(&_recv_val, 0, this->GetName() + ".commUdpIntr");
+	_comm_recv->Write(0);
 	
 	//reset traffic counter
 	_trafficOut = 0;
 	_trafficIn  = 0;
 	
-	//initialize recv buffer
-	_recv_buffer = new uint8_t[RECV_BUFFER_LEN];
-	
+	//initialize states
 	_recv_state = TNetSocketRecvState::READY;
 	_send_state = TNetSocketSendState::WAIT;
 	

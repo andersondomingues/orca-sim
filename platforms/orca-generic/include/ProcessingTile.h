@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __TProcessingTile_H
-#define __TProcessingTile_H
+#ifndef __ProcessingTile_H
+#define __ProcessingTile_H
 
 //std API
 #include <iostream>
@@ -67,21 +67,23 @@
 #define MEM2_BASE 0x90000080
 
 /**
- * @class TProcessingTile
+ * @class ProcessingTile
  * @author Anderson Domingues
  * @date 10/04/18
- * @file TProcessingTile.h
+ * @file ProcessingTile.h
  * @brief This class models an entire processing element that contains
- * RAM memory (3x), DMA, NoC Router, HFRiscV core and an SPI interface. 
+ * RAM memory (3x), DMA, NoC Router, HFRiscV core
  */
 class ProcessingTile : private Tile{
 
 private:
 
-	std::string _name;
-
 	THellfireProcessor* _cpu; //hfrisv-core
 	UMemory* _mem0; //main memory
+	
+	//NOTE: other hardware is defined in Tile.h as 
+	//we use inheritance to derive multiple tiles 
+	//with similar architecture.
 	
 public: 
 
