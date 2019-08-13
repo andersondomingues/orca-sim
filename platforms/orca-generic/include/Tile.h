@@ -34,10 +34,13 @@
 
 //netif mem mapping
 #define MEM1_SIZE 0x00000080 /* recv memory */
-#define MEM1_BASE 0x90000000
+#define MEM1_BASE 0x403F1000 
+//#define MEM1_BASE 0x90000000
+
 
 #define MEM2_SIZE 0x00000080 /* send memory */
-#define MEM2_BASE 0x90000080
+#define MEM2_BASE 0x403F1080 
+//#define MEM2_BASE 0x90000080
 
 //comms (80xx.. to 80ff.. reserved for gp wires)
 //#define COMM_NOC_ACK    0x80000000

@@ -36,11 +36,11 @@
 #include <Tile.h>
 
 //netif mem mapping
-#define MEM1_SIZE 0x00000080 /* recv memory */
-#define MEM1_BASE 0x90000000
+//#define MEM1_SIZE 0x00000080 /* recv memory */
+//#define MEM1_BASE 0x90000000
 
-#define MEM2_SIZE 0x00000080 /* send memory */
-#define MEM2_BASE 0x90000080
+//#define MEM2_SIZE 0x00000080 /* send memory */
+//#define MEM2_BASE 0x90000080
 
 class NetworkTile : public Tile{
 

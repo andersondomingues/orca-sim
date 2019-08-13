@@ -24,8 +24,9 @@
 #include "orca-hardware-counters.h"
 
 //application-specific header
-#include "../../applications/example-systime/example-systime.h"
-#include "../../applications/example-echo-print/example-echo-print.h"
+//#include "../../applications/example-systime/example-systime.h"
+//#include "../../applications/example-echo-print/example-echo-print.h"
+#include "../../applications/producer-consumer/producer-consumer.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -34,16 +35,22 @@
 //routines that affect all applications can be handled here.
 void app_main(void)
 {
+	//#ifdef CPU_ID == 22
+	//hfs
+	//#elif CPU_ID == 32
+	//sd
+
 	//hf_spawn(report_systime, 10, 4, 10, "report systime", 4096);
-	hf_spawn(example_echo_print, 10, 9, 10, "echo-print", 4096);
+        //hf_spawn(example_echo_print, 10, 9, 10, "echo-print", 4096);
+        hf_spawn(consumer, 0, 0, 0, "consumer-task", 4096);
 	
 	 //use hf_cpuid() to discrimate nodes
 	 switch(hf_cpuid()){
 	 case 1: 
-	 	 //hf_spawn(dronespammer, 0, 0, 0, "drone spammer", 4096);
+	 	 //hf_spawn(consumer, 0, 0, 0, "consumer-task", 4096);
 	 	 break;
 	 case 3: 	 
-		 //hf_spawn(droneekf, 0, 0, 0, "drone ekf", 4096);
+                 hf_spawn(producer, 0, 0, 0, "producer-task", 4096);
 		 break;
 	 case 2:
 	 	 //hf_spawn(dronepid, 0, 0, 0, "drone pid", 4096);

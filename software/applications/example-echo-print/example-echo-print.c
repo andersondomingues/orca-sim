@@ -19,6 +19,8 @@ void example_echo_print(void){
 		int32_t i = hf_recvprobe();
 		uint32_t last = GetHostTime(), current;
 
+		//printf("t: %d ms\n", (GetHostTime() - last));
+
 		if(i >= 0){
 			val = hf_recv(&cpu, &port, buf, &size, i);
 

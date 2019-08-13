@@ -81,13 +81,7 @@ public:
 	 /**
 	  * @brief Maps current comm to the internal storage
 	  */
-	 void MapTo();
-	 
-	 /**
-	  * @brief Maps current comm to an external storage and updates internal reference.
-	  * @param m External storage address
-	  */
-	 void MapTo(T* m);
+	 void MapTo(bool keep_val = true);
 	 
 	 /**
 	  * @brief Maps current comm to an external storage, updates internal reference 
@@ -95,7 +89,7 @@ public:
 	  * @param m External storage address
 	  * @param p Reference address
 	  */
-	 void MapTo(T* m, uint32_t p);
+	 void MapTo(T* m, uint32_t p, bool keep_val = true);
 	 
     /**
      * @brief Writes some value to the bus

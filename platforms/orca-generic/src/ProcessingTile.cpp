@@ -54,7 +54,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetCommStart()->MapTo(_mem0->GetMap(COMM_NOC_START), COMM_NOC_START);
 	this->GetCommStatus()->MapTo(_mem0->GetMap(COMM_NOC_STATUS), COMM_NOC_STATUS);
 		
-	//bind self-id wire
+	//bind self-id wire (care to save the value before the bind)
 	this->GetCommId()->MapTo((uint32_t*)(_mem0->GetMap(COMM_ID)), COMM_ID);
 	
 	//bind hosttime wire

@@ -56,19 +56,22 @@ UComm<T>::UComm(T* t_ptr, uint32_t addr, std::string name){
 
 /**
 * @brief Maps current comm to the internal storage
+* @param keep_val Copies current value to internal storage
 */
 template <typename T>
-void UComm<T>::MapTo(){
-	_t_ptr = &_t_storage;
-}
+void UComm<T>::MapTo(bool keep_val){
 
-/**
-* @brief Maps current comm to an external storage and updates internal reference.
-* @param addr
-*/
-template <typename T>
-void UComm<T>::MapTo(T* addr){
-	_t_ptr = addr;
+	//copies current value before changing pointers
+	if(keep_val){
+	
+		T curr_val;	
+		curr_val = this->Read();
+		_t_ptr = &_t_storage;
+		this->Write(curr_val);
+
+	}else{
+		_t_ptr = &_t_storage;
+	}
 }
 
 /**
@@ -77,7 +80,12 @@ void UComm<T>::MapTo(T* addr){
 * @param m
 */
 template <typename T>
-void UComm<T>::MapTo(T* addr, uint32_t p){
+void UComm<T>::MapTo(T* addr, uint32_t p, bool keep_val){
+
+	//copies current value before changing pointers
+	if(keep_val) 
+		*addr = this->Read();
+
 	_t_ptr = addr;
 	_t_addr = p;
 }

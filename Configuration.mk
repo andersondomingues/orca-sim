@@ -1,9 +1,9 @@
 # =======================================================[ GLOBAL SETTINGS ]
 # Flags set here will be propagated to all modules, including
-GLOBAL_SETTINGS := -O3 -Wall -Wextra -Werror -g -std=c++14
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++14 -O3
 
 # Apps to be compiled within kernel image
-SELECTED_APPS := example-systime example-echo-print
+SELECTED_APPS := producer-consumer
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
@@ -47,12 +47,12 @@ NETSOCKET_LOG_INCOMING_PACKETS := NO
 # Sets client UDP/IP address and port for the netsocket. This is the address
 # that the netsocket will connect when sending packets to outside the noc.
 NETSOCKET_CLIENT_ADDRESS := \"127.0.0.1\"
-NETSOCKET_CLIENT_PORT := 8888
+NETSOCKET_CLIENT_PORT := 8881
 
 # Sets server IP address and port for the netsocket. This is the address
 # that application would use to send packets to the internal network.
 NETSOCKET_SERVER_ADDRESS := \"127.0.0.1\"
-NETSOCKET_SERVER_PORT := 9999
+NETSOCKET_SERVER_PORT := 9991
 
 # ===============================================================[ BUFFER ]
 # Check whether the buffer is full before pushing data (depletes performance).
