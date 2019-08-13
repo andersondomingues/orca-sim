@@ -39,7 +39,7 @@ std::string __orca_send_ip_addr;
 uint32_t    __orca_send_ip_port;
 udp_client*  __orca_udp_client = nullptr;
 
-std::string __orca_recv_ip_addr = "127.0.0.1";
+std::string __orca_recv_ip_addr;
 uint32_t    __orca_recv_ip_port;
 udp_server* __orca_udp_server = nullptr;
 
@@ -164,11 +164,9 @@ void hf_end_data_copy(char* target, char* source, size_t bytes){
 
 //we store only the port number as the server address, in this case,
 //is always the same address as the one client process is running.
-int32_t hf_recv_setup(uint32_t port){
+int32_t hf_recv_setup(std::string server_addr, uint32_t port){
 	__orca_recv_ip_port = port;
-	
-	//this instance keeps is the same as long as 
-	//no one call hf_recv_free. 
+	__orca_recv_ip_addr = addr;
 	__orca_udp_server = new udp_server(__orca_recv_ip_addr, __orca_recv_ip_port);
 	return 0;
 }
