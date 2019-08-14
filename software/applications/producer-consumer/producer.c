@@ -24,6 +24,7 @@ void producer(void){
 
         //generate a bunch of random values
 	for (int i = 0; i < sizeof(buf); i++)
+	    
 	    buf[i] = random() % 255;
 	
         //send buffer data through the network. We use 

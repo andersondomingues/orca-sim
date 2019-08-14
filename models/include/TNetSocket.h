@@ -190,6 +190,7 @@ public:
 	void SetCommIntr(UComm<int8_t>* UComm);
 	void SetCommStart(UComm<int8_t>* UComm);
 	void SetCommAck(UComm<int8_t>* UComm);
+	void SetCommStatus(UComm<int8_t>* UComm);
 
    //ctor./dtor.
    TNetSocket(string name);

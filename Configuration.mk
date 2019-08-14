@@ -1,6 +1,8 @@
 # =======================================================[ GLOBAL SETTINGS ]
 # Flags set here will be propagated to all modules, including
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++14 -O3
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++14 
+#-O3
+#-lasan -fsanitize=address
 
 # Apps to be compiled within kernel image
 SELECTED_APPS := producer-consumer

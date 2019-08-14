@@ -358,18 +358,23 @@ int main(int __attribute__((unused)) argc, char** argv){
 	}
 	
 	//NI states
-	std::cout << "==============[ NI' STATUSES ]" << std::endl;
+	std::cout << "==============[ NIs STATUSES ]" << std::endl;
 	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
 		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 		
 			TNetif* n = tiles[x][y]->GetNetif();
 			std::cout << n->GetName() << ":"
-				<< " Send=" << static_cast<int>(n->GetSendState())
-				<< " Recv=" << static_cast<int>(n->GetRecvState())
+				<< " Send=" << static_cast<unsigned int>(n->GetSendState())
+				<< " Recv=" << static_cast<unsigned int>(n->GetRecvState()) << " |"
+				<< " A:" << std::hex << (int)(n->GetCommAck()->Read())
+				<< " I:" << std::hex << (int)(n->GetCommIntr()->Read())
+				<< " S:" << std::hex << (int)(n->GetCommStart()->Read())
+				<< " T:" << std::hex << (int)(n->GetCommStart()->Read())
 				<< std::endl;
 		}
 	}
-	
+		
+	delete(s);
 	return 0;
 	
 clean:

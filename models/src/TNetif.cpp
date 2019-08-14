@@ -93,7 +93,12 @@ void TNetif::SetMem2(UMemory* m2){
 void TNetif::SetCommAck(UComm<int8_t>* c){ _comm_ack = c; }
 void TNetif::SetCommIntr(UComm<int8_t>* c){ _comm_intr = c; }
 void TNetif::SetCommStart(UComm<int8_t>* c){ _comm_start = c; }
-void TNetif::SetCommStatus(UComm<int8_t>* c){ _comm_start = c; }
+void TNetif::SetCommStatus(UComm<int8_t>* c){ _comm_status = c; }
+
+UComm<int8_t>* TNetif::GetCommAck(){ return _comm_ack; }
+UComm<int8_t>* TNetif::GetCommIntr(){ return _comm_intr; }
+UComm<int8_t>* TNetif::GetCommStart(){ return _comm_start; }
+UComm<int8_t>* TNetif::GetCommStatus(){ return _comm_status; }
 
 long long unsigned int TNetif::Run(){
     this->recvProcess();

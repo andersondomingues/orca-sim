@@ -47,6 +47,7 @@ Tile::Tile(uint32_t x, uint32_t y){
 	
 	//hosttime comm
 	_comm_hosttime = new UComm<uint32_t>(COMM_HOSTTIME,this->GetName() + ".hosttime");
+	//@TODO: bind to function?!
 	
 	//create new memories	
 	_mem1 = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, MEM1_BASE); //read from noc 
@@ -61,6 +62,12 @@ Tile::Tile(uint32_t x, uint32_t y){
 	_comm_intr   = new UComm<int8_t>(COMM_NOC_INTR,  this->GetName() + ".intr");
 	_comm_start  = new UComm<int8_t>(COMM_NOC_START, this->GetName() + ".start");
 	_comm_status = new UComm<int8_t>(COMM_NOC_STATUS,this->GetName() + ".status");
+		
+	//reset control wires
+	_comm_ack->Write(0);
+	_comm_intr->Write(0);
+	_comm_start->Write(0);
+	_comm_status->Write(0);
 		
 	//bind control signals to hardware (netif side)
 	_netif->SetCommAck   (_comm_ack);

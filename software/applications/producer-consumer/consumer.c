@@ -21,11 +21,11 @@ void consumer(void)
             val = hf_recv(&cpu, &port, buf, &size, i);
 	
             if (val){
-		printf("hf_recv(): error %d\n", val);
-	    } else {		
-	        printf("cpu %d, port %d, channel %d, size %d, [free queue: %d]\n",
+				printf("hf_recv(): error %d\n", val);
+	    	} else {		
+	    	    printf("cpu %d, port %d, channel %d, size %d, [free queue: %d]\n",
                         cpu, port, i, size, hf_queue_count(pktdrv_queue));
-	    }
-	}
+	    	}
+		}
     }
 }

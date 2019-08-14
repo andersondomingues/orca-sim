@@ -43,6 +43,14 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_mem0   = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
 	_cpu    = new THellfireProcessor(this->GetName() + ".cpu", this->GetCommIntr());
 	
+	//initialize counters for memory modules
+	//NOTE: mem0 is initialized here, mem1 and mem2
+	//are initialized in Tile.cpp (due inheritance)
+	//bind memory modules
+	_cpu->SetMem0(_mem0);
+	_cpu->SetMem1(this->GetMem1());
+	_cpu->SetMem2(this->GetMem2());
+	
 	//update naming of internal hardware parts (from internal class)
 	this->GetRouter()->SetName(this->GetName() + ".router");
 	this->GetNetif()->SetName(this->GetName() + ".netif");
@@ -51,6 +59,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 
 	//bind control signals to hardware (cpu side)
 	this->GetCommAck()->MapTo(_mem0->GetMap(COMM_NOC_ACK), COMM_NOC_ACK);
+	this->GetCommIntr()->MapTo(_mem0->GetMap(COMM_NOC_INTR), COMM_NOC_INTR);
 	this->GetCommStart()->MapTo(_mem0->GetMap(COMM_NOC_START), COMM_NOC_START);
 	this->GetCommStatus()->MapTo(_mem0->GetMap(COMM_NOC_STATUS), COMM_NOC_STATUS);
 		
@@ -59,15 +68,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	
 	//bind hosttime wire
 	this->GetCommHostTime()->MapTo((uint32_t*)(_mem0->GetMap(COMM_HOSTTIME)), COMM_HOSTTIME);
-		
-	//bind memory modules
-	_cpu->SetMem0(_mem0);
-	_cpu->SetMem1(this->GetMem1());
-	_cpu->SetMem2(this->GetMem2());
-		
-	//initialize counters for memory modules
-	//NOTE: mem0 is initialized here, mem1 and mem2
-	//are initialized in Tile.cpp (due inheritance)
+
 	#ifdef MEMORY_ENABLE_COUNTERS
 	_mem0->InitCounters(MEM0_COUNTERS_STORE_ADDR, MEM0_COUNTERS_LOAD_ADDR);
 	#endif

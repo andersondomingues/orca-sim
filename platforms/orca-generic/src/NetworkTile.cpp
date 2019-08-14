@@ -52,6 +52,7 @@ NetworkTile::NetworkTile(uint32_t x, uint32_t y) : Tile(x, y){
 	_socket->SetCommAck(this->GetCommAck());
 	_socket->SetCommIntr(this->GetCommIntr());
 	_socket->SetCommStart(this->GetCommStart());
+	_socket->SetCommStatus(this->GetCommStatus());
 	
 	//bind memory modules
 	_socket->SetMem1(this->GetMem1()); //recv

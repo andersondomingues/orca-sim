@@ -90,9 +90,14 @@ public:
     
     //setters
     void SetCommAck(UComm<int8_t>* comm);
-	 void SetCommIntr(UComm<int8_t>* comm);
-	 void SetCommStart(UComm<int8_t>* comm);
-	 void SetCommStatus(UComm<int8_t>* comm);
+	void SetCommIntr(UComm<int8_t>* comm);
+	void SetCommStart(UComm<int8_t>* comm);
+	void SetCommStatus(UComm<int8_t>* comm);
+	
+	UComm<int8_t>* GetCommAck();
+	UComm<int8_t>* GetCommIntr();
+	UComm<int8_t>* GetCommStart();
+	UComm<int8_t>* GetCommStatus();
     
     //internal processes
     void sendProcess();

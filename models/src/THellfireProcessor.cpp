@@ -178,7 +178,6 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
     	return millis;
 	}*/
-	
 }
 
 /**
@@ -575,6 +574,8 @@ fail:
 	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;        /*IRQ_COUNTER2*/
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;     /*IRQ_COUNTER_NOT*/
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
+	
+	//printf("intr: %d\n", _comm_intr->Read());
 	
 	if (_comm_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
 

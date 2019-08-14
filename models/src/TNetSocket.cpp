@@ -89,6 +89,7 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 void TNetSocket::SetCommAck(UComm<int8_t>* p){ _comm_ack = p; }
 void TNetSocket::SetCommIntr(UComm<int8_t>* p){ _comm_intr = p; }
 void TNetSocket::SetCommStart(UComm<int8_t>* p){ _comm_start = p; }
+void TNetSocket::SetCommStatus(UComm<int8_t>* p){ _comm_status = p; }
 
 UComm<int8_t>* TNetSocket::GetCommRecv(){
 	return _comm_recv;
@@ -230,7 +231,7 @@ void TNetSocket::nocToUdpProcess(){
 			if(_comm_intr->Read() == 0x1){ 
 						
 				//64 flits = 1 msg
-				int8_t* msg = new int8_t[RECV_BUFFER_LEN]; 
+				int8_t msg[RECV_BUFFER_LEN];
 				
 				//get packet from the scratchpad
 				_mem1->Read(_mem1->GetBase(), msg, RECV_BUFFER_LEN);
@@ -254,6 +255,8 @@ void TNetSocket::nocToUdpProcess(){
 				_comm_ack->Write(0x01);
 				_send_state = TNetSocketSendState::WAIT_FOR_ACK;
 				//std::cout << "to WAIT_FOR_ACK" << std::endl;
+				
+				//delete[] msg; //free tmp buffer
 			}
 			
 		} break;
