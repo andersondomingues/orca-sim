@@ -165,7 +165,7 @@ MemoryType* UMemory::GetMap(uint32_t addr){
 		throw std::runtime_error(s.str());
 	}
 	
-	return &(_mem[(addr - _sram_base)]);
+	return &(_mem[addr - _sram_base]);
 }
 
 /**

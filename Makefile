@@ -39,7 +39,7 @@ $(BINARY_DIR)/$(SIMULATOR_LIB):
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building URSA's libsim       \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(SIMULATOR_DIR)
+	make -C $(SIMULATOR_DIR) -j 8
 	cp $(SIMULATOR_DIR)/bin/$(SIMULATOR_LIB) $(BINARY_DIR)/$(SIMULATOR_LIB)
 
 #library containing hardware models
@@ -47,7 +47,7 @@ $(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(SIMULATOR_LIB)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building hardware models     \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(MODELS_DIR)
+	make -C $(MODELS_DIR) -j 8
 	cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
 
 #platform executable
@@ -55,13 +55,13 @@ $(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(SIMULATOR_LIB) $(BINARY_DIR)/$(MO
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building the platform        \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(PLATFORMS_DIR)/$(PLATFORM)
+	make -C $(PLATFORMS_DIR)/$(PLATFORM) -j 8
 	cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
 
 #software (kernel + loader)
 $(BINARY_DIR)/$(IMAGE_BIN):
 	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m Building software (kernel + loader)\e[0m"
+	@echo "$'\e[7m Building software (kernel + apps)\e[0m"
 	@echo "$'\e[7m==================================\e[0m"	
 	make -C $(SOFTWARE_DIR) image
 

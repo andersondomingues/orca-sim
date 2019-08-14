@@ -190,87 +190,49 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
 
 	UMemory* sel_mem = nullptr;
-	
+
 	//memwrite to sram
 	if(address <= s->sram->GetLastAddr()){
 		sel_mem = s->sram;
 		
-	//memwrite to send memory 		
+	//memwrite to send memory
 	}else if (address <= s->mem2->GetLastAddr()){
 		sel_mem = s->mem2;	
 	}
-	
-	// NOTE:
-	// We ommit mem1 since only the NI can write to the memory space of mem1.
-	
-	//may the request memory space be out of the mapped memory range, we assume
-	//the code is pointing to some of the special addresses		
-	if(sel_mem == nullptr){
-	
-		switch(address){
-			case IRQ_STATUS:{
-				if (value == 0){ 
-					s->status = 0; 
-					for (int i = 0; i < 4; i++) 
-						s->status_dly[i] = 0; 
-					}else{ 
-						s->status_dly[3] = value; 
-				}
-				return;
-			}
-			
-			case IRQ_VECTOR:	s->vector = value; return;
-			case IRQ_CAUSE:	s->cause = value; return;
-			case IRQ_MASK:		s->mask = value; return;
-			case IRQ_EPC:		s->epc = value; return;
-			case COUNTER:		s->counter = value; return;
-			case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
-			case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
 
-			case DEBUG_ADDR: output_debug << (int8_t)(value & 0xff) << std::flush; return;
-			case UART_WRITE: output_uart << (int8_t)(value & 0xff) << std::flush; return;
-			case UART_DIVISOR: return;
-
-			case EXIT_TRAP:
-				std::cout << this->GetName() <<": exit trap triggered! (" << std::dec << s->cycles << " cycles)" << std::endl;
-				output_debug.close();
-				output_uart.close();
-				return;
-		}
-		
-		//if none of the special address has been reach, the requested
-		//address if unknown to the system and we should halt the simulation
-		dumpregs(s);
-		stringstream ss;
-			
-		ss << this->GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
-		throw std::runtime_error(ss.str());
+	//>>> NOTE: we ommit mem1 since only the NI can write to the memory space of mem1 <<<<
 	
-	//may the address be into the mapped range, we read from memory as usual
-	}else{
+	//if the address belong to some memory range, write to it
+	if(sel_mem != nullptr){
 		
 		switch(size){
 			case 4:
 				if(address & 3){
-					std::string err_msg = this->GetName() + ": unaligned access (store word) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+					std::string err_msg = this->GetName() 
+						+ ": unaligned access (store word) pc=0x" 
+						+ std::to_string(s->pc) + " addr=0x" 
+						+ std::to_string(address);
 					throw std::runtime_error(err_msg);
 				}else{
-					s->sram->Write(address, (int8_t*)&value, size);
+					sel_mem->Write(address, (int8_t*)&value, size);
 				}
 				break;
 			case 2:
 				if(address & 1){
-					std::string err_msg = this->GetName() + ": unaligned access (store halfword) pc=0x" + std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+					std::string err_msg = this->GetName() 
+						+ ": unaligned access (store halfword) pc=0x" 
+						+ std::to_string(s->pc) + " addr=0x" 
+						+ std::to_string(address);
 					throw std::runtime_error(err_msg);
 				}else{
 					uint16_t data = (uint16_t)value;
-					s->sram->Write(address, (int8_t*)&data, size);
+					sel_mem->Write(address, (int8_t*)&data, size);
 				}
 				break;
 			case 1:{
 				uint8_t data;
 				data = (uint8_t)value;
-				s->sram->Write(address, (int8_t*)&data, size);
+				sel_mem->Write(address, (int8_t*)&data, size);
 				break;
 			}
 			default:{
@@ -278,6 +240,8 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				throw std::runtime_error(err_msg);
 			}
 		}
+		
+		return; //succefully written		
 	}
 	
 	//TODO		
@@ -298,6 +262,47 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	if(address == this->GetCommCounterJumps()->GetAddress())     {this->GetCommCounterJumps()->Write(0);     return;}
 	if(address == this->GetCommCounterLoadStore()->GetAddress()) {this->GetCommCounterLoadStore()->Write(0); return;}
 	#endif /* OPT_HFRISC_DISABLE_COUNTERS */
+	
+	//may the request memory space be out of the mapped memory range, we assume
+	//the code is pointing to some of the special addresses		
+	switch(address){
+		case IRQ_STATUS:{
+			if (value == 0){ 
+				s->status = 0; 
+				for (int i = 0; i < 4; i++) 
+					s->status_dly[i] = 0; 
+				}else{ 
+					s->status_dly[3] = value; 
+			}
+			return;
+		}
+		
+		case IRQ_VECTOR:	s->vector = value; return;
+		case IRQ_CAUSE:	s->cause = value; return;
+		case IRQ_MASK:		s->mask = value; return;
+		case IRQ_EPC:		s->epc = value; return;
+		case COUNTER:		s->counter = value; return;
+		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
+		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
+
+		case DEBUG_ADDR: output_debug << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_WRITE: output_uart << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_DIVISOR: return;
+
+		case EXIT_TRAP:
+			std::cout << this->GetName() <<": exit trap triggered! (" << std::dec << s->cycles << " cycles)" << std::endl;
+			output_debug.close();
+			output_uart.close();
+			return;
+	}
+		
+	//if none of the special address has been reach, the requested
+	//address if unknown to the system and we should halt the simulation
+	dumpregs(s);
+	stringstream ss;
+			
+	ss << this->GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
+	throw std::runtime_error(ss.str());
 }
 
 #ifdef HFRISCV_ENABLE_COUNTERS
@@ -577,7 +582,11 @@ fail:
 	
 	//printf("intr: %d\n", _comm_intr->Read());
 	
-	if (_comm_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff; /*NOC*/
+	//noc intr treatment
+	if (_comm_intr->Read() == 0x1)
+		s->cause |= 0x100; 
+	else 
+		s->cause &= 0xfffffeff; /*NOC*/
 
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	this->UpdateCounters(opcode, funct3);

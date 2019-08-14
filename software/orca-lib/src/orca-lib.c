@@ -39,26 +39,22 @@ void app_main(void)
 	//hfs
 	//#elif CPU_ID == 32
 	//sd
-
-	//hf_spawn(report_systime, 10, 4, 10, "report systime", 4096);
-        //hf_spawn(example_echo_print, 10, 9, 10, "echo-print", 4096);
-        hf_spawn(consumer, 0, 0, 0, "consumer-task", 4096);
 	
-	 //use hf_cpuid() to discrimate nodes
-	 switch(hf_cpuid()){
-	 case 1: 
-	 	 //hf_spawn(consumer, 0, 0, 0, "consumer-task", 4096);
-	 	 break;
-	 case 3: 	 
-                 hf_spawn(producer, 0, 0, 0, "producer-task", 4096);
-		 break;
-	 case 2:
-	 	 //hf_spawn(dronepid, 0, 0, 0, "drone pid", 4096);
-         //hf_spawn(example_echo_print, 0, 0, 0, "echo-print", 4096);
-	 	 break;
-	 default:
-		 break;
-	 }
+	printf("cpu_id: %d\n", hf_cpuid());
+
+	switch(hf_cpuid()){
+	
+		case 1: 
+			hf_spawn(consumer, 100, 90, 100, "consumer-task", 4096);	
+			break;
+			
+		case 2:
+			hf_spawn(producer, 100, 90, 100, "producer-task", 4096);
+			break;
+			
+		default:
+			break;
+	}
 
 	 //allocating real-time for ~90% (9/10)
 	 //10 : period

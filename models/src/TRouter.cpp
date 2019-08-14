@@ -88,6 +88,8 @@ unsigned long long TRouter::Run(){
 		//find the destination using the address in the first flit
 		uint8_t target_port = this->GetRouteXY(_ib[_round_robin]->top()); 
 		
+		//printf("port: %d\n", target_port);
+		
 		//check whether the destination port is bound to some other source port
 		bool bound = false;
 		
@@ -139,7 +141,7 @@ unsigned long long TRouter::Run(){
 				if(_flits_to_send[i] == 0)
 					_switch_control[i] = -1;
 			}
-		}			
+		}
 	}
 	
 	//ROUND ROBIN (prevents starvation)
@@ -174,6 +176,8 @@ uint32_t TRouter::GetRouteXY(FlitType flit){
     
     FlitType tx = (flit & 0x00F0) >> 4;
     FlitType ty = flit & 0x000F;
+    
+    //printf("x:%d, y:%d, flit:0x%x\n", _x, _y, flit);
 	
 	//std::cout << this->GetName() << ":0x" << std::hex << flit << std::dec << ":(x, y) => (" << tx << "," << ty << ")" << std::endl;
 

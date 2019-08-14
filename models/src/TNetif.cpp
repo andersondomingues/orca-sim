@@ -126,6 +126,8 @@ void TNetif::recvProcess(){
 				_ib->pop();
 				_mem1->Write(_next_recv_addr, (int8_t*)&flit, 2);
 				
+				//std::cout << std::hex << flit << std::endl;
+				
 				_next_recv_addr += sizeof(FlitType);
 				_recv_state = NetifRecvState::LENGTH;	
 			}
