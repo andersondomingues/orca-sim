@@ -34,13 +34,13 @@
 //be loaded into each node according to nodes' ID. Startup
 //routines that affect all applications can be handled here.
 void app_main(void)
-{
-	//#ifdef CPU_ID == 22
+{   
+        //#ifdef CPU_ID == 22
 	//hfs
 	//#elif CPU_ID == 32
-	//sd
-	
-	printf("cpu_id: %d\n", hf_cpuid());
+        //
+
+        printf("cpu_id: %d\n", hf_cpuid());
 
 	switch(hf_cpuid()){
 	

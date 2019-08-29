@@ -319,12 +319,12 @@ int main(int __attribute__((unused)) argc, char** argv){
 			s->NextEpoch();
 			
 			//converts mili to seconds before calculating the frequency
-			double hertz = ((double)ORCA_EPOCH_LENGTH) / ((double)(duration / 1000));
+			double hertz = ((double)ORCA_EPOCH_LENGTH) / ((double)((double)duration / 1000.0));
 
 			//divide frequency by 1k (Hz -> KHz)
 			std::cout << "notice: epoch #" << s->GetEpochs() << " took ~" 
-				<< ceil(duration / 1000.0)<< "s @ " << (hertz / 1000.0) 
-				<< " KHz" << std::endl;
+                                << duration << "ms (running @ " << (hertz / 1000000.0)
+				<< " MHz)" << std::endl;
 							
 			//simulate until reach the limit of pulses
 			#ifdef ORCA_EPOCHS_TO_SIM

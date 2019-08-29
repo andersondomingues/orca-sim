@@ -3,13 +3,15 @@
 
 #include "producer-consumer.h"
 
+
 void producer(void){
 
     int8_t buf[100];
     int16_t val, channel, node, counter;
 	
-    if (hf_comm_create(hf_selfid(), 1000, 0))
+    if (hf_comm_create(hf_selfid(), 1000, 0)){
         panic(0xff);
+    }
 
     //delay necessary for the kernel to 
     //create the comm
@@ -37,12 +39,13 @@ void producer(void){
         //send first 32 bytes to some random node
         val = hf_send(node, 5000, buf, 32, channel);
 
-        if (val)
-		    printf("hf_send(): error %d\n", val);
-		else
-		    printf("hf_send(): channel=%d, node=%d, #%d\n", channel, node, counter);
+        if (val){
+            printf("hf_send(): error %d\n", val);
+        }else{
+	    printf("hf_send(): channel=%d, node=%d, #%d\n", channel, node, counter);
+        }
 		    
-		counter++;
+	counter++;
 
         //add some delay to avoid flooding the network
         //delay_ms(2);

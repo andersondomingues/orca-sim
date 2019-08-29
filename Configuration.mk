@@ -9,22 +9,22 @@ SELECTED_APPS := producer-consumer
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 2
+ORCA_NOC_HEIGHT := 3
 
 # Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_WIDTH  := 2
+ORCA_NOC_WIDTH  := 3
 
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
 # values may provide inaccurate measurements of the achieved frequency.
-ORCA_EPOCH_LENGTH  := 2000000
+ORCA_EPOCH_LENGTH  := 1000000
 
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
 ORCA_EPOCHS_TO_SIM := INF
 
 # Enable multithread simulation (experimental)
-ORCA_ENABLE_MULTITHREADING := NO
+    ORCA_ENABLE_MULTITHREADING := NO
 
 # ===========================================================[ URSA ENGINE ]
 # Check whether some event has been schedule to run in some point of 

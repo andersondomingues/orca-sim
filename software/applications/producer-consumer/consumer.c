@@ -9,10 +9,11 @@ void consumer(void)
     uint16_t cpu, port, size, counter;
     int16_t val;
 
-    if (hf_comm_create(hf_selfid(), 5000, 0))
+    if (hf_comm_create(hf_selfid(), 5000, 0)){
         panic(0xff);
+    }
 
-	counter = 0;
+    counter = 0;
 	
     while (1){
 	
@@ -23,12 +24,12 @@ void consumer(void)
             val = hf_recv(&cpu, &port, buf, &size, i);
 	
             if (val){
-				printf("hf_recv(): error %d\n", val);
-	    	} else {		
-	    	    printf("cpu %d, port %d, ch %d, size %d, #%d [free queue: %d]\n",
+		printf("hf_recv(): error %d\n", val);
+            } else {		
+	        printf("cpu %d, port %d, ch %d, size %d, #%d [free queue: %d]\n",
                     cpu, port, i, size, counter, hf_queue_count(pktdrv_queue));
                 counter++;
-	    	}
-		}
+	    }
+	}
     }
 }
