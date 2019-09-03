@@ -164,9 +164,9 @@ void hf_end_data_copy(char* target, char* source, size_t bytes){
 
 //we store only the port number as the server address, in this case,
 //is always the same address as the one client process is running.
-int32_t hf_recv_setup(std::string server_addr, uint32_t port){
-	__orca_recv_ip_port = port;
+int32_t hf_recv_setup(std::string addr, uint32_t port){
 	__orca_recv_ip_addr = addr;
+	__orca_recv_ip_port = port;
 	__orca_udp_server = new udp_server(__orca_recv_ip_addr, __orca_recv_ip_port);
 	return 0;
 }

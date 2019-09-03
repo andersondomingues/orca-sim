@@ -40,7 +40,7 @@ int32_t hf_send(uint16_t target_cpu, uint16_t target_port,
  * @brief Enable the current process to receive packets from the mpsoc through udp
  * @param port Port number to which the udp connection will be instantiated
  * @return returns zero (0) if connection is succefull. */
-int32_t hf_recv_setup(uint32_t port);
+int32_t hf_recv_setup(std::string addr, uint32_t port);
 
 /**
  * hf_recv_close
