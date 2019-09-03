@@ -32,7 +32,7 @@
 //dependency models
 #include <UBuffer.h>
 #include <UMemory.h>
-#include <UComm.h>
+#include <USignal.h>
 #include <TNetif.h>
 
 typedef uint16_t FlitType;
@@ -98,7 +98,7 @@ private:
  * @file TNetSocket.h
  * @brief This class defines a model for a "fake" network adapter 
  * that uses of UDP datagrams at one side and on-chip network's
- * flits on the other side of the UCommunication.
+ * flits on the other side of the USignalunication.
  */
 class TNetSocket: public TimedModel{
 
@@ -112,21 +112,21 @@ private:
 	//Control wires interfacing with the CPU. The protocol is
 	//as follows:
 	//1) When flits come from the router, wait until all flits 
-	//   get received and then interrupt the cpu (raise _comm_intr),
-	//   and wait for _comm_ack to raise until sending again.
-	//2) When _comm_start raises, copy contents from mem1 onto router's
-	//   buffer, then raise _comm_status.
-	UComm<int8_t>* _comm_ack;    //IN
-	UComm<int8_t>* _comm_start;  //IN
-	UComm<int8_t>* _comm_status; //OUT
-	UComm<int8_t>* _comm_intr;   //OUT
+	//   get received and then interrupt the cpu (raise _signal_intr),
+	//   and wait for _signal_ack to raise until sending again.
+	//2) When _signal_start raises, copy contents from mem1 onto router's
+	//   buffer, then raise _signal_status.
+	USignal<int8_t>* _signal_ack;    //IN
+	USignal<int8_t>* _signal_start;  //IN
+	USignal<int8_t>* _signal_status; //OUT
+	USignal<int8_t>* _signal_intr;   //OUT
 
 	//Control wire for the receiving thread. This module uses 
 	//an additional thread that treats UDP packets outside the simulation
-	//thread. The comm below is used to communicated  between threads.
+	//thread. The signal below is used to signalunicated  between threads.
 	//@TODO: replace by the non-blocking model
 	int8_t _recv_val;
-	UComm<int8_t>* _comm_recv;  //binds to control[3]
+	USignal<int8_t>* _signal_recv;  //binds to control[3]
 
 	//interface with memories
 	UMemory* _mem1; //packets to be received
@@ -178,19 +178,19 @@ public:
 	void SetMem1(UMemory*);
 	void SetMem2(UMemory*);
 	
-	//setter/getters for UComms
-	UComm<int8_t>* GetCommIntr();
-	UComm<int8_t>* GetCommStart();
-	UComm<int8_t>* GetCommAck();
-	UComm<int8_t>* GetCommStatus();
+	//setter/getters for USignals
+	USignal<int8_t>* GetSignalIntr();
+	USignal<int8_t>* GetSignalStart();
+	USignal<int8_t>* GetSignalAck();
+	USignal<int8_t>* GetSignalStatus();
 
 
-	UComm<int8_t>* GetCommRecv();
+	USignal<int8_t>* GetSignalRecv();
 	
-	void SetCommIntr(UComm<int8_t>* UComm);
-	void SetCommStart(UComm<int8_t>* UComm);
-	void SetCommAck(UComm<int8_t>* UComm);
-	void SetCommStatus(UComm<int8_t>* UComm);
+	void SetSignalIntr(USignal<int8_t>* USignal);
+	void SetSignalStart(USignal<int8_t>* USignal);
+	void SetSignalAck(USignal<int8_t>* USignal);
+	void SetSignalStatus(USignal<int8_t>* USignal);
 
    //ctor./dtor.
    TNetSocket(string name);

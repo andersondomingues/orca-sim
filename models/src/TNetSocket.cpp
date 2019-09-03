@@ -54,10 +54,10 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 		"logs/pe-0-0.cpu_debug.log", 
 		std::ofstream::out | std::ofstream::trunc);
 	
-	//create a new comm so that the module can be interrupted by
+	//create a new signal so that the module can be interrupted by
 	//the external network when a new packet arrives
-	_comm_recv = new UComm<int8_t>(&_recv_val, 0, this->GetName() + ".commUdpIntr");
-	_comm_recv->Write(0);
+	_signal_recv = new USignal<int8_t>(&_recv_val, 0, this->GetName() + ".signalUdpIntr");
+	_signal_recv->Write(0);
 	
 	//reset traffic counter
 	_trafficOut = 0;
@@ -86,13 +86,13 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 	this->Reset();
 }
 
-void TNetSocket::SetCommAck(UComm<int8_t>* p){ _comm_ack = p; }
-void TNetSocket::SetCommIntr(UComm<int8_t>* p){ _comm_intr = p; }
-void TNetSocket::SetCommStart(UComm<int8_t>* p){ _comm_start = p; }
-void TNetSocket::SetCommStatus(UComm<int8_t>* p){ _comm_status = p; }
+void TNetSocket::SetSignalAck(USignal<int8_t>* p){ _signal_ack = p; }
+void TNetSocket::SetSignalIntr(USignal<int8_t>* p){ _signal_intr = p; }
+void TNetSocket::SetSignalStart(USignal<int8_t>* p){ _signal_start = p; }
+void TNetSocket::SetSignalStatus(USignal<int8_t>* p){ _signal_status = p; }
 
-UComm<int8_t>* TNetSocket::GetCommRecv(){
-	return _comm_recv;
+USignal<int8_t>* TNetSocket::GetSignalRecv(){
+	return _signal_recv;
 }
 
 void TNetSocket::SetMem1(UMemory* mem1){
@@ -144,13 +144,13 @@ void* TNetSocket::udpRecvThread(void* gs){
 	while(1){
 		
 		//recv only when interface is not busy
-		if(ns->GetCommRecv()->Read() == 0x0){
+		if(ns->GetSignalRecv()->Read() == 0x0){
 			
 			//recvs from external network
 			ns->GetUdpServer()->recv((char*)(ns->GetBuffer()), RECV_BUFFER_LEN);
 			
 			//start interface
-			ns->GetCommRecv()->Write(0x1);
+			ns->GetSignalRecv()->Write(0x1);
 		}	
 	}
 }
@@ -167,7 +167,7 @@ void TNetSocket::udpToNocProcess(){
 		case TNetSocketRecvState::READY:{
 			
 			//packet has arrived and the network is not sending packets
-			if(_comm_recv->Read() == 0x1 && _comm_start->Read() == 0x0){
+			if(_signal_recv->Read() == 0x1 && _signal_start->Read() == 0x0){
 				
 				//copy buffer to internal memory
 				_mem2->Write(_mem2->GetBase(), (int8_t*)_recv_buffer, RECV_BUFFER_LEN);
@@ -199,9 +199,9 @@ void TNetSocket::udpToNocProcess(){
 		case TNetSocketRecvState::DATA_IN:{
 			
 			//able to send
-			if(_comm_start->Read() == 0){
+			if(_signal_start->Read() == 0){
 				
-				_comm_start->Write(0x1); //enable netif
+				_signal_start->Write(0x1); //enable netif
 				
 				//start bursting packets into the noc
 				_recv_state = TNetSocketRecvState::FLUSH;
@@ -212,9 +212,9 @@ void TNetSocket::udpToNocProcess(){
 		case TNetSocketRecvState::FLUSH:{
 			
 			//netif finished, we can receive another packet
-			if(_comm_start->Read() == 0){
+			if(_signal_start->Read() == 0){
 				_recv_state = TNetSocketRecvState::READY;
-				_comm_recv->Write(0x0);
+				_signal_recv->Write(0x0);
 			}
 			
 		}break;
@@ -228,7 +228,7 @@ void TNetSocket::nocToUdpProcess(){
 		//wait until has some packet to send
 		case TNetSocketSendState::WAIT:{
 			
-			if(_comm_intr->Read() == 0x1){ 
+			if(_signal_intr->Read() == 0x1){ 
 						
 				//64 flits = 1 msg
 				int8_t msg[RECV_BUFFER_LEN];
@@ -252,7 +252,7 @@ void TNetSocket::nocToUdpProcess(){
 				#endif
 				
 				//signal the ni that the packet has been consumed
-				_comm_ack->Write(0x01);
+				_signal_ack->Write(0x01);
 				_send_state = TNetSocketSendState::WAIT_FOR_ACK;
 				//std::cout << "to WAIT_FOR_ACK" << std::endl;
 				
@@ -264,7 +264,7 @@ void TNetSocket::nocToUdpProcess(){
 		//and wait for ack-ack
 		case TNetSocketSendState::WAIT_FOR_ACK:{
 			
-			if(_comm_intr->Read() == 0x0){
+			if(_signal_intr->Read() == 0x0){
 				_send_state = TNetSocketSendState::LOWER_ACK;
 				//std::cout << "to WAIT" << std::endl;				
 			}
@@ -275,7 +275,7 @@ void TNetSocket::nocToUdpProcess(){
 		case TNetSocketSendState::LOWER_ACK:{
 			
 			//lower ack
-			_comm_ack->Write(0x00);
+			_signal_ack->Write(0x00);
 			_trafficOut++;
 			_send_state = TNetSocketSendState::WAIT;
 			//std::cout << "to WAIT_NAK" << std::endl;				
@@ -402,7 +402,7 @@ std::string udp_client::get_addr() const
  * the udp_client object.
  *
  * The size must be small enough for the message to fit. In most cases we
- * use these in Snap! to send very small signals (i.e. 4 bytes commands.)
+ * use these in Snap! to send very small signals (i.e. 4 bytes signalands.)
  * Any data we would want to share remains in the Cassandra database so
  * that way we can avoid losing it because of a UDP message.
  *

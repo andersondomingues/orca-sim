@@ -28,7 +28,7 @@
 //simulator API
 #include <TimedModel.h>
 #include <UBuffer.h>
-#include <UComm.h>
+#include <USignal.h>
 
 typedef uint16_t FlitType;
 

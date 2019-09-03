@@ -30,7 +30,7 @@
 #include <TNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
-#include <UComm.h>
+#include <USignal.h>
 
 //netif mem mapping
 #define MEM1_SIZE 0x00000080 /* recv memory */
@@ -43,7 +43,7 @@
 //#define MEM2_BASE 0x90000080
 #define MEM2_BASE 0x50000080
 
-//comms (80xx.. to 80ff.. reserved for gp wires)
+//signals (80xx.. to 80ff.. reserved for gp wires)
 //#define COMM_NOC_ACK    0x80000000
 //#define COMM_NOC_INTR   0x80000001
 //#define COMM_NOC_START  0x80000002
@@ -95,19 +95,19 @@ private:
 	UMemory* _mem2; //send memory
 		
 	//recv signals 
-	UComm<int8_t>* _comm_ack;
-	UComm<int8_t>* _comm_intr;
+	USignal<int8_t>* _signal_ack;
+	USignal<int8_t>* _signal_intr;
 	
 	//send signals
-	UComm<int8_t>* _comm_start;
-	UComm<int8_t>* _comm_status;
+	USignal<int8_t>* _signal_start;
+	USignal<int8_t>* _signal_status;
 	
 	//self-id wire
-	UComm<uint32_t>* _comm_id;
+	USignal<uint32_t>* _signal_id;
 	
 	//hosttime magic wire
 	uint32_t _shosttime;
-	UComm<uint32_t>* _comm_hosttime;
+	USignal<uint32_t>* _signal_hosttime;
 
 public: 
 
@@ -122,13 +122,13 @@ public:
 	UMemory* GetMem1();
 	UMemory* GetMem2();
 	
-	UComm<int8_t>* GetCommAck();
-	UComm<int8_t>* GetCommIntr();
-	UComm<int8_t>* GetCommStart();
-	UComm<int8_t>* GetCommStatus();
+	USignal<int8_t>* GetSignalAck();
+	USignal<int8_t>* GetSignalIntr();
+	USignal<int8_t>* GetSignalStart();
+	USignal<int8_t>* GetSignalStatus();
 	
-	UComm<uint32_t>* GetCommId();
-	UComm<uint32_t>* GetCommHostTime();
+	USignal<uint32_t>* GetSignalId();
+	USignal<uint32_t>* GetSignalHostTime();
 
 	UMemory* GetmMem1();
 	UMemory* GetmMem2();
@@ -138,11 +138,11 @@ public:
 	/*** setters ***/
 	void SetName(std::string);
 	
-	/*void SetCommAck(UComm<int8_t>*);
-	void SetCommIntr(UComm<int8_t>*);
-	void SetCommStart(UComm<int8_t>*);
+	/*void SetSignalAck(USignal<int8_t>*);
+	void SetSignalIntr(USignal<int8_t>*);
+	void SetSignalStart(USignal<int8_t>*);
 	
-	void SetCommId(UComm<int32_t>*);
+	void SetSignalId(USignal<int32_t>*);
 	
 	
 	

@@ -27,7 +27,7 @@
 
 //counter-specific definitions
 #ifdef MEMORY_ENABLE_COUNTERS
-#include <UComm.h>
+#include <USignal.h>
 #endif
 
 #include <iostream>

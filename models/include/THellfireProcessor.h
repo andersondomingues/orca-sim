@@ -23,7 +23,7 @@
 
 //models libs
 #include <UMemory.h>
-#include <UComm.h>
+#include <USignal.h>
 
 #define EXIT_TRAP			0xe0000000
 #define IRQ_VECTOR		0xf0000000
@@ -65,7 +65,7 @@ private:
 uint32_t _last_pc;
 
 	//interruption wire
-	UComm<int8_t>* _comm_intr;
+	USignal<int8_t>* _signal_intr;
 	
 	//context
 	risc_v_state context;
@@ -73,23 +73,23 @@ uint32_t _last_pc;
 	int i;
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS
-	UComm<uint32_t>* _counter_iarith;
-	UComm<uint32_t>* _counter_ilogical;
-	UComm<uint32_t>* _counter_ishift;
-	UComm<uint32_t>* _counter_ibranches;
-	UComm<uint32_t>* _counter_ijumps;
-	UComm<uint32_t>* _counter_iloadstore;
+	USignal<uint32_t>* _counter_iarith;
+	USignal<uint32_t>* _counter_ilogical;
+	USignal<uint32_t>* _counter_ishift;
+	USignal<uint32_t>* _counter_ibranches;
+	USignal<uint32_t>* _counter_ijumps;
+	USignal<uint32_t>* _counter_iloadstore;
 	#endif
 	
 public:
 
 	#ifdef HFRISCV_ENABLE_COUNTERS
-	UComm<uint32_t>* GetCommCounterArith();
-	UComm<uint32_t>* GetCommCounterLogical();
-	UComm<uint32_t>* GetCommCounterShift();
-	UComm<uint32_t>* GetCommCounterBranches();
-	UComm<uint32_t>* GetCommCounterJumps();
-	UComm<uint32_t>* GetCommCounterLoadStore();
+	USignal<uint32_t>* GetSignalCounterArith();
+	USignal<uint32_t>* GetSignalCounterLogical();
+	USignal<uint32_t>* GetSignalCounterShift();
+	USignal<uint32_t>* GetSignalCounterBranches();
+	USignal<uint32_t>* GetSignalCounterJumps();
+	USignal<uint32_t>* GetSignalCounterLoadStore();
 	
 	void InitCounters(
 		uint32_t arith_counter_addr, 
@@ -112,7 +112,7 @@ public:
 	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
 	//ctor./dtor.
-	THellfireProcessor(string name, UComm<int8_t>* intr);
+	THellfireProcessor(string name, USignal<int8_t>* intr);
 	~THellfireProcessor();
 	
 	//setters for memories
@@ -121,16 +121,16 @@ public:
 	void SetMem1(UMemory*);
 	void SetMem2(UMemory*);
 	
-	//setters for comms
-	void SetCommAck(UComm<int8_t>*);
-	void SetCommIntr(UComm<int8_t>*);
-	void SetCommStart(UComm<int8_t>*);
-	void SetCommStatus(UComm<int8_t>*);
+	//setters for Signals
+	void SetSignalAck(USignal<int8_t>*);
+	void SetSignalIntr(USignal<int8_t>*);
+	void SetSignalStart(USignal<int8_t>*);
+	void SetSignalStatus(USignal<int8_t>*);
 	
 	//self id wire
-	void SetCommId(UComm<int32_t>*);
+	void SetSignalId(USignal<int32_t>*);
 	
-	void SetCommSystime(UComm<uint32_t>*);
+	void SetSignalSystime(USignal<uint32_t>*);
 		
 	unsigned long long Run();
 	

@@ -49,15 +49,15 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 
 #ifdef MEMORY_ENABLE_COUNTERS
 void UMemory::InitCounters(uint32_t store_counter_addr, uint32_t load_counter_addr){
-	_counter_nstore = new UComm<uint32_t>(GetName() + ".counters.store", 0, store_counter_addr);
-	_counter_nload = new UComm<uint32_t>(GetName() + ".counters.load", 0, load_counter_addr);
+	_counter_nstore = new USignal<uint32_t>(GetName() + ".counters.store", 0, store_counter_addr);
+	_counter_nload = new USignal<uint32_t>(GetName() + ".counters.load", 0, load_counter_addr);
 }
 
-UComm<uint32_t>* UMemory::GetCommCounterStore(){
+USignal<uint32_t>* UMemory::GetSignalCounterStore(){
 	return _counter_nstore;
 }
 
-UComm<uint32_t>* UMemory::GetCommCounterLoad(){
+USignal<uint32_t>* UMemory::GetSignalCounterLoad(){
 	return _counter_nload;
 }
 #endif

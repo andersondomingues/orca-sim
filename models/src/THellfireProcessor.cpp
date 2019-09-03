@@ -141,28 +141,28 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	}
 
 	#ifdef MEMORY_ENABLE_COUNTERS
-	if(address == s->sram->GetCommCounterStore()->GetAddress()) return s->sram->GetCommCounterStore()->Read();
-	if(address == s->sram->GetCommCounterLoad()->GetAddress())  return s->sram->GetCommCounterLoad()->Read();
-	if(address == s->mem1->GetCommCounterStore()->GetAddress()) return s->mem1->GetCommCounterStore()->Read();
-	if(address == s->mem1->GetCommCounterLoad()->GetAddress())  return s->mem1->GetCommCounterLoad()->Read();
-	if(address == s->mem2->GetCommCounterStore()->GetAddress()) return s->mem2->GetCommCounterStore()->Read();
-	if(address == s->mem2->GetCommCounterLoad()->GetAddress())  return s->mem2->GetCommCounterLoad()->Read();
+	if(address == s->sram->GetSignalCounterStore()->GetAddress()) return s->sram->GetSignalCounterStore()->Read();
+	if(address == s->sram->GetSignalCounterLoad()->GetAddress())  return s->sram->GetSignalCounterLoad()->Read();
+	if(address == s->mem1->GetSignalCounterStore()->GetAddress()) return s->mem1->GetSignalCounterStore()->Read();
+	if(address == s->mem1->GetSignalCounterLoad()->GetAddress())  return s->mem1->GetSignalCounterLoad()->Read();
+	if(address == s->mem2->GetSignalCounterStore()->GetAddress()) return s->mem2->GetSignalCounterStore()->Read();
+	if(address == s->mem2->GetSignalCounterLoad()->GetAddress())  return s->mem2->GetSignalCounterLoad()->Read();
 	#endif /* MEMORY_ENABLE_COUNTERS */
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS
-	if(address == this->GetCommCounterArith()->GetAddress())     return this->GetCommCounterArith()->Read();
-	if(address == this->GetCommCounterLogical()->GetAddress())   return this->GetCommCounterLogical()->Read();
-	if(address == this->GetCommCounterShift()->GetAddress())     return this->GetCommCounterShift()->Read();
-	if(address == this->GetCommCounterBranches()->GetAddress())  return this->GetCommCounterBranches()->Read();
-	if(address == this->GetCommCounterJumps()->GetAddress())     return this->GetCommCounterJumps()->Read();
-	if(address == this->GetCommCounterLoadStore()->GetAddress()) return this->GetCommCounterLoadStore()->Read();
+	if(address == this->GetSignalCounterArith()->GetAddress())     return this->GetSignalCounterArith()->Read();
+	if(address == this->GetSignalCounterLogical()->GetAddress())   return this->GetSignalCounterLogical()->Read();
+	if(address == this->GetSignalCounterShift()->GetAddress())     return this->GetSignalCounterShift()->Read();
+	if(address == this->GetSignalCounterBranches()->GetAddress())  return this->GetSignalCounterBranches()->Read();
+	if(address == this->GetSignalCounterJumps()->GetAddress())     return this->GetSignalCounterJumps()->Read();
+	if(address == this->GetSignalCounterLoadStore()->GetAddress()) return this->GetSignalCounterLoadStore()->Read();
 	#endif /* HFRISCV_ENABLE_COUNTERS */
 		
 	#ifdef ROUTER_ENABLE_COUNTERS
-	if(address == _router->GetCommCounterActive()->GetAddress()) return _router->GetCommCounterActive()->Read();
+	if(address == _router->GetSignalCounterActive()->GetAddress()) return _router->GetSignalCounterActive()->Read();
 	#endif /* ROUTER_ENABLE_COUNTERS */
 	
-	/*if(address == _comm_systime->GetAddress()){
+	/*if(address == _signal_systime->GetAddress()){
 		
 		//time_t seconds;
 		//seconds = time(NULL);
@@ -246,21 +246,21 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	
 	//TODO		
 	#ifdef MEMORY_ENABLE_COUNTERS
-	if(address == s->sram->GetCommCounterStore()->GetAddress()){s->sram->GetCommCounterStore()->Write(0); return;}
-	if(address == s->sram->GetCommCounterLoad()->GetAddress()) {s->sram->GetCommCounterLoad()->Write(0);  return;}
-	if(address == s->mem1->GetCommCounterStore()->GetAddress()){s->mem1->GetCommCounterStore()->Write(0); return;}
-	if(address == s->mem1->GetCommCounterLoad()->GetAddress()) {s->mem1->GetCommCounterLoad()->Write(0);  return;}
-	if(address == s->mem2->GetCommCounterStore()->GetAddress()){s->mem2->GetCommCounterStore()->Write(0); return;}
-	if(address == s->mem2->GetCommCounterLoad()->GetAddress()) {s->mem2->GetCommCounterLoad()->Write(0);  return;}
+	if(address == s->sram->GetSignalCounterStore()->GetAddress()){s->sram->GetSignalCounterStore()->Write(0); return;}
+	if(address == s->sram->GetSignalCounterLoad()->GetAddress()) {s->sram->GetSignalCounterLoad()->Write(0);  return;}
+	if(address == s->mem1->GetSignalCounterStore()->GetAddress()){s->mem1->GetSignalCounterStore()->Write(0); return;}
+	if(address == s->mem1->GetSignalCounterLoad()->GetAddress()) {s->mem1->GetSignalCounterLoad()->Write(0);  return;}
+	if(address == s->mem2->GetSignalCounterStore()->GetAddress()){s->mem2->GetSignalCounterStore()->Write(0); return;}
+	if(address == s->mem2->GetSignalCounterLoad()->GetAddress()) {s->mem2->GetSignalCounterLoad()->Write(0);  return;}
 	#endif /* OPT_MEMORY_DISABLE_COUNTERS */
 	
 	#ifdef MEMORY_ENABLE_COUNTERS
-	if(address == this->GetCommCounterArith()->GetAddress())     {this->GetCommCounterArith()->Write(0);     return;}
-	if(address == this->GetCommCounterLogical()->GetAddress())   {this->GetCommCounterLogical()->Write(0);   return;}
-	if(address == this->GetCommCounterShift()->GetAddress())     {this->GetCommCounterShift()->Write(0);     return;}
-	if(address == this->GetCommCounterBranches()->GetAddress())  {this->GetCommCounterBranches()->Write(0);  return;}
-	if(address == this->GetCommCounterJumps()->GetAddress())     {this->GetCommCounterJumps()->Write(0);     return;}
-	if(address == this->GetCommCounterLoadStore()->GetAddress()) {this->GetCommCounterLoadStore()->Write(0); return;}
+	if(address == this->GetSignalCounterArith()->GetAddress())     {this->GetSignalCounterArith()->Write(0);     return;}
+	if(address == this->GetSignalCounterLogical()->GetAddress())   {this->GetSignalCounterLogical()->Write(0);   return;}
+	if(address == this->GetSignalCounterShift()->GetAddress())     {this->GetSignalCounterShift()->Write(0);     return;}
+	if(address == this->GetSignalCounterBranches()->GetAddress())  {this->GetSignalCounterBranches()->Write(0);  return;}
+	if(address == this->GetSignalCounterJumps()->GetAddress())     {this->GetSignalCounterJumps()->Write(0);     return;}
+	if(address == this->GetSignalCounterLoadStore()->GetAddress()) {this->GetSignalCounterLoadStore()->Write(0); return;}
 	#endif /* OPT_HFRISC_DISABLE_COUNTERS */
 	
 	//may the request memory space be out of the mapped memory range, we assume
@@ -308,22 +308,22 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 #ifdef HFRISCV_ENABLE_COUNTERS
 
 //Counters' getters
-UComm<uint32_t>* THellfireProcessor::GetCommCounterArith(){
+USignal<uint32_t>* THellfireProcessor::GetSignalCounterArith(){
 	return this->_counter_iarith;
 }
-UComm<uint32_t>* THellfireProcessor::GetCommCounterLogical(){
+USignal<uint32_t>* THellfireProcessor::GetSignalCounterLogical(){
 	return this->_counter_ilogical;
 }
-UComm<uint32_t>* THellfireProcessor::GetCommCounterShift(){
+USignal<uint32_t>* THellfireProcessor::GetSignalCounterShift(){
 	return this->_counter_ishift;
 }
-UComm<uint32_t>* THellfireProcessor::GetCommCounterBranches(){
+USignal<uint32_t>* THellfireProcessor::GetSignalCounterBranches(){
 	return this->_counter_ibranches;
 }
-UComm<uint32_t>* THellfireProcessor::GetCommCounterJumps(){
+USignal<uint32_t>* THellfireProcessor::GetSignalCounterJumps(){
 	return this->_counter_ijumps;
 }
-UComm<uint32_t>* THellfireProcessor::GetCommCounterLoadStore(){
+USignal<uint32_t>* THellfireProcessor::GetSignalCounterLoadStore(){
 	return this->_counter_iloadstore;
 }
 
@@ -340,12 +340,12 @@ void THellfireProcessor::InitCounters(
 		uint32_t jumps_counter_addr, 
 		uint32_t loadstore_counter_addr){
 		
-	this->_counter_iarith     = new UComm<uint32_t>(GetName() + ".counters.iarith",     0, arith_counter_addr);
-	this->_counter_ilogical   = new UComm<uint32_t>(GetName() + ".counters.ilogical",   0, logical_counter_addr);
-	this->_counter_ishift     = new UComm<uint32_t>(GetName() + ".counters.ishift",     0, shift_counter_addr);
-	this->_counter_ibranches  = new UComm<uint32_t>(GetName() + ".counters.ibranches",  0, branches_counter_addr);
-	this->_counter_ijumps     = new UComm<uint32_t>(GetName() + ".counters.ijumps",     0, jumps_counter_addr);
-	this->_counter_iloadstore = new UComm<uint32_t>(GetName() + ".counters.iloadstore", 0, loadstore_counter_addr);
+	this->_counter_iarith     = new USignal<uint32_t>(GetName() + ".counters.iarith",     0, arith_counter_addr);
+	this->_counter_ilogical   = new USignal<uint32_t>(GetName() + ".counters.ilogical",   0, logical_counter_addr);
+	this->_counter_ishift     = new USignal<uint32_t>(GetName() + ".counters.ishift",     0, shift_counter_addr);
+	this->_counter_ibranches  = new USignal<uint32_t>(GetName() + ".counters.ibranches",  0, branches_counter_addr);
+	this->_counter_ijumps     = new USignal<uint32_t>(GetName() + ".counters.ijumps",     0, jumps_counter_addr);
+	this->_counter_iloadstore = new USignal<uint32_t>(GetName() + ".counters.iloadstore", 0, loadstore_counter_addr);
 }
 
 /**
@@ -580,10 +580,10 @@ fail:
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;     /*IRQ_COUNTER_NOT*/
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
 	
-	//printf("intr: %d\n", _comm_intr->Read());
+	//printf("intr: %d\n", _signal_intr->Read());
 	
 	//noc intr treatment
-	if (_comm_intr->Read() == 0x1)
+	if (_signal_intr->Read() == 0x1)
 		s->cause |= 0x100; 
 	else 
 		s->cause &= 0xfffffeff; /*NOC*/
@@ -622,7 +622,7 @@ void THellfireProcessor::SetMem2(UMemory* m){
 	s->mem2 = m;
 }
 
-THellfireProcessor::THellfireProcessor(string name, UComm<int8_t>* intr) : TimedModel(name) {
+THellfireProcessor::THellfireProcessor(string name, USignal<int8_t>* intr) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
@@ -642,7 +642,7 @@ THellfireProcessor::THellfireProcessor(string name, UComm<int8_t>* intr) : Timed
 	s->cycles = 0;
 	
 	//set interruption wire (to be managed by the top-level module)
-	_comm_intr = intr;
+	_signal_intr = intr;
 
 	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
 	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);

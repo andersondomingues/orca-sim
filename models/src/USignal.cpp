@@ -26,7 +26,7 @@
 
 //api includes
 #include <UntimedModel.h>
-#include <UComm.h>
+#include <USignal.h>
 
 /**
  * @brief Instiate a new bus with external storage (can be changed later via "MapTo(&)")
@@ -35,7 +35,7 @@
  * @param addr A memory base to be used within memory mapping
  */
 template <typename T>
-UComm<T>::UComm(uint32_t addr, std::string name){
+USignal<T>::USignal(uint32_t addr, std::string name){
 	_t_ptr  = &_t_storage;
 	_t_addr = addr;
 	_t_name = name;
@@ -48,18 +48,18 @@ UComm<T>::UComm(uint32_t addr, std::string name){
  * @param name
  */
 template <typename T>
-UComm<T>::UComm(T* t_ptr, uint32_t addr, std::string name){
+USignal<T>::USignal(T* t_ptr, uint32_t addr, std::string name){
 	_t_ptr  = t_ptr;
 	_t_addr = addr;
 	_t_name = name;
 };
 
 /**
-* @brief Maps current comm to the internal storage
+* @brief Maps current Signal to the internal storage
 * @param keep_val Copies current value to internal storage
 */
 template <typename T>
-void UComm<T>::MapTo(bool keep_val){
+void USignal<T>::MapTo(bool keep_val){
 
 	//copies current value before changing pointers
 	if(keep_val){
@@ -75,12 +75,12 @@ void UComm<T>::MapTo(bool keep_val){
 }
 
 /**
-* @brief Maps current comm to an external storage and updates internal reference.
+* @brief Maps current Signal to an external storage and updates internal reference.
 * @param addr
 * @param m
 */
 template <typename T>
-void UComm<T>::MapTo(T* addr, uint32_t p, bool keep_val){
+void USignal<T>::MapTo(T* addr, uint32_t p, bool keep_val){
 
 	//copies current value before changing pointers
 	if(keep_val) 
@@ -94,7 +94,7 @@ void UComm<T>::MapTo(T* addr, uint32_t p, bool keep_val){
  * @brief Dtor.
  */
 template <typename T>    
-UComm<T>::~UComm(){
+USignal<T>::~USignal(){
 	//nothing to do
 }
 
@@ -103,7 +103,7 @@ UComm<T>::~UComm(){
  * @return the value
  */
 template <typename T>
-T UComm<T>::Read(){
+T USignal<T>::Read(){
 	return *_t_ptr;
 }
     
@@ -112,7 +112,7 @@ T UComm<T>::Read(){
  * @param val the value
  */
 template <typename T>
-void UComm<T>::Write(T val){
+void USignal<T>::Write(T val){
 	*_t_ptr = val;
 }
 
@@ -121,7 +121,7 @@ void UComm<T>::Write(T val){
  * @param val the value
  */
 template <typename T>
-void UComm<T>::Inc(T val){
+void USignal<T>::Inc(T val){
 	*_t_ptr = (*_t_ptr) + val;
 }
 
@@ -130,7 +130,7 @@ void UComm<T>::Inc(T val){
  * @param val the value
  */
 template <typename T>
-void UComm<T>::Dec(T val){
+void USignal<T>::Dec(T val){
 	*_t_ptr = (*_t_ptr) + val;
 }
 
@@ -139,15 +139,15 @@ void UComm<T>::Dec(T val){
  * @return the address
  */
 template <typename T>
-uint32_t UComm<T>::GetAddress(){
+uint32_t USignal<T>::GetAddress(){
 	return _t_addr;
 }
 
 /**
- * @brief Get the name of the comm
+ * @brief Get the name of the Signal
  * @return the name (empty string if empty)
  */
 template <typename T>
-std::string UComm<T>::GetName(){
+std::string USignal<T>::GetName(){
 	return _t_name;
 }

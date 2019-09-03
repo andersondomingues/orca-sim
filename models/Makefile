@@ -9,7 +9,7 @@ CPPFLAGS :=-I./include -I../simulator/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
 #list of dependencies (source files)
 TARGET_DEPS := \
 	$(OUTPUTDIR)/TNetSocket.o \
-	$(OUTPUTDIR)/UComm.o \
+	$(OUTPUTDIR)/USignal.o \
 	$(OUTPUTDIR)/UBuffer.o \
 	$(OUTPUTDIR)/UMemory.o \
 	$(OUTPUTDIR)/TNetif.o \

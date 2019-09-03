@@ -41,7 +41,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	
 	//create a cpu and memory in addition to current tile hardware
 	_mem0   = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu    = new THellfireProcessor(this->GetName() + ".cpu", this->GetCommIntr());
+	_cpu    = new THellfireProcessor(this->GetName() + ".cpu", this->GetSignalIntr());
 	
 	//initialize counters for memory modules
 	//NOTE: mem0 is initialized here, mem1 and mem2
@@ -58,16 +58,16 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetMem2()->SetName(this->GetName() + ".mem2");
 
 	//bind control signals to hardware (cpu side)
-	this->GetCommAck()->MapTo(_mem0->GetMap(COMM_NOC_ACK), COMM_NOC_ACK);
-	this->GetCommIntr()->MapTo(_mem0->GetMap(COMM_NOC_INTR), COMM_NOC_INTR);
-	this->GetCommStart()->MapTo(_mem0->GetMap(COMM_NOC_START), COMM_NOC_START);
-	this->GetCommStatus()->MapTo(_mem0->GetMap(COMM_NOC_STATUS), COMM_NOC_STATUS);
+	this->GetSignalAck()->MapTo(_mem0->GetMap(COMM_NOC_ACK), COMM_NOC_ACK);
+	this->GetSignalIntr()->MapTo(_mem0->GetMap(COMM_NOC_INTR), COMM_NOC_INTR);
+	this->GetSignalStart()->MapTo(_mem0->GetMap(COMM_NOC_START), COMM_NOC_START);
+	this->GetSignalStatus()->MapTo(_mem0->GetMap(COMM_NOC_STATUS), COMM_NOC_STATUS);
 		
 	//bind self-id wire (care to save the value before the bind)
-	this->GetCommId()->MapTo((uint32_t*)(_mem0->GetMap(COMM_ID)), COMM_ID);
+	this->GetSignalId()->MapTo((uint32_t*)(_mem0->GetMap(COMM_ID)), COMM_ID);
 	
 	//bind hosttime wire
-	this->GetCommHostTime()->MapTo((uint32_t*)(_mem0->GetMap(COMM_HOSTTIME)), COMM_HOSTTIME);
+	this->GetSignalHostTime()->MapTo((uint32_t*)(_mem0->GetMap(COMM_HOSTTIME)), COMM_HOSTTIME);
 
 	#ifdef MEMORY_ENABLE_COUNTERS
 	_mem0->InitCounters(MEM0_COUNTERS_STORE_ADDR, MEM0_COUNTERS_LOAD_ADDR);

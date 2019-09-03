@@ -159,10 +159,10 @@ unsigned long long TRouter::Run(){
 
 #ifdef ROUTER_ENABLE_COUNTERS
 void TRouter::InitCounters(uint32_t couter_active_addr){
-	_counter_active = new UComm<uint32_t>(GetName() + ".counters.active", 0, couter_active_addr);
+	_counter_active = new USignal<uint32_t>(GetName() + ".counters.active", 0, couter_active_addr);
 }
 
-UComm<uint32_t>* TRouter::GetCommCounterActive(){
+USignal<uint32_t>* TRouter::GetSignalCounterActive(){
 	return this->_counter_active;
 }
 

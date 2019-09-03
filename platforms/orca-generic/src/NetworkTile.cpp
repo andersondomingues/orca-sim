@@ -49,10 +49,10 @@ NetworkTile::NetworkTile(uint32_t x, uint32_t y) : Tile(x, y){
 	_socket = new TNetSocket(this->GetName() + ".sock");
 	
 	//bind control signals to hardware (socket side)
-	_socket->SetCommAck(this->GetCommAck());
-	_socket->SetCommIntr(this->GetCommIntr());
-	_socket->SetCommStart(this->GetCommStart());
-	_socket->SetCommStatus(this->GetCommStatus());
+	_socket->SetSignalAck(this->GetSignalAck());
+	_socket->SetSignalIntr(this->GetSignalIntr());
+	_socket->SetSignalStart(this->GetSignalStart());
+	_socket->SetSignalStatus(this->GetSignalStatus());
 	
 	//bind memory modules
 	_socket->SetMem1(this->GetMem1()); //recv

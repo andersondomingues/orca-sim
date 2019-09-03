@@ -74,7 +74,7 @@ void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
 	r2->SetOutputBuffer(r1->GetInputBuffer(p1), p2);
 	
-	std::cout << "router_comm: " << r1->GetName() << " ----[" 
+	std::cout << "router_signal: " << r1->GetName() << " ----[" 
 			  << p1 << "/" << p2 << "]---- " << r2->GetName() << std::endl;
 }
 
@@ -366,10 +366,10 @@ int main(int __attribute__((unused)) argc, char** argv){
 			std::cout << n->GetName() << ":"
 				<< " Send=" << static_cast<unsigned int>(n->GetSendState())
 				<< " Recv=" << static_cast<unsigned int>(n->GetRecvState()) << " |"
-				<< " A:" << std::hex << (int)(n->GetCommAck()->Read())
-				<< " I:" << std::hex << (int)(n->GetCommIntr()->Read())
-				<< " S:" << std::hex << (int)(n->GetCommStart()->Read())
-				<< " T:" << std::hex << (int)(n->GetCommStart()->Read())
+				<< " A:" << std::hex << (int)(n->GetSignalAck()->Read())
+				<< " I:" << std::hex << (int)(n->GetSignalIntr()->Read())
+				<< " S:" << std::hex << (int)(n->GetSignalStart()->Read())
+				<< " T:" << std::hex << (int)(n->GetSignalStart()->Read())
 				<< std::endl;
 		}
 	}

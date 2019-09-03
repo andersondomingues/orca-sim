@@ -30,7 +30,7 @@
 #include <TNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
-#include <UComm.h>
+#include <USignal.h>
 
 //arch specifc
 #include <Tile.h>

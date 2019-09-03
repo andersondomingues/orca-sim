@@ -32,7 +32,7 @@
 #include <TimedModel.h>
 #include <UBuffer.h>
 #include <UMemory.h>
-#include <UComm.h>
+#include <USignal.h>
 
 typedef uint16_t FlitType;
 
@@ -71,13 +71,13 @@ private:
 	 uint32_t _flits_to_recv; //to memory
 	 uint32_t _next_recv_addr;
     
-    //communication with CPU while receiving
-    UComm<int8_t>* _comm_intr; //up when packet arrive, down when ack
-    UComm<int8_t>* _comm_ack;  //ack when cpu finishes copying to main memory
+    //signalunication with CPU while receiving
+    USignal<int8_t>* _signal_intr; //up when packet arrive, down when ack
+    USignal<int8_t>* _signal_ack;  //ack when cpu finishes copying to main memory
 
-    //communication with CPU while sending
-    UComm<int8_t>* _comm_start;  //cpu set up to send, down by netif when finished
-	 UComm<int8_t>* _comm_status; //status of sending process (required by cpu)
+    //signalunication with CPU while sending
+    USignal<int8_t>* _signal_start;  //cpu set up to send, down by netif when finished
+	 USignal<int8_t>* _signal_status; //status of sending process (required by cpu)
     
     //network router interface
     UBuffer<FlitType>* _ib;
@@ -89,15 +89,15 @@ public:
 	 NetifSendState GetSendState();
     
     //setters
-    void SetCommAck(UComm<int8_t>* comm);
-	void SetCommIntr(UComm<int8_t>* comm);
-	void SetCommStart(UComm<int8_t>* comm);
-	void SetCommStatus(UComm<int8_t>* comm);
+    void SetSignalAck(USignal<int8_t>* signal);
+	void SetSignalIntr(USignal<int8_t>* signal);
+	void SetSignalStart(USignal<int8_t>* signal);
+	void SetSignalStatus(USignal<int8_t>* signal);
 	
-	UComm<int8_t>* GetCommAck();
-	UComm<int8_t>* GetCommIntr();
-	UComm<int8_t>* GetCommStart();
-	UComm<int8_t>* GetCommStatus();
+	USignal<int8_t>* GetSignalAck();
+	USignal<int8_t>* GetSignalIntr();
+	USignal<int8_t>* GetSignalStart();
+	USignal<int8_t>* GetSignalStatus();
     
     //internal processes
     void sendProcess();

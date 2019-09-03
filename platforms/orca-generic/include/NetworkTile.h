@@ -30,7 +30,7 @@
 #include <TNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
-#include <UComm.h>
+#include <USignal.h>
 
 //simul specific
 #include <Tile.h>

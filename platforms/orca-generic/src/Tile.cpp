@@ -42,11 +42,11 @@ Tile::Tile(uint32_t x, uint32_t y){
 	uint32_t id = (ORCA_NOC_WIDTH * y) + x;
 	_name = "tile" + std::to_string(id);
 	
-	_comm_id = new UComm<uint32_t>(COMM_ID, this->GetName() + ".id");
-	_comm_id->Write(id);
+	_signal_id = new USignal<uint32_t>(COMM_ID, this->GetName() + ".id");
+	_signal_id->Write(id);
 	
-	//hosttime comm
-	_comm_hosttime = new UComm<uint32_t>(COMM_HOSTTIME,this->GetName() + ".hosttime");
+	//hosttime signal
+	_signal_hosttime = new USignal<uint32_t>(COMM_HOSTTIME,this->GetName() + ".hosttime");
 	//@TODO: bind to function?!
 	
 	//create new memories	
@@ -58,22 +58,22 @@ Tile::Tile(uint32_t x, uint32_t y){
 	_netif  = new TNetif (this->GetName() + ".netif");
 
 	//ni wires
-	_comm_ack    = new UComm<int8_t>(COMM_NOC_ACK,   this->GetName() + ".ack");
-	_comm_intr   = new UComm<int8_t>(COMM_NOC_INTR,  this->GetName() + ".intr");
-	_comm_start  = new UComm<int8_t>(COMM_NOC_START, this->GetName() + ".start");
-	_comm_status = new UComm<int8_t>(COMM_NOC_STATUS,this->GetName() + ".status");
+	_signal_ack    = new USignal<int8_t>(COMM_NOC_ACK,   this->GetName() + ".ack");
+	_signal_intr   = new USignal<int8_t>(COMM_NOC_INTR,  this->GetName() + ".intr");
+	_signal_start  = new USignal<int8_t>(COMM_NOC_START, this->GetName() + ".start");
+	_signal_status = new USignal<int8_t>(COMM_NOC_STATUS,this->GetName() + ".status");
 		
 	//reset control wires
-	_comm_ack->Write(0);
-	_comm_intr->Write(0);
-	_comm_start->Write(0);
-	_comm_status->Write(0);
+	_signal_ack->Write(0);
+	_signal_intr->Write(0);
+	_signal_start->Write(0);
+	_signal_status->Write(0);
 		
 	//bind control signals to hardware (netif side)
-	_netif->SetCommAck   (_comm_ack);
-	_netif->SetCommIntr  (_comm_intr);
-	_netif->SetCommStart (_comm_start);
-	_netif->SetCommStatus(_comm_status);
+	_netif->SetSignalAck   (_signal_ack);
+	_netif->SetSignalIntr  (_signal_intr);
+	_netif->SetSignalStart (_signal_start);
+	_netif->SetSignalStatus(_signal_status);
 	
 	//bind netif to router
 	_router->SetOutputBuffer(_netif->GetInputBuffer(), LOCAL);
@@ -105,11 +105,11 @@ Tile::~Tile(){
 	delete(_mem1);
 	delete(_mem2);
 	
-	//delete comms 
-	delete(_comm_ack);
-	delete(_comm_intr);
-	delete(_comm_start);
-	delete(_comm_status);
+	//delete signals 
+	delete(_signal_ack);
+	delete(_signal_intr);
+	delete(_signal_start);
+	delete(_signal_status);
 }
 
 /************************************* GETTERS **************************************/
@@ -154,51 +154,51 @@ std::string Tile::GetName(){
 }
 
 /**
- * @brief Get current comm for tile ID
- * @return A pointer to the instance of comm
+ * @brief Get current signal for tile ID
+ * @return A pointer to the instance of signal
  */
-UComm<uint32_t>* Tile::GetCommId(){ 
-	return _comm_id; 
+USignal<uint32_t>* Tile::GetSignalId(){ 
+	return _signal_id; 
 }
 
 /**
- * @brief Get current comm for ack signal
- * @return A pointer to the instance of comm
+ * @brief Get current signal for ack signal
+ * @return A pointer to the instance of signal
  */
-UComm<int8_t>* Tile::GetCommAck(){
-	return _comm_ack; 
+USignal<int8_t>* Tile::GetSignalAck(){
+	return _signal_ack; 
 }
 
 /**
- * @brief Get current comm for intr signal
- * @return A pointer to the instance of comm
+ * @brief Get current signal for intr signal
+ * @return A pointer to the instance of signal
  */
-UComm<int8_t>* Tile::GetCommIntr(){
-	return _comm_intr;
+USignal<int8_t>* Tile::GetSignalIntr(){
+	return _signal_intr;
 }
 
 /**
- * @brief Get current comm for start signal
- * @return A pointer to the instance of comm
+ * @brief Get current signal for start signal
+ * @return A pointer to the instance of signal
  */
-UComm<int8_t>* Tile::GetCommStart(){
-	return _comm_start;
+USignal<int8_t>* Tile::GetSignalStart(){
+	return _signal_start;
 }
 
 /**
- * @brief Get current comm for status signal
- * @return A pointer to the instance of comm
+ * @brief Get current signal for status signal
+ * @return A pointer to the instance of signal
  */
-UComm<int8_t>* Tile::GetCommStatus(){
-	return _comm_status;
+USignal<int8_t>* Tile::GetSignalStatus(){
+	return _signal_status;
 }
 
 /**
- * @brief Get current comm for systime signal
- * @return A pointer to the instance of comm
+ * @brief Get current signal for systime signal
+ * @return A pointer to the instance of signal
  */
-UComm<uint32_t>* Tile::GetCommHostTime(){
-	return _comm_hosttime;
+USignal<uint32_t>* Tile::GetSignalHostTime(){
+	return _signal_hosttime;
 }
 
 /************************************* SETTERS **************************************/

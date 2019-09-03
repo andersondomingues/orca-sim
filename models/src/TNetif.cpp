@@ -34,9 +34,9 @@
 
 TNetif::TNetif(std::string name) : TimedModel(name) {
       
-    _comm_ack = nullptr;
-    _comm_intr = nullptr;
-    _comm_start = nullptr;
+    _signal_ack = nullptr;
+    _signal_intr = nullptr;
+    _signal_start = nullptr;
 	
 	_mem1 = nullptr;
 	_mem2 = nullptr;
@@ -89,16 +89,16 @@ void TNetif::SetMem2(UMemory* m2){
 	_next_send_addr = _mem2->GetBase();
 }
 
-//comms
-void TNetif::SetCommAck(UComm<int8_t>* c){ _comm_ack = c; }
-void TNetif::SetCommIntr(UComm<int8_t>* c){ _comm_intr = c; }
-void TNetif::SetCommStart(UComm<int8_t>* c){ _comm_start = c; }
-void TNetif::SetCommStatus(UComm<int8_t>* c){ _comm_status = c; }
+//signals
+void TNetif::SetSignalAck(USignal<int8_t>* c){ _signal_ack = c; }
+void TNetif::SetSignalIntr(USignal<int8_t>* c){ _signal_intr = c; }
+void TNetif::SetSignalStart(USignal<int8_t>* c){ _signal_start = c; }
+void TNetif::SetSignalStatus(USignal<int8_t>* c){ _signal_status = c; }
 
-UComm<int8_t>* TNetif::GetCommAck(){ return _comm_ack; }
-UComm<int8_t>* TNetif::GetCommIntr(){ return _comm_intr; }
-UComm<int8_t>* TNetif::GetCommStart(){ return _comm_start; }
-UComm<int8_t>* TNetif::GetCommStatus(){ return _comm_status; }
+USignal<int8_t>* TNetif::GetSignalAck(){ return _signal_ack; }
+USignal<int8_t>* TNetif::GetSignalIntr(){ return _signal_intr; }
+USignal<int8_t>* TNetif::GetSignalStart(){ return _signal_start; }
+USignal<int8_t>* TNetif::GetSignalStatus(){ return _signal_status; }
 
 long long unsigned int TNetif::Run(){
     this->recvProcess();
@@ -157,7 +157,7 @@ void TNetif::recvProcess(){
 			//no more flits to recv, change state
 			if(_flits_to_recv == 0){
 
-				_comm_intr->Write(0x1); //interrupts CPU
+				_signal_intr->Write(0x1); //interrupts CPU
 				_recv_state = NetifRecvState::INTR_AND_WAIT;
 			
 			}else if(_ib->size() > 0){
@@ -178,8 +178,8 @@ void TNetif::recvProcess(){
 		//wait until CPU finishes copying. then, disable interruption
 		case NetifRecvState::INTR_AND_WAIT:{
 			
-			if(_comm_ack->Read() == 0x1){
-				_comm_intr->Write(0x0);//lowers interruption
+			if(_signal_ack->Read() == 0x1){
+				_signal_intr->Write(0x0);//lowers interruption
 				_recv_state = NetifRecvState::FLUSH;
 			}
 			
@@ -188,7 +188,7 @@ void TNetif::recvProcess(){
 		//wait for cpu to acknowdledge the operation (by lowering the acknowledge)
 		case NetifRecvState::FLUSH:{
 		
-			if(_comm_ack->Read() == 0x0)
+			if(_signal_ack->Read() == 0x0)
 				_recv_state = NetifRecvState::READY;
 				
 		} break;
@@ -202,7 +202,7 @@ void TNetif::sendProcess(){
 		case NetifSendState::READY:{
 			
 			//cpu asked to start AND router has enough room to receive flits
-			if(_comm_start->Read() == 0x1 && _ob->size() < _ob->capacity()){
+			if(_signal_start->Read() == 0x1 && _ob->size() < _ob->capacity()){
 				
 				_next_send_addr = _mem2->GetBase();
 			
@@ -247,7 +247,7 @@ void TNetif::sendProcess(){
 			if(_flits_to_send == 0) {
 
 				_send_state = NetifSendState::READY;
-				_comm_start->Write(0); //start = 0 means "ready to send another packet"
+				_signal_start->Write(0); //start = 0 means "ready to send another packet"
 				
 				//std::cout << GetName() << ": DATA_OUT OK" << std::endl;
 				
