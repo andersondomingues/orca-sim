@@ -21,12 +21,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 //lib dependent includes
 #include <iostream>
-#include <queue>
+//#include <queue>
+#include <vector>
+#include <algorithm>
 #include <stdint.h>
 
 //api includes
 #include <UntimedModel.h>
 #include <USignal.h>
+
+
+std::vector<ISignal*> ISignal::signals = std::vector<ISignal*>();
 
 /**
  * @brief Instiate a new bus with external storage (can be changed later via "MapTo(&)")
@@ -39,6 +44,9 @@ USignal<T>::USignal(uint32_t addr, std::string name){
 	_t_ptr  = &_t_storage;
 	_t_addr = addr;
 	_t_name = name;
+	
+	//register this instance with the global observer
+	ISignal::signals.push_back(this);
 };
 
 /**
@@ -95,7 +103,20 @@ void USignal<T>::MapTo(T* addr, uint32_t p, bool keep_val){
  */
 template <typename T>    
 USignal<T>::~USignal(){
-	//nothing to do
+	
+	//unregister this instance with the global observer
+	std::vector<ISignal*>::iterator it;
+	
+	it = std::find(
+		ISignal::signals.begin(),
+		ISignal::signals.end(),
+		this);
+		
+	if(it != ISignal::signals.end()){
+		ISignal::signals.erase(it);	
+	}else{ 
+		std::cout << "could not find signal in global observer" << std::endl;
+	}
 }
 
 /**

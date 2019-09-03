@@ -35,14 +35,19 @@
  * This interface permit all Signals to share a same base type, thus being
  * able to be stored in a single container without forcing dynamic inheritance.
  */
-class ISignal{ /** dummy **/ };
+class ISignal{ /** dummy **/ 
+
+public:
+	static std::vector<ISignal*> signals;
+
+};
 
 
 /**
  * The USignal class models a generic bus of width equals to the sizeof(T)
  */
 template <typename T>
-class USignal : ISignal {
+class USignal : public ISignal {
 
 private:
 	/** pointer to the place where the bus data will be stored */
@@ -57,9 +62,6 @@ private:
 	/** a memory address in case this is mapped using mmio */	
 	uint32_t _t_addr;
 	
-	/** vector<USignal> */
-	static std::vector<ISignal> _global_signals;
-
 public:
 
     /**
