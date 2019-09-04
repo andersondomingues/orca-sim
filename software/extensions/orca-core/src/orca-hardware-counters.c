@@ -1,4 +1,4 @@
-#include "orca-lib.h"
+#include "orca-core.h"
 #include "orca-hardware-counters.h"
 
 volatile uint32_t* M0_COUNTER_STORE = (volatile uint32_t*) M0_COUNTER_STORE_ADDR;

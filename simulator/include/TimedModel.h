@@ -6,6 +6,7 @@
 
 //own api includes
 #include "Model.h"
+#include "SimulationTime.h"
 
 using namespace std;
 
@@ -32,7 +33,7 @@ public:
 	/**
 	 * @brief Method which is called by the simulator when during the 
 	 * execution of the TimedModel. Must be implemented by subclasses.*/
-	virtual unsigned long long Run() = 0;
+	virtual SimulationTime Run() = 0;
 	
 	/**
 	 * @brief Dtor. Must be implemented by subclasses. */

@@ -132,7 +132,7 @@ public:
 	
 	void SetSignalSystime(USignal<uint32_t>*);
 		
-	unsigned long long Run();
+	SimulationTime Run();
 	
 	//file output
 	ofstream output_debug;

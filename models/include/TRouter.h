@@ -89,7 +89,7 @@ public:
         
 		/** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */
-		unsigned long long Run();
+		SimulationTime Run();
 		
         /** return this **/
 		uint32_t GetRouteXY(FlitType flit);

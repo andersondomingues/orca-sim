@@ -104,7 +104,7 @@ public:
     void recvProcess();
 
     //other 
-    unsigned long long Run();
+    SimulationTime Run();
     void Reset();
 
 	//memories

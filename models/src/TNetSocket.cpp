@@ -129,7 +129,7 @@ udp_server* TNetSocket::GetUdpServer(){
  * @brief Runs a state.
  * @return The number of cycles spent to change (or not) states.
  */
-long long unsigned int TNetSocket::Run(){
+SimulationTime TNetSocket::Run(){
     
 	this->udpToNocProcess(); //process for receiving from the UDP socket
     this->nocToUdpProcess(); //process for sending through the UDP socket

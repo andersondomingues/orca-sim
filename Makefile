@@ -19,6 +19,11 @@ MODELS_DIR    := $(CURDIR)/models
 TOOLS_DIR     := $(CURDIR)/tools
 SOFTWARE_DIR  := $(CURDIR)/software
 
+
+#shorthand for silent running
+fast:
+	@make -C . all -s
+
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
 .PHONY: clean apps documentation
 
@@ -32,6 +37,9 @@ all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN)
 	@echo "$'\e[7m====================================\e[0m"
 	@echo "$'\e[7m  All done! Starting simulation...  \e[0m"
 	@echo "$'\e[7m====================================\e[0m"
+	@echo "#!/bin/sh" > ./tools/multitail.sh
+	@echo "multitail ./logs/*debug.log -s $(ORCA_NOC_WIDTH)" >> ./tools/multitail.sh
+	@rm -rf ./logs/*.log
 	$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) 
 
 #URSA's simulation library

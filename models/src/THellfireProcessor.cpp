@@ -415,7 +415,7 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 }
 #endif /* HFRISCV_ENABLE_COUNTERS */
 
-unsigned long long THellfireProcessor::Run(){
+SimulationTime THellfireProcessor::Run(){
 		
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;

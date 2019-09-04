@@ -169,7 +169,7 @@ public:
 	udp_server* GetUdpServer();
 
 	//other 
-	unsigned long long Run();
+	SimulationTime Run();
 	void Reset();
 
 	//setters/getters for memories

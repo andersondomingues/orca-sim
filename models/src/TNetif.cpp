@@ -100,7 +100,7 @@ USignal<int8_t>* TNetif::GetSignalIntr(){ return _signal_intr; }
 USignal<int8_t>* TNetif::GetSignalStart(){ return _signal_start; }
 USignal<int8_t>* TNetif::GetSignalStatus(){ return _signal_status; }
 
-long long unsigned int TNetif::Run(){
+SimulationTime TNetif::Run(){
     this->recvProcess();
     this->sendProcess();   
     

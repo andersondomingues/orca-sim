@@ -18,15 +18,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
  
 //basic resources
-#include "orca-lib.h"
+#include "orca-core.h"
 
 //extended functionalities
 #include "orca-hardware-counters.h"
 
 //application-specific header
-//#include "../../applications/example-systime/example-systime.h"
-//#include "../../applications/example-echo-print/example-echo-print.h"
-#include "../../applications/producer-consumer/producer-consumer.h"
+#include "../../../applications/producer-consumer/producer-consumer.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -40,7 +38,7 @@ void app_main(void)
 	//#elif CPU_ID == 32
         //
 
-        printf("cpu_id: %d\n", hf_cpuid());
+    printf("cpu_id: %d\n", hf_cpuid());
 
 	switch(hf_cpuid()){
 	

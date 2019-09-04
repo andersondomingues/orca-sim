@@ -1,19 +1,22 @@
 # =======================================================[ GLOBAL SETTINGS ]
 # Flags set here will be propagated to all modules, including
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++14 -O3 
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 
 #-lasan -fsanitize=address
 
 # Apps to be compiled within kernel image
 SELECTED_APPS := producer-consumer
 
+# Software extensions (experimental)
+ORCA_EXTENSIONS := orca-core orca-pubsub 
+
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 3
+ORCA_NOC_HEIGHT := 6
 
 # Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_WIDTH  := 3
+ORCA_NOC_WIDTH  := 6
 
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
@@ -24,7 +27,7 @@ ORCA_EPOCH_LENGTH  := 1000000
 ORCA_EPOCHS_TO_SIM := INF
 
 # Enable multithread simulation (experimental)
-    ORCA_ENABLE_MULTITHREADING := NO
+ORCA_ENABLE_MULTITHREADING := NO
 
 # ===========================================================[ URSA ENGINE ]
 # Check whether some event has been schedule to run in some point of 

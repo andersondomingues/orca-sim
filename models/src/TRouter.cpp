@@ -75,7 +75,7 @@ uint32_t TRouter::GetRR(){
  * @brief Implementation of the Run method from
  * the Proccess abstract class.
  * @return The next time to schedule the event.*/
-unsigned long long TRouter::Run(){
+SimulationTime TRouter::Run(){
     
 	#ifdef ROUTER_ENABLE_COUNTERS
 	bool is_active = false;
