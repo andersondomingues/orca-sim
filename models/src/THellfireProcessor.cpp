@@ -417,11 +417,15 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 
 SimulationTime THellfireProcessor::Run(){
 		
+	uint32_t pc_next_prediction;
+		
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;
 	int32_t *r = s->r;
 	uint32_t *u = (uint32_t *)s->r;
 	uint32_t ptr_l, ptr_s;
+	
+	uint32_t branch_taken = 0;
 	
 	if (s->status && (s->cause & s->mask)){
 		s->epc = s->pc_next;
@@ -463,16 +467,21 @@ SimulationTime THellfireProcessor::Run(){
 		case 0x6f: r[rd] = s->pc_next; s->pc_next = s->pc + imm_uj; break;				  /* JAL */
 		case 0x67: r[rd] = s->pc_next; s->pc_next = (r[rs1] + imm_i) & 0xfffffffe; break; /* JALR */
 		case 0x63:
+			/* Branch prediction may fail if jumping 0 positions.
+			TODO: check whether the architecture predict such jumps */
+			pc_next_prediction = s->pc_next;
 			switch(funct3){
-				case 0x0: if (r[rs1] == r[rs2]){ s->pc_next = s->pc + imm_sb; } break;				/* BEQ */
-				case 0x1: if (r[rs1] != r[rs2]){ s->pc_next = s->pc + imm_sb; } break;				/* BNE */
-				case 0x4: if (r[rs1] < r[rs2]){ s->pc_next = s->pc + imm_sb; } break;				/* BLT */
-				case 0x5: if (r[rs1] >= r[rs2]){ s->pc_next = s->pc + imm_sb; } break;				/* BGE */
-				case 0x6: if (u[rs1] < u[rs2]){ s->pc_next = s->pc + imm_sb; } break;				/* BLTU */
-				case 0x7: if (u[rs1] >= u[rs2]){ s->pc_next = s->pc + imm_sb; } break;				/* BGEU */
+				case 0x0: if (r[rs1] == r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BEQ */
+				case 0x1: if (r[rs1] != r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BNE */
+				case 0x4: if (r[rs1] < r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLT */
+				case 0x5: if (r[rs1] >= r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGE */
+				case 0x6: if (u[rs1] < u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLTU */
+				case 0x7: if (u[rs1] >= u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGEU */
 				default: goto fail;
 			}
+			branch_taken = (pc_next_prediction != s->pc_next);
 			break;
+				
 		case 0x3:
 			switch(funct3){
 				case 0x0: r[rd] = (int8_t)mem_read(s,1,ptr_l); break;						/* LB */
@@ -596,7 +605,22 @@ fail:
 	//memory I/O. In the later case. Since we simulate the pipeline
 	//by executing one instruction per cycle (starting from the 3th cycle),
 	//we add 1 cycle to simulate I/O delay.
-	return (opcode == 0x23 || opcode == 0x3) ? 2 : 1;
+	switch(opcode){
+		case 0x63:
+			if(branch_taken){
+				return 1;
+			}else{
+				return 2;
+			}
+			break;
+		case 0x23:
+		case 0x3:
+			return 2;
+			break;
+		default:
+			return 1;
+			break;
+	}
 }
 
 risc_v_state THellfireProcessor::GetState(){

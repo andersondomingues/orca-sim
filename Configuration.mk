@@ -1,10 +1,18 @@
 # =======================================================[ GLOBAL SETTINGS ]
-# Flags set here will be propagated to all modules, including
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 
+# Flags we set here will be propagated to all modules
+# TODO: check whether these flags are propagated to software
+# module or not
+# Currently adopted flags:
+# -Wall, -Wextra, Werror: activate a lot of warning at compile time
+# -g: attach debug information to the generated executable
+# -std: required by old GCC to set c++17 as default the c++ 
+# -march, -mtune: optimize code for current machine architecture
+# -lasan, -fsanitize: add memory sanitizer to code
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native
 #-lasan -fsanitize=address
 
 # Apps to be compiled within kernel image
-SELECTED_APPS := producer-consumer
+ORCA_APPLICATIONS := producer-consumer
 
 # Software extensions (experimental)
 ORCA_EXTENSIONS := orca-core orca-pubsub 
@@ -12,11 +20,11 @@ ORCA_EXTENSIONS := orca-core orca-pubsub
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 6
+ORCA_NOC_HEIGHT := 7
 
 # Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_WIDTH  := 6
+ORCA_NOC_WIDTH  := 9
 
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
@@ -51,12 +59,12 @@ NETSOCKET_LOG_INCOMING_PACKETS := NO
 # Sets client UDP/IP address and port for the netsocket. This is the address
 # that the netsocket will connect when sending packets to outside the noc.
 NETSOCKET_CLIENT_ADDRESS := \"127.0.0.1\"
-NETSOCKET_CLIENT_PORT := 8881
+NETSOCKET_CLIENT_PORT := 8888
 
 # Sets server IP address and port for the netsocket. This is the address
 # that application would use to send packets to the internal network.
 NETSOCKET_SERVER_ADDRESS := \"127.0.0.1\"
-NETSOCKET_SERVER_PORT := 9991
+NETSOCKET_SERVER_PORT := 9999
 
 # ===============================================================[ BUFFER ]
 # Check whether the buffer is full before pushing data (depletes performance).
@@ -188,3 +196,7 @@ endif
 
 export COMPLINE
 export GLOBAL_SETTINGS
+export ORCA_NOC_HEIGHT
+export ORCA_NOC_WIDTH
+export ORCA_APPLICATIONS
+export ORCA_EXTENSIONS

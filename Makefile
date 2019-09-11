@@ -1,15 +1,16 @@
 #configuration
-PLATFORM         := orca-generic
+#PLATFORM         := orca-generic
+PLATFORM          := orca-dma
 APPLICATIONS_DIR := applications
 
 #libnames
-PLATFORM_BIN      := orca-generic.exe
+PLATFORM_BIN      := $(PLATFORM).exe
 SIMULATOR_LIB     := libsim.a
 MODELS_LIB        := libmod.a
 IMAGE_BIN         := image.bin
 
 #include optmizations
-include Configuration.mk
+include ./Configuration.mk
 
 #directory configurations (paths)
 SIMULATOR_DIR := $(CURDIR)/simulator
@@ -19,13 +20,8 @@ MODELS_DIR    := $(CURDIR)/models
 TOOLS_DIR     := $(CURDIR)/tools
 SOFTWARE_DIR  := $(CURDIR)/software
 
-
-#shorthand for silent running
-fast:
-	@make -C . all -s
-
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
-.PHONY: clean apps documentation
+.PHONY: clean documentation multitail
 
 #compile everything if necessary and run
 #simulatotion requires the simulator and software 
@@ -33,13 +29,12 @@ fast:
 # - simulator has no dependencies
 # - hardware models depends on the simulator
 # - platform depends on simulator and hardware models
-all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN)
+# - visualization file for multitail has no dependency
+all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) vismtail
 	@echo "$'\e[7m====================================\e[0m"
 	@echo "$'\e[7m  All done! Starting simulation...  \e[0m"
 	@echo "$'\e[7m====================================\e[0m"
-	@echo "#!/bin/sh" > ./tools/multitail.sh
-	@echo "multitail ./logs/*debug.log -s $(ORCA_NOC_WIDTH)" >> ./tools/multitail.sh
-	@rm -rf ./logs/*.log
+	@echo " => lauching $(PLATFORM) instance:"
 	$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) 
 
 #URSA's simulation library
@@ -76,7 +71,7 @@ $(BINARY_DIR)/$(IMAGE_BIN):
 #documentation
 #last line refers to a bug in tabu.sty. A replacement for
 #the file is provided within /tools folder and should be 
-#automaticallt applied while building
+#automatically applied while building
 documentation:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m    Building API Documentation    \e[0m"
@@ -84,10 +79,17 @@ documentation:
 	doxygen
 	cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
 
+#visualization file for multitail
+vismtail:
+	@echo "#!/bin/sh" > ./tools/multitail.sh
+	@echo "multitail ./logs/*debug.log -s $(ORCA_NOC_WIDTH)" \
+		>> ./tools/multitail.sh
+
 clean:
-	@echo $(COMPLINE)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m          Cleaning up...          \e[0m"
+	@echo "$'\e[7m==================================\e[0m"
+	@echo $(COMPLINE)
 	@echo "$'\e[7m==================================\e[0m"
 	@make -C $(SIMULATOR_DIR) clean
 	@make -C $(MODELS_DIR) clean
@@ -97,3 +99,4 @@ clean:
 		$(BINARY_DIR)/*~ $(BINARY_DIR)/*.elf $(BINARY_DIR)/*.bin \
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec $(BINARY_DIR)/*.txt
 	rm -rf docs/doxygen/
+	rm -rf logs/*.log
