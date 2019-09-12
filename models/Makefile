@@ -14,8 +14,11 @@ TARGET_DEPS := \
 	$(OUTPUTDIR)/UMemory.o \
 	$(OUTPUTDIR)/TNetif.o \
 	$(OUTPUTDIR)/TRouter.o \
-	$(OUTPUTDIR)/THellfireProcessor.o 
+	$(OUTPUTDIR)/THellfireProcessor.o \
+	$(OUTPUTDIR)/TDmaNetif.o
 
+
+#$(OUTPUTDIR)/TDmaNetif.o
 #$(OUTPUTDIR)/TArm7TDMI.o
 
 #compress all generated object files into a pack

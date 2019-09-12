@@ -36,8 +36,16 @@
 
 typedef uint16_t FlitType;
 
-enum class DnRecvState{ WAIT, READ_LEN, REQ_ADDR, WAIT_ADDR, WAIT_FLITS, MEM_WRITE, RELEASE};
-enum class DnSendState{ READY, LENGTH, DATA_OUT};
+enum class DmaNetifRecvState{
+	WAIT_ADDR_FLIT, //wait some flit to arrive at the local port
+	WAIT_SIZE_FLIT, //read size flit to determine how many will come next
+	WAIT_PAYLOAD,   //wait for remaining flits to arrive, and interrupt
+	WAIT_CONFIG_STALL,    //wait for the cpu to configure the dma
+	COPY_RELEASE, //stalls cpu, copy data, and release
+	WAIT_ACK        //wait cpu acknowledgement
+};
+
+enum class DmaNetifSendState{ READY, LENGTH, DATA_OUT};
 
 /**
  * @class TDmaNetif
@@ -51,49 +59,34 @@ class TDmaNetif: public TimedModel{
 
 private:
 
-	//Pointer to main memory. Memory interface is abstracted (op, addr, data)
-	UMemory _mem0;
+	//Pointer to main memory, recv mem, and send mem
+	UMemory* _mem0;
+	UMemory* _mem1; //recv_mem
+	UMemory* _mem2; //send_mem
 
-	/** state of recv process **/
-    DnRecvState _recv_state;
+	//States for send and recv processes
+    DmaNetifRecvState _recv_state;
+    DmaNetifSendState _send_state;
     
-    /** number of flits to expect for current burst **/
-	uint32_t _recv_flits_to_go; 
-	
-	/** address to which a flit will be writen in this cycle **/
-	uint32_t _recv_current_addr;
-	
-	/** additional spaces to store addr and size flits **/
-	FlitType _recv_addr_flit;
-	FlitType _recv_size_flit;
-
-	/** handshake for address request **/
-	USignal<int8_t>* _sig_intr;      //<-- request cpu interruption signal (same for both processes)
-	
-	/** recving program
-	USignal<int8_t>* _sig_addr_ack;  //<-- cpu ack with new address
-	USignal<int8_t>* _sig_addr_data; //<-- place where cpu store the addr
-
-
-
-	//=================== REST OF STUFF
-    DmaNetifSendState _send_state; //state of sender module
-
-
-
-    //recv proc vars
-    uint32_t _flits_to_send; //to router
-    uint32_t _next_send_addr; 
-	
-
+    //store temporary flits
+    FlitType _recv_reg;
+    FlitType _send_reg;
     
-    //signalunication with CPU while receiving
-    USignal<int8_t>* _signal_intr; //up when packet arrive, down when ack
-    USignal<int8_t>* _signal_ack;  //ack when cpu finishes copying to main memory
-
-    //signalunication with CPU while sending
-    USignal<int8_t>* _signal_start;  //cpu set up to send, down by netif when finished
-	USignal<int8_t>* _signal_status; //status of sending process (required by cpu)
+    //control signals 
+    USignal<int8_t>*  _sig_stall;       //OUT: stalls cpu while copying from/to main memory
+	USignal<int8_t>*  _sig_intr;        //OUT: request cpu interruption signal (same for both processes)
+	USignal<int8_t>*  _sig_send_status; //OUT: 0x0 when in ready state
+	USignal<int8_t>*  _sig_recv_status; //OUT: 0x0 when in ready state, updated but unused
+	USignal<int32_t>* _sig_prog_addr;   //IN
+	USignal<int32_t>* _sig_prog_size;   //IN
+	USignal<int8_t>*  _sig_prog_send;   //IN
+	USignal<int8_t>*  _sig_prog_recv;   //IN
+	
+	//recv specific vars
+	uint32_t _recv_payload_size;       //total size of the payload (flits)
+	uint32_t _recv_payload_remaining;  //number of flits received or sent (reused through states)
+	uint32_t _recv_address;            //memory position to which to write
+	
     
     //NOC router interface. Both the NI and Router has buffers at the input (not output).
     UBuffer<FlitType>* _ib;
@@ -104,17 +97,26 @@ public:
     DmaNetifRecvState GetRecvState();
 	DmaNetifSendState GetSendState();
     
-    //setters
-    void SetSignalAck(USignal<int8_t>* signal);
-	void SetSignalIntr(USignal<int8_t>* signal);
-	void SetSignalStart(USignal<int8_t>* signal);
-	void SetSignalStatus(USignal<int8_t>* signal);
-	
-	USignal<int8_t>* GetSignalAck();
-	USignal<int8_t>* GetSignalIntr();
-	USignal<int8_t>* GetSignalStart();
-	USignal<int8_t>* GetSignalStatus();
-    
+    //getters
+    USignal<int8_t>*  GetSigStall();
+	USignal<int8_t>*  GetSigIntr();
+	USignal<int8_t>*  GetSigSendStatus();
+	USignal<int8_t>*  GetSigRecvStatus();
+	USignal<int32_t>* GetSigProgAddr();
+	USignal<int32_t>* GetSigProgSize();
+	USignal<int8_t>*  GetSigProgSend();
+	USignal<int8_t>*  GetSigProgRecv();
+
+	//setters
+    void SetSigStall(USignal<int8_t>*);
+	void SetSigIntr(USignal<int8_t>*);
+	void SetSigSendStatus(USignal<int8_t>*);
+	void SetSigRecvStatus(USignal<int8_t>*);
+	void SetSigProgAddr(USignal<int32_t>*);
+	void SetSigProgSize(USignal<int32_t>*);
+	void SetSigProgSend(USignal<int8_t>*);
+	void SetSigProgRecv(USignal<int8_t>*);
+
     //internal processes
     void sendProcess();
     void recvProcess();

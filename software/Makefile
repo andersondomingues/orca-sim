@@ -1,5 +1,5 @@
 #platform-specific configuration
-include ../Configuration.mk
+#include ../Configuration.mk
 
 #arch confs.
 ARCH = riscv/hf-riscv
@@ -33,6 +33,9 @@ include $(HFOS_DIR)/../extensions/*/ext.mak
 
 INC_DIRS += -I $(HFOS_DIR)/lib/include -I $(HFOS_DIR)/sys/include -I $(HFOS_DIR)/drivers/noc/include -I $(HFOS_DIR)/../extensions/orca-core/include
 
+NOC_FLAGS = -DNOC_INTERCONNECT -DNOC_PACKET_SIZE=64 -DNOC_PACKET_SLOTS=64 \
+	    -DNOC_WIDTH=$(ORCA_NOC_WIDTH) -DNOC_HEIGHT=$(ORCA_NOC_HEIGHT)
+
 CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
 	-DMAX_TASKS=$(MAX_TASKS) -DMEM_ALLOC=$(MEM_ALLOC) \
 	-DHEAP_SIZE=$(HEAP_SIZE) -DMUTEX_TYPE=$(MUTEX_TYPE) \
@@ -41,9 +44,6 @@ CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
 	$(COMPLINE) \
 	$(NOC_FLAGS) \
 	-DDEBUG_PORT
-
-NOC_FLAGS = -DNOC_INTERCONNECT -DNOC_PACKET_SIZE=64 -DNOC_PACKET_SLOTS=64 \
-	    -DNOC_WIDTH=$(ORCA_NOC_WIDTH) -DNOC_HEIGHT=$(ORCA_NOC_HEIGHT)
 
 image:
 	@echo "$'\e[7m==================================\e[0m"
@@ -56,13 +56,14 @@ image:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Making Extensions ...           \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	for ext in $(ORCA_EXTENSIONS) ; do \
+	@for ext in $(ORCA_EXTENSIONS) ; do \
+		@echo $$ext; \
 		make $$ext.o PACKAGE_NAME=$$ext PACKAGE_TYPE=extension; \
 	done
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Making Apps ...                 \e[0m"
 	@echo "$'\e[7m==================================\e[0m"		
-	for app in $(SELECTED_APPS) ; do \
+	for app in $(ORCA_APPLICATIONS) ; do \
 		make $$app.o ; \
 	done
 	@echo "$'\e[7m==================================\e[0m"

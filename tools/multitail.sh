@@ -1,2 +1,2 @@
 #!/bin/sh
-multitail ./logs/*debug.log -s 6
+multitail ./logs/*debug.log -s 9

@@ -34,10 +34,14 @@
 
 TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
       
-    _signal_ack    = nullptr;
-    _signal_intr   = nullptr;
-    _signal_start  = nullptr;
-    _signal_status = nullptr;
+    _sig_stall = nullptr;
+	_sig_intr  = nullptr;
+	_sig_send_status = nullptr; 
+	_sig_recv_status = nullptr; 
+	_sig_prog_addr = nullptr; 
+	_sig_prog_size = nullptr;
+	_sig_prog_send = nullptr;
+	_sig_prog_recv = nullptr;
 	    
     _ib = new UBuffer<FlitType>(name + ".IN", NI_BUFFER_LEN);
 	
@@ -49,12 +53,8 @@ TDmaNetif::~TDmaNetif(){
 }
 
 void TDmaNetif::Reset(){
-    	
-	_recv_state = DmaNetifRecvState::READY;
-	_flits_to_recv = 0;
-	
+    _recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
     _send_state = DmaNetifSendState::READY;
-	_flits_to_send = 0;
 }
 
 void TDmaNetif::SetOutputBuffer(UBuffer<FlitType>* ob){
@@ -77,25 +77,32 @@ DmaNetifSendState TDmaNetif::GetSendState(){
 //recv mem
 void TDmaNetif::SetMem1(UMemory* m1){ 
 	_mem1 = m1; 
-	_next_recv_addr = _mem1->GetBase();
 }
 
 //send mem
 void TDmaNetif::SetMem2(UMemory* m2){
 	_mem2 = m2; 
-	_next_send_addr = _mem2->GetBase();
 }
 
-//signals
-void TDmaNetif::SetSignalAck(USignal<int8_t>* c){ _signal_ack = c; }
-void TDmaNetif::SetSignalIntr(USignal<int8_t>* c){ _signal_intr = c; }
-void TDmaNetif::SetSignalStart(USignal<int8_t>* c){ _signal_start = c; }
-void TDmaNetif::SetSignalStatus(USignal<int8_t>* c){ _signal_status = c; }
+//getters
+USignal<int8_t>*  TDmaNetif::GetSigStall(){ return _sig_stall; }
+USignal<int8_t>*  TDmaNetif::GetSigIntr(){ return _sig_intr; }
+USignal<int8_t>*  TDmaNetif::GetSigSendStatus(){ return _sig_send_status; }
+USignal<int8_t>*  TDmaNetif::GetSigRecvStatus(){ return _sig_recv_status; }
+USignal<int32_t>* TDmaNetif::GetSigProgAddr(){ return _sig_prog_addr; }
+USignal<int32_t>* TDmaNetif::GetSigProgSize(){ return _sig_prog_size; }
+USignal<int8_t>*  TDmaNetif::GetSigProgSend(){ return _sig_prog_send; }
+USignal<int8_t>*  TDmaNetif::GetSigProgRecv(){ return _sig_prog_recv; }
 
-USignal<int8_t>* TDmaNetif::GetSignalAck(){ return _signal_ack; }
-USignal<int8_t>* TDmaNetif::GetSignalIntr(){ return _signal_intr; }
-USignal<int8_t>* TDmaNetif::GetSignalStart(){ return _signal_start; }
-USignal<int8_t>* TDmaNetif::GetSignalStatus(){ return _signal_status; }
+//setters    
+void TDmaNetif::SetSigStall(USignal<int8_t>* c){ _sig_stall = c; }
+void TDmaNetif::SetSigIntr(USignal<int8_t>* c){ _sig_intr = c; }
+void TDmaNetif::SetSigSendStatus(USignal<int8_t>* c){ _sig_send_status = c; }
+void TDmaNetif::SetSigRecvStatus(USignal<int8_t>* c){ _sig_recv_status = c; }
+void TDmaNetif::SetSigProgAddr(USignal<int32_t>* c){ _sig_prog_addr = c; }
+void TDmaNetif::SetSigProgSize(USignal<int32_t>* c){ _sig_prog_size = c; }
+void TDmaNetif::SetSigProgSend(USignal<int8_t>* c){ _sig_prog_send = c; }
+void TDmaNetif::SetSigProgRecv(USignal<int8_t>* c){ _sig_prog_recv = c; }
 
 SimulationTime TDmaNetif::Run(){
 
@@ -110,117 +117,106 @@ void TDmaNetif::recvProcess(){
 
 	//recv state machine
 	switch(_recv_state){
-	
-		//=============== STATE P0 => wait program for recv
-		case DnRecvState::PROGRAM:{
-		
-			if(_recv_program->Read() == 1){
-				_recv_address = _recv_address;
-				_recv_state   = DmaNetifRecvState::READY;
-			}
-		
-		}break;
-	
-		
-		//=============== STATE S0 => wait for buffer activity
-		case DmaNetifRecvState::READY:{
-		
-			//if  at least one packet is waiting,
-			//pop that packet and wait for size flit
+
+		//wait some flit to arrive at the local port
+		case DmaNetifRecvState::WAIT_ADDR_FLIT:{
+			
+			//If buffer has any flit, copy that flit to internal 
+			//memory and proceed to next flit. Please note that 
+			//it is expected the first flit to containg address
+			//data. Whatever comes first we treat as the addr flit.
 			if(_ib->size() > 0){
-				
-				_recv_addr_flit = _ib->top();
+				_recv_reg = _ib->top(); //remove flit from buffer
 				_ib->pop();
-				_recv_state = DmaNetifRecvState::LENGTH;			
-			}
-		}break;
+						
+				_recv_address = 0;
+				_mem1->Write(_recv_address++ * sizeof(FlitType),
+					 (int8_t*)&_recv_reg, sizeof(FlitType)); //write to mem
 
-		//=============== STATE S1 => wait for the size flit to arrive
-		case DmaNetifRecvState::LENGTH:{
+				_sig_recv_status->Write(0x1);
+				
+				_recv_state = DmaNetifRecvState::WAIT_SIZE_FLIT;
+			}
+		} break;
 		
-			//wait for the next flit
+		//read size flit to determine how many flits will come next
+		case DmaNetifRecvState::WAIT_SIZE_FLIT:{
+		
 			if(_ib->size() > 0){
-
-				_recv_size_flit = _ib->top();
+				_recv_reg = _ib->top();
 				_ib->pop();
 				
-				//ask cpu to write to
-				//_signal_recv_addr <= address to recv
-				//_signal_recv_ok   <= flag to confirm addr
-				_signal_intr->Write(INTR_RECV_ADDR_REQ);
+				//write to the second position
+				_mem1->Write(_recv_address++ * sizeof(FlitType),
+					 (int8_t*)&_recv_reg, sizeof(FlitType));
 				
-				_recv_state = DmaNetifRecvState::WAITFLITS;
+				_recv_payload_size = _recv_reg;
+				_recv_payload_remaining = _recv_reg;
+				
+				_recv_state = DmaNetifRecvState::WAIT_PAYLOAD;
 			}
-		}break;
 		
-		//=============== STATE S2 => ask for address and wait remaining flits
-		case DmaNetifRecvState::WAITFLITS:{
-			
-			//wait for the requested addr and remaining flits
-			if(_ib->size() >= _recv_size_flit - 2){
-
-				//stall cpu and start writing
-				_signal_stall->Write(1);
-				
-				//set how many flit remains
-				_recv_flits_to_copy = _recv_size_flit;
-				
-				_recv_state = DmaNetifRecvState::COPYHEADER;
-			}
-		}break;
+		} break;
 		
-		//=============== STATE S3 => copy header flit
-		case DmaNetifRecvState::COPYHEADER:{
-			//start writing to the first address
-			_memory_slot_addr = _signal_recv_addr->Read();	
-			_mem0->Write(_memory_slot_addr, (int8_t*)&_recv_addr_flit, sizeof(FlitType));
-			
-			//set next address (increment by one flit)
-			_next_recv_addr += sizeof(FlitType);
-			
-			_recv_state = DmaNetifRecvState::COPYLENGTH;
+		//wait for remaining flits to arrive, and interrupt
+		case DmaNetifRecvState::WAIT_PAYLOAD:{
 		
-		}break;
-		
-		//=============== STATE S4 => copy length flit
-		case DmaNetifRecvState::COPYLENGTH:{
-
-			//start writing to the first address
-			_mem0->Write(_memory_slot_addr, (int8_t*)&_recv_length_flit, sizeof(FlitType));
-			
-			//set next address (increment by one flit)
-			_memory_slot_addr += sizeof(FlitType);
-			
-			_recv_state = DmaNetifRecvState::COPYDATA;
-		
-		}break;
-			
-		//=============== STATE S5 => copy the rest of data
-		case DmaNetifRecvState::COPYDATA:{
-
-			if(_flits_to_recv == 0){
-				_recv_state = DmaNetifRecvState::RELEASE;
-				
-			else{
-				FlitType flit = _ib->top(); 
+			//check whether more flits are coming
+			if(_ib->size() > 0){	
+				_recv_reg = _ib->top();
 				_ib->pop();
-			
-				//start writing to the first address
-				_mem0->Write(_memory_slot_addr, (int8_t*)&flit, sizeof(FlitType));
-			
-				//set next address (increment by one flit)
-				_memory_slot_addr += sizeof(FlitType);
-				_flits_to_recv -= 1;
+
+				_mem1->Write(_recv_address++ * sizeof(FlitType),
+					(int8_t*)&_recv_reg, sizeof(FlitType));
+					
+				_recv_payload_remaining--;
+				
+				if(_recv_payload_remaining == 0){
+					_sig_intr->Write(0x1);
+					_recv_state = DmaNetifRecvState::WAIT_CONFIG_STALL;
+				}
 			}
-		}break;
+		} break;
+
+		//wait for the cpu to configure the dma
+		case DmaNetifRecvState::WAIT_CONFIG_STALL:{
 		
-		//=============== STATE S6 => release cpu and wait for next iteration	
-		case DmaNetifRecvState::RELEASE:{
-			
-			_signal_stall->Write(0);
-			_recv_state = DmaNetifRecvState::READY;
-			
-		}break;
+			//start is the last wire to be set by the driver
+			if(_sig_prog_recv->Read() == 0x1){
+				_sig_stall->Write(0x1); //stall cpu
+				_recv_payload_remaining = _recv_payload_size;
+
+				_recv_state = DmaNetifRecvState::COPY_RELEASE;
+			}
+		} break;
+		
+		//stalls cpu, copy data, and release
+		case DmaNetifRecvState::COPY_RELEASE:{
+		
+			if(_recv_payload_remaining > 0){
+				//calcular endereço
+				uint32_t addr = 0x0;
+				_mem1->Read(addr, (int8_t*)&_recv_reg, sizeof(FlitType));
+				_mem0->Write(addr, (int8_t*)&_recv_reg, sizeof(FlitType));
+				_recv_payload_remaining--;
+				
+			}else{
+				//restore cpu 
+				_sig_stall->Write(0x0);
+				_recv_state = DmaNetifRecvState::WAIT_ACK;
+			}
+		
+		} break;
+
+		//wait for cpu acknowledgement
+		case DmaNetifRecvState::WAIT_ACK:{
+				
+			if(_sig_prog_send->Read() == 0x0){
+				_sig_recv_status->Write(0x0);
+				_recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
+			}
+		
+		} break;
 	}
 }
 

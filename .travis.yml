@@ -1,4 +1,0 @@
-language: cpp
-install: make
-compiler: gcc
-script: make
