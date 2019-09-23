@@ -45,7 +45,11 @@ enum class DmaNetifRecvState{
 	WAIT_ACK        //wait cpu acknowledgement
 };
 
-enum class DmaNetifSendState{ READY, LENGTH, DATA_OUT};
+enum class DmaNetifSendState{
+	WAIT_CONFIG_STALL, //wait cpt to configure and raise _sig_send, stall
+	COPY_AND_RELEASE,  //copy content from memory, release cpu
+	SEND_DATA_TO_NOC   //write data to the network, raise _send_status 
+};
 
 /**
  * @class TDmaNetif
@@ -85,8 +89,12 @@ private:
 	//recv specific vars
 	uint32_t _recv_payload_size;       //total size of the payload (flits)
 	uint32_t _recv_payload_remaining;  //number of flits received or sent (reused through states)
-	uint32_t _recv_address;            //memory position to which to write
+	uint32_t _recv_address;            //memory position to which to write to
 	
+	//send specific vars
+	uint32_t _send_payload_size;       //total size of the payload (flits)
+	uint32_t _send_payload_remaining;  //number of flits to copy to write to the noc 
+	uint32_t _send_address;            //memory position to which to read from
     
     //NOC router interface. Both the NI and Router has buffers at the input (not output).
     UBuffer<FlitType>* _ib;
@@ -98,24 +106,24 @@ public:
 	DmaNetifSendState GetSendState();
     
     //getters
-    USignal<int8_t>*  GetSigStall();
-	USignal<int8_t>*  GetSigIntr();
-	USignal<int8_t>*  GetSigSendStatus();
-	USignal<int8_t>*  GetSigRecvStatus();
-	USignal<int32_t>* GetSigProgAddr();
-	USignal<int32_t>* GetSigProgSize();
-	USignal<int8_t>*  GetSigProgSend();
-	USignal<int8_t>*  GetSigProgRecv();
+    USignal<int8_t>*  GetSignalStall();
+	USignal<int8_t>*  GetSignalIntr();
+	USignal<int8_t>*  GetSignalSendStatus();
+	USignal<int8_t>*  GetSignalRecvStatus();
+	USignal<int32_t>* GetSignalProgAddr();
+	USignal<int32_t>* GetSignalProgSize();
+	USignal<int8_t>*  GetSignalProgSend();
+	USignal<int8_t>*  GetSignalProgRecv();
 
 	//setters
-    void SetSigStall(USignal<int8_t>*);
-	void SetSigIntr(USignal<int8_t>*);
-	void SetSigSendStatus(USignal<int8_t>*);
-	void SetSigRecvStatus(USignal<int8_t>*);
-	void SetSigProgAddr(USignal<int32_t>*);
-	void SetSigProgSize(USignal<int32_t>*);
-	void SetSigProgSend(USignal<int8_t>*);
-	void SetSigProgRecv(USignal<int8_t>*);
+    void SetSignalStall(USignal<int8_t>*);
+	void SetSignalIntr(USignal<int8_t>*);
+	void SetSignalSendStatus(USignal<int8_t>*);
+	void SetSignalRecvStatus(USignal<int8_t>*);
+	void SetSignalProgAddr(USignal<int32_t>*);
+	void SetSignalProgSize(USignal<int32_t>*);
+	void SetSignalProgSend(USignal<int8_t>*);
+	void SetSignalProgRecv(USignal<int8_t>*);
 
     //internal processes
     void sendProcess();

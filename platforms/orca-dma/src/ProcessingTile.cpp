@@ -40,34 +40,35 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->SetName("pe-" + this->GetName());
 	
 	//create a cpu and memory in addition to current tile hardware
-	_mem0   = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu    = new THellfireProcessor(this->GetName() + ".cpu", this->GetSignalIntr());
+	_mem0 = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
+	_cpu  = new THellfireProcessor(this->GetName() + ".cpu", this->GetSignalIntr());
 	
-	//initialize counters for memory modules
-	//NOTE: mem0 is initialized here, mem1 and mem2
-	//are initialized in Tile.cpp (due inheritance)
-	//bind memory modules
+	//bind the cpu to the main memory (this is NOT how it is done in hardware, but protocols are abstracted here)
 	_cpu->SetMem0(_mem0);
-	_cpu->SetMem1(this->GetMem1());
-	_cpu->SetMem2(this->GetMem2());
 	
 	//update naming of internal hardware parts (from internal class)
 	this->GetRouter()->SetName(this->GetName() + ".router");
-	this->GetNetif()->SetName(this->GetName() + ".netif");
+	this->GetDmaNetif()->SetName(this->GetName() + ".netif");
 	this->GetMem1()->SetName(this->GetName() + ".mem1");
 	this->GetMem2()->SetName(this->GetName() + ".mem2");
 
 	//bind control signals to hardware (cpu side)
-	this->GetSignalAck()->MapTo(_mem0->GetMap(COMM_NOC_ACK), COMM_NOC_ACK);
-	this->GetSignalIntr()->MapTo(_mem0->GetMap(COMM_NOC_INTR), COMM_NOC_INTR);
-	this->GetSignalStart()->MapTo(_mem0->GetMap(COMM_NOC_START), COMM_NOC_START);
-	this->GetSignalStatus()->MapTo(_mem0->GetMap(COMM_NOC_STATUS), COMM_NOC_STATUS);
-		
+	this->GetSignalStall()->MapTo(_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
+	this->GetSignalIntr()->MapTo(_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
+	this->GetSignalSendStatus()->MapTo(_mem0->GetMap(SIGNAL_SEND_STATUS), SIGNAL_SEND_STATUS);
+	this->GetSignalRecvStatus()->MapTo(_mem0->GetMap(SIGNAL_RECV_STATUS), SIGNAL_RECV_STATUS);
+
+	this->GetSignalProgSend()->MapTo(_mem0->GetMap(SIGNAL_PROG_SEND), SIGNAL_PROG_SEND);
+	this->GetSignalProgRecv()->MapTo(_mem0->GetMap(SIGNAL_PROG_RECV), SIGNAL_PROG_RECV);
+	
+	this->GetSignalProgAddr()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_ADDR)), SIGNAL_PROG_ADDR);
+	this->GetSignalProgSize()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_SIZE)), SIGNAL_PROG_SIZE);
+
 	//bind self-id wire (care to save the value before the bind)
-	this->GetSignalId()->MapTo((uint32_t*)(_mem0->GetMap(COMM_ID)), COMM_ID);
+	this->GetSignalId()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_TILE_ID)), MAGIC_TILE_ID);
 	
 	//bind hosttime wire
-	this->GetSignalHostTime()->MapTo((uint32_t*)(_mem0->GetMap(COMM_HOSTTIME)), COMM_HOSTTIME);
+	this->GetSignalHostTime()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_HOSTTIME)), MAGIC_HOSTTIME);
 
 	#ifdef MEMORY_ENABLE_COUNTERS
 	_mem0->InitCounters(MEM0_COUNTERS_STORE_ADDR, MEM0_COUNTERS_LOAD_ADDR);

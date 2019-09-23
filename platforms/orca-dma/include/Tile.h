@@ -27,7 +27,7 @@
 #include <iostream>
 
 //model API
-#include <TNetif.h>
+#include <TDmaNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
 #include <USignal.h>
@@ -43,23 +43,27 @@
 //#define MEM2_BASE 0x90000080
 #define MEM2_BASE 0x50000080
 
-//signals (80xx.. to 80ff.. reserved for gp wires)
-//#define COMM_NOC_ACK    0x80000000
-//#define COMM_NOC_INTR   0x80000001
-//#define COMM_NOC_START  0x80000002
-//#define COMM_NOC_STATUS 0x80000003
-#define COMM_NOC_ACK    0x403F0000
-#define COMM_NOC_INTR   0x403F0001
-#define COMM_NOC_START  0x403F0002
-#define COMM_NOC_STATUS 0x403F0003
+/** Memory range from "403Fxxxx" to "40FFxxxx" is reserved
+  * for control signals and magic signals. These signals are
+  * required by the platform to work properly */
+#define SIGNAL_CPU_STALL    0x403F0000  /* 8 bits */
+#define SIGNAL_CPU_INTR     0x403F0001
 
-//self id addr
-//#define COMM_ID         0x80000010 
-//#define COMM_HOSTTIME   0x80000014
-#define COMM_ID         0x403F0010 
-#define COMM_HOSTTIME   0x403F0014
+#define SIGNAL_SEND_STATUS  0x403F0002
+#define SIGNAL_RECV_STATUS  0x403F0003
 
-//counters (81xx.. to 81ff..) reserved for internal counters
+#define SIGNAL_PROG_SEND    0x403F0004
+#define SIGNAL_PROG_RECV    0x403F0005
+#define SIGNAL_PROG_ADDR    0x403F0006  /* 32 bits */
+#define SIGNAL_PROG_SIZE    0x403F0010
+
+#define MAGIC_TILE_ID       0x403F0014  
+#define MAGIC_HOSTTIME      0x403F0018
+
+/** Memory range from "81xxxxxx" to "81FFxxxx" is reserved 
+  * for internal counters and user-defined magic signals.
+  * These signals are not required by the platform, although
+  * they can be required by one service or another. */
 #ifdef MEMORY_ENABLE_COUNTERS
 #define MEM0_COUNTERS_STORE_ADDR 0x81000000
 #define MEM0_COUNTERS_LOAD_ADDR  0x81000004
@@ -88,19 +92,23 @@ private:
 
 	std::string _name;
 
-	TNetif*  _netif;  //network interface 
-	TRouter* _router; //hermes router
+	TDmaNetif* _netif;  //network interface 
+	TRouter*   _router; //hermes router
 	
 	UMemory* _mem1; //recv memory
 	UMemory* _mem2; //send memory
 		
-	//recv signals 
-	USignal<int8_t>* _signal_ack;
+	USignal<int8_t>* _signal_stall;
 	USignal<int8_t>* _signal_intr;
 	
-	//send signals
-	USignal<int8_t>* _signal_start;
-	USignal<int8_t>* _signal_status;
+	USignal<int8_t>* _signal_send_status;
+	USignal<int8_t>* _signal_recv_status;
+	
+	USignal<int8_t>* _signal_prog_send;
+	USignal<int8_t>* _signal_prog_recv;
+	
+	USignal<int32_t>* _signal_prog_addr;
+	USignal<int32_t>* _signal_prog_size;	
 	
 	//self-id wire
 	USignal<uint32_t>* _signal_id;
@@ -116,16 +124,31 @@ public:
 	~Tile();
 	
 	/*** getters ***/
-	TRouter* GetRouter();
-	TNetif*  GetNetif();
+	TRouter*   GetRouter();
+	TDmaNetif* GetDmaNetif();
 
 	UMemory* GetMem1();
 	UMemory* GetMem2();
 	
-	USignal<int8_t>* GetSignalAck();
-	USignal<int8_t>* GetSignalIntr();
-	USignal<int8_t>* GetSignalStart();
-	USignal<int8_t>* GetSignalStatus();
+	//getters
+    USignal<int8_t>*  GetSignalStall();
+	USignal<int8_t>*  GetSignalIntr();
+	USignal<int8_t>*  GetSignalSendStatus();
+	USignal<int8_t>*  GetSignalRecvStatus();
+	USignal<int32_t>* GetSignalProgAddr();
+	USignal<int32_t>* GetSignalProgSize();
+	USignal<int8_t>*  GetSignalProgSend();
+	USignal<int8_t>*  GetSignalProgRecv();
+
+	//setters
+    void SetSignalStall(USignal<int8_t>*);
+	void SetSignalIntr(USignal<int8_t>*);
+	void SetSignalSendStatus(USignal<int8_t>*);
+	void SetSignalRecvStatus(USignal<int8_t>*);
+	void SetSignalProgAddr(USignal<int32_t>*);
+	void SetSignalProgSize(USignal<int32_t>*);
+	void SetSignalProgSend(USignal<int8_t>*);
+	void SetSignalProgRecv(USignal<int8_t>*);
 	
 	USignal<uint32_t>* GetSignalId();
 	USignal<uint32_t>* GetSignalHostTime();
@@ -137,16 +160,6 @@ public:
 	
 	/*** setters ***/
 	void SetName(std::string);
-	
-	/*void SetSignalAck(USignal<int8_t>*);
-	void SetSignalIntr(USignal<int8_t>*);
-	void SetSignalStart(USignal<int8_t>*);
-	
-	void SetSignalId(USignal<int32_t>*);
-	
-	
-	
-	std::string ToString();*/
 };
 
 

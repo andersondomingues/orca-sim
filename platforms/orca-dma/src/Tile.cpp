@@ -22,9 +22,8 @@
 #include <iostream>
 #include <sstream>
 
-
 //model API
-#include <TNetif.h>
+#include <TDmaNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
 #include <TNetSocket.h>
@@ -42,11 +41,11 @@ Tile::Tile(uint32_t x, uint32_t y){
 	uint32_t id = (ORCA_NOC_WIDTH * y) + x;
 	_name = "tile" + std::to_string(id);
 	
-	_signal_id = new USignal<uint32_t>(COMM_ID, this->GetName() + ".id");
+	_signal_id = new USignal<uint32_t>(MAGIC_TILE_ID, this->GetName() + ".id");
 	_signal_id->Write(id);
 	
 	//hosttime signal
-	_signal_hosttime = new USignal<uint32_t>(COMM_HOSTTIME,this->GetName() + ".hosttime");
+	_signal_hosttime = new USignal<uint32_t>(MAGIC_HOSTTIME,this->GetName() + ".hosttime");
 	//@TODO: bind to function?!
 	
 	//create new memories	
@@ -55,25 +54,37 @@ Tile::Tile(uint32_t x, uint32_t y){
 
 	//peripherals	
 	_router = new TRouter(this->GetName() + ".router", x, y);
-	_netif  = new TNetif (this->GetName() + ".netif");
+	_netif  = new TDmaNetif (this->GetName() + ".netif");
 
-	//ni wires
-	_signal_ack    = new USignal<int8_t>(COMM_NOC_ACK,   this->GetName() + ".ack");
-	_signal_intr   = new USignal<int8_t>(COMM_NOC_INTR,  this->GetName() + ".intr");
-	_signal_start  = new USignal<int8_t>(COMM_NOC_START, this->GetName() + ".start");
-	_signal_status = new USignal<int8_t>(COMM_NOC_STATUS,this->GetName() + ".status");
-		
+	//ni sig wires
+    _signal_stall       = new USignal<int8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
+	_signal_intr        = new USignal<int8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
+	_signal_send_status = new USignal<int8_t>(SIGNAL_SEND_STATUS, this->GetName() + ".send_status");
+	_signal_recv_status = new USignal<int8_t>(SIGNAL_RECV_STATUS, this->GetName() + ".recv_status");
+	_signal_prog_send   = new USignal<int8_t>(SIGNAL_PROG_SEND, this->GetName() + ".progr_send");
+	_signal_prog_recv   = new USignal<int8_t>(SIGNAL_PROG_RECV, this->GetName() + ".progr_recv");
+	_signal_prog_addr   = new USignal<int32_t>(SIGNAL_PROG_ADDR, this->GetName() + ".progr_addr");
+	_signal_prog_size   = new USignal<int32_t>(SIGNAL_PROG_SIZE, this->GetName() + ".progr_size");
+
 	//reset control wires
-	_signal_ack->Write(0);
-	_signal_intr->Write(0);
-	_signal_start->Write(0);
-	_signal_status->Write(0);
+    _signal_stall->Write(0);
+	_signal_intr->Write(0); 
+	_signal_send_status->Write(0);
+	_signal_recv_status->Write(0);
+	_signal_prog_send->Write(0);
+	_signal_prog_recv->Write(0);
+	_signal_prog_addr->Write(0);
+	_signal_prog_size->Write(0);
 		
 	//bind control signals to hardware (netif side)
-	_netif->SetSignalAck   (_signal_ack);
-	_netif->SetSignalIntr  (_signal_intr);
-	_netif->SetSignalStart (_signal_start);
-	_netif->SetSignalStatus(_signal_status);
+	_netif->SetSignalStall(_signal_stall);
+	_netif->SetSignalIntr(_signal_intr);
+	_netif->SetSignalSendStatus(_signal_send_status);
+	_netif->SetSignalRecvStatus(_signal_recv_status);
+	_netif->SetSignalProgSend(_signal_prog_send);
+	_netif->SetSignalProgRecv(_signal_prog_recv);
+	_netif->SetSignalProgAddr(_signal_prog_addr);
+	_netif->SetSignalProgSize(_signal_prog_size);
 	
 	//bind netif to router
 	_router->SetOutputBuffer(_netif->GetInputBuffer(), LOCAL);
@@ -106,13 +117,39 @@ Tile::~Tile(){
 	delete(_mem2);
 	
 	//delete signals 
-	delete(_signal_ack);
+	delete(_signal_stall);
 	delete(_signal_intr);
-	delete(_signal_start);
-	delete(_signal_status);
+	delete(_signal_send_status);
+	delete(_signal_recv_status);
+	delete(_signal_prog_send);
+	delete(_signal_prog_recv);
+	delete(_signal_prog_addr);
+	delete(_signal_prog_size);	
 }
 
 /************************************* GETTERS **************************************/
+USignal<int8_t>*  Tile::GetSignalStall(){ return _signal_stall; }
+USignal<int8_t>*  Tile::GetSignalIntr(){ return _signal_intr; }
+USignal<int8_t>*  Tile::GetSignalSendStatus(){ return _signal_send_status; }
+USignal<int8_t>*  Tile::GetSignalRecvStatus(){ return _signal_recv_status; }
+USignal<int32_t>* Tile::GetSignalProgAddr(){ return _signal_prog_addr; }
+USignal<int32_t>* Tile::GetSignalProgSize(){ return _signal_prog_size; }
+USignal<int8_t>*  Tile::GetSignalProgSend(){ return _signal_prog_send; }
+USignal<int8_t>*  Tile::GetSignalProgRecv(){ return _signal_prog_recv; }
+
+
+/*
+	//setters
+    void SetSignalStall(USignal<int8_t>*);
+	void SetSignalIntr(USignal<int8_t>*);
+	void SetSignalSendStatus(USignal<int8_t>*);
+	void SetSignalRecvStatus(USignal<int8_t>*);
+	void SetSignalProgAddr(USignal<int32_t>*);
+	void SetSignalProgSize(USignal<int32_t>*);
+	void SetSignalProgSend(USignal<int8_t>*);
+	void SetSignalProgRecv(USignal<int8_t>*);
+*/
+
 /**
  * @brief Get current router of the PE
  * @return A pointer to the instance of router
@@ -125,7 +162,7 @@ TRouter* Tile::GetRouter(){
  * @brief Get current NI module
  * @return A pointer to the instance of NI
  */
-TNetif*  Tile::GetNetif(){
+TDmaNetif*  Tile::GetDmaNetif(){
 	return _netif;
 }
 
@@ -159,38 +196,6 @@ std::string Tile::GetName(){
  */
 USignal<uint32_t>* Tile::GetSignalId(){ 
 	return _signal_id; 
-}
-
-/**
- * @brief Get current signal for ack signal
- * @return A pointer to the instance of signal
- */
-USignal<int8_t>* Tile::GetSignalAck(){
-	return _signal_ack; 
-}
-
-/**
- * @brief Get current signal for intr signal
- * @return A pointer to the instance of signal
- */
-USignal<int8_t>* Tile::GetSignalIntr(){
-	return _signal_intr;
-}
-
-/**
- * @brief Get current signal for start signal
- * @return A pointer to the instance of signal
- */
-USignal<int8_t>* Tile::GetSignalStart(){
-	return _signal_start;
-}
-
-/**
- * @brief Get current signal for status signal
- * @return A pointer to the instance of signal
- */
-USignal<int8_t>* Tile::GetSignalStatus(){
-	return _signal_status;
 }
 
 /**
