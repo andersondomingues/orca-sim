@@ -99,4 +99,4 @@ clean:
 		$(BINARY_DIR)/*~ $(BINARY_DIR)/*.elf $(BINARY_DIR)/*.bin \
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec $(BINARY_DIR)/*.txt
 	rm -rf docs/doxygen/
-	rm -rf logs/*.log
+	#rm -rf logs/*.log

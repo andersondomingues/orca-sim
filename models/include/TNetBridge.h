@@ -35,20 +35,12 @@
 #include <USignal.h>
 #include <TNetif.h>
 
-typedef uint16_t FlitType;
-
-enum class TNetSocketRecvState{ READY, DATA_IN, FLUSH};
-
-enum class TNetSocketSendState{ WAIT, WAIT_FOR_ACK, LOWER_ACK };
-
-#define RECV_BUFFER_LEN 128
 
 class udp_client_server_runtime_error : public std::runtime_error
 {
 public:
     udp_client_server_runtime_error(const char *w) : std::runtime_error(w) {}
 };
-
 
 class udp_client{
 	
@@ -89,69 +81,79 @@ private:
     std::string         f_addr;
     struct addrinfo *   f_addrinfo;
 };
+//--------------------------------------------
 
+typedef uint16_t FlitType;
+
+enum class TNetBridgeRecvState{ READY, READ_LEN, RECV_PAYLOAD};
+
+enum class TNetBridgeSendState{ READY, SEND_LEN, SEND_PAYLOAD};
+
+#define RECV_BUFFER_LEN 128
+#define SEND_BUFFER_LEN 128
 
 /**
- * @class TNetSocket
+ * @class TNetBridge
  * @author Anderson Domingues
  * @date 11/19/18
- * @file TNetSocket.h
+ * @file TNetBridge.h
  * @brief This class defines a model for a "fake" network adapter 
  * that uses of UDP datagrams at one side and on-chip network's
  * flits on the other side of the USignalunication.
  */
-class TNetSocket: public TimedModel{
+class TNetBridge: public TimedModel{
 
 private:
 	//This module supports sending and receiving
 	//packet simultaneously, so we keep the states
 	//of two state machines below.
-	TNetSocketSendState _send_state; 
-	TNetSocketRecvState _recv_state;
-	
-	//Control wires interfacing with the CPU. The protocol is
-	//as follows:
-	//1) When flits come from the router, wait until all flits 
-	//   get received and then interrupt the cpu (raise _signal_intr),
-	//   and wait for _signal_ack to raise until sending again.
-	//2) When _signal_start raises, copy contents from mem1 onto router's
-	//   buffer, then raise _signal_status.
-	USignal<int8_t>* _signal_ack;    //IN
-	USignal<int8_t>* _signal_start;  //IN
-	USignal<int8_t>* _signal_status; //OUT
-	USignal<int8_t>* _signal_intr;   //OUT
+	TNetBridgeSendState _send_state; 
+	TNetBridgeRecvState _recv_state;
 
 	//Control wire for the receiving thread. This module uses 
 	//an additional thread that treats UDP packets outside the simulation
 	//thread. The signal below is used to signalunicated  between threads.
 	//@TODO: replace by the non-blocking model
 	int8_t _recv_val;
-	USignal<int8_t>* _signal_recv;  //binds to control[3]
-
-	//interface with memories
-	UMemory* _mem1; //packets to be received
-	UMemory* _mem2; //packets to be sent
-    
+	USignal<int8_t>* _signal_recv; 
+   
 	ofstream output_debug;
 	 
 	//file descriptor for the sending and receiving through sockets
 	int32_t _send_socket;
 	int32_t _recv_socket;
 
-   //references to udp client and server objects
+    //references to udp client and server objects
 	udp_client* _udp_client;
 	udp_server* _udp_server;
-	
-   //packet counter
-	uint32_t _trafficOut;
+		
+	#ifdef NETBRIDGE_ENABLE_LOG_INPUT
 	uint32_t _trafficIn;
+	#endif
 
-   //number of flits to receive from the noc before 
-   //send to the udp network (read from the second flit)
+	#ifdef NETBRIDGE_ENABLE_LOG_OUTPUT
+	uint32_t _trafficOut;
+	#endif
+
+    //number of flits to receive from the noc before 
+    //send to the udp network (read from the second flit)
 	uint32_t _flits_to_recv; 
+	uint32_t _flits_to_recv_count; 
+	uint32_t _flits_to_send; 
+	uint32_t _flits_to_send_count; 
+	
+	//auxiliary regs 
+	FlitType _out_reg;	
 
-   //memory space to store packets received from the network
+    //memory space to store packets received from the
+    //noc and from the external network
 	uint8_t _recv_buffer[RECV_BUFFER_LEN];
+	uint8_t _send_buffer[SEND_BUFFER_LEN];
+	
+	//in and out buffer (noc side)	
+	UBuffer<FlitType>* _ib;
+	UBuffer<FlitType>* _ob;
+	
 public:	
     
 	//returns current output
@@ -160,9 +162,9 @@ public:
 	//returns a pointer to the receiving buffer
 	uint8_t* GetBuffer();
 	
-   //internal processes
-   void udpToNocProcess();
-   void nocToUdpProcess();
+    //internal processes
+    void udpToNocProcess();
+    void nocToUdpProcess();
 	
 	//thread for receiving (non-block)
 	static void* udpRecvThread(void*);
@@ -171,30 +173,17 @@ public:
 	//other 
 	SimulationTime Run();
 	void Reset();
-
-	//setters/getters for memories
-	UMemory* GetMem1();
-	UMemory* GetMem2();
-	void SetMem1(UMemory*);
-	void SetMem2(UMemory*);
-	
-	//setter/getters for USignals
-	USignal<int8_t>* GetSignalIntr();
-	USignal<int8_t>* GetSignalStart();
-	USignal<int8_t>* GetSignalAck();
-	USignal<int8_t>* GetSignalStatus();
-
-
-	USignal<int8_t>* GetSignalRecv();
-	
-	void SetSignalIntr(USignal<int8_t>* USignal);
-	void SetSignalStart(USignal<int8_t>* USignal);
-	void SetSignalAck(USignal<int8_t>* USignal);
-	void SetSignalStatus(USignal<int8_t>* USignal);
-
-   //ctor./dtor.
-   TNetSocket(string name);
-   ~TNetSocket();
+		
+    //ctor./dtor.
+    TNetBridge(string name);
+    ~TNetBridge();
+    
+    USignal<int8_t>* GetSignalRecv();
+    
+    
+    UBuffer<FlitType>* GetInputBuffer();
+    void SetOutputBuffer(UBuffer<FlitType>*);
+    
 };
 
 #endif /* __TNETSOCKET_H */

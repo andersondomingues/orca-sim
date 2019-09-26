@@ -36,8 +36,8 @@
 //reusable models
 #include <THellfireProcessor.h>
 #include <TRouter.h>
-#include <TNetif.h> 
-#include <TNetSocket.h>
+#include <TDmaNetif.h> 
+#include <TNetBridge.h>
 
 //orca-specific hardware
 #include <Tile.h>
@@ -298,7 +298,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 				s->Schedule(Event(4, ((ProcessingTile*)tiles[x][y])->GetCpu()));
 			
 			s->Schedule(Event(1, tiles[x][y]->GetRouter()));
-			s->Schedule(Event(1, tiles[x][y]->GetNetif()));
+			s->Schedule(Event(1, tiles[x][y]->GetDmaNetif()));
 		}
 	}
 
@@ -362,14 +362,14 @@ int main(int __attribute__((unused)) argc, char** argv){
 	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
 		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 		
-			TNetif* n = tiles[x][y]->GetNetif();
+			TDmaNetif* n = tiles[x][y]->GetDmaNetif();
 			std::cout << n->GetName() << ":"
 				<< " Send=" << static_cast<unsigned int>(n->GetSendState())
 				<< " Recv=" << static_cast<unsigned int>(n->GetRecvState()) << " |"
-				<< " A:" << std::hex << (int)(n->GetSignalAck()->Read())
-				<< " I:" << std::hex << (int)(n->GetSignalIntr()->Read())
-				<< " S:" << std::hex << (int)(n->GetSignalStart()->Read())
-				<< " T:" << std::hex << (int)(n->GetSignalStart()->Read())
+//				<< " A:" << std::hex << (int)(n->GetSignalAck()->Read())
+//				<< " I:" << std::hex << (int)(n->GetSignalIntr()->Read())
+//				<< " S:" << std::hex << (int)(n->GetSignalStart()->Read())
+//				<< " T:" << std::hex << (int)(n->GetSignalStart()->Read())
 				<< std::endl;
 		}
 	}

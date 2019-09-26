@@ -80,7 +80,7 @@ private:
     USignal<int8_t>*  _sig_stall;       //OUT: stalls cpu while copying from/to main memory
 	USignal<int8_t>*  _sig_intr;        //OUT: request cpu interruption signal (same for both processes)
 	USignal<int8_t>*  _sig_send_status; //OUT: 0x0 when in ready state
-	USignal<int8_t>*  _sig_recv_status; //OUT: 0x0 when in ready state, updated but unused
+	USignal<int32_t>*  _sig_recv_status; //OUT: 0x0 when in ready state, updated but unused
 	USignal<int32_t>* _sig_prog_addr;   //IN
 	USignal<int32_t>* _sig_prog_size;   //IN
 	USignal<int8_t>*  _sig_prog_send;   //IN
@@ -109,7 +109,7 @@ public:
     USignal<int8_t>*  GetSignalStall();
 	USignal<int8_t>*  GetSignalIntr();
 	USignal<int8_t>*  GetSignalSendStatus();
-	USignal<int8_t>*  GetSignalRecvStatus();
+	USignal<int32_t>*  GetSignalRecvStatus();
 	USignal<int32_t>* GetSignalProgAddr();
 	USignal<int32_t>* GetSignalProgSize();
 	USignal<int8_t>*  GetSignalProgSend();
@@ -119,7 +119,7 @@ public:
     void SetSignalStall(USignal<int8_t>*);
 	void SetSignalIntr(USignal<int8_t>*);
 	void SetSignalSendStatus(USignal<int8_t>*);
-	void SetSignalRecvStatus(USignal<int8_t>*);
+	void SetSignalRecvStatus(USignal<int32_t>*);
 	void SetSignalProgAddr(USignal<int32_t>*);
 	void SetSignalProgSize(USignal<int32_t>*);
 	void SetSignalProgSend(USignal<int8_t>*);
@@ -134,6 +134,7 @@ public:
     void Reset();
 
 	//memories
+	void SetMem0(UMemory*);
 	void SetMem1(UMemory*);
 	void SetMem2(UMemory*);
 

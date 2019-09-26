@@ -51,8 +51,6 @@ typedef struct {
 	uint32_t pc, pc_next;
 
 	UMemory* sram;
-	UMemory* mem1;
-	UMemory* mem2;
 	
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
@@ -66,6 +64,7 @@ uint32_t _last_pc;
 
 	//interruption wire
 	USignal<int8_t>* _signal_intr;
+	USignal<int8_t>* _signal_stall;
 	
 	//context
 	risc_v_state context;
@@ -103,7 +102,7 @@ public:
 	void UpdateCounters(int opcode, int func3);
 	#endif
 
-   risc_v_state GetState();
+    risc_v_state GetState();
     
 	void dumpregs(risc_v_state *s);
 	void bp(risc_v_state *s, uint32_t ir);
@@ -112,26 +111,12 @@ public:
 	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
 	//ctor./dtor.
-	THellfireProcessor(string name, USignal<int8_t>* intr);
+	THellfireProcessor(string name, USignal<int8_t>* intr, USignal<int8_t>* stall);
 	~THellfireProcessor();
 	
 	//setters for memories
 	void SetMem0(UMemory*);
 	
-	void SetMem1(UMemory*);
-	void SetMem2(UMemory*);
-	
-	//setters for Signals
-	void SetSignalAck(USignal<int8_t>*);
-	void SetSignalIntr(USignal<int8_t>*);
-	void SetSignalStart(USignal<int8_t>*);
-	void SetSignalStatus(USignal<int8_t>*);
-	
-	//self id wire
-	void SetSignalId(USignal<int32_t>*);
-	
-	void SetSignalSystime(USignal<uint32_t>*);
-		
 	SimulationTime Run();
 	
 	//file output

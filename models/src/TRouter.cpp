@@ -124,8 +124,14 @@ SimulationTime TRouter::Run(){
 			#ifdef ROUTER_PORT_CONNECTED_CHECKING
 			if(_ob[_switch_control[i]] == nullptr){
 				stringstream ss;
-				ss << this->GetName() << ": unable to route to unknown address" << std::endl;
+				ss << this->GetName() << ": unable to route to unknown port" << std::endl;
 				std::runtime_error(ss.str());
+			}
+			
+			if(_ib[i] == nullptr){
+				stringstream ss;
+				ss << this->GetName() << ": unable to route from unknown port" << std::endl;
+				std::runtime_error(ss.str());				
 			}
 			#endif
 				

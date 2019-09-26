@@ -3,11 +3,11 @@
 
 #include "hellfire.h"
 
-//!!! must be changed in noc.c as well
-#define COMM_ID         (0x403F0010) 
-#define COMM_HOSTTIME   (0x403F0014)
+#define MAGIC_TILE_ID       0x403F0016  
+#define MAGIC_HOSTTIME      0x403F0020
 
 //apps' entry point
 void app_main(void);
 
 #endif /* __ORCA_LIB_H */
+

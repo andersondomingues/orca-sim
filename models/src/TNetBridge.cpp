@@ -29,7 +29,7 @@
 #include <TimedModel.h>
 #include <UBuffer.h>
 
-#include <TNetSocket.h>
+#include <TNetBridge.h>
 
 
 //udp bullshit
@@ -47,11 +47,10 @@
  * @brief Default ctor. Name of the module must be informed.
  * @param name A name to identify this module.
  */
-TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
+TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 
 	//open debug file
-	output_debug.open(
-		"logs/pe-0-0.cpu_debug.log", 
+	output_debug.open("logs/pe-0-0.cpu_debug.log", 
 		std::ofstream::out | std::ofstream::trunc);
 	
 	//create a new signal so that the module can be interrupted by
@@ -59,13 +58,17 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 	_signal_recv = new USignal<int8_t>(&_recv_val, 0, this->GetName() + ".signalUdpIntr");
 	_signal_recv->Write(0);
 	
-	//reset traffic counter
+	#ifdef NETBRIDGE_ENABLE_LOG_INPUT
+	_trafficIn = 0;
+	#endif
+
+	#ifdef NETBRIDGE_ENABLE_LOG_OUTPUT
 	_trafficOut = 0;
-	_trafficIn  = 0;
+	#endif
 	
 	//initialize states
-	_recv_state = TNetSocketRecvState::READY;
-	_send_state = TNetSocketSendState::WAIT;
+	_recv_state = TNetBridgeRecvState::READY;
+	_send_state = TNetBridgeSendState::READY;
 	
 	//initialize a new client (client sends messages)
 	const std::string& client_addr = NETSOCKET_CLIENT_ADDRESS;
@@ -76,52 +79,54 @@ TNetSocket::TNetSocket(std::string name) : TimedModel(name) {
 		
 	pthread_t t;
 
-	if(pthread_create(&t, NULL, TNetSocket::udpRecvThread, this)){
+	if(pthread_create(&t, NULL, TNetBridge::udpRecvThread, this)){
 		std::cout << "unable to create new thread using lpthread." << std:: endl;
 	}
 	
 	//this code depends on linux's libraries. I warned you.
 	output_debug << "UDP bridge is up" << std::endl;
 	
+	//instantiate a new input buffer (only input is buferred)
+	_ib = new UBuffer<FlitType>();
+	
 	this->Reset();
 }
 
-void TNetSocket::SetSignalAck(USignal<int8_t>* p){ _signal_ack = p; }
-void TNetSocket::SetSignalIntr(USignal<int8_t>* p){ _signal_intr = p; }
-void TNetSocket::SetSignalStart(USignal<int8_t>* p){ _signal_start = p; }
-void TNetSocket::SetSignalStatus(USignal<int8_t>* p){ _signal_status = p; }
-
-USignal<int8_t>* TNetSocket::GetSignalRecv(){
+USignal<int8_t>* TNetBridge::GetSignalRecv(){
 	return _signal_recv;
 }
 
-void TNetSocket::SetMem1(UMemory* mem1){
-	_mem1 = mem1;
-}
-void TNetSocket::SetMem2(UMemory* mem2){
-	_mem2 = mem2;
-}
 
-uint8_t* TNetSocket::GetBuffer(){
+uint8_t* TNetBridge::GetBuffer(){
 	return _recv_buffer;
 }
 
 /**
  * @brief Dtor. No dynamic allocation is being used. Keept by design.
  */
-TNetSocket::~TNetSocket(){
+TNetBridge::~TNetBridge(){
 	output_debug.close();
 }
 
 /**
  * @brief Return the module to its initial state (if stateful).
  */
-void TNetSocket::Reset(){
+void TNetBridge::Reset(){
 	
 }
 
 
-udp_server* TNetSocket::GetUdpServer(){
+    
+UBuffer<FlitType>* TNetBridge::GetInputBuffer(){
+	return _ib;
+}
+
+void TNetBridge::SetOutputBuffer(UBuffer<FlitType>* b){
+	_ob = b;
+
+}
+
+udp_server* TNetBridge::GetUdpServer(){
 	return _udp_server;
 }
 
@@ -129,16 +134,16 @@ udp_server* TNetSocket::GetUdpServer(){
  * @brief Runs a state.
  * @return The number of cycles spent to change (or not) states.
  */
-SimulationTime TNetSocket::Run(){
+SimulationTime TNetBridge::Run(){
     
 	this->udpToNocProcess(); //process for receiving from the UDP socket
     this->nocToUdpProcess(); //process for sending through the UDP socket
     return 1; //takes exactly 1 cycle to run both processes
 }
 
-void* TNetSocket::udpRecvThread(void* gs){
+void* TNetBridge::udpRecvThread(void* gs){
 	
-	TNetSocket* ns = ( TNetSocket*) gs;
+	TNetBridge* ns = ( TNetBridge*) gs;
 
 	//recv while the program lives
 	while(1){
@@ -155,91 +160,108 @@ void* TNetSocket::udpRecvThread(void* gs){
 	}
 }
 
-void TNetSocket::LogWrite(std::string ss){
+void TNetBridge::LogWrite(std::string ss){
 	this->output_debug << ss << std::flush;
 }
 
-void TNetSocket::udpToNocProcess(){
+void TNetBridge::udpToNocProcess(){
 	
+	//Receive a packet from the network and send data flit-by-flit
+	//to the noc. NoC buffers have unlimited size, although we can
+	//check on buffers' size if necessary.
+	//TODO: to model network congestion.
 	switch(_recv_state){
 		
-		//waiting for new packages
-		case TNetSocketRecvState::READY:{
-			
+		//READY: In this state, the module is waiting for an UDP packet. There is 
+		//a separated process that receives the packet and writes it to the
+		//internal buffer, so we just wait for the control signal to raise.
+		case TNetBridgeRecvState::READY:{
+						
 			//packet has arrived and the network is not sending packets
-			if(_signal_recv->Read() == 0x1 && _signal_start->Read() == 0x0){
+			if(_signal_recv->Read() == 0x1){
+			
+				//push the first flit to the NoC, whatever the content.
+				_out_reg = ((FlitType*)_recv_buffer)[0];
+				_ob->push(_out_reg);
 				
-				//copy buffer to internal memory
-				_mem2->Write(_mem2->GetBase(), (int8_t*)_recv_buffer, RECV_BUFFER_LEN);
+				//proceed to the next state
+				_recv_state = TNetBridgeRecvState::READ_LEN;
 				
-				#ifndef OPT_DISABLE_LOG_NETSOCKET
-				uint16_t addr_flit;
-				_mem2->Read(_mem2->GetBase(), (int8_t*)&addr_flit, 2);
-				
-				int32_t x = (addr_flit & 0xf0) >> 4;
-				int32_t y = (addr_flit & 0x0f);
+				#ifdef NETBRIDGE_ENABLE_LOG_INPUT
+				int32_t x = (_out_reg & 0xf0) >> 4;
+				int32_t y = (_out_reg & 0x0f);
 				int32_t z = x + y * 4;
 				
-				std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
+				std::chrono::time_point<std::chrono::system_clock> now;
+				now = std::chrono::system_clock::now();				
+				
 				auto duration = now.time_since_epoch();
-				auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+				auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();		
 				
 				output_debug << "[" << millis << "] IN " << _trafficIn
-							 << " FROM " << _udp_server->get_addr() << ":"	 << _udp_server->get_port() 
+							 << " FROM " << _udp_server->get_addr() << ":" << _udp_server->get_port() 
 							 << " TO #" << z << std::endl << std::flush;
-				#endif
 
-				//start bursting packets into the noc
-				_recv_state = TNetSocketRecvState::DATA_IN;
 				_trafficIn++;
+				#endif
 			}
-			
-		}break;
 		
-		case TNetSocketRecvState::DATA_IN:{
-			
-			//able to send
-			if(_signal_start->Read() == 0){
-				
-				_signal_start->Write(0x1); //enable netif
-				
-				//start bursting packets into the noc
-				_recv_state = TNetSocketRecvState::FLUSH;
-			}
-			
-		}break;
+		} break;
 		
-		case TNetSocketRecvState::FLUSH:{
+		//READ_LEN: In this state we read the second flit, which carries the size
+		//of the burst. We determine how many cycle we spend bursting data out of 
+		//the module in this state.
+		case TNetBridgeRecvState::READ_LEN:{
+		
+			//there is no condition to trigger this state as the data 
+			//is already stored to the memory. we increment the number 
+			//of flits in two given that neither address and size flits
+			//are accounted.
+			_flits_to_recv = ((FlitType*)_recv_buffer)[1] + 2; 
+			_flits_to_recv_count = 2;
 			
-			//netif finished, we can receive another packet
-			if(_signal_start->Read() == 0){
-				_recv_state = TNetSocketRecvState::READY;
+			//proceed to next state
+			_recv_state = TNetBridgeRecvState::RECV_PAYLOAD;
+		
+		} break;
+		
+		//RECV_PAYLOAD: We stay in this state until we send all the remaining flits
+		//to the noc. 
+		case TNetBridgeRecvState::RECV_PAYLOAD:{
+		
+			//no more flits to recv, go back to the first state
+			if(_flits_to_recv_count >= _flits_to_recv){
 				_signal_recv->Write(0x0);
+				_recv_state = TNetBridgeRecvState::RECV_PAYLOAD;
+
+			//still have flits to send
+			}else{
+				_out_reg = ((FlitType*)_recv_buffer)[_flits_to_recv_count++];
+				_ob->push(_out_reg);
 			}
-			
-		}break;
+		
+		} break;
 	}	
 }
 
-void TNetSocket::nocToUdpProcess(){	
+void TNetBridge::nocToUdpProcess(){	
     
 	switch(_send_state){
 		
-		//wait until has some packet to send
-		case TNetSocketSendState::WAIT:{
+		//READY: In this state we wait for the first flit to come from the noc
+		case TNetBridgeSendState::READY:{
+		
+			//fall whether we have any flit coming from the noc
+			if(_ib->size() > 0){
 			
-			if(_signal_intr->Read() == 0x1){ 
-						
-				//64 flits = 1 msg
-				int8_t msg[RECV_BUFFER_LEN];
+				//put address flit into the send buffer
+				((FlitType*)_send_buffer)[0] = _ib->top();
+				_ib->pop();
 				
-				//get packet from the scratchpad
-				_mem1->Read(_mem1->GetBase(), msg, RECV_BUFFER_LEN);
-
-				//send packet (raw) via udp
-				_udp_client->send((const char*)msg, RECV_BUFFER_LEN);
-						
-				#ifndef OPT_NETSOCKET_DISABLE_OUTGOING_PACKETS_LOG
+				//change states
+				_send_state = TNetBridgeSendState::SEND_LEN;
+				
+				#ifndef NETBRIDGE_ENABLE_LOG_OUTPUT
 				uint32_t x = msg[4];
 				
 				std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
@@ -250,38 +272,48 @@ void TNetSocket::nocToUdpProcess(){
 							 << " TO " << _udp_client->get_addr() << ":" << _udp_client->get_port() 
 							 << " FROM #" << x << std::endl << std::flush;
 				#endif
-				
-				//signal the ni that the packet has been consumed
-				_signal_ack->Write(0x01);
-				_send_state = TNetSocketSendState::WAIT_FOR_ACK;
-				//std::cout << "to WAIT_FOR_ACK" << std::endl;
-				
-				//delete[] msg; //free tmp buffer
 			}
-			
+		
 		} break;
 		
-		//and wait for ack-ack
-		case TNetSocketSendState::WAIT_FOR_ACK:{
+		//SEND_LEN: In this state we read how many flits we must receive from
+		//the noc until we send the next network packet.
+		case TNetBridgeSendState::SEND_LEN:{
+		
+			if(_ib->size() > 0){
 			
-			if(_signal_intr->Read() == 0x0){
-				_send_state = TNetSocketSendState::LOWER_ACK;
-				//std::cout << "to WAIT" << std::endl;				
-			}
+				//put address flit into the send buffer
+				((FlitType*)_send_buffer)[1] = _ib->top();
+				_flits_to_send = _ib->top();
+				_flits_to_send_count = 2; //<-- starts in two due to we have added address and size flits
+				_ib->pop();
 				
+				//change states
+				_send_state = TNetBridgeSendState::SEND_PAYLOAD;
+			}
+		
 		} break;
 		
-		//lower ack signal
-		case TNetSocketSendState::LOWER_ACK:{
-			
-			//lower ack
-			_signal_ack->Write(0x00);
-			_trafficOut++;
-			_send_state = TNetSocketSendState::WAIT;
-			//std::cout << "to WAIT_NAK" << std::endl;				
-			
-		} break;
+		//SEND_PAYLOAD: Send store data and go back to the first state
+		case TNetBridgeSendState::SEND_PAYLOAD:{
 		
+			//still have flits to receive from the noc
+			if(_flits_to_send_count < _flits_to_send){
+			
+				//add next flit to the buffer
+				((FlitType*)_send_buffer)[_flits_to_send_count++] = _ib->top();
+				_ib->pop();			
+
+			}else{
+	
+				//send message through the udp socket
+				_udp_client->send((const char*)_send_buffer, SEND_BUFFER_LEN);
+				
+				//go back to the first state
+				_send_state = TNetBridgeSendState::READY;
+			
+			}		
+		}
 	}
 }
 

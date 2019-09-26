@@ -8,8 +8,9 @@
 # -std: required by old GCC to set c++17 as default the c++ 
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native
-#-lasan -fsanitize=address
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -lasan -fsanitize=address
+#-O3 -march=native -mtune=native
+
 
 # Apps to be compiled within kernel image
 ORCA_APPLICATIONS := producer-consumer
@@ -50,11 +51,14 @@ URSA_ZERO_TIME_CHECKING := NO
 URSA_QUEUE_SIZE_CHECKING := NO
 
 # =============================================================[ NETSOCKET ]
-# Outputs log for outgoing packets (depletes performance).
+# Outputs log for outgoing packets (slightly depletes performance).
 NETSOCKET_LOG_OUTGOING_PACKETS := NO
 
-# Outputs log for incoming packets (depletes performance).
+# Outputs log for incoming packets (slightly depletes performance).
 NETSOCKET_LOG_INCOMING_PACKETS := NO
+
+NETBRIDGE_ENABLE_LOG_INPUT  := YES
+NETBRIDGE_ENABLE_LOG_OUTPUT := YES
 
 # Sets client UDP/IP address and port for the netsocket. This is the address
 # that the netsocket will connect when sending packets to outside the noc.
@@ -71,20 +75,20 @@ NETSOCKET_SERVER_PORT := 9999
 BUFFER_OVERFLOW_CHECKING := NO
 
 # Check whether the buffer is empty before popping data (depletes performance).
-BUFFER_UNDERFLOW_CHECKINGmemory := NO
+BUFFER_UNDERFLOW_CHECKING := NO
 
 # ===============================================================[ MEMORY ]
 # Check whether address are mapped to some memory range before writing
 # to memory. Set to YES to force checking (depletes performance).
-MEMORY_WRITE_ADDRESS_CHECKING := NO
+MEMORY_WRITE_ADDRESS_CHECKING := YES
 
 # Check whether address are mapped to some memory range before reading from
 # memory. Set to YES to force checking (depletes performance).
-MEMORY_READ_ADDRESS_CHECKING := NO
+MEMORY_READ_ADDRESS_CHECKING := YES
 
 # Check whether address are mapped to some memory range before wipeing
 # memory ranges. Set to YES to force checking (depletes performance).
-MEMORY_WIPE_ADDRESS_CHECKING := NO
+MEMORY_WIPE_ADDRESS_CHECKING := YES
 
 # Enable counter for read and write operations (depletes performance).
 MEMORY_ENABLE_COUNTERS := NO
@@ -93,12 +97,12 @@ MEMORY_ENABLE_COUNTERS := NO
 # Check whether address are mapped to some memory range before writing
 # to memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
-HFRISCV_WRITE_ADDRESS_CHECKING := NO
+HFRISCV_WRITE_ADDRESS_CHECKING := YES
 
 # Check whether address are mapped to some memory range before reading
 # from memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
-HFRISCV_READ_ADDRESS_CHECKING := NO
+HFRISCV_READ_ADDRESS_CHECKING := YES
 
 # Enable counter for instructions' classes (depletes performance).
 HFRISCV_ENABLE_COUNTERS := NO
@@ -110,7 +114,7 @@ ROUTER_ENABLE_COUNTERS := NO
 # Check whether destination port is connected when tranfering flits.
 # Transfering flit to routers not mapped into the topology results in
 # crash. Set to YES to force checking (depletes performance).
-ROUTER_PORT_CONNECTED_CHECKING := NO
+ROUTER_PORT_CONNECTED_CHECKING := YES
 
 # ========================================================================
 # GENERATION OF COMPILATION PARAMETERS STARTS HERE.
@@ -119,7 +123,7 @@ ROUTER_PORT_CONNECTED_CHECKING := NO
 
 #ORCA parameters
 ifneq ($(ORCA_EPOCHS_TO_SIM), INF)
-COMPLINE := $(COMPLINE) -DORCA_EPOCHS_TO_SIM=$(ORCA_EPOCHS_TO_SIM)
+	COMPLINE := $(COMPLINE) -DORCA_EPOCHS_TO_SIM=$(ORCA_EPOCHS_TO_SIM)
 endif
 
 COMPLINE := $(COMPLINE) \
@@ -137,6 +141,14 @@ ifeq ($(URSA_ZERO_TIME_CHECKING), YES)
 endif
 ifeq ($(URSA_QUEUE_SIZE_CHECKING), YES)
 	COMPLINE := $(COMPLINE) -DURSA_QUEUE_SIZE_CHECKING
+endif
+
+#netbridge parameters
+ifeq ($(NETBRIDGE_ENABLE_LOG_INPUT), YES)
+	COMPLINE := $(COMPLINE) -DNETBRIDGE_ENABLE_LOG_INPUT
+endif
+ifeq ($(NETBRIDGE_ENABLE_LOG_OUTPUT), YES)
+	COMPLINE := $(COMPLINE) -DNETBRIDGE_ENABLE_LOG_OUTPUT
 endif
 
 #netsocket parameters

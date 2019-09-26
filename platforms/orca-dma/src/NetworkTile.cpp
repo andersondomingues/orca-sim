@@ -27,7 +27,7 @@
 #include <TNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
-#include <TNetSocket.h>
+#include <TNetBridge.h>
 
 #include <NetworkTile.h>
 
@@ -37,26 +37,20 @@
  * other. */
 NetworkTile::NetworkTile(uint32_t x, uint32_t y) : Tile(x, y){
 	
-	this->SetName("nt-" + this->GetName());
+	this->SetName("[n]" + this->GetName());
 	
-	//renaming hardware
+	//update naming of internal hardware parts (from internal class)
 	this->GetRouter()->SetName(this->GetName() + ".router");
-	this->GetNetif()->SetName(this->GetName() + ".netif");
+	this->GetDmaNetif()->SetName(this->GetName() + ".netif");
 	this->GetMem1()->SetName(this->GetName() + ".mem1");
 	this->GetMem2()->SetName(this->GetName() + ".mem2");
 	
 	//peripherals	
-	_socket = new TNetSocket(this->GetName() + ".sock");
+	_socket = new TNetBridge(this->GetName() + ".bridge");
 	
-	//bind control signals to hardware (socket side)
-	_socket->SetSignalAck(this->GetSignalAck());
-	_socket->SetSignalIntr(this->GetSignalIntr());
-	_socket->SetSignalStart(this->GetSignalStart());
-	_socket->SetSignalStatus(this->GetSignalStatus());
+	_socket->SetOutputBuffer(this->GetRouter()->GetInputBuffer(LOCAL));
+	this->GetRouter()->SetOutputBuffer(_socket->GetInputBuffer(), LOCAL);
 	
-	//bind memory modules
-	_socket->SetMem1(this->GetMem1()); //recv
-	_socket->SetMem2(this->GetMem2()); //send
 }
 
 NetworkTile::~NetworkTile(){
@@ -64,7 +58,7 @@ NetworkTile::~NetworkTile(){
 	delete(_socket);
 }
 
-TNetSocket* NetworkTile::GetSocket(){
+TNetBridge* NetworkTile::GetSocket(){
 	return _socket;
 } 
 
@@ -72,7 +66,7 @@ std::string NetworkTile::ToString(){
 	stringstream ss;
 	ss << _name << "={" << _socket->GetName() 
 	   << ", " << this->GetRouter()->GetName() 
-	   << ", " << this->GetNetif()->GetName() << "}";
+	   << ", " << this->GetDmaNetif()->GetName() << "}";
 	
 	return ss.str();
 }

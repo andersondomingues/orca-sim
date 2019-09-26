@@ -37,14 +37,15 @@
 ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	
 	//update current name to have a PE at the front of the name
-	this->SetName("pe-" + this->GetName());
+	this->SetName("[p]" + this->GetName());
 	
 	//create a cpu and memory in addition to current tile hardware
 	_mem0 = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu  = new THellfireProcessor(this->GetName() + ".cpu", this->GetSignalIntr());
+	_cpu  = new THellfireProcessor(this->GetName() + ".cpu", this->GetSignalIntr(), this->GetSignalStall());
 	
 	//bind the cpu to the main memory (this is NOT how it is done in hardware, but protocols are abstracted here)
 	_cpu->SetMem0(_mem0);
+	this->GetDmaNetif()->SetMem0(_mem0);
 	
 	//update naming of internal hardware parts (from internal class)
 	this->GetRouter()->SetName(this->GetName() + ".router");
@@ -56,7 +57,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetSignalStall()->MapTo(_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
 	this->GetSignalIntr()->MapTo(_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
 	this->GetSignalSendStatus()->MapTo(_mem0->GetMap(SIGNAL_SEND_STATUS), SIGNAL_SEND_STATUS);
-	this->GetSignalRecvStatus()->MapTo(_mem0->GetMap(SIGNAL_RECV_STATUS), SIGNAL_RECV_STATUS);
+	this->GetSignalRecvStatus()->MapTo((int32_t*)_mem0->GetMap(SIGNAL_RECV_STATUS), SIGNAL_RECV_STATUS);
 
 	this->GetSignalProgSend()->MapTo(_mem0->GetMap(SIGNAL_PROG_SEND), SIGNAL_PROG_SEND);
 	this->GetSignalProgRecv()->MapTo(_mem0->GetMap(SIGNAL_PROG_RECV), SIGNAL_PROG_RECV);
@@ -106,7 +107,7 @@ std::string ProcessingTile::ToString(){
 	stringstream ss;
 	ss << this->GetName() << "={" << _cpu->GetName() 
 	   << ", " << this->GetRouter()->GetName() 
-	   << ", " << this->GetNetif()->GetName() << "}";
+	   << ", " << this->GetDmaNetif()->GetName() << "}";
 	
 	return ss.str();
 }

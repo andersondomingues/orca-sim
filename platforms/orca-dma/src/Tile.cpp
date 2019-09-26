@@ -26,7 +26,6 @@
 #include <TDmaNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
-#include <TNetSocket.h>
 
 #include <Tile.h>
 
@@ -49,8 +48,8 @@ Tile::Tile(uint32_t x, uint32_t y){
 	//@TODO: bind to function?!
 	
 	//create new memories	
-	_mem1 = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, MEM1_BASE); //read from noc 
-	_mem2 = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, MEM2_BASE); //write to noc
+	_mem1 = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, 0); //read from noc 
+	_mem2 = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, 0); //write to noc
 
 	//peripherals	
 	_router = new TRouter(this->GetName() + ".router", x, y);
@@ -60,7 +59,7 @@ Tile::Tile(uint32_t x, uint32_t y){
     _signal_stall       = new USignal<int8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
 	_signal_intr        = new USignal<int8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
 	_signal_send_status = new USignal<int8_t>(SIGNAL_SEND_STATUS, this->GetName() + ".send_status");
-	_signal_recv_status = new USignal<int8_t>(SIGNAL_RECV_STATUS, this->GetName() + ".recv_status");
+	_signal_recv_status = new USignal<int32_t>(SIGNAL_RECV_STATUS, this->GetName() + ".recv_status");
 	_signal_prog_send   = new USignal<int8_t>(SIGNAL_PROG_SEND, this->GetName() + ".progr_send");
 	_signal_prog_recv   = new USignal<int8_t>(SIGNAL_PROG_RECV, this->GetName() + ".progr_recv");
 	_signal_prog_addr   = new USignal<int32_t>(SIGNAL_PROG_ADDR, this->GetName() + ".progr_addr");
@@ -131,7 +130,7 @@ Tile::~Tile(){
 USignal<int8_t>*  Tile::GetSignalStall(){ return _signal_stall; }
 USignal<int8_t>*  Tile::GetSignalIntr(){ return _signal_intr; }
 USignal<int8_t>*  Tile::GetSignalSendStatus(){ return _signal_send_status; }
-USignal<int8_t>*  Tile::GetSignalRecvStatus(){ return _signal_recv_status; }
+USignal<int32_t>*  Tile::GetSignalRecvStatus(){ return _signal_recv_status; }
 USignal<int32_t>* Tile::GetSignalProgAddr(){ return _signal_prog_addr; }
 USignal<int32_t>* Tile::GetSignalProgSize(){ return _signal_prog_size; }
 USignal<int8_t>*  Tile::GetSignalProgSend(){ return _signal_prog_send; }

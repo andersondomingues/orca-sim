@@ -65,24 +65,84 @@ int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 	
 	uint32_t data;
-	UMemory* sel_mem = nullptr;
-	
+
 	//Check whether the address belongs to the main memory
 	if(address <= s->sram->GetLastAddr()){
-		sel_mem = s->sram;
-		
-	//Check whether the addres belongs to the noc-send memory	
-	}else if (address <= s->mem1->GetLastAddr()){
-		sel_mem = s->mem1;
-	}
-	
-	// NOTE:
-	// We ommit mem2 since the cpu will never read from mem2	
-	
-	//may the request memory space be out of the mapped memory range, we assume
-	//the code is pointing to some of the special addresses
-	if(sel_mem == nullptr){
 			
+		switch(size){
+		case 4:
+			if(address & 3){
+				std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" 
+					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				throw std::runtime_error(err_msg);
+			}else{
+				s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
+			}
+			break;
+		case 2:
+			if(address & 1){
+				std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" 
+					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				throw std::runtime_error(err_msg);
+			}else{
+				int16_t value;
+				s->sram->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
+				data = value;
+			}
+			break;
+		case 1:
+			int8_t value;
+			s->sram->Read(address, &value, 1); //1 x sizeof(uint8_t)
+			data = value;
+			break;
+		default:
+			std::string err_msg = this->GetName() + ": could not read from memory, invalid data size requested";
+			throw std::runtime_error(err_msg);
+		}
+		
+		return data;
+		
+	}else{
+	
+		#ifdef MEMORY_ENABLE_COUNTERS
+		if(address == s->sram->GetSignalCounterStore()->GetAddress()) return s->sram->GetSignalCounterStore()->Read();
+		if(address == s->sram->GetSignalCounterLoad()->GetAddress())  return s->sram->GetSignalCounterLoad()->Read();
+		if(address == s->mem1->GetSignalCounterStore()->GetAddress()) return s->mem1->GetSignalCounterStore()->Read();
+		if(address == s->mem1->GetSignalCounterLoad()->GetAddress())  return s->mem1->GetSignalCounterLoad()->Read();
+		if(address == s->mem2->GetSignalCounterStore()->GetAddress()) return s->mem2->GetSignalCounterStore()->Read();
+		if(address == s->mem2->GetSignalCounterLoad()->GetAddress())  return s->mem2->GetSignalCounterLoad()->Read();
+		#endif /* MEMORY_ENABLE_COUNTERS */
+	
+		#ifdef HFRISCV_ENABLE_COUNTERS
+		if(address == this->GetSignalCounterArith()->GetAddress())     return this->GetSignalCounterArith()->Read();
+		if(address == this->GetSignalCounterLogical()->GetAddress())   return this->GetSignalCounterLogical()->Read();
+		if(address == this->GetSignalCounterShift()->GetAddress())     return this->GetSignalCounterShift()->Read();
+		if(address == this->GetSignalCounterBranches()->GetAddress())  return this->GetSignalCounterBranches()->Read();
+		if(address == this->GetSignalCounterJumps()->GetAddress())     return this->GetSignalCounterJumps()->Read();
+		if(address == this->GetSignalCounterLoadStore()->GetAddress()) return this->GetSignalCounterLoadStore()->Read();
+		#endif /* HFRISCV_ENABLE_COUNTERS */
+		
+		#ifdef ROUTER_ENABLE_COUNTERS
+		if(address == _router->GetSignalCounterActive()->GetAddress()) return _router->GetSignalCounterActive()->Read();
+		#endif /* ROUTER_ENABLE_COUNTERS */
+	
+		/*if(address == _signal_systime->GetAddress()){
+		
+			//time_t seconds;
+			//seconds = time(NULL);
+			//return seconds;
+		
+			//requires sys/time.h
+			//struct timeval tv;
+			//gettimeofday(&tv,NULL);
+			//return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);    	
+				
+			std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
+			auto duration = now.time_since_epoch();
+			auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+			return millis;
+		}*/
+		
 		//Address does not belong to any bank, check for special addresses
 		switch(address){
 			case IRQ_VECTOR:	return s->vector;
@@ -96,88 +156,13 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			case UART_READ:		return getchar();
 			case UART_DIVISOR:	return 0;
 		}
-		
+			
 		//may the requested address fall in unmapped range, halt the simulation
 		dumpregs(s);
 		stringstream ss;
 		ss << this->GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
 		throw std::runtime_error(ss.str());
-	
-	//if memory space belongs to the range, proceed to reading	
-	}else{
-		
-		switch(size){
-			case 4:
-				if(address & 3){
-					std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" 
-						+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
-					throw std::runtime_error(err_msg);
-				}else{
-					sel_mem->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
-				}
-				break;
-			case 2:
-				if(address & 1){
-					std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" 
-						+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
-					throw std::runtime_error(err_msg);
-				}else{
-					int16_t value;
-					sel_mem->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
-					data = value;
-				}
-				break;
-			case 1:
-				int8_t value;
-				sel_mem->Read(address, &value, 1); //1 x sizeof(uint8_t)
-				data = value;
-				break;
-			default:
-				std::string err_msg = this->GetName() + ": could not read from memory, invalid data size requested";
-				throw std::runtime_error(err_msg);
-		}
-		
-		return data;
 	}
-
-	#ifdef MEMORY_ENABLE_COUNTERS
-	if(address == s->sram->GetSignalCounterStore()->GetAddress()) return s->sram->GetSignalCounterStore()->Read();
-	if(address == s->sram->GetSignalCounterLoad()->GetAddress())  return s->sram->GetSignalCounterLoad()->Read();
-	if(address == s->mem1->GetSignalCounterStore()->GetAddress()) return s->mem1->GetSignalCounterStore()->Read();
-	if(address == s->mem1->GetSignalCounterLoad()->GetAddress())  return s->mem1->GetSignalCounterLoad()->Read();
-	if(address == s->mem2->GetSignalCounterStore()->GetAddress()) return s->mem2->GetSignalCounterStore()->Read();
-	if(address == s->mem2->GetSignalCounterLoad()->GetAddress())  return s->mem2->GetSignalCounterLoad()->Read();
-	#endif /* MEMORY_ENABLE_COUNTERS */
-	
-	#ifdef HFRISCV_ENABLE_COUNTERS
-	if(address == this->GetSignalCounterArith()->GetAddress())     return this->GetSignalCounterArith()->Read();
-	if(address == this->GetSignalCounterLogical()->GetAddress())   return this->GetSignalCounterLogical()->Read();
-	if(address == this->GetSignalCounterShift()->GetAddress())     return this->GetSignalCounterShift()->Read();
-	if(address == this->GetSignalCounterBranches()->GetAddress())  return this->GetSignalCounterBranches()->Read();
-	if(address == this->GetSignalCounterJumps()->GetAddress())     return this->GetSignalCounterJumps()->Read();
-	if(address == this->GetSignalCounterLoadStore()->GetAddress()) return this->GetSignalCounterLoadStore()->Read();
-	#endif /* HFRISCV_ENABLE_COUNTERS */
-		
-	#ifdef ROUTER_ENABLE_COUNTERS
-	if(address == _router->GetSignalCounterActive()->GetAddress()) return _router->GetSignalCounterActive()->Read();
-	#endif /* ROUTER_ENABLE_COUNTERS */
-	
-	/*if(address == _signal_systime->GetAddress()){
-		
-		//time_t seconds;
-		//seconds = time(NULL);
-		//return seconds;
-		
-		//requires sys/time.h
-		//struct timeval tv;
-	    //gettimeofday(&tv,NULL);
-    	//return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);    	
-    		
-		std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
-		auto duration = now.time_since_epoch();
-		auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    	return millis;
-	}*/
 }
 
 /**
@@ -189,32 +174,18 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
  */
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
 
-	UMemory* sel_mem = nullptr;
-
-	//memwrite to sram
-	if(address <= s->sram->GetLastAddr()){
-		sel_mem = s->sram;
-		
-	//memwrite to send memory
-	}else if (address <= s->mem2->GetLastAddr()){
-		sel_mem = s->mem2;	
-	}
-
-	//>>> NOTE: we ommit mem1 since only the NI can write to the memory space of mem1 <<<<
-	
 	//if the address belong to some memory range, write to it
-	if(sel_mem != nullptr){
+	if(address <= s->sram->GetLastAddr()){
 		
 		switch(size){
 			case 4:
 				if(address & 3){
-					std::string err_msg = this->GetName() 
-						+ ": unaligned access (store word) pc=0x" 
-						+ std::to_string(s->pc) + " addr=0x" 
-						+ std::to_string(address);
-					throw std::runtime_error(err_msg);
+					stringstream ss;
+					ss << this->GetName() << ": unaligned access (store word) pc=0x" 
+					   << std::hex << s->pc << " addr=0x" << std::hex << address;
+					throw std::runtime_error(ss.str());
 				}else{
-					sel_mem->Write(address, (int8_t*)&value, size);
+					s->sram->Write(address, (int8_t*)&value, size);
 				}
 				break;
 			case 2:
@@ -226,13 +197,13 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 					throw std::runtime_error(err_msg);
 				}else{
 					uint16_t data = (uint16_t)value;
-					sel_mem->Write(address, (int8_t*)&data, size);
+					s->sram->Write(address, (int8_t*)&data, size);
 				}
 				break;
 			case 1:{
 				uint8_t data;
 				data = (uint8_t)value;
-				sel_mem->Write(address, (int8_t*)&data, size);
+				s->sram->Write(address, (int8_t*)&data, size);
 				break;
 			}
 			default:{
@@ -416,7 +387,11 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 #endif /* HFRISCV_ENABLE_COUNTERS */
 
 SimulationTime THellfireProcessor::Run(){
-		
+
+	//skip current cycle if stall is risen
+	if(_signal_stall->Read() == 0x1)
+		return 1;
+
 	uint32_t pc_next_prediction;
 		
 	uint32_t inst, i;
@@ -522,14 +497,14 @@ SimulationTime THellfireProcessor::Run(){
 		case 0x33:
 			if (funct7 == 0x1){											/* RV32M */
 				switch(funct3){
-					case 0:	r[rd] = (((int64_t)r[rs1] * (int64_t)r[rs2]) & 0xffffffff); break;		/* MUL */
+					case 0:	r[rd] = (((int64_t)r[rs1] * (int64_t)r[rs2]) & 0xffffffff); break;		    /* MUL */
 					case 1:	r[rd] = ((((int64_t)r[rs1] * (int64_t)r[rs2]) >> 32) & 0xffffffff); break;	/* MULH */
 					case 2:	r[rd] = ((((int64_t)r[rs1] * (uint64_t)u[rs2]) >> 32) & 0xffffffff); break;	/* MULHSU */
-					case 3:	r[rd] = ((((uint64_t)u[rs1] * (uint64_t)u[rs2]) >> 32) & 0xffffffff); break;	/* MULHU */
-					case 4:	if (r[rs2]) r[rd] = r[rs1] / r[rs2]; else r[rd] = 0; break;							/* DIV */
-					case 5:	if (r[rs2]) r[rd] = u[rs1] / u[rs2]; else r[rd] = 0; break;							/* DIVU */
-					case 6:	if (r[rs2]) r[rd] = r[rs1] % r[rs2]; else r[rd] = 0; break;							/* REM */
-					case 7:	if (r[rs2]) r[rd] = u[rs1] % u[rs2]; else r[rd] = 0; break;							/* REMU */
+					case 3:	r[rd] = ((((uint64_t)u[rs1] * (uint64_t)u[rs2]) >> 32) & 0xffffffff); break;/* MULHU */
+					case 4:	if (r[rs2]) r[rd] = r[rs1] / r[rs2]; else r[rd] = 0; break;					/* DIV */
+					case 5:	if (r[rs2]) r[rd] = u[rs1] / u[rs2]; else r[rd] = 0; break;					/* DIVU */
+					case 6:	if (r[rs2]) r[rd] = r[rs1] % r[rs2]; else r[rd] = 0; break;					/* REM */
+					case 7:	if (r[rs2]) r[rd] = u[rs1] % u[rs2]; else r[rd] = 0; break;					/* REMU */
 					default: goto fail;
 				}
 				break;
@@ -582,20 +557,13 @@ fail:
 	s->cycles++;
 	s->counter++;
 	
-	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;     /*IRQ_COMPARE2*/
-	if (s->compare == s->counter) s->cause |= 0x10;                                /*IRQ_COMPARE*/
-	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;     /*IRQ_COUNTER2_NOT*/
-	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;        /*IRQ_COUNTER2*/
-	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;     /*IRQ_COUNTER_NOT*/
-	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;        /*IRQ_COUNTER*/
-	
-	//printf("intr: %d\n", _signal_intr->Read());
-	
-	//noc intr treatment
-	if (_signal_intr->Read() == 0x1)
-		s->cause |= 0x100; 
-	else 
-		s->cause &= 0xfffffeff; /*NOC*/
+	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;      /*IRQ_COMPARE2*/
+	if (s->compare == s->counter) s->cause |= 0x10;                                 /*IRQ_COMPARE*/
+	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;      /*IRQ_COUNTER2_NOT*/
+	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;         /*IRQ_COUNTER2*/
+	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;      /*IRQ_COUNTER_NOT*/
+	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;         /*IRQ_COUNTER*/
+	if (_signal_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff;/*IRQ_NOC*/
 
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	this->UpdateCounters(opcode, funct3);
@@ -638,15 +606,7 @@ void THellfireProcessor::SetMem0(UMemory* m){
 	s->sram = m;
 }
 
-void THellfireProcessor::SetMem1(UMemory* m){
-	s->mem1 = m;
-}
-
-void THellfireProcessor::SetMem2(UMemory* m){
-	s->mem2 = m;
-}
-
-THellfireProcessor::THellfireProcessor(string name, USignal<int8_t>* intr) : TimedModel(name) {
+THellfireProcessor::THellfireProcessor(string name, USignal<int8_t>* intr, USignal<int8_t>* stall) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
@@ -667,6 +627,7 @@ THellfireProcessor::THellfireProcessor(string name, USignal<int8_t>* intr) : Tim
 	
 	//set interruption wire (to be managed by the top-level module)
 	_signal_intr = intr;
+	_signal_stall = stall;
 
 	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
 	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);

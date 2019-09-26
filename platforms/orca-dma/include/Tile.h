@@ -32,15 +32,10 @@
 #include <UMemory.h>
 #include <USignal.h>
 
-//netif mem mapping
 #define MEM1_SIZE 0x00000080 /* recv memory */
-//#define MEM1_BASE 0x403F1000 
-//#define MEM1_BASE 0x90000000
 #define MEM1_BASE 0x50000000
 
 #define MEM2_SIZE 0x00000080 /* send memory */
-//#define MEM2_BASE 0x403F1080 
-//#define MEM2_BASE 0x90000080
 #define MEM2_BASE 0x50000080
 
 /** Memory range from "403Fxxxx" to "40FFxxxx" is reserved
@@ -48,17 +43,19 @@
   * required by the platform to work properly */
 #define SIGNAL_CPU_STALL    0x403F0000  /* 8 bits */
 #define SIGNAL_CPU_INTR     0x403F0001
-
 #define SIGNAL_SEND_STATUS  0x403F0002
-#define SIGNAL_RECV_STATUS  0x403F0003
 
-#define SIGNAL_PROG_SEND    0x403F0004
-#define SIGNAL_PROG_RECV    0x403F0005
-#define SIGNAL_PROG_ADDR    0x403F0006  /* 32 bits */
+#define SIGNAL_RECV_STATUS  0x403F0004 
+
+#define SIGNAL_PROG_SEND    0x403F0008
+#define SIGNAL_PROG_RECV    0x403F0009
+//xxF0006 and xxF0007 skipped to keep alignment
+
+#define SIGNAL_PROG_ADDR    0x403F000C  /* 32 bits */
 #define SIGNAL_PROG_SIZE    0x403F0010
 
-#define MAGIC_TILE_ID       0x403F0014  
-#define MAGIC_HOSTTIME      0x403F0018
+#define MAGIC_TILE_ID       0x403F1000  
+#define MAGIC_HOSTTIME      0x403F1004
 
 /** Memory range from "81xxxxxx" to "81FFxxxx" is reserved 
   * for internal counters and user-defined magic signals.
@@ -102,7 +99,7 @@ private:
 	USignal<int8_t>* _signal_intr;
 	
 	USignal<int8_t>* _signal_send_status;
-	USignal<int8_t>* _signal_recv_status;
+	USignal<int32_t>* _signal_recv_status;
 	
 	USignal<int8_t>* _signal_prog_send;
 	USignal<int8_t>* _signal_prog_recv;
@@ -134,7 +131,7 @@ public:
     USignal<int8_t>*  GetSignalStall();
 	USignal<int8_t>*  GetSignalIntr();
 	USignal<int8_t>*  GetSignalSendStatus();
-	USignal<int8_t>*  GetSignalRecvStatus();
+	USignal<int32_t>*  GetSignalRecvStatus();
 	USignal<int32_t>* GetSignalProgAddr();
 	USignal<int32_t>* GetSignalProgSize();
 	USignal<int8_t>*  GetSignalProgSend();
@@ -144,7 +141,7 @@ public:
     void SetSignalStall(USignal<int8_t>*);
 	void SetSignalIntr(USignal<int8_t>*);
 	void SetSignalSendStatus(USignal<int8_t>*);
-	void SetSignalRecvStatus(USignal<int8_t>*);
+	void SetSignalRecvStatus(USignal<int32_t>*);
 	void SetSignalProgAddr(USignal<int32_t>*);
 	void SetSignalProgSize(USignal<int32_t>*);
 	void SetSignalProgSend(USignal<int8_t>*);

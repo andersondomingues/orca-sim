@@ -19,14 +19,14 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __TPROCESSINGELEMENT_H
-#define __TPROCESSINGELEMENT_H
+#ifndef __TNETTILE_H
+#define __TNETTILE_H
 
 //std API
 #include <iostream>
 
 //model API
-#include <TNetSocket.h>
+#include <TNetBridge.h>
 #include <TNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
@@ -47,7 +47,7 @@ class NetworkTile : public Tile{
 private:
 
 	std::string _name;
-	TNetSocket* _socket; //hfrisv-core
+	TNetBridge* _socket; //hfrisv-core
 	
 public: 
 
@@ -55,7 +55,7 @@ public:
 	~NetworkTile();
 	
 	//getters
-	TNetSocket* GetSocket();
+	TNetBridge* GetSocket();
 	
 	std::string ToString();
 };
