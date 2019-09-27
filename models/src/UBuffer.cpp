@@ -105,6 +105,15 @@ uint32_t UBuffer<T>::size(){
 	return _size;
 }
 
+/**
+ * @brief Return the number of elements store into underlying container
+ * @return Number of elements
+ */
+template <typename T>
+uint32_t UBuffer<T>::full(){
+	return _size == _capacity;
+}
+
 //
 /**
  * @brief Delete the internal buffer and instantiate a new one with zero

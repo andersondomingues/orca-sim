@@ -43,7 +43,7 @@ TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
 	_sig_prog_send = nullptr;
 	_sig_prog_recv = nullptr;
 	    
-    _ib = new UBuffer<FlitType>(name + ".IN", NI_BUFFER_LEN);
+    _ib = new UBuffer<FlitType>(name + ".IN", BUFFER_CAPACITY);
 	
 	this->Reset();
 }
@@ -152,13 +152,13 @@ void TDmaNetif::recvProcess(){
 		
 			if(_ib->size() > 0){
 			
-				//copy second flit to an auxiliar register and pop buffer
+				//copy size flit to an auxiliar register and pop buffer
 				_recv_reg = _ib->top();
 				_ib->pop();
 
-				//report current size (in bytes) to the cpu (we sum 2 due to the size flit
+				//report current size (in flits) to the cpu (we sum 2 due to the size flit
 				//does not take the first two flits into account. 
-				_sig_recv_status->Write((_recv_reg + 2) * sizeof(FlitType));
+				_sig_recv_status->Write((_recv_reg + 2));
 				
 				//write to the second position and increment memory pointer
 				_mem1->Write(_recv_address, (int8_t*)&_recv_reg, sizeof(FlitType));
@@ -198,6 +198,7 @@ void TDmaNetif::recvProcess(){
 					_recv_state = DmaNetifRecvState::WAIT_CONFIG_STALL;
 				}
 			}
+			
 		} break;
 
 		//wait for the cpu to configure the dma
@@ -209,7 +210,8 @@ void TDmaNetif::recvProcess(){
 			if(_sig_prog_recv->Read() == 0x1){
 			
 				_sig_stall->Write(0x1); //stall cpu				
-				_recv_payload_remaining = _recv_payload_size;
+				_recv_payload_remaining = _recv_payload_size + 2;
+				_sig_prog_size->Read();
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
 			}
@@ -245,19 +247,8 @@ void TDmaNetif::recvProcess(){
 			}else{
 				_sig_intr->Write(0x0);
 				_sig_stall->Write(0x0);
-				_recv_state = DmaNetifRecvState::WAIT_ACK;
-			}	
-		} break;
-
-		//wait for cpu acknowledgement
-		case DmaNetifRecvState::WAIT_ACK:{
-			
-			//when the send signal releases, go back to the first state	
-			if(_sig_prog_send->Read() == 0x0){
-				_sig_recv_status->Write(0x0);
 				_recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
-			}
-		
+			}	
 		} break;
 	}
 }
@@ -315,15 +306,10 @@ void TDmaNetif::sendProcess(){
 		} break;	
 		
 		case DmaNetifSendState::SEND_DATA_TO_NOC:{
-		
-			if(_send_payload_remaining > 0){
-				
-				//std::cout 
-				//	<< "addr: " << _send_address << std::endl
-				//	<< "left: " << _send_payload_remaining << std::endl
-				//	<< "size: " << _send_payload_size << std::endl 
-				//	<< "----------------------------" << std::endl;
-				
+	
+			//make sure the buffer has room to receive another packet
+			if(_send_payload_remaining > 0 && _ob->size() < _ob->capacity()){
+
 				_mem2->Read(_send_address, (int8_t*)(&_send_reg), sizeof(FlitType));
 				
 				_ob->push(_send_reg);

@@ -8,8 +8,8 @@
 # -std: required by old GCC to set c++17 as default the c++ 
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -lasan -fsanitize=address
-#-O3 -march=native -mtune=native
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native
+#-lasan -fsanitize=address
 
 
 # Apps to be compiled within kernel image
@@ -21,11 +21,11 @@ ORCA_EXTENSIONS := orca-core orca-pubsub
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 4
+ORCA_NOC_HEIGHT := 3
 
 # Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_WIDTH  := 4
+ORCA_NOC_WIDTH  := 3
 
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
@@ -77,18 +77,24 @@ BUFFER_OVERFLOW_CHECKING := NO
 # Check whether the buffer is empty before popping data (depletes performance).
 BUFFER_UNDERFLOW_CHECKING := NO
 
+# Configure the capacity of the buffers used within the system. To disable 
+# network congestion, set this to a higher value. Please note that increasing t
+# the capacity of buffers also increases the memory usage of the simulator. (
+# The default for this option is 8 flits.
+BUFFER_CAPACITY := 10
+
 # ===============================================================[ MEMORY ]
 # Check whether address are mapped to some memory range before writing
 # to memory. Set to YES to force checking (depletes performance).
-MEMORY_WRITE_ADDRESS_CHECKING := YES
+MEMORY_WRITE_ADDRESS_CHECKING := NO
 
 # Check whether address are mapped to some memory range before reading from
 # memory. Set to YES to force checking (depletes performance).
-MEMORY_READ_ADDRESS_CHECKING := YES
+MEMORY_READ_ADDRESS_CHECKING := NO
 
 # Check whether address are mapped to some memory range before wipeing
 # memory ranges. Set to YES to force checking (depletes performance).
-MEMORY_WIPE_ADDRESS_CHECKING := YES
+MEMORY_WIPE_ADDRESS_CHECKING := NO
 
 # Enable counter for read and write operations (depletes performance).
 MEMORY_ENABLE_COUNTERS := NO
@@ -97,12 +103,12 @@ MEMORY_ENABLE_COUNTERS := NO
 # Check whether address are mapped to some memory range before writing
 # to memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
-HFRISCV_WRITE_ADDRESS_CHECKING := YES
+HFRISCV_WRITE_ADDRESS_CHECKING := NO
 
 # Check whether address are mapped to some memory range before reading
 # from memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
-HFRISCV_READ_ADDRESS_CHECKING := YES
+HFRISCV_READ_ADDRESS_CHECKING := NO
 
 # Enable counter for instructions' classes (depletes performance).
 HFRISCV_ENABLE_COUNTERS := NO
@@ -172,6 +178,9 @@ endif
 ifeq ($(BUFFER_UNDERFLOW_CHECKING), YES)
 	COMPLINE := $(COMPLINE) -DBUFFER_UNDERFLOW_CHECKING
 endif
+
+COMPLINE := $(COMPLINE) \
+	-DBUFFER_CAPACITY=$(BUFFER_CAPACITY)
 
 #memory parameters
 ifeq ($(MEMORY_WRITE_ADDRESS_CHECKING), YES)

@@ -4,9 +4,11 @@
 #include "producer-consumer.h"
 
 
+#define PRODUCE_LENGTH 10
+
 void producer(void){
 
-    int8_t buf[100];
+    int8_t buf[PRODUCE_LENGTH];
     int16_t val, channel, node, counter;
 	
     if (hf_comm_create(hf_selfid(), 1000, 0)){
@@ -28,8 +30,12 @@ void producer(void){
     while (1){
 
         //generate a bunch of random values
-		for (int i = 0; i < sizeof(buf); i++)
-	    	    buf[i] = random() % 255;
+		for (int i = 0; i < PRODUCE_LENGTH - 1; i++)
+	    	    //buf[i] = random() % 255;
+	    	    //buf[i] = 0xAA;
+	    	    buf[i] = i;
+	   	
+	   	buf[PRODUCE_LENGTH - 1] = 0xCC;
 	
         //send buffer data through the network. We use 
         //mod NUM_NODES to send it to a random node within
@@ -37,18 +43,19 @@ void producer(void){
         //node = (random() % (hf_ncores() - 1)) + 1;
 
         //send first 32 bytes to some random node
-        val = hf_send(node, 5000, buf, 32, channel);
+        val = hf_send(node, 5000, buf, PRODUCE_LENGTH, channel);
 
         if (val){
             printf("hf_send(): error %d\n", val);
         }else{
-	    printf("hf_send(): channel=%d, node=%d, #%d\n", channel, node, counter);
+		    printf("hf_send(): channel=%d, node=%d, #%d\n", channel, node, counter);
         }
 		    
-	counter++;
+		counter++;
 
         //add some delay to avoid flooding the network
-        //delay_ms(2);
+       	//delay_ms(20);
+       	delay_ms(1);
     }
 }
 

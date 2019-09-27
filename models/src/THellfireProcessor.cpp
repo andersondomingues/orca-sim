@@ -541,8 +541,6 @@ fail:
 			ss << this->GetName() << ":invalid opcode (pc=0x" << std::hex << s->pc;
 			ss << " opcode=0x" << std::hex << inst << ")";
 			
-			s->sram->Dump(s->pc, 500);
-			
 			throw std::runtime_error(ss.str());
 			break;
 	}

@@ -41,8 +41,7 @@ enum class DmaNetifRecvState{
 	WAIT_SIZE_FLIT, //read size flit to determine how many will come next
 	WAIT_PAYLOAD,   //wait for remaining flits to arrive, and interrupt
 	WAIT_CONFIG_STALL,    //wait for the cpu to configure the dma
-	COPY_RELEASE, //stalls cpu, copy data, and release
-	WAIT_ACK        //wait cpu acknowledgement
+	COPY_RELEASE //stalls cpu, copy data, and release
 };
 
 enum class DmaNetifSendState{

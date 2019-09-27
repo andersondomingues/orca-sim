@@ -52,7 +52,7 @@ public:
     /**
      * @brief Constructor. 
      * @param name (optional) An arbitrary name for the instance of Buffer.*/
-    UBuffer(std::string name = "", uint32_t capacity = 16);
+    UBuffer(std::string name, uint32_t capacity);
     
     /**
      * @brief Destructor. Cleans dynamic allocated memory before disposing the object.*/
@@ -66,6 +66,10 @@ public:
     /**
      * @brief Removes the object at the front of the buffer. */
     void pop();
+
+    /**
+     * @brief Returns TRUE when the buffer is full. */
+    uint32_t full();
     
     /**
      * @brief Pushes an object to the back of the buffer */

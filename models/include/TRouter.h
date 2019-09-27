@@ -44,9 +44,6 @@ enum class RouterState{
 
 #define LOCAL 4
 
-//buffer len (in flits)
-#define ROUTER_BUFFER_LEN 16
-
 class TRouter: public TimedModel{
 
 private:
@@ -57,10 +54,10 @@ private:
 		//stores info about actively sending ports. For intance, position zero representing 
 		//the status of LOCAL port. The value in the position indicate to which port the LOCAL
 		//port is sending to. Inactive ports have -1 written to their position.
-		int8_t _switch_control[5];
+		int16_t _switch_control[5];
 
 		//stores how many flits the must be forwarded to the destination port
-        uint8_t _flits_to_send[5];
+        int16_t _flits_to_send[5];
 
 		//stores which port has the priority acconding to the round robin policy
         uint32_t _round_robin;

@@ -87,7 +87,7 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 	output_debug << "UDP bridge is up" << std::endl;
 	
 	//instantiate a new input buffer (only input is buferred)
-	_ib = new UBuffer<FlitType>();
+	_ib = new UBuffer<FlitType>(this->GetName() + ".buffer.in", BUFFER_CAPACITY);
 	
 	this->Reset();
 }
@@ -181,7 +181,8 @@ void TNetBridge::udpToNocProcess(){
 			if(_signal_recv->Read() == 0x1){
 			
 				//push the first flit to the NoC, whatever the content.
-				_out_reg = ((FlitType*)_recv_buffer)[0];
+				FlitType* buf = (FlitType*) _recv_buffer;
+				_out_reg = buf[0];
 				_ob->push(_out_reg);
 				
 				//proceed to the next state
@@ -255,7 +256,8 @@ void TNetBridge::nocToUdpProcess(){
 			if(_ib->size() > 0){
 			
 				//put address flit into the send buffer
-				((FlitType*)_send_buffer)[0] = _ib->top();
+				FlitType* buf = (FlitType*)_send_buffer;
+				buf[0] = _ib->top();
 				_ib->pop();
 				
 				//change states

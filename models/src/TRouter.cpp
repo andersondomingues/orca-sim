@@ -38,7 +38,7 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
     for(int i = 0; i < 5; i++){
         std::string bname = GetName() +  ".IN" + std::to_string(i);
         _ob[i] = nullptr;
-        _ib[i] = new UBuffer<FlitType>(bname, ROUTER_BUFFER_LEN);
+        _ib[i] = new UBuffer<FlitType>(bname, BUFFER_CAPACITY);
     }
     
     this->Reset();
@@ -103,24 +103,21 @@ SimulationTime TRouter::Run(){
 		//if the port is not bind, binds it to the source			
 		if(!bound){
 			_switch_control[_round_robin] = target_port; //set crossbar connection
-			_flits_to_send[_round_robin] = 64; //TODO: get the packet size from the second flit
+			_flits_to_send[_round_robin] = -2; //-2 means "the size flit has not arrived yet"
 		}
   	}
   	
     //drive flits into destination ports
-    //TODO: add the 4 cycles delay before start sending the burst of flits
-   	//TODO: parallel for
 	for(int i = 0; i < 5; i++){
 	
     	//check whether the switch control is closed for some port
 		if(_switch_control[i] != -1){
-			
+					
 			#ifdef ROUTER_ENABLE_COUNTERS
 			is_active = true;
 			#endif
 			
 			//prevent routing to a non-existing router
-			//TODO: double check the code below. It seems that doesn't work properly.
 			#ifdef ROUTER_PORT_CONNECTED_CHECKING
 			if(_ob[_switch_control[i]] == nullptr){
 				stringstream ss;
@@ -136,16 +133,26 @@ SimulationTime TRouter::Run(){
 			#endif
 				
 			//if so, check whether the output is able to receive new flits. buffer must have some room
-			if(_ob[_switch_control[i]]->size() < _ob[_switch_control[i]]->capacity() && _ib[i]->size() > 0){
+			if(!_ob[_switch_control[i]]->full() && _ib[i]->size() > 0){
 			
+				//if -2, we send the address flit
+				if(_flits_to_send[i] == -2){
+					_flits_to_send[i]++;
+									
+				//if -1, we set the size flit and send it 
+				}else if(_flits_to_send[i] == -1){
+					_flits_to_send[i] = _ib[i]->top() + 1; //<< we add one more since we must send the size flit as well
+				}
+		
 				_ob[_switch_control[i]]->push(_ib[i]->top()); //push one flit to destination port
 				_ib[i]->pop(); //remove flit from source port
-				
+			
 				_flits_to_send[i] -= 1; //decrement the number of flits to send
-				
+			
 				//free port
-				if(_flits_to_send[i] == 0)
+				if(_flits_to_send[i] == 0) 
 					_switch_control[i] = -1;
+			
 			}
 		}
 	}
