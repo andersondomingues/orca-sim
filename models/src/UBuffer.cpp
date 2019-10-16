@@ -50,9 +50,9 @@ template <typename T>
 void UBuffer<T>::pop(){
 
 	//prevents underflow
-	#ifndef OPT_BUFFER_SKIP_UNDERFLOW_CHECKING
+	#ifdef BUFFER_UNDERFLOW_CHECKING
 	if(_size == 0){
-		throw std::runtime_error(GetName() + ": cannot pop from an empty queue");		
+		throw std::runtime_error(this->GetName() + ": unable to pop from an empty queue");
 	}
 	#endif
 
@@ -68,10 +68,10 @@ void UBuffer<T>::pop(){
 template <typename T>
 void UBuffer<T>::push(T e){
 	
-	#ifndef OPT_BUFFER_SKIP_OVERFLOW_CHECKING
+	#ifndef BUFFER_OVERFLOW_CHECKING
 	//prevents overflow
 	if(_size == _capacity)
-		throw std::runtime_error("cannot push to a full queue");
+		throw std::runtime_error(this->GetName() + ": unable to push to a full queue.");
 	#endif
 
 	_size++;

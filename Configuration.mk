@@ -8,9 +8,8 @@
 # -std: required by old GCC to set c++17 as default the c++ 
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native
-#-lasan -fsanitize=address
-
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -lasan -fsanitize=address
+#-O3 -march=native -mtune=native -lasan -fsanitize=address
 
 # Apps to be compiled within kernel image
 ORCA_APPLICATIONS := producer-consumer
@@ -72,16 +71,16 @@ NETSOCKET_SERVER_PORT := 9999
 
 # ===============================================================[ BUFFER ]
 # Check whether the buffer is full before pushing data (depletes performance).
-BUFFER_OVERFLOW_CHECKING := NO
+BUFFER_OVERFLOW_CHECKING := YES
 
 # Check whether the buffer is empty before popping data (depletes performance).
-BUFFER_UNDERFLOW_CHECKING := NO
+BUFFER_UNDERFLOW_CHECKING := YES
 
 # Configure the capacity of the buffers used within the system. To disable 
 # network congestion, set this to a higher value. Please note that increasing t
 # the capacity of buffers also increases the memory usage of the simulator. (
 # The default for this option is 8 flits.
-BUFFER_CAPACITY := 10
+BUFFER_CAPACITY := 16
 
 # ===============================================================[ MEMORY ]
 # Check whether address are mapped to some memory range before writing

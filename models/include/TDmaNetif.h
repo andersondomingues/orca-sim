@@ -76,10 +76,10 @@ private:
     FlitType _send_reg;
     
     //control signals 
-    USignal<int8_t>*  _sig_stall;       //OUT: stalls cpu while copying from/to main memory
+	USignal<int8_t>*  _sig_stall;       //OUT: stalls cpu while copying from/to main memory
 	USignal<int8_t>*  _sig_intr;        //OUT: request cpu interruption signal (same for both processes)
 	USignal<int8_t>*  _sig_send_status; //OUT: 0x0 when in ready state
-	USignal<int32_t>*  _sig_recv_status; //OUT: 0x0 when in ready state, updated but unused
+	USignal<int32_t>* _sig_recv_status; //OUT: 0x0 when in ready state, updated but unused
 	USignal<int32_t>* _sig_prog_addr;   //IN
 	USignal<int32_t>* _sig_prog_size;   //IN
 	USignal<int8_t>*  _sig_prog_send;   //IN

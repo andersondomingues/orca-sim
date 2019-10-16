@@ -20,8 +20,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <cstdlib>
-#include <TRouter.h>
 #include <sstream>
+#include <iomanip>
+
+#include <TRouter.h>
 
 /**
  * @brief Ctor.
@@ -65,6 +67,8 @@ void TRouter::Reset(){
     	_flits_to_send[i]  = 0;
     	_switch_control[i] = -1;
     }
+	 
+	 //TODO: reset buffers
 }
 
 uint32_t TRouter::GetRR(){
@@ -107,7 +111,7 @@ SimulationTime TRouter::Run(){
 		}
   	}
   	
-    //drive flits into destination ports
+   //drive flits into destination ports
 	for(int i = 0; i < 5; i++){
 	
     	//check whether the switch control is closed for some port
@@ -132,7 +136,7 @@ SimulationTime TRouter::Run(){
 			}
 			#endif
 				
-			//if so, check whether the output is able to receive new flits. buffer must have some room
+			//check whether the output is able to receive new flits. buffer must have some room
 			if(!_ob[_switch_control[i]]->full() && _ib[i]->size() > 0){
 			
 				//if -2, we send the address flit
@@ -145,6 +149,9 @@ SimulationTime TRouter::Run(){
 				}
 		
 				_ob[_switch_control[i]]->push(_ib[i]->top()); //push one flit to destination port
+				
+				//std::cout << this->GetName() << std::fixed << std::setfill('0') << std::setw(4) << std::hex << _ib[i]->top() << std::endl;
+				
 				_ib[i]->pop(); //remove flit from source port
 			
 				_flits_to_send[i] -= 1; //decrement the number of flits to send

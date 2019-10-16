@@ -23,6 +23,7 @@
 //std API
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 //simulator API
 #include <TimedModel.h>
@@ -34,7 +35,7 @@
 
 TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
       
-    _sig_stall = nullptr;
+   _sig_stall = nullptr;
 	_sig_intr  = nullptr;
 	_sig_send_status = nullptr; 
 	_sig_recv_status = nullptr; 
@@ -143,6 +144,8 @@ void TDmaNetif::recvProcess(){
 
 				//change states 			
 				_recv_state = DmaNetifRecvState::WAIT_SIZE_FLIT;
+				
+				std::cout << "recv addr 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << std::endl;
 			}
 		} break;
 		
@@ -170,6 +173,8 @@ void TDmaNetif::recvProcess(){
 				
 				//change states
 				_recv_state = DmaNetifRecvState::WAIT_PAYLOAD;
+				
+				std::cout << "recv size 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << std::endl;
 			}
 
 		} break;
@@ -191,6 +196,8 @@ void TDmaNetif::recvProcess(){
 				//one less flit to be received
 				_recv_payload_remaining--;
 				
+				std::cout << "recv data 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << ", " << _recv_payload_remaining << " remaining" << std::endl;
+				
 				//whether the ni received all the payload, interrupt
 				//the cpu and change states
 				if(_recv_payload_remaining == 0){
@@ -209,11 +216,18 @@ void TDmaNetif::recvProcess(){
 			//and then chagne states
 			if(_sig_prog_recv->Read() == 0x1){
 			
-				_sig_stall->Write(0x1); //stall cpu				
-				_recv_payload_remaining = _recv_payload_size + 2;
-				_sig_prog_size->Read();
+				_sig_stall->Write(0x1); //stall cpu		
+
+				//must be read from the signal, because in case of flush the
+				//size to copy is zero
+				_recv_payload_remaining = _sig_prog_size->Read(); 
+								
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
+				
+				std::cout << "recv stall" << std::endl;
+				
+				
 			}
 		} break;
 		
@@ -228,19 +242,15 @@ void TDmaNetif::recvProcess(){
 				//BE CAREFUL TO AVOID INCREMENTING THE ADDRESS HERE,
 				//AS WE NEED THAT REFERENCE WHILE WRITING TO THE MAIN
 				//MEMORY BELOW
-				_mem1->Read(
-					(_recv_address * sizeof(FlitType)), 
-					(int8_t*)&_recv_reg,
-					sizeof(FlitType));
+				_mem1->Read(_recv_address, (int8_t*)&_recv_reg, sizeof(FlitType));
 				
 				//write auxiliary flit to main memory
-				_mem0->Write(
-					(_recv_address++ * sizeof(FlitType)) + _sig_prog_addr->Read(), 
-					(int8_t*)&_recv_reg, 
-					sizeof(FlitType));
-					
-				//one less flit to write to the memory
-				_recv_payload_remaining--;
+				_mem0->Write(_recv_address + _sig_prog_addr->Read(), (int8_t*)&_recv_reg, sizeof(FlitType));
+				
+				_recv_address += sizeof(FlitType); //read next address
+				_recv_payload_remaining--; //one less flit to write to the memory
+				
+				std::cout << "recv copy 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << ", " << _recv_payload_remaining << " remaining" << std::endl;
 				
 			//if there is no more flits to receive, lower the interruption,
 			//restore the cpu (release stall), then change states
@@ -248,9 +258,16 @@ void TDmaNetif::recvProcess(){
 				_sig_intr->Write(0x0);
 				_sig_stall->Write(0x0);
 				_recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
+				
+				std::cout << "recv end" << std::endl;
+				
 			}	
 		} break;
 	}
+	
+	//if(_recv_state != DmaNetifRecvState::WAIT_ADDR_FLIT)
+	//	std::cout << this->GetName() << " is at state => " << 
+	//		static_cast<std::underlying_type<DmaNetifRecvState>::type>(_recv_state) <<  std::endl;
 }
 
 void TDmaNetif::sendProcess(){
@@ -262,14 +279,17 @@ void TDmaNetif::sendProcess(){
 		case DmaNetifSendState::WAIT_CONFIG_STALL:{
 			
 			if(_sig_prog_send->Read() == 0x1){
+				
 				_sig_stall->Write(0x1);        //raise stall
 				_sig_send_status->Write(0x1);  //raise status
 
-				_send_address = 0;//_sig_prog_addr->Read();
+				_send_address = 0;
 				_send_payload_size = _sig_prog_size->Read();
 				_send_payload_remaining = _send_payload_size;
 				
 				_send_state = DmaNetifSendState::COPY_AND_RELEASE; //change states
+				
+				//std::cout << "send started" << std::endl;
 			}
 			
 		} break;
@@ -281,21 +301,20 @@ void TDmaNetif::sendProcess(){
 			if(_send_payload_remaining > 0){
 				
 				//read from main memory
-				_mem0->Read(
-					(_send_address * sizeof(FlitType) + _sig_prog_addr->Read()), 
-					(int8_t*)&_recv_reg,
-					sizeof(FlitType));
+				_mem0->Read(_send_address + _sig_prog_addr->Read(), (int8_t*)&_send_reg, sizeof(FlitType));
 				
 				//write auxiliary flit to auxiliary memory
-				_mem2->Write(_send_address++ * sizeof(FlitType), (int8_t*)&_recv_reg, sizeof(FlitType));
+				_mem2->Write(_send_address, (int8_t*)&_send_reg, sizeof(FlitType));
 				
-				//one less packet to send
-				_send_payload_remaining--;
+				_send_address += sizeof(FlitType); //write next address
+				_send_payload_remaining--; //one less packet to send
+				
+				//std::cout << "send copied 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << std::endl;
 
 			//all flits copied to the aux memory, switch to noc-mode
 			}else{
 				
-				//_mem2->Dump();	
+				//std::cout << "send stalled" << std::endl;
 							
 				_sig_stall->Write(0x0);        //low stall
 				_send_state = DmaNetifSendState::SEND_DATA_TO_NOC;
@@ -311,10 +330,12 @@ void TDmaNetif::sendProcess(){
 			if(_send_payload_remaining > 0 && _ob->size() < _ob->capacity()){
 
 				_mem2->Read(_send_address, (int8_t*)(&_send_reg), sizeof(FlitType));
-				
 				_ob->push(_send_reg);
 				_send_payload_remaining--;
+				
 				_send_address += sizeof(FlitType);
+				
+				//std::cout << "send pushed 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << ", " << _send_payload_remaining << " remaining" <<std::endl;
 
 			//all flits copied to the aux memory, switch to noc-mode
 			}else{

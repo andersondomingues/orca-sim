@@ -4,7 +4,7 @@
 #include "producer-consumer.h"
 
 
-#define PRODUCE_LENGTH 512
+#define PRODUCE_LENGTH 32
 
 void producer(void){
 
@@ -30,13 +30,11 @@ void producer(void){
     while (1){
 
         //generate a bunch of random values
-		for (int i = 0; i < PRODUCE_LENGTH - 1; i++)
+		  for (int i = 0; i < PRODUCE_LENGTH; i++)
 	    	    //buf[i] = random() % 255;
-	    	    buf[i] = 0xAA;
-	    	    //buf[i] = i;
+	    	    //buf[i] = 0xAA;
+	    	    buf[i] = i;
 	   	
-	   	buf[PRODUCE_LENGTH - 1] = 0xCC;
-	
         //send buffer data through the network. We use 
         //mod NUM_NODES to send it to a random node within
         //the system but for zero.
