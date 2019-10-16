@@ -4,7 +4,7 @@
 #include "producer-consumer.h"
 
 
-#define PRODUCE_LENGTH 10
+#define PRODUCE_LENGTH 512
 
 void producer(void){
 
@@ -32,8 +32,8 @@ void producer(void){
         //generate a bunch of random values
 		for (int i = 0; i < PRODUCE_LENGTH - 1; i++)
 	    	    //buf[i] = random() % 255;
-	    	    //buf[i] = 0xAA;
-	    	    buf[i] = i;
+	    	    buf[i] = 0xAA;
+	    	    //buf[i] = i;
 	   	
 	   	buf[PRODUCE_LENGTH - 1] = 0xCC;
 	

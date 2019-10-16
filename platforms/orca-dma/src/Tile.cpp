@@ -21,6 +21,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
 #include <iostream>
 #include <sstream>
+#include <iomanip>
 
 //model API
 #include <TDmaNetif.h>
@@ -38,7 +39,11 @@ Tile::Tile(uint32_t x, uint32_t y){
 	
 	//map id wire to memory (local storage)
 	uint32_t id = (ORCA_NOC_WIDTH * y) + x;
-	_name = "tile" + std::to_string(id);
+	
+	stringstream ss;
+	ss << std::setw(3) << std::setfill('0') << id;
+	
+	_name = ss.str();
 	
 	_signal_id = new USignal<uint32_t>(MAGIC_TILE_ID, this->GetName() + ".id");
 	_signal_id->Write(id);

@@ -35,10 +35,7 @@
  * Instantiate and bind internal hardware to each
  * other. */
 ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
-	
-	//update current name to have a PE at the front of the name
-	this->SetName("[p]" + this->GetName());
-	
+		
 	//create a cpu and memory in addition to current tile hardware
 	_mem0 = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
 	_cpu  = new THellfireProcessor(this->GetName() + ".cpu", this->GetSignalIntr(), this->GetSignalStall());

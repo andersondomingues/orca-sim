@@ -36,9 +36,7 @@
  * Instantiate and bind internal hardware to each
  * other. */
 NetworkTile::NetworkTile(uint32_t x, uint32_t y) : Tile(x, y){
-	
-	this->SetName("[n]" + this->GetName());
-	
+		
 	//update naming of internal hardware parts (from internal class)
 	this->GetRouter()->SetName(this->GetName() + ".router");
 	this->GetDmaNetif()->SetName(this->GetName() + ".netif");

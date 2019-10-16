@@ -50,8 +50,7 @@
 TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 
 	//open debug file
-	output_debug.open("logs/pe-0-0.cpu_debug.log", 
-		std::ofstream::out | std::ofstream::trunc);
+	output_debug.open("logs/000.net_debug.log", std::ofstream::out | std::ofstream::trunc);
 	
 	//create a new signal so that the module can be interrupted by
 	//the external network when a new packet arrives
