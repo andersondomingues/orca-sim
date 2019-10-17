@@ -176,6 +176,12 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 
 	//if the address belong to some memory range, write to it
 	if(address <= s->sram->GetLastAddr()){
+
+		if(address <= 0x40005ab8){
+			dumpregs(s);
+			exit(0);
+		}
+
 		
 		switch(size){
 			case 4:
@@ -540,6 +546,9 @@ fail:
 			stringstream ss;
 			ss << this->GetName() << ":invalid opcode (pc=0x" << std::hex << s->pc;
 			ss << " opcode=0x" << std::hex << inst << ")";
+			
+			//TODO:mem dump to file
+			//s->sram->DumpToFile("logs/" + this->GetName() + ".mdump");
 			
 			throw std::runtime_error(ss.str());
 			break;

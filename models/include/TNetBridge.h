@@ -118,6 +118,8 @@ private:
 	USignal<int8_t>* _signal_recv; 
    
 	ofstream output_debug;
+	
+	pthread_t _t;
 	 
 	//file descriptor for the sending and receiving through sockets
 	int32_t _send_socket;
@@ -154,6 +156,9 @@ private:
 	UBuffer<FlitType>* _ib;
 	UBuffer<FlitType>* _ob;
 	
+	//flag to gracefully terminate the subthread
+	volatile int udpRecvThread_terminate;
+	
 public:	
     
 	//returns current output
@@ -162,27 +167,28 @@ public:
 	//returns a pointer to the receiving buffer
 	uint8_t* GetBuffer();
 	
-    //internal processes
-    void udpToNocProcess();
-    void nocToUdpProcess();
+	//internal processes
+	void udpToNocProcess();
+	void nocToUdpProcess();
 	
 	//thread for receiving (non-block)
 	static void* udpRecvThread(void*);
+		
 	udp_server* GetUdpServer();
 
 	//other 
 	SimulationTime Run();
 	void Reset();
 		
-    //ctor./dtor.
-    TNetBridge(string name);
-    ~TNetBridge();
-    
-    USignal<int8_t>* GetSignalRecv();
-    
-    
-    UBuffer<FlitType>* GetInputBuffer();
-    void SetOutputBuffer(UBuffer<FlitType>*);
+	//ctor./dtor.
+	TNetBridge(string name);
+	~TNetBridge();
+
+	USignal<int8_t>* GetSignalRecv();
+
+
+	UBuffer<FlitType>* GetInputBuffer();
+	void SetOutputBuffer(UBuffer<FlitType>*);
     
 };
 

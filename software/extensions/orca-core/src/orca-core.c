@@ -33,24 +33,21 @@
 //routines that affect all applications can be handled here.
 void app_main(void)
 {   
-        //#ifdef CPU_ID == 22
+    //#ifdef CPU_ID == 22
 	//hfs
 	//#elif CPU_ID == 32
-        //
+    //
 
     printf("cpu_id: %d\n", hf_cpuid());
 
 	switch(hf_cpuid()){
 	
-		case 1: 
-			hf_spawn(consumer, 100, 90, 100, "consumer-task", 4096);	
-			break;
-			
 		case 2:
 			hf_spawn(producer, 100, 90, 100, "producer-task", 4096);
 			break;
-			
+					
 		default:
+			hf_spawn(consumer, 100, 90, 100, "consumer-task", 4096);	
 			break;
 	}
 

@@ -145,7 +145,7 @@ void TDmaNetif::recvProcess(){
 				//change states 			
 				_recv_state = DmaNetifRecvState::WAIT_SIZE_FLIT;
 				
-				std::cout << "recv addr 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << std::endl;
+				//std::cout << "recv addr 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << std::endl;
 			}
 		} break;
 		
@@ -174,7 +174,7 @@ void TDmaNetif::recvProcess(){
 				//change states
 				_recv_state = DmaNetifRecvState::WAIT_PAYLOAD;
 				
-				std::cout << "recv size 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << std::endl;
+				//std::cout << "recv size 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << std::endl;
 			}
 
 		} break;
@@ -196,7 +196,7 @@ void TDmaNetif::recvProcess(){
 				//one less flit to be received
 				_recv_payload_remaining--;
 				
-				std::cout << "recv data 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << ", " << _recv_payload_remaining << " remaining" << std::endl;
+				//std::cout << "recv data 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << ", " << _recv_payload_remaining << " remaining" << std::endl;
 				
 				//whether the ni received all the payload, interrupt
 				//the cpu and change states
@@ -225,7 +225,7 @@ void TDmaNetif::recvProcess(){
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
 				
-				std::cout << "recv stall" << std::endl;
+				//std::cout << "recv stall" << std::endl;
 				
 				
 			}
@@ -250,7 +250,7 @@ void TDmaNetif::recvProcess(){
 				_recv_address += sizeof(FlitType); //read next address
 				_recv_payload_remaining--; //one less flit to write to the memory
 				
-				std::cout << "recv copy 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << ", " << _recv_payload_remaining << " remaining" << std::endl;
+				//std::cout << "recv copy 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << ", " << _recv_payload_remaining << " remaining" << std::endl;
 				
 			//if there is no more flits to receive, lower the interruption,
 			//restore the cpu (release stall), then change states
@@ -259,7 +259,7 @@ void TDmaNetif::recvProcess(){
 				_sig_stall->Write(0x0);
 				_recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
 				
-				std::cout << "recv end" << std::endl;
+				//std::cout << "recv end" << std::endl;
 				
 			}	
 		} break;

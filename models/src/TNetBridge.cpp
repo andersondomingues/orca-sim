@@ -76,9 +76,7 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 	const std::string& server_addr = NETSOCKET_SERVER_ADDRESS;
 	_udp_server = new udp_server(server_addr, NETSOCKET_SERVER_PORT);
 		
-	pthread_t t;
-
-	if(pthread_create(&t, NULL, TNetBridge::udpRecvThread, this)){
+	if(pthread_create(&_t, NULL, TNetBridge::udpRecvThread, this)){
 		std::cout << "unable to create new thread using lpthread." << std:: endl;
 	}
 	
@@ -87,6 +85,8 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 	
 	//instantiate a new input buffer (only input is buferred)
 	_ib = new UBuffer<FlitType>(this->GetName() + ".buffer.in", BUFFER_CAPACITY);
+	
+	udpRecvThread_terminate = 0;
 	
 	this->Reset();
 }
@@ -104,6 +104,16 @@ uint8_t* TNetBridge::GetBuffer(){
  * @brief Dtor. No dynamic allocation is being used. Keept by design.
  */
 TNetBridge::~TNetBridge(){
+	
+	delete(_ib);
+	delete(_signal_recv);
+	
+	delete(_udp_client);
+	delete(_udp_server);
+	
+	udpRecvThread_terminate = 1;
+	//(void) pthread_join(_t, 0);
+	
 	output_debug.close();
 }
 
@@ -145,10 +155,12 @@ void* TNetBridge::udpRecvThread(void* gs){
 	TNetBridge* ns = ( TNetBridge*) gs;
 
 	//recv while the program lives
-	while(1){
+	while(!(ns->udpRecvThread_terminate)){
 		
 		//recv only when interface is not busy
 		if(ns->GetSignalRecv()->Read() == 0x0){
+			
+			//TODO: switch to udp polling
 			
 			//recvs from external network
 			ns->GetUdpServer()->recv((char*)(ns->GetBuffer()), RECV_BUFFER_LEN);
@@ -157,6 +169,8 @@ void* TNetBridge::udpRecvThread(void* gs){
 			ns->GetSignalRecv()->Write(0x1);
 		}	
 	}
+	
+	return 0;
 }
 
 void TNetBridge::LogWrite(std::string ss){
@@ -385,8 +399,8 @@ udp_client::udp_client(const std::string& addr, int port)
  */
 udp_client::~udp_client()
 {
-    freeaddrinfo(f_addrinfo);
-    close(f_socket);
+	freeaddrinfo(f_addrinfo);
+	close(f_socket);
 }
 
 /** \brief Retrieve a copy of the socket identifier.
@@ -524,8 +538,10 @@ udp_server::udp_server(const std::string& addr, int port)
  */
 udp_server::~udp_server()
 {
-    freeaddrinfo(f_addrinfo);
-    close(f_socket);
+	
+	
+	freeaddrinfo(f_addrinfo);
+   close(f_socket);
 }
 
 /** \brief The socket used by this UDP server.

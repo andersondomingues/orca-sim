@@ -61,7 +61,7 @@ Tile::Tile(uint32_t x, uint32_t y){
 	_netif  = new TDmaNetif (this->GetName() + ".netif");
 
 	//ni sig wires
-    _signal_stall       = new USignal<int8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
+	_signal_stall       = new USignal<int8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
 	_signal_intr        = new USignal<int8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
 	_signal_send_status = new USignal<int8_t>(SIGNAL_SEND_STATUS, this->GetName() + ".send_status");
 	_signal_recv_status = new USignal<int32_t>(SIGNAL_RECV_STATUS, this->GetName() + ".recv_status");
@@ -113,6 +113,9 @@ Tile::Tile(uint32_t x, uint32_t y){
  * @brief Destructor: cleans up allocated memory 
  */
 Tile::~Tile(){
+	
+	delete(_signal_id);
+	delete(_signal_hosttime);
 	
 	//delete hardware modules
 	delete(_router);

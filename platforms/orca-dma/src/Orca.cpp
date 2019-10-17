@@ -51,6 +51,8 @@ Tile* tiles[ORCA_NOC_WIDTH][ORCA_NOC_HEIGHT];
 //interrupt signal catcher
 static volatile sig_atomic_t interruption = 0;
 
+int _status = 0;
+
 static void sig_handler(int _){
 	
 	(void)_;
@@ -335,10 +337,8 @@ int main(int __attribute__((unused)) argc, char** argv){
 		
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
-		goto clean;
+		_status = 1;
 	}
-	
-	std::cout << "Simulation ended without errors."	 << std::endl;
 	
 	//show buffer status
 	std::cout << "==============[ BUFFERS' STATUSES ]" << std::endl;
@@ -371,48 +371,30 @@ int main(int __attribute__((unused)) argc, char** argv){
 //				<< " S:" << std::hex << (int)(n->GetSignalStart()->Read())
 //				<< " T:" << std::hex << (int)(n->GetSignalStart()->Read())
 				<< std::endl;
-/** 
- * Implementation file for ORCA-SIM program.
- * This file is part of project URSA. http://https://github.com/andersondomingues/ursa
- *
- * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
- 
 		}
 	}
 		
 	delete(s);
 		
 	//delete PE
-	for(int x = 0; x < ORCA_NOC_WIDTH; x++)
-		for(int y = 0; y < ORCA_NOC_HEIGHT; y++)
-			delete(tiles[x][y]);
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
+			
+			if(x == 0 && y ==0){
+				delete((NetworkTile*)tiles[x][y]);
+			}else{
+				delete((ProcessingTile*)tiles[x][y]);
+			}
+			
+		}
+	}
 	
-	return 0;
+	if(_status)
+		std::cout << "Simulation failed!"	 << std::endl;
+	else 
+		std::cout << "Simulation ended without errors."	 << std::endl;
 	
-clean:
-	
-	delete(s); //sim
-	
-	//delete PE
-	for(int x = 0; x < ORCA_NOC_WIDTH; x++)
-		for(int y = 0; y < ORCA_NOC_HEIGHT; y++)
-			delete(tiles[x][y]);
-
-	return 1;	
+	return _status;
 }
 
 
