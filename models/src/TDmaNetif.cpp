@@ -216,8 +216,6 @@ void TDmaNetif::recvProcess(){
 			//and then chagne states
 			if(_sig_prog_recv->Read() == 0x1){
 			
-				_sig_stall->Write(0x1); //stall cpu		
-
 				//must be read from the signal, because in case of flush the
 				//size to copy is zero
 				_recv_payload_remaining = _sig_prog_size->Read(); 
@@ -225,8 +223,9 @@ void TDmaNetif::recvProcess(){
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
 				
-				//std::cout << "recv stall" << std::endl;
+				std::cout << "rec pr:" << _recv_payload_remaining << std::endl;
 				
+				_sig_stall->Write(0x1); //stall cpu	
 				
 			}
 		} break;

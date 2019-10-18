@@ -30,7 +30,7 @@ void producer(void){
     while (1){
 
         //generate a bunch of random values
-		  for (int i = 0; i < PRODUCE_LENGTH; i++)
+		for (int i = 0; i < PRODUCE_LENGTH; i++)
 	    	    //buf[i] = random() % 255;
 	    	    //buf[i] = 0xAA;
 	    	    buf[i] = i;
@@ -53,7 +53,7 @@ void producer(void){
 
         //add some delay to avoid flooding the network
        	//delay_ms(20);
-       	delay_ms(1);
+       	//delay_ms(1);
     }
 }
 

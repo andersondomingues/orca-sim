@@ -24,7 +24,7 @@
 #include "orca-hardware-counters.h"
 
 //application-specific header
-#include "../../../applications/producer-consumer/producer-consumer.h"
+#include "../../../applications/producer-consumer/include/producer-consumer.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below

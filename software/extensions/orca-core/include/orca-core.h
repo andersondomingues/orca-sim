@@ -7,7 +7,7 @@
 #define MAGIC_HOSTTIME      0x403F0020
 
 //apps' entry point
-void app_main(void);
+extern void app_main(void);
 
 #endif /* __ORCA_LIB_H */
 

@@ -66,7 +66,7 @@ $(BINARY_DIR)/$(IMAGE_BIN):
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m Building software (kernel + apps)\e[0m"
 	@echo "$'\e[7m==================================\e[0m"	
-	make -C $(SOFTWARE_DIR) image
+	make -C $(SOFTWARE_DIR) $(IMAGE_BIN)
 
 #documentation
 #last line refers to a bug in tabu.sty. A replacement for

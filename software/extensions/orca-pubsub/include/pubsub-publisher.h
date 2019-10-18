@@ -16,6 +16,34 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
- 
-//basic resources
-#include "../include/pubsub-client.h"
+#ifndef __PUBSUB_PUBLISHER_H
+#define __PUBSUB_PUBLISHER_H
+
+#include "hellfire.h"
+#include "pubsub-shared.h"
+
+/**
+ * @brief Advertises to a topic;
+ * @param broker_cpu_id CPU in which the broker is running
+ * @param topic Topic to which the publisher is advertising */
+void pubsub_advertise(uint16_t broker_cpu_id, topic_t topic);
+
+/**
+ * @brief Unadvertise from a topic
+ * @param broker_cpu_id CPU in which the broker is running in
+ * @param topic Topic to which unsubscribe from
+ */
+void pubsub_unadvertise(uint16_t broker_cpu_id, topic_t topic);
+	
+/**
+ * @brief Publish a message to some topic
+ * @param topic Topic to which the message will be published
+ * @param msg Message to be published
+ * @param size Size of the message (in bytes) */
+void pubsub_publish(topic_t topic, int8_t* msg, uint16_t size);
+
+
+#endif /* __PUBSUB_PUBLISHER_H */
+
+
+

@@ -1,15 +1,22 @@
-#this script compiles object code for the 
-#producer-consumer application
+# Do not modify the lines below
+APP_PROD_CONS_NAME  := producer-consumer
+APP_PROD_CONS_DIR   := $(SRC_DIR)/../applications/$(APP_PROD_CONS_NAME)
+APP_PROD_CONS_SRC   := $(APP_PROD_CONS_DIR)/src
+APP_PROD_CONS_INC   := $(APP_PROD_CONS_DIR)/include
+APP_PROD_CONS_LIB   := app-$(APP_PROD_CONS_NAME).a 
 
-#this definition is used once
-APP_SRC_DIR = $(SRC_DIR)/../applications/producer-consumer
+# Update these lines with your source code
+APP_PROD_CONS_OBJS := \
+	producer.o \
+	consumer.o
 
-#recipie for the object code. This object file will
-#be linked within the image of the system by the top
-#makefile
-producer-consumer.o:
-	$(CC) $(CFLAGS) -c \
-	$(APP_SRC_DIR)/producer.c \
-	$(APP_SRC_DIR)/consumer.c
+#pack everithing in a single lib
+$(APP_PROD_CONS_LIB) : $(APP_PROD_CONS_OBJS)
+	ar rcs $(APP_PROD_CONS_LIB) $(APP_PROD_CONS_OBJSA_CORE_OBJS) 
 
+#compile each individual object file
+%.o: $(APP_PROD_CONS_SRC)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $< -I$(APP_PROD_CONS_INC)
 
+#check whether .h are up to date
+$(APP_PROD_CONS_SRC)/%.c: $(APP_PROD_CONS_INC)/%.h

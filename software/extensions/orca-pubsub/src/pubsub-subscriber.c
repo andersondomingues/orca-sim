@@ -16,12 +16,13 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
-#include "../include/pubsub-broker-task.h"
+#ifndef __PUBSUB_CLIENT_H
+#define __PUBSUB_CLIENT_H
 
-void broker_task(){
+#include "hellfire.h"
 
-	int x = 0;
-	while(1){
-		x = x + 1;
-	}
-}
+
+#endif /* __PUBSUB_CLIENT_H */
+
+
+

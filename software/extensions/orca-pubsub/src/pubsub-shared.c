@@ -1,0 +1,71 @@
+#include "pubsub-shared.h"
+
+/**
+ * @brief adds an entry to a list of publishers or subscribers.
+ * @param list List to add the entry to
+ * @param entry The entry to be added 
+ * @return 0 if the entry was succefully added, 1 if the list was full
+ * or the entry was in there already */
+int pubsublist_remove(pubsub_entry_t* list, pubsub_entry_t entry){
+	
+	pubsub_entry_t* e;
+	
+	for(int i = 0; i < PUBSUBLIST_SIZE; i++){
+		
+		e = &(list[i]);
+		
+		if(e->opcode == 1 && pubsub_entry_cmp(entry, *e) == 0){
+			e->opcode = 0; //entry is eliminated by setting opcode to zero
+			return 0;
+		}
+	}
+	
+	return 1; //entry wasn't found
+}
+
+/**
+ * @brief Adds a new entry to a list of publishers or subscribers
+ * @param list List to receive the new entry
+ * @param entry Entry to be added to the list
+ * @return 0 if the entry was succefully added, 1 if the list if full */
+int pubsublist_add(pubsub_entry_t* list, pubsub_entry_t entry){
+	
+	//is faster to remove than search then add
+	pubsublist_remove(list, entry);
+	
+	pubsub_entry_t* e;
+	
+	for(int i = 0; i < PUBSUBLIST_SIZE; i++){
+		
+		e = &(list[i]);
+		
+		if(e->opcode == 0){
+			*e = entry;
+			return 0;
+		}
+	}
+	
+	return 1;
+}
+
+/**
+ * @brief Compares two entries from a table of publishers or subscribers
+ * @param a The first entry
+ * @param b The second entry
+ * @return 0 if entries does not match, 1 otherwise. */
+int pubsub_entry_cmp(pubsub_entry_t a, pubsub_entry_t b){
+	
+	return (a.cpu == b.cpu)
+		 && (a.channel == b.channel)
+		 && (a.port == b.port);
+}
+
+/**
+ * @brief Initialize a new list of publishers or subscribers
+ * @param list The list to be initialized
+ */
+void pubsublist_init(pubsub_entry_t* list){
+		
+	for(int i = 0; i < PUBSUBLIST_SIZE; i++)
+		list[i].opcode = 0;
+}

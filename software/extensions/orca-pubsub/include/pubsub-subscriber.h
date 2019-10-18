@@ -16,8 +16,21 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
-#ifndef __PUBSUB_BROKER_TASK_H
-#define __PUBSUB_BROKER_TASK_H
+#ifndef __PUBSUB_CLIENT_H
+#define __PUBSUB_CLIENT_H
+
+#include "hellfire.h"
+
+/**
+ * @brief Advertises to a topic;
+ * @param broker_cpu_id CPU in which the broker is running
+ * @param topic Topic to which the publisher is advertising */
+void publish();
+void subscribe();
+
+void broker_task();
+
+#endif /* __PUBSUB_CLIENT_H */
 
 
-#endif /* __PUBSUB_BROKER_TASK_H */
+

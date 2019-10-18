@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. */
-#ifndef __PUBSUB_CLIENT_H
-#define __PUBSUB_CLIENT_H
+#ifndef __PUBSUB_BROKER_H
+#define __PUBSUB_BROKER_H
 
-#include "hellfire.h"
+#include "pubsub-shared.h"
+	
+/**
+ * @brief Broker task. Spawn this task wherever you 
+ * need a broker. Please note that brokers are independent
+ * from each other, so groups of communicant tasks must 
+ * address the same broker(s).
+ */
+void pubsub_broker_tsk(void);
 
-void publish();
-void subscribe();
-
-void broker_task();
-
-#endif /* __PUBSUB_CLIENT_H */
-
-
-
+#endif /* __PUBSUB_BROKER_H */

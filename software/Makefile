@@ -45,30 +45,30 @@ CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
 	$(NOC_FLAGS) \
 	-DDEBUG_PORT
 
-image:
+$(IMAGE_NAME).bin:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Making Kernel ...               \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
 	make hal
 	make libc
 	make noc
-	make kernel
+	make kernel 
+	ar rcs hellfire-os.a *.o	
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Making Extensions ...           \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
 	@for ext in $(ORCA_EXTENSIONS) ; do \
-		@echo $$ext; \
-		make $$ext.o PACKAGE_NAME=$$ext PACKAGE_TYPE=extension; \
+		make ext-$$ext.a ; \
 	done
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Making Apps ...                 \e[0m"
 	@echo "$'\e[7m==================================\e[0m"		
 	for app in $(ORCA_APPLICATIONS) ; do \
-		make $$app.o ; \
+		make app-$$app.a ; \
 	done
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Linking Software ...            \e[0m"
-	@echo "$'\e[7m==================================\e[0m"		
+	@echo "$'\e[7m==================================\e[0m"
 	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(IMAGE_NAME).elf *.o
 	$(DUMP) --disassemble --reloc $(IMAGE_NAME).elf > $(IMAGE_NAME).lst
 	$(DUMP) -h $(IMAGE_NAME).elf > $(IMAGE_NAME).sec
@@ -76,8 +76,10 @@ image:
 	$(OBJ) -O binary $(IMAGE_NAME).elf $(IMAGE_NAME).bin
 	$(SIZE) $(IMAGE_NAME).elf
 	hexdump -v -e '4/1 "%02x" "\n"' $(IMAGE_NAME).bin > $(IMAGE_NAME).txt
-	mv *.o *.elf *.bin *.cnt *.lst *.sec *.txt ../bin
+	mv *.o *.elf *.bin *.cnt *.lst *.sec *.txt *.a ../bin
+
+
 	
 clean:
-	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt
+	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt *.a
 
