@@ -75,27 +75,28 @@ void pubsub_broker_tsk(void){
 						PS_DEBUG("brk: recv subscription\n");
 						
 						//try to insert in the list
+						e.opcode = 0x1; // <== enable the entry
 						val = pubsublist_add(subscribers, e);
 						
 						//if not in the list
 						if(!val){
 								
 							PS_DEBUG("brk: registered subscription\n");
-							PS_DEBUG("brk: cpu %d, port %d, topic %d,\n", e.cpu, e.port, e.topic);
+							PS_DEBUG("brk: cpu %d, topic %d, port %d\n", e.cpu, e.topic, e.port);
 												
-							//notify each publisher
+							//notify each publisher (clients)
 							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 								
 								p = publishers[i];
 								
 								if(p.topic == e.topic){
 									
-									val = hf_send(p.cpu, p.port, (int8_t*)&e, sizeof(e), p.channel);
+									val = hf_send(p.cpu, PS_CLIENT_DEFAULT_PORT, (int8_t*)&e, sizeof(e), p.channel);
 									
 									if(val)
 										printf("morreu");	
 										
-									PS_DEBUG("brk: notified publisher cpu %d, port %d, topic %d,\n", p.cpu, p.port);
+									PS_DEBUG("brk: notified publisher cpu %d, port %d, topic %d,\n", p.cpu, p.port, p.topic);
 								}
 							}	
 						}
@@ -133,6 +134,8 @@ void pubsub_broker_tsk(void){
 					 * b) if it wasn't in the table, send a list of subscribers **/
 					case PSMSG_ADVERTISE:
 						
+						PS_DEBUG("brk: recv advertise\n");
+						
 						//operation is replaced by the "entry ok" flag
 						e.opcode = 0x1; 
 						
@@ -142,13 +145,19 @@ void pubsub_broker_tsk(void){
 						//if it was't in the list, send related subscribers
 						if(!val){
 							
+							PS_DEBUG("brk: reg cpu %d, port %d, topic %d\n", 
+								e.cpu, e.port, e.topic);
+							
 							//send the list of subscribers to the publisher
 							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
-								
+																
 								p = subscribers[i];
 															
 								//check whether the entry has the same target topic AND is valid
 								if(p.topic == e.topic && p.opcode == 0x1){
+									
+									PS_DEBUG("brk: ret sub cpu %d, port %d, topic %d\n", 
+										p.cpu, p.port, p.topic);
 									
 									//must send to the client
 									val = hf_send(e.cpu, PS_CLIENT_DEFAULT_PORT, (int8_t*)&p, sizeof(p), e.channel);
@@ -157,7 +166,10 @@ void pubsub_broker_tsk(void){
 											//message has failed, ...
 									}	
 								}									
-							}							
+							}
+							
+							PS_DEBUG("brk: recv advertise done\n");
+							
 						}else{
 							//tried to advertise but was in the list already, nothing to do
 						}

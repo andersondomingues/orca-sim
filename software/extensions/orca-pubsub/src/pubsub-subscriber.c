@@ -44,7 +44,7 @@ void pubsub_subscribe(pubsub_node_info_t subinfo, pubsub_node_info_t brokerinfo,
 		.channel = 0 //is a channel necessary
 	};
 	
-	PS_DEBUG("sub: msg is opcode %d, topic %d, cpu %d, port %d\n", t.opcode, t.topic, t.cpu, t.port);
+	PS_DEBUG("sub: msg opcode %d, topic %d, cpu %d, port %d\n", t.opcode, t.topic, t.cpu, t.port);
 	PS_DEBUG("sub: broker at cpu %d, port %d\n", brokerinfo.address, brokerinfo.port);
 		
 	//send entry to the broker
