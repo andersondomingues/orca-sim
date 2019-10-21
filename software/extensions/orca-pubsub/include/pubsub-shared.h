@@ -1,12 +1,28 @@
 #ifndef __PUBSUB_SHARED_H
 #define __PUBSUB_SHARED_H
 
-#define PS_BROKER_PORT    55
-#define PS_BROKER_CHANNEL 55
+#include "hellfire.h"
 
+//default port for broker and client process
+#define PS_BROKER_DEFAULT_PORT 2000
+#define PS_CLIENT_DEFAULT_PORT 2001
+
+//maximum length of publish-subscribe tables.
 #define PUBSUBLIST_SIZE   40
 
-#include "hellfire.h"
+//RT param for the client task, cannot be changed by users
+#define PS_CLIENT_PERIOD   2
+#define PS_CLIENT_CAPACITY 100
+#define PS_CLIENT_DEADLINE 100
+
+//enable/disable debug prints
+#define PS_DEBUG_ENABLE 1
+
+#if PS_DEBUG_ENABLE != 0
+#define PS_DEBUG(...) printf(__VA_ARGS__)
+#else
+#define PS_DEBUG(...) /* nothing */
+#endif
 
 //list of message macroses
 enum PSMSG{
@@ -29,6 +45,13 @@ typedef struct{
 	uint16_t channel;  //specific channel to identify the message as a pubsub message	
 	
 } pubsub_entry_t;
+
+//identification of a broker process (addres + port)
+typedef struct{
+	uint16_t address;	 //address (number of the tile) in which the broker is running
+	uint16_t port;     //port in which the broker process in running
+	
+} pubsub_node_info_t;
 
 /**
  * @brief Adds a new entry to a list of publishers or subscribers

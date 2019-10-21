@@ -37,11 +37,12 @@
 typedef uint16_t FlitType;
 
 enum class DmaNetifRecvState{
-	WAIT_ADDR_FLIT, //wait some flit to arrive at the local port
-	WAIT_SIZE_FLIT, //read size flit to determine how many will come next
-	WAIT_PAYLOAD,   //wait for remaining flits to arrive, and interrupt
-	WAIT_CONFIG_STALL,    //wait for the cpu to configure the dma
-	COPY_RELEASE //stalls cpu, copy data, and release
+	WAIT_ADDR_FLIT,     //wait some flit to arrive at the local port
+	WAIT_SIZE_FLIT,     //read size flit to determine how many will come next
+	WAIT_PAYLOAD,       //wait for remaining flits to arrive, and interrupt
+	WAIT_CONFIG_STALL,  //wait for the cpu to configure the dma
+	COPY_RELEASE,       //stalls cpu, copy data, and release
+	FLUSH               //waits for the CPU to lower the recv signal (prevents in tandem recv)
 };
 
 enum class DmaNetifSendState{

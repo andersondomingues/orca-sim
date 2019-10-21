@@ -22,6 +22,8 @@
 #include "pubsub-shared.h" /* framework-related general purpose datatypes */
 #include "pubsub-broker.h" /* broker-specific prototypes and definitions */
 
+
+
 /**
  * @brief Broker task. Spawn this task wherever you 
  * need a broker. Please note that brokers are independent
@@ -41,8 +43,10 @@ void pubsub_broker_tsk(void){
 	pubsublist_init(subscribers);	
 
 	//we create brokers always using the same port, see <pubsub-shared.h>
-	if (hf_comm_create(hf_selfid(), PS_BROKER_PORT, 0))
+	if (hf_comm_create(hf_selfid(), PS_BROKER_DEFAULT_PORT, 0))
 		panic(0xff);
+	
+	PS_DEBUG("brk: started\n");
 	
 	//keep running indefinitely
 	while (1){
@@ -68,12 +72,17 @@ void pubsub_broker_tsk(void){
 					 * b) if subscriber is not in the table, notify publishers of that topic **/
 					case PSMSG_SUBSCRIBE:{
 					
+						PS_DEBUG("brk: recv subscription\n");
+						
 						//try to insert in the list
 						val = pubsublist_add(subscribers, e);
 						
 						//if not in the list
 						if(!val){
-							
+								
+							PS_DEBUG("brk: registered subscription\n");
+							PS_DEBUG("brk: cpu %d, port %d, topic %d,\n", e.cpu, e.port, e.topic);
+												
 							//notify each publisher
 							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 								
@@ -85,6 +94,8 @@ void pubsub_broker_tsk(void){
 									
 									if(val)
 										printf("morreu");	
+										
+									PS_DEBUG("brk: notified publisher cpu %d, port %d, topic %d,\n", p.cpu, p.port);
 								}
 							}	
 						}
@@ -122,25 +133,33 @@ void pubsub_broker_tsk(void){
 					 * b) if it wasn't in the table, send a list of subscribers **/
 					case PSMSG_ADVERTISE:
 						
+						//operation is replaced by the "entry ok" flag
+						e.opcode = 0x1; 
+						
 						//try to add to the list
 						val = pubsublist_add(publishers, e);
 						
 						//if it was't in the list, send related subscribers
 						if(!val){
 							
-							//notify each publisher
+							//send the list of subscribers to the publisher
 							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 								
 								p = subscribers[i];
-																	
-								if(p.topic == e.topic){
+															
+								//check whether the entry has the same target topic AND is valid
+								if(p.topic == e.topic && p.opcode == 0x1){
 									
-									val = hf_send(e.cpu, e.port, (int8_t*)&p, sizeof(p), e.channel);
+									//must send to the client
+									val = hf_send(e.cpu, PS_CLIENT_DEFAULT_PORT, (int8_t*)&p, sizeof(p), e.channel);
 									
-									if(val)
-										printf("morreu");	
+									if(val){
+											//message has failed, ...
+									}	
 								}									
 							}							
+						}else{
+							//tried to advertise but was in the list already, nothing to do
 						}
 						
 						break;

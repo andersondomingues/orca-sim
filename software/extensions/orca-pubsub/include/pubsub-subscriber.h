@@ -21,14 +21,16 @@
 
 #include "hellfire.h"
 
-/**
- * @brief Advertises to a topic;
- * @param broker_cpu_id CPU in which the broker is running
- * @param topic Topic to which the publisher is advertising */
-void publish();
-void subscribe();
+#include "pubsub-shared.h"
+#include "pubsub-subscriber.h"
 
-void broker_task();
+/**
+ * @brief Subscribes to a topic;
+ * @param subinfo Network information of the subscriber
+ * @param brokerinfo Network information of the broker
+ * @param TOPIC_01 Topic to which to subscribe to
+ */
+void pubsub_subscribe(pubsub_node_info_t subinfo, pubsub_node_info_t brokerinfo, topic_t topic);
 
 #endif /* __PUBSUB_CLIENT_H */
 

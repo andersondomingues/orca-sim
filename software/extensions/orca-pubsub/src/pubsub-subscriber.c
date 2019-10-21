@@ -20,6 +20,38 @@
 #define __PUBSUB_CLIENT_H
 
 #include "hellfire.h"
+#include "noc.h"
+
+#include "pubsub-shared.h"
+#include "pubsub-subscriber.h"
+
+/**
+ * @brief Subscribes to a topic;
+ * @param subinfo Network information of the subscriber
+ * @param brokerinfo Network information of the broker
+ * @param TOPIC_01 Topic to which to subscribe to
+ */
+void pubsub_subscribe(pubsub_node_info_t subinfo, pubsub_node_info_t brokerinfo, topic_t topic){
+	
+	PS_DEBUG("sub: begin subscribe\n");
+	
+	//create a new pubsub entry
+	pubsub_entry_t t = {
+		.opcode = PSMSG_SUBSCRIBE,
+		.topic = topic,
+		.cpu  = subinfo.address,
+		.port = subinfo.port,
+		.channel = 0 //is a channel necessary
+	};
+	
+	PS_DEBUG("sub: msg is opcode %d, topic %d, cpu %d, port %d\n", t.opcode, t.topic, t.cpu, t.port);
+	PS_DEBUG("sub: broker at cpu %d, port %d\n", brokerinfo.address, brokerinfo.port);
+		
+	//send entry to the broker
+	hf_send(brokerinfo.address, brokerinfo.port, (int8_t*)(&t), sizeof(t), 0);
+	
+	PS_DEBUG("sub: notified broker\n");
+}
 
 
 #endif /* __PUBSUB_CLIENT_H */

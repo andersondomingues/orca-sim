@@ -12,7 +12,7 @@ APP_PROD_CONS_OBJS := \
 
 #pack everithing in a single lib
 $(APP_PROD_CONS_LIB) : $(APP_PROD_CONS_OBJS)
-	ar rcs $(APP_PROD_CONS_LIB) $(APP_PROD_CONS_OBJSA_CORE_OBJS) 
+	ar rcs $(APP_PROD_CONS_LIB) $(APP_PROD_CONS_OBJS) 
 
 #compile each individual object file
 %.o: $(APP_PROD_CONS_SRC)/%.c

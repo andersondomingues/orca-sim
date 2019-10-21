@@ -24,7 +24,8 @@
 #include "orca-hardware-counters.h"
 
 //application-specific header
-#include "../../../applications/producer-consumer/include/producer-consumer.h"
+#include "../../../applications/producer-consumer-pubsub/include/producer-consumer-pubsub.h"
+#include "../../../extensions/orca-pubsub/include/pubsub-broker.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -43,11 +44,19 @@ void app_main(void)
 	switch(hf_cpuid()){
 	
 		case 2:
-			hf_spawn(producer, 100, 90, 100, "producer-task", 4096);
+			hf_spawn(producer_pubsub, 100, 90, 100, "producer-ps-task", 4096);
 			break;
+			
+		case 3:
+			hf_spawn(pubsub_broker_tsk, 100, 90, 100, "broker-ps-task", 4096);
+			break;		
 					
+		case 4:
+			hf_spawn(consumer_pubsub, 100, 90, 100, "consumer-ps-task", 4096);
+			break;
+			
 		default:
-			hf_spawn(consumer, 100, 90, 100, "consumer-task", 4096);	
+			//no spawn
 			break;
 	}
 

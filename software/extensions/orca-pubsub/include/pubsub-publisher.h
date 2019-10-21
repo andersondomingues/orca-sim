@@ -23,18 +23,21 @@
 #include "pubsub-shared.h"
 
 /**
- * @brief Advertises to a topic;
- * @param broker_cpu_id CPU in which the broker is running
- * @param topic Topic to which the publisher is advertising */
-void pubsub_advertise(uint16_t broker_cpu_id, topic_t topic);
+ * @brief Advertises to a topic
+ * @param pubinfo Information to be stored in the table of publishers at the broker
+ * @param brokerinfo Information about the broker (required since many brokers can run at once)
+ * @param topic_name Name of the topic to which the publisher will publish
+ */
+void pubsub_advertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo, topic_t topic_name);
 
 /**
  * @brief Unadvertise from a topic
- * @param broker_cpu_id CPU in which the broker is running in
- * @param topic Topic to which unsubscribe from
+ * @param pubinfo Information to be removed from the table of publishers at the broker
+ * @param brokerinfo Information about the broker (required since many brokers can run at once)
+ * @param topic_name Name of the topic to which the publisher will stop publishing
  */
-void pubsub_unadvertise(uint16_t broker_cpu_id, topic_t topic);
-	
+void pubsub_advertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo, topic_t topic_name);
+
 /**
  * @brief Publish a message to some topic
  * @param topic Topic to which the message will be published

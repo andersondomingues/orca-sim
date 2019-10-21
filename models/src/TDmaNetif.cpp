@@ -223,7 +223,7 @@ void TDmaNetif::recvProcess(){
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
 				
-				std::cout << "rec pr:" << _recv_payload_remaining << std::endl;
+				//std::cout << "rec pr:" << _recv_payload_remaining << std::endl;
 				
 				_sig_stall->Write(0x1); //stall cpu	
 				
@@ -256,11 +256,18 @@ void TDmaNetif::recvProcess(){
 			}else{
 				_sig_intr->Write(0x0);
 				_sig_stall->Write(0x0);
-				_recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
+				_recv_state = DmaNetifRecvState::FLUSH;
 				
 				//std::cout << "recv end" << std::endl;
 				
-			}	
+			}
+		} break;
+		
+		case DmaNetifRecvState::FLUSH:{
+		
+			if(_sig_prog_recv->Read() == 0x0)
+				_recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
+		
 		} break;
 	}
 	

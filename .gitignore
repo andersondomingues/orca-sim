@@ -13,6 +13,7 @@
 .clang
 .codelite
 .vscode*
+compile_*
 
 #perf and valgrind logs
 ursa.*
