@@ -101,15 +101,22 @@ MEMORY_ENABLE_COUNTERS := NO
 # Check whether address are mapped to some memory range before writing
 # to memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
-HFRISCV_WRITE_ADDRESS_CHECKING := NO
+HFRISCV_WRITE_ADDRESS_CHECKING := YES
 
 # Check whether address are mapped to some memory range before reading
 # from memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
-HFRISCV_READ_ADDRESS_CHECKING := NO
+HFRISCV_READ_ADDRESS_CHECKING := YES
 
 # Enable counter for instructions' classes (depletes performance).
 HFRISCV_ENABLE_COUNTERS := NO
+
+# ==============================================================[ NETIF ]
+# Check whether netif is writing to unmapped memory space
+NETIF_WRITE_ADDRESS_CHECKING := YES
+
+# check whether netif is reading from unmapped memory space
+NETIF_READ_ADDRESS_CHECKING := YES
 
 # ==============================================================[ ROUTER ]
 # Enable counters for number of active cycles
@@ -168,6 +175,15 @@ COMPLINE := $(COMPLINE) \
 	-DNETSOCKET_CLIENT_PORT=$(NETSOCKET_CLIENT_PORT) \
 	-DNETSOCKET_SERVER_ADDRESS=$(NETSOCKET_SERVER_ADDRESS) \
 	-DNETSOCKET_SERVER_PORT=$(NETSOCKET_SERVER_PORT)
+
+#netif parameters
+ifeq ($(NETIF_WRITE_ADDRESS_CHECKING), YES)
+	COMPLINE := $(COMPLINE) -DNETIF_WRITE_ADDRESS_CHECKING
+endif
+ifeq ($(NETIF_READ_ADDRESS_CHECKING), YES)
+	COMPLINE := $(COMPLINE) -DNETIF_READ_ADDRESS_CHECKING
+endif
+
 
 #buffer parameters
 ifeq ($(BUFFER_OVERFLOW_CHECKING), YES)

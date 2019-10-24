@@ -112,14 +112,15 @@ void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 	#ifndef MEMORY_READ_ADDRESS_CHECKING
 	if(addr < _sram_base){
 		stringstream s;
-		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
+		s << this->GetName() << ": unable to read from addr (0x" << std::hex
 			<< addr << ") lower than sram base.";
+		abort();
 		throw std::runtime_error(s.str());
 	}
 
 	if((addr + length) - 1 > GetLastAddr()){
 		stringstream s;
-		s << this->GetName() << ": unable to read from to addr (0x" << std::hex
+		s << this->GetName() << ": unable to read from addr (0x" << std::hex
 			<< addr << ") higher than last mapped address of (0x" << std::hex 
 			<< GetLastAddr() << ").";
 		throw std::runtime_error(s.str());

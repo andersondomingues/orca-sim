@@ -23,12 +23,14 @@
 #include "pubsub-shared.h"
 
 //store the list of subscribers only for the topics that 
-//have publishers in the current node
+//have publishers in the current node. VOLATILE is required
+//for sharedmem.
 pubsub_entry_t _psclient_subscribers[PUBSUBLIST_SIZE];
+volatile uint16_t _psclient_enabled = 0;
 
 //constrols whether the client process has been started in this cpu
 //zero = "hasn't started yet"
-char pubsub_has_a_client_started_already = 0;
+volatile uint16_t pubsub_has_a_client_started_already = 0;
 
 /**
  * @brief A task to update info coming from brokers to publishers in a node */
@@ -40,7 +42,12 @@ void _psclient_tsk(){
 	
 	pubsub_entry_t e;
 	
+	_psclient_enabled = 0; //temporarily disable publishers
+	
+	//reset list of subscribers
 	pubsublist_init(_psclient_subscribers);
+
+	_psclient_enabled = 1; //enable publishers
 
 	//we create brokers always using the same port, see <pubsub-shared.h>
 	if (hf_comm_create(hf_selfid(), PS_CLIENT_DEFAULT_PORT, 0))
@@ -112,8 +119,12 @@ void pubsub_advertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo,
 	
 	//start a new client, if none has been started yet
 	if(pubsub_has_a_client_started_already == 0){
-		hf_spawn(_psclient_tsk, PS_CLIENT_PERIOD, PS_CLIENT_CAPACITY, PS_CLIENT_DEADLINE, "ps-client-task", 4096);
+		hf_spawn(_psclient_tsk, PS_CLIENT_PERIOD, PS_CLIENT_CAPACITY, PS_CLIENT_DEADLINE, "ps-client-task", PS_CLIENT_STACKSIZE);
+	
 		PS_DEBUG("pub: started new client\n");
+		//hold process until client have cleaned the list (only for the first run)
+		
+		while(!_psclient_enabled);
 	}
 		
 	//we always increment this counter to the number of current active "advertisers"
@@ -121,20 +132,20 @@ void pubsub_advertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo,
 	pubsub_has_a_client_started_already++;
 		
 	//create a new entry to be put in the publishers table and send to the broker
-	pubsub_entry_t e;
-	e.opcode = PSMSG_ADVERTISE;
-	e.cpu = pubinfo.address;
-	e.port = pubinfo.port;
-	e.topic = topic_name;
-	e.channel = 0; //TODO: is channel required?
+	pubsub_entry_t e = {
+		.opcode = PSMSG_ADVERTISE,
+		.cpu = pubinfo.address,
+		.port = pubinfo.port,
+		.topic = topic_name,
+		.channel = 0  //TODO: is channel required?
+	};
 	
 	PS_DEBUG("pub: adv opcode %d, cpu %d, port %d, topic %d\n",
 		e.opcode, e.cpu, e.port, e.topic);
 	
 	//TODO: is channel required?
 	hf_send(brokerinfo.address, brokerinfo.port, (int8_t*)&e, sizeof(e), e.channel);
-	
-	
+		
 	PS_DEBUG("pub: adv done\n");
 }
 
@@ -152,11 +163,12 @@ void pubsub_unadvertise(uint16_t broker_cpu_id, topic_t topic){
 	//hf_kill(client)
 	
 	//notify the broker that the process is not a publish anymore
-	pubsub_entry_t e;
-	e.opcode = PSMSG_UNADVERTISE;
-	e.cpu = hf_cpuid(); //from noc.h
-	e.channel = 0;
-	e.port = 0x0; //dummy
+	pubsub_entry_t e = {
+		.opcode = PSMSG_UNADVERTISE,
+		.cpu = hf_cpuid(), //from noc.h
+		.channel = 0,
+		.port = 0x0
+	};
 	
 	hf_send(broker_cpu_id, PS_BROKER_DEFAULT_PORT, (int8_t*)&e, sizeof(e), e.channel);
 }
@@ -168,8 +180,9 @@ void pubsub_unadvertise(uint16_t broker_cpu_id, topic_t topic){
  * @param size Size of the message (in bytes) */
 void pubsub_publish(topic_t topic, int8_t* msg, uint16_t size){
 
-	//PS_DEBUG("pub: started publish\n");
+	PS_DEBUG("pub: topic %d, size %d\n", topic, size);
 	
+	//look for subscribers in the internal table
 	pubsub_entry_t e;
 	
 	for(int i = 0; i < PUBSUBLIST_SIZE; i++){
@@ -177,19 +190,17 @@ void pubsub_publish(topic_t topic, int8_t* msg, uint16_t size){
 		e = _psclient_subscribers[i];
 		
 		//skip invalid entries
-		if(e.opcode == 0)
-			continue;
+		if(e.opcode != 0 && e.topic != topic){	
+				
+			//send the message to the subscriber
+			hf_send(e.cpu, e.port, msg, size, e.channel);
 			
-		//check whether the topic is the one to which the publisher is publishing
-		if(e.topic != topic)
-			continue;
-			
-		//send the message to the subscriber
-		hf_send(e.cpu, e.port, msg, size, e.channel);
-		
-		PS_DEBUG("pub: pub to cpu %d, port %d, topic %d\n",
-			e.cpu, e.port, e.topic);
+			PS_DEBUG("pub: pub to cpu %d, port %d, topic %d\n",
+				e.cpu, e.port, e.topic);
+		}
 	}
+	
+	pubsublist_print(_psclient_subscribers);
 	
 	//PS_DEBUG("pub: started done\n");
 }

@@ -6,9 +6,8 @@
 #include "../../orca-pubsub/include/pubsub-subscriber.h"
 
 #define BROKER_ADDR 3
-#define BROKER_PORT PS_BROKER_DEFAULT_PORT
 
-#define SUBPORT 5000
+#define SUBPORT 2006
 
 void consumer_pubsub(void)
 {
@@ -29,10 +28,12 @@ void consumer_pubsub(void)
 	//broker info (design time)
 	pubsub_node_info_t brokerinfo = {
 		.address = BROKER_ADDR, //application-specific
-		.port    = BROKER_PORT
+		.port    = PS_BROKER_DEFAULT_PORT
 	};
 
 	//subscribe to some topic
+	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
+	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
 	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
 
    	//receiving process proceeds as for ordinary messages

@@ -63,11 +63,11 @@ int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
  * @return Data read
  */
 int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t address){
-	
+
 	uint32_t data;
 
 	//Check whether the address belongs to the main memory
-	if(address <= s->sram->GetLastAddr()){
+	if(address <= s->sram->GetLastAddr() && address > s->sram->GetBase()){
 			
 		switch(size){
 		case 4:
@@ -213,8 +213,10 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				break;
 			}
 			default:{
-				std::string err_msg = this->GetName() + ": unable to write to memory (invalid data size)";
-				throw std::runtime_error(err_msg);
+				dumpregs(s);
+				stringstream ss;
+				ss << this->GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
+				throw std::runtime_error(ss.str());
 			}
 		}
 		

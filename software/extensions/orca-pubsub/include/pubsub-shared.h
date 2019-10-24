@@ -11,9 +11,10 @@
 #define PUBSUBLIST_SIZE   40
 
 //RT param for the client task, cannot be changed by users
-#define PS_CLIENT_PERIOD   2
-#define PS_CLIENT_CAPACITY 100
-#define PS_CLIENT_DEADLINE 100
+#define PS_CLIENT_PERIOD    0
+#define PS_CLIENT_CAPACITY  0
+#define PS_CLIENT_DEADLINE  0
+#define PS_CLIENT_STACKSIZE 8192
 
 //enable/disable debug prints
 #define PS_DEBUG_ENABLE 1
@@ -26,10 +27,10 @@
 
 //list of message macroses
 enum PSMSG{
-	PSMSG_SUBSCRIBE,
-	PSMSG_UNSUBSCRIBE,
-	PSMSG_ADVERTISE,
-	PSMSG_UNADVERTISE	
+	PSMSG_SUBSCRIBE     = 0x1,
+	PSMSG_UNSUBSCRIBE   = 0x2, 
+	PSMSG_ADVERTISE     = 0x3,
+	PSMSG_UNADVERTISE   = 0x4	
 };
 
 //the system support up to (2^16)-1 topics if using uint16_t
@@ -37,12 +38,14 @@ typedef uint16_t topic_t;
 
 //an entry of publishers/subscribers lists.
 typedef struct{
-	uint8_t opcode;    //is this entry valid? (value fell when entry gets discarded)
+	uint16_t opcode;   //is this entry valid? (value fell when entry gets discarded)
 						    //this field also represents the opcode when used as message format
 	topic_t topic;     //unique identifier to the topic
 	uint16_t cpu;      //cpu in which the subscriber/pubilsher resides 
 	uint16_t port;     //port to which the subscriber/publisher task is bound to
-	uint16_t channel;  //specific channel to identify the message as a pubsub message	
+	uint16_t channel;  //specific channel to identify the message as a pubsub message
+	
+	uint16_t __padding0; 
 	
 } pubsub_entry_t;
 
@@ -76,10 +79,21 @@ int pubsublist_remove(pubsub_entry_t* list, pubsub_entry_t entry);
 int pubsub_entry_cmp(pubsub_entry_t a, pubsub_entry_t b);
 
 /**
+ * @brief Displays the valid content of a list of publishers or subscribers
+ * @param list List to be scanned for valid entries
+ */
+void pubsublsit_print(pubsub_entry_t* list);
+
+/**
  * @brief Initialize a new list of publishers or subscribers
  * @param list The list to be initialized
  */
 void pubsublist_init(pubsub_entry_t* list);
+
+/**
+ * @brief Search for an entry in the list 
+ */
+int pubsublist_has(pubsub_entry_t* list, pubsub_entry_t entry){
 
 
 #endif /* __PUBSUB_SHARED_H*/

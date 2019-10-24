@@ -22,8 +22,6 @@
 #include "pubsub-shared.h" /* framework-related general purpose datatypes */
 #include "pubsub-broker.h" /* broker-specific prototypes and definitions */
 
-
-
 /**
  * @brief Broker task. Spawn this task wherever you 
  * need a broker. Please note that brokers are independent
@@ -33,7 +31,7 @@
 void pubsub_broker_tsk(void){
 
 	int8_t buf[500];
-	uint16_t cpu, port, size;
+	uint16_t cpu, port, size, counter = 0;
 	int16_t val;
 	
 	pubsub_entry_t publishers[PUBSUBLIST_SIZE], subscribers[PUBSUBLIST_SIZE];
@@ -46,7 +44,7 @@ void pubsub_broker_tsk(void){
 	if (hf_comm_create(hf_selfid(), PS_BROKER_DEFAULT_PORT, 0))
 		panic(0xff);
 	
-	PS_DEBUG("brk: started\n");
+	//PS_DEBUG("brk: started\n");
 	
 	//keep running indefinitely
 	while (1){
@@ -72,31 +70,33 @@ void pubsub_broker_tsk(void){
 					 * b) if subscriber is not in the table, notify publishers of that topic **/
 					case PSMSG_SUBSCRIBE:{
 					
-						PS_DEBUG("brk: recv subscription\n");
+						//PS_DEBUG("brk: recv subscription\n");
 						
 						//try to insert in the list
 						e.opcode = 0x1; // <== enable the entry
-						val = pubsublist_add(subscribers, e);
 						
-						//if not in the list
-						if(!val){
-								
-							PS_DEBUG("brk: registered subscription\n");
-							PS_DEBUG("brk: cpu %d, topic %d, port %d\n", e.cpu, e.topic, e.port);
+						if(!pubsublist_has(subscribers, e)){
+							
+							val = pubsublist_add(subscribers, e);
+							
+							//PS_DEBUG("brk: registered subscription\n");
+							//PS_DEBUG("brk: cpu %d, topic %d, port %d\n", e.cpu, e.topic, e.port);
 												
-							//notify each publisher (clients)
+							//notify publishers (clients)
 							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 								
 								p = publishers[i];
 								
-								if(p.topic == e.topic){
+								//PS_DEBUG("brk: list cpu %d, port %d, topic %d,\n", p.cpu, p.port, p.topic);
+								
+								if(p.topic == e.topic && p.opcode) {
 									
 									val = hf_send(p.cpu, PS_CLIENT_DEFAULT_PORT, (int8_t*)&e, sizeof(e), p.channel);
 									
 									if(val)
 										printf("morreu");	
 										
-									PS_DEBUG("brk: notified publisher cpu %d, port %d, topic %d,\n", p.cpu, p.port, p.topic);
+									PS_DEBUG("brk: notified client cpu %d, port %d, topic %d,\n", p.cpu, p.port, p.topic);
 								}
 							}	
 						}
@@ -132,7 +132,7 @@ void pubsub_broker_tsk(void){
 					/** handle a message for advertising
 					 * a) add the advertiser to the table, if it is not there already
 					 * b) if it wasn't in the table, send a list of subscribers **/
-					case PSMSG_ADVERTISE:
+					case PSMSG_ADVERTISE:{
 						
 						PS_DEBUG("brk: recv advertise\n");
 						
@@ -174,7 +174,7 @@ void pubsub_broker_tsk(void){
 							//tried to advertise but was in the list already, nothing to do
 						}
 						
-						break;
+					} break;
 
 					/**
 					 * handle a message for unadvertise
@@ -188,14 +188,21 @@ void pubsub_broker_tsk(void){
 
 					/** maybe the message is unkown... **/
 					default:{
-						printf("could not handle pubsub message due to invalid opcode!\n");
+						PS_DEBUG("could not handle pubsub message due to invalid opcode!\n");
 					}
 
 				}
 
 				//printf("cpu %d, port %d, ch %d, size %d, #%d [free queue: %d]\n",
-				//cpu, port, i, size, counter, hf_queue_count(pktdrv_queue));
-				//counter++;
+				//	cpu, port, i, size, counter, hf_queue_count(pktdrv_queue));
+				
+				PS_DEBUG("PUBS:\n");
+				pubsublist_print(publishers);
+				
+				PS_DEBUG("SUBS:\n");
+				pubsublist_print(subscribers);
+					
+				counter++;				
 			}
 		}
 	}
