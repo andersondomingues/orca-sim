@@ -31,7 +31,7 @@
 void pubsub_broker_tsk(void){
 
 	int8_t buf[500];
-	uint16_t cpu, port, size, counter = 0;
+	uint16_t cpu, port, size;
 	int16_t val;
 	
 	pubsub_entry_t publishers[PUBSUBLIST_SIZE], subscribers[PUBSUBLIST_SIZE];
@@ -197,17 +197,6 @@ void pubsub_broker_tsk(void){
 					}
 
 				}
-
-				//printf("cpu %d, port %d, ch %d, size %d, #%d [free queue: %d]\n",
-				//	cpu, port, i, size, counter, hf_queue_count(pktdrv_queue));
-				
-				// PS_DEBUG("PUBS:\n");
-				// pubsublist_print(publishers);
-				
-				// PS_DEBUG("SUBS:\n");
-				// pubsublist_print(subscribers);
-					
-				counter++;				
 			}
 		}
 	}

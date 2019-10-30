@@ -39,20 +39,25 @@ void _psclient_tsk(){
 	int8_t buf[500];
 	uint16_t cpu, port, size;
 	int16_t val;
-	
-	pubsub_entry_t e;
-	
-	_psclient_enabled = 0; //temporarily disable publishers
-	
-	//reset list of subscribers
-	pubsublist_init(_psclient_subscribers);
 
-	_psclient_enabled = 1; //enable publishers
+	pubsub_entry_t e;
 
 	//we create brokers always using the same port, see <pubsub-shared.h>
 	if (hf_comm_create(hf_selfid(), PS_CLIENT_DEFAULT_PORT, 0))
 		panic(0xff);
+
+	//delay necessary for the kernel to create the comm
+	//delay_ms(60);
 	
+	//temporarily disable publishers
+	_psclient_enabled = 0; 
+	
+	//reset list of subscribers
+	pubsublist_init(_psclient_subscribers);
+
+	//enable publishers again
+	_psclient_enabled = 1; //enable publishers
+
 	PS_DEBUG("cli: started task\n");
 	
 	//keep running indefinitely

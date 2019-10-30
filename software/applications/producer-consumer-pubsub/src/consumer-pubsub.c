@@ -33,14 +33,16 @@ void consumer_pubsub(void)
 
 	//subscribe to some topic (should subscribe once only)
 	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
-	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
-	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
-	
-	
-	pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
-	pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
 	pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
 
+	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
+	pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
+	
+	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
+	pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
+	
+	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
+	
 	//receiving process proceeds as for ordinary messages
 	while (1){
 		
