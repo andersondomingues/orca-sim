@@ -29,28 +29,46 @@
  * @brief Subscribes to a topic;
  * @param subinfo Network information of the subscriber
  * @param brokerinfo Network information of the broker
- * @param TOPIC_01 Topic to which to subscribe to
+ * @param Topic to which to subscribe to
  */
 void pubsub_subscribe(pubsub_node_info_t subinfo, pubsub_node_info_t brokerinfo, topic_t topic){
-	
-	PS_DEBUG("sub: begin subscribe\n");
 	
 	//create a new pubsub entry
 	pubsub_entry_t t = {
 		.opcode = PSMSG_SUBSCRIBE,
 		.topic = topic,
 		.cpu  = subinfo.address,
-		.port = subinfo.port,
-		.channel = 0 //is a channel necessary
+		.port = subinfo.port
 	};
 	
-	PS_DEBUG("sub: msg opcode %d, topic %d, cpu %d, port %d\n", t.opcode, t.topic, t.cpu, t.port);
-	PS_DEBUG("sub: broker at cpu %d, port %d\n", brokerinfo.address, brokerinfo.port);
+	//PS_DEBUG("sub: msg opcode %d, topic %d, cpu %d, port %d\n", t.opcode, t.topic, t.cpu, t.port);
+	//PS_DEBUG("sub: broker at cpu %d, port %d\n", brokerinfo.address, brokerinfo.port);
 		
 	//send entry to the broker
 	hf_send(brokerinfo.address, brokerinfo.port, (int8_t*)(&t), sizeof(t), 0);
+}
+
+/**
+ * @brief Unsubscribes from a topic;
+ * @param subinfo Network information of the subscriber
+ * @param brokerinfo Network information of the broker
+ * @param Topic to unsubscribe from
+ */
+void pubsub_unsubscribe(pubsub_node_info_t subinfo, pubsub_node_info_t brokerinfo, topic_t topic){
 	
-	PS_DEBUG("sub: notified broker\n");
+	//create a new pubsub entry
+	pubsub_entry_t t = {
+		.opcode = PSMSG_UNSUBSCRIBE,
+		.topic = topic,
+		.cpu  = subinfo.address,
+		.port = subinfo.port
+	};
+	
+	//PS_DEBUG("sub: msg opcode %d, topic %d, cpu %d, port %d\n", t.opcode, t.topic, t.cpu, t.port);
+	//PS_DEBUG("sub: broker at cpu %d, port %d\n", brokerinfo.address, brokerinfo.port);
+		
+	//send entry to the broker
+	hf_send(brokerinfo.address, brokerinfo.port, (int8_t*)(&t), sizeof(t), 0);
 }
 
 

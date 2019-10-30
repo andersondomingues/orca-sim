@@ -43,45 +43,42 @@ void pubsub_broker_tsk(void){
 	//we create brokers always using the same port, see <pubsub-shared.h>
 	if (hf_comm_create(hf_selfid(), PS_BROKER_DEFAULT_PORT, 0))
 		panic(0xff);
-	
-	//PS_DEBUG("brk: started\n");
-	
+		
 	//keep running indefinitely
 	while (1){
 
-		int32_t i = hf_recvprobe(); //check whether some message arrived at channel i
+		//check whether some message arrived at channel i
+		int32_t i = hf_recvprobe(); 
 
 		if(i >= 0){
 
+			//receive data from driver
 			val = hf_recv(&cpu, &port, buf, &size, i);
 
 			if (val){
 				printf("hf_recv(): error %d\n", val);
-				
+			
+			//the message is valid
 			} else {
 				
+				//"unpack" message
 				e = *((pubsub_entry_t*)buf);
 				
 				switch(e.opcode){
 
-					/** handle a message for subscription
-					 * a) add the subscriber to the table. if subscriber is already in the table, 
-					 *    ignore.
-					 * b) if subscriber is not in the table, notify publishers of that topic **/
+					//Handle a message for subscription. Add the subscriber to the table, if it
+					//is not in the table yet. If subscriber is not in the table, notify publishers
+					//of that topic.
 					case PSMSG_SUBSCRIBE:{
 					
-						//PS_DEBUG("brk: recv subscription\n");
-						
-						//try to insert in the list
 						e.opcode = 0x1; // <== enable the entry
 						
+						//check whether the subscriber is in the list already
 						if(!pubsublist_has(subscribers, e)){
 							
-							val = pubsublist_add(subscribers, e);
-							
-							//PS_DEBUG("brk: registered subscription\n");
-							//PS_DEBUG("brk: cpu %d, topic %d, port %d\n", e.cpu, e.topic, e.port);
-												
+							//add it 
+							pubsublist_add(subscribers, e);
+										
 							//notify publishers (clients)
 							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 								
@@ -98,8 +95,11 @@ void pubsub_broker_tsk(void){
 										
 									PS_DEBUG("brk: notified client cpu %d, port %d, topic %d,\n", p.cpu, p.port, p.topic);
 								}
-							}	
+							}
 						}
+
+						pubsublist_print(subscribers);
+
 					} break;
 
 					/** handle a message for unsubscription
@@ -107,26 +107,25 @@ void pubsub_broker_tsk(void){
 					 * b) if subscriber WAS in the table, notify publishers of that topic **/
 					case PSMSG_UNSUBSCRIBE:{
 						
-						//try to remove from the list
-						val = pubsublist_remove(subscribers, e);
-						
-						//if it WAS the list
-						if(!val){
+						//notify each publisher
+						for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 							
-							//notify each publisher
-							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
+							p = publishers[i];
+							
+							if(p.topic == e.topic){
 								
-								p = publishers[i];
+								val = hf_send(p.cpu, p.port, (int8_t*)&e, sizeof(e), p.channel);
 								
-								if(p.topic == e.topic){
-									
-									val = hf_send(p.cpu, p.port, (int8_t*)&e, sizeof(e), p.channel);
-									
-									if(val)
-										printf("morreu");	
-								}
+								if(val)
+									printf("morreu");	
 							}
 						}
+						
+						//try to remove from the list
+						pubsublist_remove(subscribers, e);
+						
+						pubsublist_print(subscribers);
+
 					} break;
 
 					/** handle a message for advertising
@@ -134,7 +133,7 @@ void pubsub_broker_tsk(void){
 					 * b) if it wasn't in the table, send a list of subscribers **/
 					case PSMSG_ADVERTISE:{
 						
-						PS_DEBUG("brk: recv advertise\n");
+						PS_DEBUG("PSMSG_ADVERTISE\n");
 						
 						//operation is replaced by the "entry ok" flag
 						e.opcode = 0x1; 
@@ -173,7 +172,9 @@ void pubsub_broker_tsk(void){
 						}else{
 							//tried to advertise but was in the list already, nothing to do
 						}
-						
+
+						pubsublist_print(publishers);
+
 					} break;
 
 					/**
@@ -181,9 +182,13 @@ void pubsub_broker_tsk(void){
 					 * a) remove the entry from the table **/
 					case PSMSG_UNADVERTISE:{
 					
+						PS_DEBUG("PSMSG_UNADVERTISE\n");
+
 						//try to remove from the table 
 						val = pubsublist_remove(publishers, e); 
 						
+						pubsublist_print(publishers);
+
 					}break;
 
 					/** maybe the message is unkown... **/
@@ -196,11 +201,11 @@ void pubsub_broker_tsk(void){
 				//printf("cpu %d, port %d, ch %d, size %d, #%d [free queue: %d]\n",
 				//	cpu, port, i, size, counter, hf_queue_count(pktdrv_queue));
 				
-				PS_DEBUG("PUBS:\n");
-				pubsublist_print(publishers);
+				// PS_DEBUG("PUBS:\n");
+				// pubsublist_print(publishers);
 				
-				PS_DEBUG("SUBS:\n");
-				pubsublist_print(subscribers);
+				// PS_DEBUG("SUBS:\n");
+				// pubsublist_print(subscribers);
 					
 				counter++;				
 			}

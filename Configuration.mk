@@ -8,7 +8,8 @@
 # -std: required by old GCC to set c++17 as default the c++ 
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native -lasan -fsanitize=address
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -march=native -mtune=native 
+#-lasan -fsanitize=address -O3
 
 # Apps to be compiled within kernel image
 ORCA_APPLICATIONS := producer-consumer-pubsub

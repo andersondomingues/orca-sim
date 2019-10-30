@@ -10,37 +10,32 @@ int pubsublist_remove(pubsub_entry_t* list, pubsub_entry_t entry){
 	
 	pubsub_entry_t e;
 	
-	PS_DEBUG("lst: remove \n");
-	
 	for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 		
 		e = list[i];
 		
-		if(pubsub_entry_cmp(entry, e) == 0){
-			
-			e.opcode = 0; //entry is eliminated by setting opcode to zero			
-			PS_DEBUG("lst: found and removed\n");
-			
+		if(!pubsub_entry_cmp(entry, e)){
+			list[i].opcode = 0;
 			return 0;
 		}
 	}
-	
-	PS_DEBUG("lst: not found \n");
-	
+		
 	return 1; //entry wasn't found
 }
 
 int pubsublist_has(pubsub_entry_t* list, pubsub_entry_t entry){
 	
 	pubsub_entry_t e;
-	
+
 	for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 		
 		e = list[i];
 		
-		if(e.opcode != 0 && !pubsub_entry_cmp(entry, e)){
-			PS_DEBUG("has: found!");
-			return 1;
+		if(e.opcode != 0){
+
+			//PS_DEBUG("e: op=%d cpu=%d ch=%d port=%d\n", e.opcode, e.cpu, e.channel, e.port);
+			if(!pubsub_entry_cmp(entry, e))
+				return 1;
 		}
 	}
 	
@@ -100,9 +95,9 @@ int pubsublist_add(pubsub_entry_t* list, pubsub_entry_t entry){
  * @return 0 if entries does not match, 1 otherwise. */
 int pubsub_entry_cmp(pubsub_entry_t a, pubsub_entry_t b){
 	
-	return (a.cpu == b.cpu)
-		 && (a.channel == b.channel)
-		 && (a.port == b.port);
+	//PS_DEBUG("a: op=%d cpu=%d ch=%d port=%d\n", a.opcode, a.cpu, a.channel, a.port);
+	//PS_DEBUG("b: op=%d cpu=%d ch=%d port=%d\n", b.opcode, b.cpu, b.channel, b.port);
+	return !((a.cpu == b.cpu) && (a.channel == b.channel) && (a.port == b.port));
 }
 
 /**

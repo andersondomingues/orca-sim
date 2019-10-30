@@ -45,15 +45,14 @@ typedef struct{
 	uint16_t port;     //port to which the subscriber/publisher task is bound to
 	uint16_t channel;  //specific channel to identify the message as a pubsub message
 	
-	uint16_t __padding0; 
+	uint16_t __padding0; //!necessary?
 	
 } pubsub_entry_t;
 
 //identification of a broker process (addres + port)
 typedef struct{
-	uint16_t address;	 //address (number of the tile) in which the broker is running
+	uint16_t address;  //address (number of the tile) in which the broker is running
 	uint16_t port;     //port in which the broker process in running
-	
 } pubsub_node_info_t;
 
 /**
@@ -82,7 +81,7 @@ int pubsub_entry_cmp(pubsub_entry_t a, pubsub_entry_t b);
  * @brief Displays the valid content of a list of publishers or subscribers
  * @param list List to be scanned for valid entries
  */
-void pubsublsit_print(pubsub_entry_t* list);
+void pubsublist_print(pubsub_entry_t* list);
 
 /**
  * @brief Initialize a new list of publishers or subscribers
@@ -93,7 +92,7 @@ void pubsublist_init(pubsub_entry_t* list);
 /**
  * @brief Search for an entry in the list 
  */
-int pubsublist_has(pubsub_entry_t* list, pubsub_entry_t entry){
+int pubsublist_has(pubsub_entry_t* list, pubsub_entry_t entry);
 
 
 #endif /* __PUBSUB_SHARED_H*/
