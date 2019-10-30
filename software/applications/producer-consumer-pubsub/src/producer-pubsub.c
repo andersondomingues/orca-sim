@@ -35,7 +35,13 @@ void producer_pubsub(void){
 	}; 
 
 	//advertise to TOPIC_01, advertiser resides in port 2000
-	//pubsub_advertise(pubinfo, brokerinfo, TOPIC_01);
+	pubsub_advertise(pubinfo, brokerinfo, TOPIC_01);
+	pubsub_unadvertise(pubinfo, brokerinfo, TOPIC_01);
+	
+	pubsub_advertise(pubinfo, brokerinfo, TOPIC_01);
+	pubsub_unadvertise(pubinfo, brokerinfo, TOPIC_01);
+	
+	pubsub_advertise(pubinfo, brokerinfo, TOPIC_01);
 
 	//hf_send(1, 5, buf, sizeof(buf), 1000);
 

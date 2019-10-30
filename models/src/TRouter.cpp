@@ -25,6 +25,23 @@
 
 #include <TRouter.h>
 
+
+/**
+ * @brief Get the name of the port of id equals to <port>
+ * @param port the id of the port
+ * @return and instance of std::string containing port's name */
+std::string TRouter::GetPortName(int port){
+	
+	switch(port){
+		case SOUTH: return "SOUTH";
+		case NORTH: return "NORTH";
+		case WEST:  return "WEST";
+		case EAST:  return "EAST";
+		default: return "LOCAL";
+	}
+	return "";
+}
+
 /**
  * @brief Ctor.
  * @param name Name of the instance (proccess impl)
@@ -38,7 +55,7 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
 	//for all ports, create a new input buffer; Note that data is bufferred by
 	//input buffers, since output buffers come from somewhere else;
     for(int i = 0; i < 5; i++){
-        std::string bname = GetName() +  ".IN" + std::to_string(i);
+        std::string bname = GetName() +  ".IN-" + this->GetPortName(i);
         _ob[i] = nullptr;
         _ib[i] = new UBuffer<FlitType>(bname, BUFFER_CAPACITY);
     }
@@ -111,7 +128,7 @@ SimulationTime TRouter::Run(){
 		}
   	}
   	
-   //drive flits into destination ports
+    //drive flits into destination ports
 	for(int i = 0; i < 5; i++){
 	
     	//check whether the switch control is closed for some port
@@ -141,21 +158,25 @@ SimulationTime TRouter::Run(){
 			
 				//if -2, we send the address flit
 				if(_flits_to_send[i] == -2){
-					_flits_to_send[i]++;
+
+					_ob[_switch_control[i]]->push(_ib[i]->top()); //push one flit to destination port
+					_flits_to_send[i] = -1;
+					_ib[i]->pop(); //remove flit from source port
 									
 				//if -1, we set the size flit and send it 
 				}else if(_flits_to_send[i] == -1){
-					_flits_to_send[i] = _ib[i]->top() + 1; //<< we add one more since we must send the size flit as well
+
+					_flits_to_send[i] = _ib[i]->top();
+					_ob[_switch_control[i]]->push(_ib[i]->top()); //push one flit to destination port
+					_ib[i]->pop(); //remove flit from source port
+				
+				}else{
+
+					_flits_to_send[i] -= 1;
+					_ob[_switch_control[i]]->push(_ib[i]->top()); //push one flit to destination port
+					_ib[i]->pop(); //remove flit from source port
 				}
-		
-				_ob[_switch_control[i]]->push(_ib[i]->top()); //push one flit to destination port
-				
-				//std::cout << this->GetName() << std::fixed << std::setfill('0') << std::setw(4) << std::hex << _ib[i]->top() << std::endl;
-				
-				_ib[i]->pop(); //remove flit from source port
-			
-				_flits_to_send[i] -= 1; //decrement the number of flits to send
-			
+
 				//free port
 				if(_flits_to_send[i] == 0) 
 					_switch_control[i] = -1;

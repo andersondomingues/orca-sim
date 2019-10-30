@@ -55,6 +55,9 @@ void pubsub_broker_tsk(void){
 			//receive data from driver
 			val = hf_recv(&cpu, &port, buf, &size, i);
 
+			PS_DEBUG("broker, cpu %d port %d size %d\n", 
+				cpu, port, size);
+
 			if (val){
 				printf("hf_recv(): error %d\n", val);
 			
@@ -98,7 +101,8 @@ void pubsub_broker_tsk(void){
 							}
 						}
 
-						pubsublist_print(subscribers);
+						// PS_DEBUG("--- list of subscribers -- \n");
+						// pubsublist_print(subscribers);
 
 					} break;
 
@@ -124,7 +128,8 @@ void pubsub_broker_tsk(void){
 						//try to remove from the list
 						pubsublist_remove(subscribers, e);
 						
-						pubsublist_print(subscribers);
+						// PS_DEBUG("--- list of subscribers -- \n");
+						// pubsublist_print(subscribers);
 
 					} break;
 
@@ -173,7 +178,8 @@ void pubsub_broker_tsk(void){
 							//tried to advertise but was in the list already, nothing to do
 						}
 
-						pubsublist_print(publishers);
+						// PS_DEBUG("--- list of publishers -- \n");
+						// pubsublist_print(publishers);
 
 					} break;
 
@@ -187,7 +193,8 @@ void pubsub_broker_tsk(void){
 						//try to remove from the table 
 						val = pubsublist_remove(publishers, e); 
 						
-						pubsublist_print(publishers);
+						// PS_DEBUG("--- list of publishers -- \n");
+						// pubsublist_print(publishers);
 
 					}break;
 

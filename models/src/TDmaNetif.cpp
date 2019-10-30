@@ -318,14 +318,14 @@ void TDmaNetif::recvProcess(){
 				_sig_stall->Write(0x0);
 				_recv_state = DmaNetifRecvState::FLUSH;
 				
-				if(this->GetName() == "003.netif")
-					std::cout << "recv end" << std::endl;
+				// if(this->GetName() == "003.netif")
+				// 	std::cout << "recv end" << std::endl;
 				
 			}
 		} break;
 		
-		case DmaNetifRecvState::FLUSH:{
-		
+		case DmaNetifRecvState::FLUSH:{	
+
 			if(_sig_prog_recv->Read() == 0x0){
 				
 				_recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
@@ -401,17 +401,18 @@ void TDmaNetif::sendProcess(){
 				_send_address += sizeof(FlitType); //write next address
 				_send_payload_remaining--; //one less packet to send
 				
-				//std::cout << "send copied 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << std::endl;
+				// std::cout << "send copied 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << std::endl;
 
 			//all flits copied to the aux memory, switch to noc-mode
 			}else{
 				
-				//std::cout << "send stalled" << std::endl;
+				// std::cout << "send stalled" << std::endl;
 							
 				_sig_stall->Write(0x0);        //low stall
-				_send_state = DmaNetifSendState::SEND_DATA_TO_NOC;
 				_send_payload_remaining = _send_payload_size; //flits to push to the noc
 				_send_address = 0;  //reset memory pointer
+
+				_send_state = DmaNetifSendState::SEND_DATA_TO_NOC;
 			}
 
 		} break;	
@@ -421,21 +422,25 @@ void TDmaNetif::sendProcess(){
 			//make sure the buffer has room to receive another packet
 			if(_send_payload_remaining > 0){
 
-					if(_ob->size() < _ob->capacity()){
+				if(_ob->size() < _ob->capacity()){
+				
+					_mem2->Read(_send_address, (int8_t*)(&_send_reg), sizeof(FlitType));
+					_ob->push(_send_reg);
+					_send_payload_remaining--;
 					
-						_mem2->Read(_send_address, (int8_t*)(&_send_reg), sizeof(FlitType));
-						_ob->push(_send_reg);
-						_send_payload_remaining--;
-						
-						_send_address += sizeof(FlitType);
-						
-					}
-				//std::cout << "send pushed 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << ", " << _send_payload_remaining << " remaining" <<std::endl;
+					_send_address += sizeof(FlitType);
+
+					std::cout << "send pushed 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << ", " << _send_payload_remaining << " remaining" <<std::endl;
+
+				}				
 
 			//all flits copied to the aux memory, switch to noc-mode
 			}else{
 				_sig_send_status->Write(0x0);  //notify free
 				_send_state = DmaNetifSendState::WAIT_CONFIG_STALL;
+
+				std::cout << "send done" <<std::endl;
+
 			}
 					
 		} break;

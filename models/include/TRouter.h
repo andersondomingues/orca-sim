@@ -97,6 +97,12 @@ public:
 		/** Dtor. **/
 		~TRouter();
 		
+		/**
+		 * @brief Get the name of the port of id equals to <port>
+		 * @param port the id of the port
+		 * @return and instance of std::string containing port's name */
+		std::string GetPortName(int port);
+
 		void Reset();
 		std::string ToString();
 };

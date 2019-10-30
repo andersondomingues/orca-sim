@@ -73,11 +73,16 @@ static void sig_handler(int _){
 
 //connect routers to each other
 void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
+	
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
 	r2->SetOutputBuffer(r1->GetInputBuffer(p1), p2);
 	
-	std::cout << "router_signal: " << r1->GetName() << " ----[" 
-			  << p1 << "/" << p2 << "]---- " << r2->GetName() << std::endl;
+	//std::cout << "router_signal: " << r1->GetName() << " ----[" 
+	//		  << p1 << "/" << p2 << "]---- " << r2->GetName() << std::endl;
+
+	std::cout << "router-comm: " << r1->GetInputBuffer(p1)->GetName()
+			  << " <---> " << r2->GetInputBuffer(p2)->GetName() << std::endl;
+
 }
 
 void check_params(){
