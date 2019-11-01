@@ -138,48 +138,53 @@ void pubsub_broker_tsk(void){
 					 * b) if it wasn't in the table, send a list of subscribers **/
 					case PSMSG_ADVERTISE:{
 						
-						PS_DEBUG("PSMSG_ADVERTISE\n");
-						
 						//operation is replaced by the "entry ok" flag
 						e.opcode = 0x1; 
 						
-						//try to add to the list
-						val = pubsublist_add(publishers, e);
-						
-						//if it was't in the list, send related subscribers
-						if(!val){
+						//check whether the publisher is in the list already
+						if(!pubsublist_has(publishers, e)){
 							
-							PS_DEBUG("brk: reg cpu %d, port %d, topic %d\n", 
+							PS_DEBUG("adding pub: cpu %d, port %d, topic %d\n", 
 								e.cpu, e.port, e.topic);
-							
-							//send the list of subscribers to the publisher
-							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
+
+							//try to add to the list
+							val = pubsublist_add(publishers, e);
+						
+							//if it was't in the list, send related subscribers
+							if(!val){
+								
+								//send the list of subscribers to the publisher
+								for(int i = 0; i < PUBSUBLIST_SIZE; i++){
+
+									p = subscribers[i];
 																
-								p = subscribers[i];
-															
-								//check whether the entry has the same target topic AND is valid
-								if(p.topic == e.topic && p.opcode == 0x1){
-									
-									PS_DEBUG("brk: ret sub cpu %d, port %d, topic %d\n", 
-										p.cpu, p.port, p.topic);
-									
-									//must send to the client
-									val = hf_send(e.cpu, PS_CLIENT_DEFAULT_PORT, (int8_t*)&p, sizeof(p), e.channel);
-									
-									if(val){
-											//message has failed, ...
-									}	
-								}									
+									//check whether the entry has the same target topic AND is valid
+									if(p.topic == e.topic && p.opcode == 0x1){
+										
+										PS_DEBUG("sending sub: cpu %d, port %d, topic %d\n", 
+											p.cpu, p.port, p.topic);
+										
+										//must send to the client
+										val = hf_send(e.cpu, PS_CLIENT_DEFAULT_PORT, (int8_t*)&p, sizeof(p), e.channel);
+										
+										if(val){
+												//message has failed, ...
+										}	
+									}									
+								}
+								
+								
+							}else{
+								//tried to advertise but was in the list already, nothing to do
 							}
-							
-							PS_DEBUG("brk: recv advertise done\n");
-							
-						}else{
-							//tried to advertise but was in the list already, nothing to do
+
 						}
 
-						// PS_DEBUG("--- list of publishers -- \n");
-						// pubsublist_print(publishers);
+						
+
+						PS_DEBUG("--- list of publishers -- \n");
+						pubsublist_print(publishers);
+						PS_DEBUG("------------------------- \n");
 
 					} break;
 
@@ -188,13 +193,12 @@ void pubsub_broker_tsk(void){
 					 * a) remove the entry from the table **/
 					case PSMSG_UNADVERTISE:{
 					
-						PS_DEBUG("PSMSG_UNADVERTISE\n");
-
 						//try to remove from the table 
-						val = pubsublist_remove(publishers, e); 
+						pubsublist_remove(publishers, e);
 						
-						// PS_DEBUG("--- list of publishers -- \n");
-						// pubsublist_print(publishers);
+						PS_DEBUG("--- list of publishers -- \n");
+						pubsublist_print(publishers);
+						PS_DEBUG("------------------------- \n");
 
 					}break;
 

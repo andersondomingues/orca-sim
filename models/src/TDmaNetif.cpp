@@ -265,8 +265,8 @@ void TDmaNetif::recvProcess(){
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
 				
-				if(this->GetName() == "003.netif")
-					std::cout << "addr: 0x" << std::hex << _sig_prog_addr->Read() << std::endl;
+				//if(this->GetName() == "003.netif")
+				//	std::cout << "addr: 0x" << std::hex << _sig_prog_addr->Read() << std::endl;
 				
 				_sig_stall->Write(0x1); //stall cpu	
 				
@@ -361,7 +361,7 @@ void TDmaNetif::sendProcess(){
 				
 				_send_state = DmaNetifSendState::COPY_AND_RELEASE; //change states
 				
-				std::cout << "send started" << std::endl;
+				//std::cout << "send started" << std::endl;
 			}
 			
 		} break;
@@ -430,7 +430,7 @@ void TDmaNetif::sendProcess(){
 					
 					_send_address += sizeof(FlitType);
 
-					std::cout << "send pushed 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << ", " << _send_payload_remaining << " remaining" <<std::endl;
+					//std::cout << "send pushed 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << ", " << _send_payload_remaining << " remaining" <<std::endl;
 
 				}				
 
@@ -439,7 +439,7 @@ void TDmaNetif::sendProcess(){
 				_sig_send_status->Write(0x0);  //notify free
 				_send_state = DmaNetifSendState::WAIT_CONFIG_STALL;
 
-				std::cout << "send done" <<std::endl;
+				//std::cout << "send done" <<std::endl;
 
 			}
 					

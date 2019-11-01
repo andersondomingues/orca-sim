@@ -31,20 +31,11 @@ void consumer_pubsub(void)
 		.port    = PS_BROKER_DEFAULT_PORT
 	};
 
-	//subscribe to some topic (should subscribe once only)
-	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
-	pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
-
-	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
-	pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
-	
-	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
-	pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
-	
+	//subscribe to some topic
 	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
 	
 	//receiving process proceeds as for ordinary messages
-	while (1){
+	while (counter < 10){
 		
 		int32_t i = hf_recvprobe();
 	
@@ -61,4 +52,8 @@ void consumer_pubsub(void)
 			}
 		}
     }
+    
+    pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
+	
+    while(1); //<<-- TODO: make the app terminate itself
 }
