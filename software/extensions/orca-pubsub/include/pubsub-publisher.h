@@ -31,6 +31,14 @@
 void pubsub_advertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo, topic_t topic_name);
 
 /**
+ * @brief Unadvertises a topic
+ * @param pubinfo Information removed from the table of publishers at the broker
+ * @param brokerinfo Information about the broker (required since many brokers can run at once)
+ * @param topic_name Name of the topic to which the publisher will stop publishing
+ */
+void pubsub_unadvertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo, topic_t topic_name);
+
+/**
  * @brief Publish a message to some topic
  * @param topic Topic to which the message will be published
  * @param msg Message to be published

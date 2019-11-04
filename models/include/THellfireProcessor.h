@@ -114,6 +114,9 @@ public:
 	THellfireProcessor(string name, USignal<int8_t>* intr, USignal<int8_t>* stall);
 	~THellfireProcessor();
 	
+	USignal<int8_t>* GetSignalStall();
+	USignal<int8_t>* GetSignalIntr();
+
 	//setters for memories
 	void SetMem0(UMemory*);
 	

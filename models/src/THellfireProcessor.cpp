@@ -165,6 +165,14 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	}
 }
 
+USignal<int8_t>* THellfireProcessor::GetSignalStall(){
+	return _signal_stall;
+}
+
+USignal<int8_t>* THellfireProcessor::GetSignalIntr(){
+	return _signal_intr;
+}
+
 /**
  * @brief Reads data from memory
  * @param s The current state of the processor

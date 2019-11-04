@@ -165,7 +165,7 @@ void TDmaNetif::recvProcess(){
 				_mem1->Write(_recv_address, (int8_t*)&_recv_reg, sizeof(FlitType)); //write to mem
 				_recv_address += sizeof(FlitType);
 				
-				//change states 			
+				//change states 
 				_recv_state = DmaNetifRecvState::WAIT_SIZE_FLIT;
 				
 				//if(this->GetName() == "003.netif")
@@ -261,7 +261,7 @@ void TDmaNetif::recvProcess(){
 				//must be read from the signal, because in case of flush the
 				//size to copy is zero
 				_recv_payload_remaining = _sig_prog_size->Read(); 
-								
+
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
 				
@@ -269,7 +269,7 @@ void TDmaNetif::recvProcess(){
 				//	std::cout << "addr: 0x" << std::hex << _sig_prog_addr->Read() << std::endl;
 				
 				_sig_stall->Write(0x1); //stall cpu	
-				
+
 			}
 		} break;
 		
@@ -314,13 +314,14 @@ void TDmaNetif::recvProcess(){
 			//if there is no more flits to receive, lower the interruption,
 			//restore the cpu (release stall), then change states
 			}else{
-				_sig_intr->Write(0x0);
 				_sig_stall->Write(0x0);
+				_sig_intr->Write(0x0);
+				
 				_recv_state = DmaNetifRecvState::FLUSH;
 				
 				// if(this->GetName() == "003.netif")
 				// 	std::cout << "recv end" << std::endl;
-				
+
 			}
 		} break;
 		

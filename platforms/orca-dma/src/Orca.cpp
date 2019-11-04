@@ -371,14 +371,27 @@ int main(int __attribute__((unused)) argc, char** argv){
 			std::cout << n->GetName() << ":"
 				<< " Send=" << static_cast<unsigned int>(n->GetSendState())
 				<< " Recv=" << static_cast<unsigned int>(n->GetRecvState()) << " |"
-//				<< " A:" << std::hex << (int)(n->GetSignalAck()->Read())
-//				<< " I:" << std::hex << (int)(n->GetSignalIntr()->Read())
-//				<< " S:" << std::hex << (int)(n->GetSignalStart()->Read())
-//				<< " T:" << std::hex << (int)(n->GetSignalStart()->Read())
 				<< std::endl;
 		}
 	}
+
+	//CPU statuses
+	std::cout << "==============[ CPU STATUSES ]" << std::endl;
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 		
+			if(x == 0 && y == 0)
+				continue;
+			
+			ProcessingTile* t = (ProcessingTile*)(tiles[x][y]);
+			THellfireProcessor* n = t->GetCpu();
+			std::cout 
+				<< n->GetName() 
+				<< ": intr=" << (int)(n->GetSignalIntr()->Read()) 
+				<< ", stall=" << (int)(n->GetSignalStall()->Read()) << std::endl;
+		}
+	}
+
 	delete(s);
 		
 	//delete PE
