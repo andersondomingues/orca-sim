@@ -12,12 +12,14 @@
 void consumer_pubsub(void)
 {
 	int8_t buf[500];
-	uint16_t cpu, port, size, counter;
+	uint16_t cpu, port, size, counter = 0;
 	int16_t val;
 
 	if (hf_comm_create(hf_selfid(), SUBPORT, 0)){
 		panic(0xff);
 	}
+
+	//delay_ms(10);
 
 	//info for this node (design time)
 	pubsub_node_info_t subinfo = {
@@ -51,9 +53,12 @@ void consumer_pubsub(void)
 				counter++;
 			}
 		}
-    }
-    
-    pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
-	
-    while(1); //<<-- TODO: make the app terminate itself
+	}
+
+	//unsubscribe from TOPIC_01
+	pubsub_unsubscribe(subinfo, brokerinfo, TOPIC_01);
+
+	//terminate the application
+	//hf_kill(hf_selfid());
+	while(1);
 }

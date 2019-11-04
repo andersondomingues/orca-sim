@@ -27,91 +27,88 @@
 //for sharedmem.
 pubsub_entry_t _psclient_subscribers[PUBSUBLIST_SIZE];
 
-// volatile uint16_t _psclient_enabled = 0;
+volatile uint16_t _psclient_enabled = 0;
 
-// //constrols whether the client process has been started in this cpu
-// //zero = "hasn't started yet"
-// volatile uint16_t pubsub_has_a_client_started_already = 0;
+//constrols whether the client process has been started in this cpu
+//zero = "hasn't started yet"
+volatile uint16_t pubsub_has_a_client_started_already = 0;
 
-// /**
-//  * @brief A task to update info coming from brokers to publishers in a node */
-// void _psclient_tsk(){
+/**
+ * @brief A task to update info coming from brokers to publishers in a node */
+void _psclient_tsk(){
 
-// 	int8_t buf[500];
-// 	uint16_t cpu, port, size;
-// 	int16_t val;
+	int8_t buf[500];
+	uint16_t cpu, port, size;
+	int16_t val;
 
-// 	pubsub_entry_t e;
+	pubsub_entry_t e;
 
-// 	//we create brokers always using the same port, see <pubsub-shared.h>
-// 	if (hf_comm_create(hf_selfid(), PS_CLIENT_DEFAULT_PORT, 0))
-// 		panic(0xff);
+	//we create brokers always using the same port, see <pubsub-shared.h>
+	if (hf_comm_create(hf_selfid(), PS_CLIENT_DEFAULT_PORT, 0))
+		panic(0xff);
 
-// 	//delay necessary for the kernel to create the comm
-// 	//delay_ms(60);
+	//delay necessary for the kernel to create the comm
+	delay_ms(60);
 	
-// 	//temporarily disable publishers
-// 	_psclient_enabled = 0; 
+	//temporarily disable publishers
+	_psclient_enabled = 0; 
 	
-// 	//reset list of subscribers
-// 	pubsublist_init(_psclient_subscribers);
+	//reset list of subscribers
+	pubsublist_init(_psclient_subscribers);
 
-// 	//enable publishers again
-// 	_psclient_enabled = 1; //enable publishers
+	//enable publishers again
+	_psclient_enabled = 1; //enable publishers
+	//keep running indefinitely
+	while (1){
 
-// 	PS_DEBUG("cli: started task\n");
-	
-// 	//keep running indefinitely
-// 	while (1){
+		int32_t i = hf_recvprobe(); //check whether some message arrived at channel i
 
-// 		int32_t i = hf_recvprobe(); //check whether some message arrived at channel i
+		if(i >= 0){
 
-// 		if(i >= 0){
+			val = hf_recv(&cpu, &port, buf, &size, i);
 
-// 			val = hf_recv(&cpu, &port, buf, &size, i);
-
-// 			if (val){
-// 				printf("hf_recv(): error %d\n", val);
+			if (val){
+				printf("hf_recv(): error %d\n", val);
 				
-// 			} else {
+			} else {
 				
-// 				e = *((pubsub_entry_t*)buf);
+				e = *((pubsub_entry_t*)buf);
 				
-// 				//clients can handle only subscriptions and unsibscriptions
-// 				switch(e.opcode){
+				//clients can handle only subscriptions and unsibscriptions
+				switch(e.opcode){
 
-// 					//add a subscriber to the table, if not there already 
-// 					case PSMSG_SUBSCRIBE:{
+					//add a subscriber to the table, if not there already 
+					case PSMSG_SUBSCRIBE:{
 						
-// 						PS_DEBUG("cli: new sub cpu %d, port %d, topic %d\n",
-// 							e.cpu, e.port, e.topic);
+						PS_DEBUG("cli: new sub cpu %d, port %d, topic %d\n",
+							e.cpu, e.port, e.topic);
 					
-// 						//try to insert in the list
-// 						val = pubsublist_add(_psclient_subscribers, e);
+						//try to insert in the list
+						val = pubsublist_add(_psclient_subscribers, e);
 						
-// 					} break;
+					} break;
 
-// 					//remove a subscriber from the table, if not removed yet
-// 					case PSMSG_UNSUBSCRIBE:{
+					//remove a subscriber from the table, if not removed yet
+					case PSMSG_UNSUBSCRIBE:{
 						
-// 						//try to remove from the list
-// 						val = pubsublist_remove(_psclient_subscribers, e);
+						//try to remove from the list
+						val = pubsublist_remove(_psclient_subscribers, e);
 						
-// 						PS_DEBUG("cli: new unsub cpu %d, port %d, topic %d\n",
-// 							e.cpu, e.port, e.topic);
+						PS_DEBUG("cli: new unsub cpu %d, port %d, topic %d\n",
+							e.cpu, e.port, e.topic);
 						
-// 					} break;
+					} break;
 
-// 					//invalid opcode? 
-// 					default:{
-// 						//ignore
-// 					}
+					//invalid opcode? 
+					default:{
+						//ignore
+					}
 
-// 				}
-// 			}
-// 		}
-// 	}
-// }
+				}
+			}
+		}
+	}
+}
 
 /**
  * @brief Advertises to a topic
@@ -121,21 +118,15 @@ pubsub_entry_t _psclient_subscribers[PUBSUBLIST_SIZE];
  */
 void pubsub_advertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo, topic_t topic_name){
 	
-	PS_DEBUG("pub: started adv\n");
-	
 	//start a new client, if none has been started yet
-	// if(pubsub_has_a_client_started_already == 0 && 0){
-	// 	hf_spawn(_psclient_tsk, PS_CLIENT_PERIOD, PS_CLIENT_CAPACITY, PS_CLIENT_DEADLINE, "ps-client-task", PS_CLIENT_STACKSIZE);
-	
-	// 	PS_DEBUG("pub: started new client\n");
-	// 	//hold process until client have cleaned the list (only for the first run)
-		
-	// 	while(!_psclient_enabled);
-	// }
+	if(pubsub_has_a_client_started_already == 0){
+		hf_spawn(_psclient_tsk, PS_CLIENT_PERIOD, PS_CLIENT_CAPACITY, PS_CLIENT_DEADLINE, "ps-client-task", PS_CLIENT_STACKSIZE);
+		while(!_psclient_enabled);
+	}
 		
 	//we always increment this counter to the number of current active "advertisers"
 	//so that, when no advertisers is there, we can kill the client
-	// pubsub_has_a_client_started_already++;
+	pubsub_has_a_client_started_already++;
 		
 	//create a new entry to be put in the publishers table and send to the broker
 	pubsub_entry_t e = {
@@ -162,7 +153,7 @@ void pubsub_advertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo,
 void pubsub_unadvertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo, topic_t topic_name){
 	
 	//decrease the number of advertisers in one
-	//pubsub_has_a_client_started_already--;
+	pubsub_has_a_client_started_already--;
 	
 	//TODO: if no advertisers is active, kill the client 
 	//hf_kill(client)
@@ -184,8 +175,6 @@ void pubsub_unadvertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinf
  * @param msg Message to be published
  * @param size Size of the message (in bytes) */
 void pubsub_publish(topic_t topic, int8_t* msg, uint16_t size){
-
-	PS_DEBUG("pub: topic %d, size %d\n", topic, size);
 	
 	//look for subscribers in the internal table
 	pubsub_entry_t e;
@@ -195,17 +184,15 @@ void pubsub_publish(topic_t topic, int8_t* msg, uint16_t size){
 		e = _psclient_subscribers[i];
 		
 		//skip invalid entries
-		if(e.opcode != 0 && e.topic != topic){	
+		if(e.opcode != 0 && e.topic == topic){	
 				
 			//send the message to the subscriber
 			hf_send(e.cpu, e.port, msg, size, e.channel);
 			
-			PS_DEBUG("pub: pub to cpu %d, port %d, topic %d\n",
+			PS_DEBUG("pub to cpu %d, port %d, topic %d\n",
 				e.cpu, e.port, e.topic);
 		}
 	}
 	
-	pubsublist_print(_psclient_subscribers);
-	
-	//PS_DEBUG("pub: started done\n");
+	// pubsublist_print(_psclient_subscribers);
 }

@@ -14,14 +14,14 @@
 void producer_pubsub(void){
 	
 	int8_t buf[PRODUCE_LENGTH];
+	char counter = 0;
 
 	// "opens" the comm
 	if(hf_comm_create(hf_selfid(), PUBLISHER_PORT, 0))
 		panic(0xff);
+		
+	//delay_ms(10);
 
-	//delay necessary for the kernel to create the comm
-	delay_ms(60);
-	
 	//broker info (design time config.)
 	pubsub_node_info_t brokerinfo = {
 		.address = BROKER_ADDR,
@@ -30,20 +30,12 @@ void producer_pubsub(void){
 	
 	//this node
 	pubsub_node_info_t pubinfo = {
-		.address = hf_selfid(),
+		.address = hf_cpuid(),
 		.port    = PUBLISHER_PORT //TODO: get this automatically?
 	}; 
 
 	//advertise to TOPIC_01, advertiser resides in port 2000
 	pubsub_advertise(pubinfo, brokerinfo, TOPIC_01);
-	pubsub_unadvertise(pubinfo, brokerinfo, TOPIC_01);
-	
-	pubsub_advertise(pubinfo, brokerinfo, TOPIC_01);
-	pubsub_unadvertise(pubinfo, brokerinfo, TOPIC_01);
-	
-	pubsub_advertise(pubinfo, brokerinfo, TOPIC_01);
-
-	//hf_send(1, 5, buf, sizeof(buf), 1000);
 
 	//keep producing messages  
 	while(1){
@@ -52,13 +44,18 @@ void producer_pubsub(void){
 		for (int i = 0; i < PRODUCE_LENGTH; i++)
 			buf[i] = i;
 		
-		//printf("s -> 1\n");
-		//hf_send(1, 5, buf, sizeof(buf), 1000);
-		
 		//publishes to the topic
 		pubsub_publish(TOPIC_01, buf, sizeof(buf));
+		counter++;
+		
+		delay_ms(10);
 	}
-	
-	
+
+	//unasvertise TOPIC_01
+	pubsub_unadvertise(pubinfo, brokerinfo, TOPIC_01);
+
+	//terminate the application
+	//hf_kill(hf_selfid());
+	while(1);
 }
 
