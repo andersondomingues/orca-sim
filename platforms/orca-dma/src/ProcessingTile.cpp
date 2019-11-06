@@ -66,12 +66,33 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetSignalProgSize()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_SIZE)), SIGNAL_PROG_SIZE);
 
 	#ifdef MEMORY_ENABLE_COUNTERS
-	_mem0->InitCounters(MEM0_COUNTERS_STORE_ADDR, MEM0_COUNTERS_LOAD_ADDR);
-	this->GetSignalProgSize()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_SIZE)), SIGNAL_PROG_SIZE);
-	this->GetSignalProgSize()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_SIZE)), SIGNAL_PROG_SIZE);
+	//map main memory counter
+	_mem0->InitCounters(M0_COUNTER_STORE_ADDR, M0_COUNTER_LOAD_ADDR);
+	_mem0->GetSignalCounterStore()->MapTo(
+		(uint32_t*)(_mem0->GetMap(M0_COUNTER_STORE_ADDR)), M0_COUNTER_STORE_ADDR);
+	_mem0->GetSignalCounterLoad()->MapTo(
+		(uint32_t*)(_mem0->GetMap(M0_COUNTER_LOAD_ADDR)), M0_COUNTER_LOAD_ADDR);
+	
+	//map secondary memory counters (counter were initialized by superclass already, only mapping is required).
+	this->GetMem1()->GetSignalCounterStore()->MapTo(
+		(uint32_t*)(_mem0->GetMap(M1_COUNTER_STORE_ADDR)), M1_COUNTER_STORE_ADDR);
+	this->GetMem1()->GetSignalCounterLoad()->MapTo(
+		(uint32_t*)(_mem0->GetMap(M1_COUNTER_LOAD_ADDR)), M1_COUNTER_LOAD_ADDR);
+		
+	this->GetMem2()->GetSignalCounterStore()->MapTo(
+		(uint32_t*)(_mem0->GetMap(M2_COUNTER_STORE_ADDR)), M2_COUNTER_STORE_ADDR);
+	this->GetMem2()->GetSignalCounterLoad()->MapTo(
+		(uint32_t*)(_mem0->GetMap(M2_COUNTER_LOAD_ADDR)), M2_COUNTER_LOAD_ADDR);
 	#endif
 	
-	//initialize counters for the cpu
+	#ifdef ROUTER_ENABLE_COUNTERS
+	//counters have been initialized by syperclass, only mapping is required
+	this->GetRouter()->GetSignalCounterActive()->MapTo(
+		(uint32_t*)_mem0->GetMap(ROUTER_COUNTER_ACTIVE_ADDR), ROUTER_COUNTER_ACTIVE_ADDR, 0);
+	#endif
+	
+	
+	//----------------- initialize counters for the cpu
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	_cpu->InitCounters(
 		CPU_COUNTERS_IARITH_ADDR,
@@ -82,27 +103,16 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 		CPU_COUNTERS_ILOADSTORE_ADDR
 	);
 	
-		
-	//bind hosttime wire
-	this->GetSignalHostTime()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_HOSTTIME)), MAGIC_HOSTTIME);
-	
 	//memory mapping
-	
-	/*if(address == this->GetSignalCounterArith()->GetAddress())     {this->GetSignalCounterArith()->Write(0);     return;}
+	if(address == this->GetSignalCounterArith()->GetAddress())     {this->GetSignalCounterArith()->Write(0);     return;}
 	if(address == this->GetSignalCounterLogical()->GetAddress())   {this->GetSignalCounterLogical()->Write(0);   return;}
 	if(address == this->GetSignalCounterShift()->GetAddress())     {this->GetSignalCounterShift()->Write(0);     return;}
 	if(address == this->GetSignalCounterBranches()->GetAddress())  {this->GetSignalCounterBranches()->Write(0);  return;}
 	if(address == this->GetSignalCounterJumps()->GetAddress())     {this->GetSignalCounterJumps()->Write(0);     return;}
 	if(address == this->GetSignalCounterLoadStore()->GetAddress()) {this->GetSignalCounterLoadStore()->Write(0); return;}
-	*/
-	
-	#endif
-	
-	
-	#ifdef ROUTER_ENABLE_COUNTERS
-	//counters have been initialized by syperclass, only mapping is required
-	this->GetRouter()->GetSignalCounterActive()->MapTo(
-		(uint32_t*)_mem0->GetMap(ROUTER_COUNTER_ACTIVE_ADDR), ROUTER_COUNTER_ACTIVE_ADDR, 0);
+
+	//bind hosttime wire
+	this->GetSignalHostTime()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_HOSTTIME)), MAGIC_HOSTTIME);
 	#endif
 }
 

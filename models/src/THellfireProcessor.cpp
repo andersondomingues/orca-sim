@@ -211,18 +211,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		return; //succefully written		
 	}
 	
-	//TODO: these are mapped using sram->Map in the tile
-			
-	#ifdef MEMORY_ENABLE_COUNTERS
-	if(address == s->sram->GetSignalCounterStore()->GetAddress()){s->sram->GetSignalCounterStore()->Write(0); return;}
-	if(address == s->sram->GetSignalCounterLoad()->GetAddress()) {s->sram->GetSignalCounterLoad()->Write(0);  return;}
-	if(address == s->mem1->GetSignalCounterStore()->GetAddress()){s->mem1->GetSignalCounterStore()->Write(0); return;}
-	if(address == s->mem1->GetSignalCounterLoad()->GetAddress()) {s->mem1->GetSignalCounterLoad()->Write(0);  return;}
-	if(address == s->mem2->GetSignalCounterStore()->GetAddress()){s->mem2->GetSignalCounterStore()->Write(0); return;}
-	if(address == s->mem2->GetSignalCounterLoad()->GetAddress()) {s->mem2->GetSignalCounterLoad()->Write(0);  return;}
-	#endif /* MEMORY_ENABLE_COUNTERS */
-	
-	
+	//TODO: these are mapped using sram->Map in the tile	
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	if(address == this->GetSignalCounterArith()->GetAddress())     {this->GetSignalCounterArith()->Write(0);     return;}
 	if(address == this->GetSignalCounterLogical()->GetAddress())   {this->GetSignalCounterLogical()->Write(0);   return;}
