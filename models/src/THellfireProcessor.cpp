@@ -380,9 +380,15 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 
 SimulationTime THellfireProcessor::Run(){
 
+	#ifdef HFRISCV_ENABLE_COUNTERS
+	_counter_cycles_total->Inc(1);
+	#endif
+
 	//skip current cycle if stall is risen
 	if(_signal_stall->Read() == 0x1){
+		#ifdef HFRISCV_ENABLE_COUNTERS
 		_counter_cycles_stall->Inc(1);
+		#endif
 		return 1;
 	}
 		
@@ -555,11 +561,8 @@ fail:
 	for (i = 0; i < 3; i++)
 		s->status_dly[i] = s->status_dly[i+1];
 	
-	//s->cycles++;
-	_counter_cycles_total->Inc(1);
-	
 	s->counter++;
-	
+			
 	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;      /*IRQ_COMPARE2*/
 	if (s->compare == s->counter) s->cause |= 0x10;                                 /*IRQ_COMPARE*/
 	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;      /*IRQ_COUNTER2_NOT*/
@@ -626,7 +629,7 @@ THellfireProcessor::THellfireProcessor(string name, USignal<int8_t>* intr, USign
 	s->counter = 0;
 	s->compare = 0;
 	s->compare2 = 0;
-	s->cycles = 0;
+	//s->cycles = 0;
 	
 	//set interruption wire (to be managed by the top-level module)
 	_signal_intr = intr;

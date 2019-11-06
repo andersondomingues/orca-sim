@@ -54,13 +54,12 @@ typedef struct {
 	
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
-	
 } risc_v_state;
 
 class THellfireProcessor : public TimedModel{
 
 private:
-uint32_t _last_pc;
+	uint32_t _last_pc;
 
 	//interruption wire
 	USignal<int8_t>* _signal_intr;
