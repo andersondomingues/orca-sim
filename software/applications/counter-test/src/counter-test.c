@@ -32,9 +32,13 @@ void counter_test(void){
 		printf("CPU: arith=%u, logical=%u\n",   *CPU_COUNTER_ARITH, *CPU_COUNTER_LOGICAL);
 		printf("CPU: shift=%u, branches=%u\n",  *CPU_COUNTER_SHIFT, *CPU_COUNTER_BRANCHES);
 		printf("CPU: jumps=%u, loadstore=%u\n", *CPU_COUNTER_JUMPS, *CPU_COUNTER_LOADSTORE);
+		printf("CPU: cycles=%u, stalls=%u\n", *CPU_COUNTER_CYCLES_TOTAL, *CPU_COUNTER_CYCLES_STALL);	
 		printf("---\n");
 	
 		printf("ROUTER: active=%u\n", *ROUTER_COUNTER_ACTIVE);
 		printf("---\n");
-    }
+	}
+
+	//hf_kill(hf_selfid());
+	//while(1);
 }

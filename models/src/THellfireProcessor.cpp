@@ -153,6 +153,7 @@ USignal<int8_t>* THellfireProcessor::GetSignalIntr(){
 	return _signal_intr;
 }
 
+	
 /**
  * @brief Reads data from memory
  * @param s The current state of the processor
@@ -162,15 +163,14 @@ USignal<int8_t>* THellfireProcessor::GetSignalIntr(){
  */
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
 
+	//if(address <= 0x4000675c){
+	//		dumpregs(s);
+	//		exit(0);
+	//}
+
 	//if the address belong to some memory range, write to it
 	if(address <= s->sram->GetLastAddr()){
 
-		//if(address <= 0x40005ab8){
-		//	dumpregs(s);
-		//	exit(0);
-		//}
-
-		
 		switch(size){
 			case 4:
 				if(address & 3){
@@ -210,17 +210,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		
 		return; //succefully written		
 	}
-	
-	//TODO: these are mapped using sram->Map in the tile	
-	#ifdef HFRISCV_ENABLE_COUNTERS
-	if(address == this->GetSignalCounterArith()->GetAddress())     {this->GetSignalCounterArith()->Write(0);     return;}
-	if(address == this->GetSignalCounterLogical()->GetAddress())   {this->GetSignalCounterLogical()->Write(0);   return;}
-	if(address == this->GetSignalCounterShift()->GetAddress())     {this->GetSignalCounterShift()->Write(0);     return;}
-	if(address == this->GetSignalCounterBranches()->GetAddress())  {this->GetSignalCounterBranches()->Write(0);  return;}
-	if(address == this->GetSignalCounterJumps()->GetAddress())     {this->GetSignalCounterJumps()->Write(0);     return;}
-	if(address == this->GetSignalCounterLoadStore()->GetAddress()) {this->GetSignalCounterLoadStore()->Write(0); return;}
-	#endif
-	
+		
 	//may the request memory space be out of the mapped memory range, we assume
 	//the code is pointing to some of the special addresses		
 	switch(address){
@@ -248,7 +238,8 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		case UART_DIVISOR: return;
 
 		case EXIT_TRAP:
-			std::cout << this->GetName() <<": exit trap triggered! (" << std::dec << s->cycles << " cycles)" << std::endl;
+			std::cout << this->GetName() << ": exit trap triggered! " << std::endl;
+			dumpregs(s);
 			output_debug.close();
 			output_uart.close();
 			return;
@@ -285,6 +276,15 @@ USignal<uint32_t>* THellfireProcessor::GetSignalCounterLoadStore(){
 	return this->_counter_iloadstore;
 }
 
+//cycles
+USignal<uint32_t>* THellfireProcessor::GetSignalCounterCyclesTotal(){
+	return this->_counter_cycles_total;
+}
+USignal<uint32_t>* THellfireProcessor::GetSignalCounterCyclesStall(){
+	return this->_counter_cycles_stall;
+}
+
+
 /**
  * Initialize Counters
  * memory-mapped address of counters must be informed
@@ -296,7 +296,9 @@ void THellfireProcessor::InitCounters(
 		uint32_t shift_counter_addr,
 		uint32_t branches_counter_addr,
 		uint32_t jumps_counter_addr, 
-		uint32_t loadstore_counter_addr){
+		uint32_t loadstore_counter_addr,
+		uint32_t cycles_total_counter_addr, 
+		uint32_t cycles_stall_counter_addr){
 		
 	this->_counter_iarith     = new USignal<uint32_t>(arith_counter_addr, GetName() + ".counters.iarith");
 	this->_counter_ilogical   = new USignal<uint32_t>(logical_counter_addr, GetName() + ".counters.ilogical");
@@ -304,6 +306,9 @@ void THellfireProcessor::InitCounters(
 	this->_counter_ibranches  = new USignal<uint32_t>(branches_counter_addr, GetName() + ".counters.ibranches");
 	this->_counter_ijumps     = new USignal<uint32_t>(jumps_counter_addr, GetName() + ".counters.ijumps");
 	this->_counter_iloadstore = new USignal<uint32_t>(loadstore_counter_addr, GetName() + ".counters.iloadstore");
+
+	this->_counter_cycles_total = new USignal<uint32_t>(cycles_total_counter_addr, GetName() + ".counters.cycles_total");
+	this->_counter_cycles_stall = new USignal<uint32_t>(cycles_stall_counter_addr, GetName() + ".counters.cycles_stall");
 }
 
 /**
@@ -376,8 +381,10 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 SimulationTime THellfireProcessor::Run(){
 
 	//skip current cycle if stall is risen
-	if(_signal_stall->Read() == 0x1)
+	if(_signal_stall->Read() == 0x1){
+		_counter_cycles_stall->Inc(1);
 		return 1;
+	}
 		
 	//if(this->GetName() == "004.cpu") std::cout << "pc: 0x" << std::hex << s->pc << std::dec << "" << std::endl;
 	
@@ -534,9 +541,8 @@ fail:
 			stringstream ss;
 			ss << this->GetName() << ":invalid opcode (pc=0x" << std::hex << s->pc;
 			ss << " opcode=0x" << std::hex << inst << ")";
-			
-			//TODO:mem dump to file
-			//s->sram->DumpToFile("logs/" + this->GetName() + ".mdump");
+	
+			dumpregs(s);
 			
 			throw std::runtime_error(ss.str());
 			break;
@@ -549,7 +555,9 @@ fail:
 	for (i = 0; i < 3; i++)
 		s->status_dly[i] = s->status_dly[i+1];
 	
-	s->cycles++;
+	//s->cycles++;
+	_counter_cycles_total->Inc(1);
+	
 	s->counter++;
 	
 	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;      /*IRQ_COMPARE2*/
@@ -638,6 +646,9 @@ THellfireProcessor::~THellfireProcessor(){
 	delete _counter_ibranches;
 	delete _counter_ijumps;
 	delete _counter_iloadstore;
+	
+	delete _counter_cycles_total;
+	delete _counter_cycles_stall;
 	#endif
 }
 

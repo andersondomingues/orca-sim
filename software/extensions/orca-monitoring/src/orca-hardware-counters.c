@@ -14,6 +14,11 @@ volatile uint32_t* CPU_COUNTER_SHIFT     = (volatile uint32_t*) CPU_COUNTER_SHIF
 volatile uint32_t* CPU_COUNTER_BRANCHES  = (volatile uint32_t*) CPU_COUNTER_BRANCHES_ADDR;
 volatile uint32_t* CPU_COUNTER_JUMPS     = (volatile uint32_t*) CPU_COUNTER_JUMPS_ADDR;
 volatile uint32_t* CPU_COUNTER_LOADSTORE = (volatile uint32_t*) CPU_COUNTER_LOADSTORE_ADDR;
-volatile uint32_t* CPU_COUNTER_HOSTTIME = (volatile uint32_t*) CPU_COUNTER_HOSTTIME_ADDR;
+volatile uint32_t* CPU_COUNTER_HOSTTIME  = (volatile uint32_t*) CPU_COUNTER_HOSTTIME_ADDR;
+volatile uint32_t* CPU_COUNTER_CYCLES_TOTAL = (volatile uint32_t*) CPU_COUNTER_CYCLES_TOTAL_ADDR;
+volatile uint32_t* CPU_COUNTER_CYCLES_STALL = (volatile uint32_t*) CPU_COUNTER_CYCLES_STALL_ADDR;
+
+
+//CPU_COUNTER_CYCLES_TOTAL
 
 volatile uint32_t* ROUTER_COUNTER_ACTIVE = (volatile uint32_t*) ROUTER_COUNTER_ACTIVE_ADDR;
