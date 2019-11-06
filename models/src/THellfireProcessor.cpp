@@ -298,12 +298,12 @@ void THellfireProcessor::InitCounters(
 		uint32_t jumps_counter_addr, 
 		uint32_t loadstore_counter_addr){
 		
-	this->_counter_iarith     = new USignal<uint32_t>(GetName() + ".counters.iarith",     0, arith_counter_addr);
-	this->_counter_ilogical   = new USignal<uint32_t>(GetName() + ".counters.ilogical",   0, logical_counter_addr);
-	this->_counter_ishift     = new USignal<uint32_t>(GetName() + ".counters.ishift",     0, shift_counter_addr);
-	this->_counter_ibranches  = new USignal<uint32_t>(GetName() + ".counters.ibranches",  0, branches_counter_addr);
-	this->_counter_ijumps     = new USignal<uint32_t>(GetName() + ".counters.ijumps",     0, jumps_counter_addr);
-	this->_counter_iloadstore = new USignal<uint32_t>(GetName() + ".counters.iloadstore", 0, loadstore_counter_addr);
+	this->_counter_iarith     = new USignal<uint32_t>(arith_counter_addr, GetName() + ".counters.iarith");
+	this->_counter_ilogical   = new USignal<uint32_t>(logical_counter_addr, GetName() + ".counters.ilogical");
+	this->_counter_ishift     = new USignal<uint32_t>(shift_counter_addr, GetName() + ".counters.ishift");
+	this->_counter_ibranches  = new USignal<uint32_t>(branches_counter_addr, GetName() + ".counters.ibranches");
+	this->_counter_ijumps     = new USignal<uint32_t>(jumps_counter_addr, GetName() + ".counters.ijumps");
+	this->_counter_iloadstore = new USignal<uint32_t>(loadstore_counter_addr, GetName() + ".counters.iloadstore");
 }
 
 /**
@@ -315,25 +315,25 @@ void THellfireProcessor::InitCounters(
 void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 
 	switch(opcode){
-		
+
 		case 0x37: //LUI
 		case 0x17: //ALUI
 		case 0x6f: //JAL
 		case 0x67: //JALR
 			_counter_ijumps->Inc(1);
 			break;
-		
+
 		case 0x63: //branches
 			_counter_ibranches->Inc(1);
 			break;
-			
+
 		case 0x3:  //loads
 		case 0x23: //stores
 			_counter_iloadstore->Inc(1);
 			break;
 
-		//type R
-		case 0x13:
+		case 0x13: //type R
+		case 0x33:
 			switch(funct3){
 				case 0x0: //addi, subi
 					_counter_iarith->Inc(1);
@@ -350,7 +350,7 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 					break;
 			}
 			break;
-			
+		/*
 		case 0x33:
 			switch(funct3){
 				case 0x0: //add, sub
@@ -365,7 +365,7 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 					_counter_ishift->Inc(1);
 			}
 			break;
-			
+		*/
 		default:
 			break;
 	}

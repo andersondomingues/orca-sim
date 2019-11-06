@@ -113,7 +113,7 @@ HFRISCV_WRITE_ADDRESS_CHECKING := NO
 HFRISCV_READ_ADDRESS_CHECKING := NO
 
 # Enable counter for instructions' classes (depletes performance).
-HFRISCV_ENABLE_COUNTERS := NO
+HFRISCV_ENABLE_COUNTERS := YES
 
 # ==============================================================[ NETIF ]
 # Check whether netif is writing to unmapped memory space

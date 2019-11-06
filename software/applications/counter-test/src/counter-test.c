@@ -29,10 +29,10 @@ void counter_test(void){
 		printf("MEM2: writes=%u, reads=%u\n", *M2_COUNTER_STORE, *M2_COUNTER_LOAD);
 		printf("---\n");
 	
-		//printf("CPU: iarith=%u, ilogical=%u\n",   *CPU_COUNTER_ARITH, *CPU_COUNTER_LOGICAL);
-		//printf("CPU: ishift=%u, ibranches=%u\n",  *CPU_COUNTER_SHIFT, *CPU_COUNTER_BRANCHES);
-		//printf("CPU: ijumps=%u, iloadstore=%u\n", *CPU_COUNTER_JUMPS, *CPU_COUNTER_LOADSTORE);
-		//printf("---\n");
+		printf("CPU: arith=%u, logical=%u\n",   *CPU_COUNTER_ARITH, *CPU_COUNTER_LOGICAL);
+		printf("CPU: shift=%u, branches=%u\n",  *CPU_COUNTER_SHIFT, *CPU_COUNTER_BRANCHES);
+		printf("CPU: jumps=%u, loadstore=%u\n", *CPU_COUNTER_JUMPS, *CPU_COUNTER_LOADSTORE);
+		printf("---\n");
 	
 		printf("ROUTER: active=%u\n", *ROUTER_COUNTER_ACTIVE);
 		printf("---\n");
