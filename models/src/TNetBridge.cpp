@@ -276,7 +276,8 @@ void TNetBridge::nocToUdpProcess(){
 				//change states
 				_send_state = TNetBridgeSendState::SEND_LEN;
 				
-				#ifndef NETBRIDGE_ENABLE_LOG_OUTPUT
+				/*
+				#ifdef NETBRIDGE_ENABLE_LOG_OUTPUT
 				uint32_t x = msg[4];
 				
 				std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
@@ -287,6 +288,7 @@ void TNetBridge::nocToUdpProcess(){
 							 << " TO " << _udp_client->get_addr() << ":" << _udp_client->get_port() 
 							 << " FROM #" << x << std::endl << std::flush;
 				#endif
+				*/
 			}
 		
 		} break;

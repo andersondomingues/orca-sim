@@ -48,7 +48,7 @@ class TRouter: public TimedModel{
 
 private:
 		#ifdef ROUTER_ENABLE_COUNTERS
-		UComm<uint32_t>* _counter_active;		
+		USignal<uint32_t>* _counter_active;		
 		#endif
 
 		//stores info about actively sending ports. For intance, position zero representing 
@@ -73,7 +73,7 @@ private:
 public: 
 		
 		#ifdef ROUTER_ENABLE_COUNTERS
-		UComm<uint32_t>* GetCommCounterActive();
+		USignal<uint32_t>* GetSignalCounterActive();
 		void InitCounters(uint32_t active_counter_addr);
 		#endif
 		

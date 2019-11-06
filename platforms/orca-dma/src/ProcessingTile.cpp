@@ -35,14 +35,17 @@
  * Instantiate and bind internal hardware to each
  * other. */
 ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
-		
+
 	//create a cpu and memory in addition to current tile hardware
 	_mem0 = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
 	_cpu  = new THellfireProcessor(this->GetName() + ".cpu", this->GetSignalIntr(), this->GetSignalStall());
 	
-	//bind the cpu to the main memory (this is NOT how it is done in hardware, but protocols are abstracted here)
+	//binds cpu to the main memory
 	_cpu->SetMem0(_mem0);
 	this->GetDmaNetif()->SetMem0(_mem0);
+	
+	//bind self-id wire (care to save the value before the bind)
+	this->GetSignalId()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_TILE_ID)), MAGIC_TILE_ID);
 	
 	//update naming of internal hardware parts (from internal class)
 	this->GetRouter()->SetName(this->GetName() + ".router");
@@ -62,14 +65,10 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetSignalProgAddr()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_ADDR)), SIGNAL_PROG_ADDR);
 	this->GetSignalProgSize()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_SIZE)), SIGNAL_PROG_SIZE);
 
-	//bind self-id wire (care to save the value before the bind)
-	this->GetSignalId()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_TILE_ID)), MAGIC_TILE_ID);
-	
-	//bind hosttime wire
-	this->GetSignalHostTime()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_HOSTTIME)), MAGIC_HOSTTIME);
-
 	#ifdef MEMORY_ENABLE_COUNTERS
 	_mem0->InitCounters(MEM0_COUNTERS_STORE_ADDR, MEM0_COUNTERS_LOAD_ADDR);
+	this->GetSignalProgSize()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_SIZE)), SIGNAL_PROG_SIZE);
+	this->GetSignalProgSize()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_SIZE)), SIGNAL_PROG_SIZE);
 	#endif
 	
 	//initialize counters for the cpu
@@ -82,6 +81,28 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 		CPU_COUNTERS_IJUMPS_ADDR,
 		CPU_COUNTERS_ILOADSTORE_ADDR
 	);
+	
+		
+	//bind hosttime wire
+	this->GetSignalHostTime()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_HOSTTIME)), MAGIC_HOSTTIME);
+	
+	//memory mapping
+	
+	/*if(address == this->GetSignalCounterArith()->GetAddress())     {this->GetSignalCounterArith()->Write(0);     return;}
+	if(address == this->GetSignalCounterLogical()->GetAddress())   {this->GetSignalCounterLogical()->Write(0);   return;}
+	if(address == this->GetSignalCounterShift()->GetAddress())     {this->GetSignalCounterShift()->Write(0);     return;}
+	if(address == this->GetSignalCounterBranches()->GetAddress())  {this->GetSignalCounterBranches()->Write(0);  return;}
+	if(address == this->GetSignalCounterJumps()->GetAddress())     {this->GetSignalCounterJumps()->Write(0);     return;}
+	if(address == this->GetSignalCounterLoadStore()->GetAddress()) {this->GetSignalCounterLoadStore()->Write(0); return;}
+	*/
+	
+	#endif
+	
+	
+	#ifdef ROUTER_ENABLE_COUNTERS
+	//counters have been initialized by syperclass, only mapping is required
+	this->GetRouter()->GetSignalCounterActive()->MapTo(
+		(uint32_t*)_mem0->GetMap(ROUTER_COUNTER_ACTIVE_ADDR), ROUTER_COUNTER_ACTIVE_ADDR, 0);
 	#endif
 }
 
@@ -91,10 +112,17 @@ ProcessingTile::~ProcessingTile(){
 	delete(_mem0);	
 }
 
-
 THellfireProcessor* ProcessingTile::GetCpu(){
 	return _cpu;
 } 
+
+/**
+ * @brief Get current signal for systime signal
+ * @return A pointer to the instance of signal
+ */
+USignal<uint32_t>* ProcessingTile::GetSignalHostTime(){
+	return _signal_hosttime;
+}
 
 UMemory* ProcessingTile::GetMem0(){
 	return _mem0;

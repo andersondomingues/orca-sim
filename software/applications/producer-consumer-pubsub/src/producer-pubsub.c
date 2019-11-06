@@ -14,7 +14,6 @@
 void producer_pubsub(void){
 	
 	int8_t buf[PRODUCE_LENGTH];
-	char counter = 0;
 
 	// "opens" the comm
 	if(hf_comm_create(hf_selfid(), PUBLISHER_PORT, 0))
@@ -38,7 +37,7 @@ void producer_pubsub(void){
 	pubsub_advertise(pubinfo, brokerinfo, TOPIC_01);
 
 	//keep producing messages  
-	while(1){
+	for(int counter = 0; counter < 10; counter = 0){
 
 		//generate a bunch of values
 		for (int i = 0; i < PRODUCE_LENGTH; i++)
@@ -46,7 +45,6 @@ void producer_pubsub(void){
 		
 		//publishes to the topic
 		pubsub_publish(TOPIC_01, buf, sizeof(buf));
-		counter++;
 		
 		delay_ms(10);
 	}

@@ -31,7 +31,12 @@ include $(HFOS_DIR)/../extensions/*/ext.mak
 #phonies
 .PHONY: clean
 
-INC_DIRS += -I $(HFOS_DIR)/lib/include -I $(HFOS_DIR)/sys/include -I $(HFOS_DIR)/drivers/noc/include -I $(HFOS_DIR)/../extensions/orca-core/include
+INC_DIRS += -I $(HFOS_DIR)/lib/include \
+			-I $(HFOS_DIR)/sys/include \
+			-I $(HFOS_DIR)/drivers/noc/include \
+			-I $(HFOS_DIR)/../extensions/orca-core/include \
+			-I $(HFOS_DIR)/../extensions/orca-monitoring/include \
+			-I $(HFOS_DIR)/../extensions/orca-pubsub/include
 
 NOC_FLAGS = -DNOC_INTERCONNECT -DNOC_PACKET_SIZE=64 -DNOC_PACKET_SLOTS=64 \
 	    -DNOC_WIDTH=$(ORCA_NOC_WIDTH) -DNOC_HEIGHT=$(ORCA_NOC_HEIGHT)

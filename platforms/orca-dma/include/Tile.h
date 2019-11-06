@@ -38,49 +38,44 @@
 #define MEM2_SIZE 0x00000080 /* send memory */
 #define MEM2_BASE 0x50000080
 
-/** Memory range from "403Fxxxx" to "40FFxxxx" is reserved
-  * for control signals and magic signals. These signals are
-  * required by the platform to work properly */
+//0x403F0000 => memory mapped control wirtes
 #define SIGNAL_CPU_STALL    0x403F0000  /* 8 bits */
 #define SIGNAL_CPU_INTR     0x403F0001
 #define SIGNAL_SEND_STATUS  0x403F0002
 
 #define SIGNAL_RECV_STATUS  0x403F0004 
 
+
 #define SIGNAL_PROG_SEND    0x403F0008
 #define SIGNAL_PROG_RECV    0x403F0009
-//xxF0006 and xxF0007 skipped to keep alignment
 
 #define SIGNAL_PROG_ADDR    0x403F000C  /* 32 bits */
 #define SIGNAL_PROG_SIZE    0x403F0010
 
 #define MAGIC_TILE_ID       0x403F1000  
-#define MAGIC_HOSTTIME      0x403F1004
 
-/** Memory range from "81xxxxxx" to "81FFxxxx" is reserved 
-  * for internal counters and user-defined magic signals.
-  * These signals are not required by the platform, although
-  * they can be required by one service or another. */
+//0x403F1xxx => memory mapped counters
 #ifdef MEMORY_ENABLE_COUNTERS
-#define MEM0_COUNTERS_STORE_ADDR 0x81000000
-#define MEM0_COUNTERS_LOAD_ADDR  0x81000004
-#define MEM1_COUNTERS_STORE_ADDR 0x81000008
-#define MEM1_COUNTERS_LOAD_ADDR  0x8100000C
-#define MEM2_COUNTERS_STORE_ADDR 0x81000010
-#define MEM2_COUNTERS_LOAD_ADDR  0x81000014
+#define M0_COUNTER_STORE_ADDR (0x403F1010)
+#define M0_COUNTER_LOAD_ADDR  (0x403F1014)
+#define M1_COUNTER_STORE_ADDR (0x403F1018)
+#define M1_COUNTER_LOAD_ADDR  (0x403F101C)
+#define M2_COUNTER_STORE_ADDR (0x403F1020)
+#define M2_COUNTER_LOAD_ADDR  (0x403F1024)
 #endif
 
 #ifdef HFRISCV_ENABLE_COUNTERS
-#define CPU_COUNTERS_IARITH_ADDR     0x81000100 
-#define CPU_COUNTERS_ILOGICAL_ADDR   0x81000104
-#define CPU_COUNTERS_ISHIFT_ADDR     0x81000108
-#define CPU_COUNTERS_IBRANCHES_ADDR  0x8100010C
-#define CPU_COUNTERS_IJUMPS_ADDR     0x81000110
-#define CPU_COUNTERS_ILOADSTORE_ADDR 0x81000114
+#define CPU_COUNTER_ARITH_ADDR     (0x403F1028)
+#define CPU_COUNTER_LOGICAL_ADDR   (0x403F102C)
+#define CPU_COUNTER_SHIFT_ADDR     (0x403F1030)
+#define CPU_COUNTER_BRANCHES_ADDR  (0x403F1034)
+#define CPU_COUNTER_JUMPS_ADDR     (0x403F1038)
+#define CPU_COUNTER_LOADSTORE_ADDR (0x403F103C)
+#define CPU_COUNTER_HOSTTIME       (0x403F1040)
 #endif
 
 #ifdef ROUTER_ENABLE_COUNTERS
-#define ROUTER_COUNTERS_ACTIVE_ADDR 0x81000200
+#define ROUTER_COUNTER_ACTIVE_ADDR (0x403F1044)
 #endif
 
 class Tile{
@@ -109,10 +104,6 @@ private:
 	
 	//self-id wire
 	USignal<uint32_t>* _signal_id;
-	
-	//hosttime magic wire
-	uint32_t _shosttime;
-	USignal<uint32_t>* _signal_hosttime;
 
 public: 
 
@@ -131,7 +122,7 @@ public:
     USignal<int8_t>*  GetSignalStall();
 	USignal<int8_t>*  GetSignalIntr();
 	USignal<int8_t>*  GetSignalSendStatus();
-	USignal<int32_t>*  GetSignalRecvStatus();
+	USignal<int32_t>* GetSignalRecvStatus();
 	USignal<int32_t>* GetSignalProgAddr();
 	USignal<int32_t>* GetSignalProgSize();
 	USignal<int8_t>*  GetSignalProgSend();
@@ -148,10 +139,6 @@ public:
 	void SetSignalProgRecv(USignal<int8_t>*);
 	
 	USignal<uint32_t>* GetSignalId();
-	USignal<uint32_t>* GetSignalHostTime();
-
-	UMemory* GetmMem1();
-	UMemory* GetmMem2();
 	
 	std::string GetName();
 	

@@ -3,8 +3,7 @@
 
 #include "hellfire.h"
 
-#define MAGIC_TILE_ID       0x403F0016  
-#define MAGIC_HOSTTIME      0x403F0020
+#define MAGIC_TILE_ID       0x403F1000  
 
 //apps' entry point
 extern void app_main(void);

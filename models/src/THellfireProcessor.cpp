@@ -28,6 +28,8 @@
 #include <chrono>
 
 #include <THellfireProcessor.h>
+#include <USignal.h>
+
 #include "sys/time.h"
 
 void THellfireProcessor::dumpregs(risc_v_state *s){
@@ -103,29 +105,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		return data;
 		
 	}else{
-	
-		#ifdef MEMORY_ENABLE_COUNTERS
-		if(address == s->sram->GetSignalCounterStore()->GetAddress()) return s->sram->GetSignalCounterStore()->Read();
-		if(address == s->sram->GetSignalCounterLoad()->GetAddress())  return s->sram->GetSignalCounterLoad()->Read();
-		if(address == s->mem1->GetSignalCounterStore()->GetAddress()) return s->mem1->GetSignalCounterStore()->Read();
-		if(address == s->mem1->GetSignalCounterLoad()->GetAddress())  return s->mem1->GetSignalCounterLoad()->Read();
-		if(address == s->mem2->GetSignalCounterStore()->GetAddress()) return s->mem2->GetSignalCounterStore()->Read();
-		if(address == s->mem2->GetSignalCounterLoad()->GetAddress())  return s->mem2->GetSignalCounterLoad()->Read();
-		#endif /* MEMORY_ENABLE_COUNTERS */
-	
-		#ifdef HFRISCV_ENABLE_COUNTERS
-		if(address == this->GetSignalCounterArith()->GetAddress())     return this->GetSignalCounterArith()->Read();
-		if(address == this->GetSignalCounterLogical()->GetAddress())   return this->GetSignalCounterLogical()->Read();
-		if(address == this->GetSignalCounterShift()->GetAddress())     return this->GetSignalCounterShift()->Read();
-		if(address == this->GetSignalCounterBranches()->GetAddress())  return this->GetSignalCounterBranches()->Read();
-		if(address == this->GetSignalCounterJumps()->GetAddress())     return this->GetSignalCounterJumps()->Read();
-		if(address == this->GetSignalCounterLoadStore()->GetAddress()) return this->GetSignalCounterLoadStore()->Read();
-		#endif /* HFRISCV_ENABLE_COUNTERS */
 		
-		#ifdef ROUTER_ENABLE_COUNTERS
-		if(address == _router->GetSignalCounterActive()->GetAddress()) return _router->GetSignalCounterActive()->Read();
-		#endif /* ROUTER_ENABLE_COUNTERS */
-	
 		/*if(address == _signal_systime->GetAddress()){
 		
 			//time_t seconds;
@@ -185,10 +165,10 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	//if the address belong to some memory range, write to it
 	if(address <= s->sram->GetLastAddr()){
 
-		if(address <= 0x40005ab8){
-			dumpregs(s);
-			exit(0);
-		}
+		//if(address <= 0x40005ab8){
+		//	dumpregs(s);
+		//	exit(0);
+		//}
 
 		
 		switch(size){
@@ -231,7 +211,8 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		return; //succefully written		
 	}
 	
-	//TODO		
+	//TODO: these are mapped using sram->Map in the tile
+			
 	#ifdef MEMORY_ENABLE_COUNTERS
 	if(address == s->sram->GetSignalCounterStore()->GetAddress()){s->sram->GetSignalCounterStore()->Write(0); return;}
 	if(address == s->sram->GetSignalCounterLoad()->GetAddress()) {s->sram->GetSignalCounterLoad()->Write(0);  return;}
@@ -239,16 +220,17 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 	if(address == s->mem1->GetSignalCounterLoad()->GetAddress()) {s->mem1->GetSignalCounterLoad()->Write(0);  return;}
 	if(address == s->mem2->GetSignalCounterStore()->GetAddress()){s->mem2->GetSignalCounterStore()->Write(0); return;}
 	if(address == s->mem2->GetSignalCounterLoad()->GetAddress()) {s->mem2->GetSignalCounterLoad()->Write(0);  return;}
-	#endif /* OPT_MEMORY_DISABLE_COUNTERS */
+	#endif /* MEMORY_ENABLE_COUNTERS */
 	
-	#ifdef MEMORY_ENABLE_COUNTERS
+	
+	#ifdef HFRISCV_ENABLE_COUNTERS
 	if(address == this->GetSignalCounterArith()->GetAddress())     {this->GetSignalCounterArith()->Write(0);     return;}
 	if(address == this->GetSignalCounterLogical()->GetAddress())   {this->GetSignalCounterLogical()->Write(0);   return;}
 	if(address == this->GetSignalCounterShift()->GetAddress())     {this->GetSignalCounterShift()->Write(0);     return;}
 	if(address == this->GetSignalCounterBranches()->GetAddress())  {this->GetSignalCounterBranches()->Write(0);  return;}
 	if(address == this->GetSignalCounterJumps()->GetAddress())     {this->GetSignalCounterJumps()->Write(0);     return;}
 	if(address == this->GetSignalCounterLoadStore()->GetAddress()) {this->GetSignalCounterLoadStore()->Write(0); return;}
-	#endif /* OPT_HFRISC_DISABLE_COUNTERS */
+	#endif
 	
 	//may the request memory space be out of the mapped memory range, we assume
 	//the code is pointing to some of the special addresses		
@@ -407,6 +389,13 @@ SimulationTime THellfireProcessor::Run(){
 	//skip current cycle if stall is risen
 	if(_signal_stall->Read() == 0x1)
 		return 1;
+		
+	//if(this->GetName() == "004.cpu") std::cout << "pc: 0x" << std::hex << s->pc << std::dec << "" << std::endl;
+	
+	//if(this->GetName() == "004.cpu") std::cout << 
+	//	"pc: 0x" << std::hex << s->pc << " " <<
+	//	"irq: "<< std::dec << (int)_signal_intr->Read() << 
+	//	std::endl;
 
 	uint32_t pc_next_prediction;
 		

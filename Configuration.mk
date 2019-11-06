@@ -9,13 +9,14 @@
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
 GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -march=native -mtune=native -O3
-#-O3 -lasan -fsanitize=address
+# -lasan -fsanitize=address
 
 # Apps to be compiled within kernel image
-ORCA_APPLICATIONS := producer-consumer-pubsub noc_test4
+ORCA_APPLICATIONS := producer-consumer-pubsub counter-test
+# noc_test4
 
 # Software extensions (experimental)
-ORCA_EXTENSIONS := orca-core orca-pubsub 
+ORCA_EXTENSIONS := orca-core orca-monitoring orca-pubsub 
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
@@ -71,10 +72,10 @@ NETSOCKET_SERVER_PORT := 9999
 
 # ===============================================================[ BUFFER ]
 # Check whether the buffer is full before pushing data (depletes performance).
-BUFFER_OVERFLOW_CHECKING := NO
+BUFFER_OVERFLOW_CHECKING := YES
 
 # Check whether the buffer is empty before popping data (depletes performance).
-BUFFER_UNDERFLOW_CHECKING := NO
+BUFFER_UNDERFLOW_CHECKING := YES
 
 # Configure the capacity of the buffers used within the system. To disable 
 # network congestion, set this to a higher value. Please note that increasing t
@@ -102,26 +103,28 @@ MEMORY_ENABLE_COUNTERS := NO
 # Check whether address are mapped to some memory range before writing
 # to memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
-HFRISCV_WRITE_ADDRESS_CHECKING := YES
+# TODO: check whether this options works
+HFRISCV_WRITE_ADDRESS_CHECKING := NO
 
 # Check whether address are mapped to some memory range before reading
 # from memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
-HFRISCV_READ_ADDRESS_CHECKING := YES
+# TODO: check whether this options works
+HFRISCV_READ_ADDRESS_CHECKING := NO
 
 # Enable counter for instructions' classes (depletes performance).
 HFRISCV_ENABLE_COUNTERS := NO
 
 # ==============================================================[ NETIF ]
 # Check whether netif is writing to unmapped memory space
-NETIF_WRITE_ADDRESS_CHECKING := YES
+NETIF_WRITE_ADDRESS_CHECKING := NO
 
 # check whether netif is reading from unmapped memory space
-NETIF_READ_ADDRESS_CHECKING := YES
+NETIF_READ_ADDRESS_CHECKING := NO
 
 # ==============================================================[ ROUTER ]
 # Enable counters for number of active cycles
-ROUTER_ENABLE_COUNTERS := NO
+ROUTER_ENABLE_COUNTERS := YES
 
 # Check whether destination port is connected when tranfering flits.
 # Transfering flit to routers not mapped into the topology results in

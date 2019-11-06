@@ -23,7 +23,7 @@ TARGET_DEPS := \
 
 #compress all generated object files into a pack
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
-	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
+	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes (.cpp) into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp 

@@ -37,7 +37,7 @@ void consumer_pubsub(void)
 	pubsub_subscribe(subinfo, brokerinfo, TOPIC_01);
 	
 	//receiving process proceeds as for ordinary messages
-	while (counter < 10){
+	while (1){
 		
 		int32_t i = hf_recvprobe();
 	

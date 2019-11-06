@@ -133,10 +133,6 @@ SimulationTime TRouter::Run(){
 	
     	//check whether the switch control is closed for some port
 		if(_switch_control[i] != -1){
-					
-			#ifdef ROUTER_ENABLE_COUNTERS
-			is_active = true;
-			#endif
 			
 			//prevent routing to a non-existing router
 			#ifdef ROUTER_PORT_CONNECTED_CHECKING
@@ -162,7 +158,7 @@ SimulationTime TRouter::Run(){
 					_ob[_switch_control[i]]->push(_ib[i]->top()); //push one flit to destination port
 					_flits_to_send[i] = -1;
 					_ib[i]->pop(); //remove flit from source port
-									
+					
 				//if -1, we set the size flit and send it 
 				}else if(_flits_to_send[i] == -1){
 
@@ -177,6 +173,10 @@ SimulationTime TRouter::Run(){
 					_ib[i]->pop(); //remove flit from source port
 				}
 
+				#ifdef ROUTER_ENABLE_COUNTERS
+				is_active = true;
+				#endif
+
 				//free port
 				if(_flits_to_send[i] == 0) 
 					_switch_control[i] = -1;
@@ -185,7 +185,7 @@ SimulationTime TRouter::Run(){
 		}
 	}
 	
-	//ROUND ROBIN (prevents starvation)
+	//round robin update
 	_round_robin = (_round_robin + 1) % 5;
     	
 	#ifdef ROUTER_ENABLE_COUNTERS
@@ -200,7 +200,7 @@ SimulationTime TRouter::Run(){
 
 #ifdef ROUTER_ENABLE_COUNTERS
 void TRouter::InitCounters(uint32_t couter_active_addr){
-	_counter_active = new USignal<uint32_t>(GetName() + ".counters.active", 0, couter_active_addr);
+	_counter_active = new USignal<uint32_t>(couter_active_addr, GetName() + ".counters.active");
 }
 
 USignal<uint32_t>* TRouter::GetSignalCounterActive(){

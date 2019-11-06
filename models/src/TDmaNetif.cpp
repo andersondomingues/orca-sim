@@ -35,7 +35,7 @@
 
 TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
       
-   _sig_stall = nullptr;
+	_sig_stall = nullptr;
 	_sig_intr  = nullptr;
 	_sig_send_status = nullptr; 
 	_sig_recv_status = nullptr; 
@@ -114,27 +114,38 @@ SimulationTime TDmaNetif::Run(){
 
 	//independent processes, can run serial
     this->recvProcess();
-    this->sendProcess();   
+    this->sendProcess();
     
     return 1; //takes only 1 cycle to change both states
 }
 
+
 void TDmaNetif::recvProcess(){
 
-//	if(this->GetName() == "003.netif"){
-//		
-//		switch(_recv_state){
-//			case DmaNetifRecvState::WAIT_ADDR_FLIT: std::cout << "wait addr" << std::endl; break;
-//			case DmaNetifRecvState::WAIT_SIZE_FLIT: std::cout << "wait size" << std::endl; break;
-//			case DmaNetifRecvState::WAIT_PAYLOAD:   std::cout << "wait payload" << std::endl; break;
-//			case DmaNetifRecvState::WAIT_CONFIG_STALL: std::cout << "wait conf stall" << std::endl; break;
-//			case DmaNetifRecvState::COPY_RELEASE:   std::cout << "copy release" << std::endl; break;
-//			case DmaNetifRecvState::FLUSH:          std::cout << "flush" << std::endl; break;
-//			default: break;
-//			
-//		}		
-//	}
-	
+/*
+	if(this->GetName() == "004.netif"){
+		
+		switch(_recv_state){
+			case DmaNetifRecvState::WAIT_ADDR_FLIT: std::cout << "wait addr" << std::endl; break;
+			case DmaNetifRecvState::WAIT_SIZE_FLIT: std::cout << "wait size" << std::endl; break;
+			case DmaNetifRecvState::WAIT_PAYLOAD:   std::cout << "wait payload" << std::endl; break;
+			case DmaNetifRecvState::WAIT_CONFIG_STALL: std::cout << "wait conf stall" << std::endl; break;
+			case DmaNetifRecvState::COPY_RELEASE:   std::cout << "copy release" << std::endl; break;
+			case DmaNetifRecvState::FLUSH:          std::cout << "flush" << std::endl; break;
+			default: break;
+		}
+	}
+*/
+
+/*
+	if(this->GetName() == "004.netif"){
+		std::string dummy;
+		if(_recv_state == DmaNetifRecvState::WAIT_CONFIG_STALL)
+			std::cin >> dummy;
+
+	}
+*/
+
 	//recv state machine
 	switch(_recv_state){
 

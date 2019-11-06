@@ -23,6 +23,7 @@
 #include <sstream>
 #include <inttypes.h>
 #include <UMemory.h>
+#include <USignal.h>
 
 /**
  * @brief Instantiate a new memory module.
@@ -49,8 +50,8 @@ UMemory::UMemory(std::string name, uint32_t size, uint32_t sram_base, bool wipe,
 
 #ifdef MEMORY_ENABLE_COUNTERS
 void UMemory::InitCounters(uint32_t store_counter_addr, uint32_t load_counter_addr){
-	_counter_nstore = new USignal<uint32_t>(GetName() + ".counters.store", 0, store_counter_addr);
-	_counter_nload = new USignal<uint32_t>(GetName() + ".counters.load", 0, load_counter_addr);
+	_counter_nstore = new USignal<uint32_t>(store_counter_addr, GetName() + ".counters.store");
+	_counter_nload = new USignal<uint32_t>(load_counter_addr, GetName() + ".counters.load");
 }
 
 USignal<uint32_t>* UMemory::GetSignalCounterStore(){
@@ -71,7 +72,7 @@ USignal<uint32_t>* UMemory::GetSignalCounterLoad(){
  */
 void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
 
-	#ifndef MEMORY_WRITE_ADDRESS_CHECKING
+	#ifdef MEMORY_WRITE_ADDRESS_CHECKING
 	if(addr < _sram_base){
 		stringstream s;
 		s << this->GetName() << ": unable to write to addr (0x" << std::hex
@@ -109,7 +110,7 @@ void UMemory::Write(uint32_t addr, MemoryType* data, uint32_t length){
  */
 void UMemory::Read(uint32_t addr, MemoryType* buffer, uint32_t length){
 
-	#ifndef MEMORY_READ_ADDRESS_CHECKING
+	#ifdef MEMORY_READ_ADDRESS_CHECKING
 	if(addr < _sram_base){
 		stringstream s;
 		s << this->GetName() << ": unable to read from addr (0x" << std::hex

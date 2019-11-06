@@ -15,7 +15,7 @@ TARGET_DEPS := \
 
 #pack file into a static library to be used later
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
-	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(OUTPUTDIR)/*o
+	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp 

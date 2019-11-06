@@ -20,11 +20,10 @@
 //basic resources
 #include "orca-core.h"
 
-//extended functionalities
-#include "orca-hardware-counters.h"
-
 //application-specific header
 #include "../../../applications/producer-consumer-pubsub/include/producer-consumer-pubsub.h"
+#include "../../../applications/counter-test/include/counter-test.h"
+
 #include "../../../extensions/orca-pubsub/include/pubsub-broker.h"
 
 //Task mapping routine and entry-point. Please note that 
@@ -57,9 +56,11 @@ void app_main(void)
 			break;
 			
 		default:
-			//no spawn
 			break;
 	}
+	
+	//spawn for all cores
+	hf_spawn(counter_test, 0, 0, 0, "counters_test", 4096);
 
 	// 0,0,0 => allocate for best-effort
 

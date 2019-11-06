@@ -48,14 +48,6 @@ Tile::Tile(uint32_t x, uint32_t y){
 	_signal_id = new USignal<uint32_t>(MAGIC_TILE_ID, this->GetName() + ".id");
 	_signal_id->Write(id);
 	
-	//hosttime signal
-	_signal_hosttime = new USignal<uint32_t>(MAGIC_HOSTTIME,this->GetName() + ".hosttime");
-	//@TODO: bind to function?!
-	
-	//create new memories	
-	_mem1 = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, 0); //read from noc 
-	_mem2 = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, 0); //write to noc
-
 	//peripherals	
 	_router = new TRouter(this->GetName() + ".router", x, y);
 	_netif  = new TDmaNetif (this->GetName() + ".netif");
@@ -93,11 +85,15 @@ Tile::Tile(uint32_t x, uint32_t y){
 	//bind netif to router
 	_router->SetOutputBuffer(_netif->GetInputBuffer(), LOCAL);
 	_netif->SetOutputBuffer(_router->GetInputBuffer(LOCAL));
-	
+
+	//create new memories for the NI
+	_mem1 = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, 0); //read from noc 
+	_mem2 = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, 0); //write to noc
+
 	//bind memories
-	_netif->SetMem1(_mem1);
+	_netif->SetMem1(_mem1);	
 	_netif->SetMem2(_mem2);
-				
+
 	//counter initialization
 	#ifdef MEMORY_ENABLE_COUNTERS
 	_mem1->InitCounters(MEM1_COUNTERS_STORE_ADDR, MEM1_COUNTERS_LOAD_ADDR);
@@ -105,7 +101,7 @@ Tile::Tile(uint32_t x, uint32_t y){
 	#endif
 	
 	#ifdef ROUTER_ENABLE_COUNTERS
-	_router->InitCounters(ROUTER_COUNTERS_ACTIVE_ADDR);
+	_router->InitCounters(ROUTER_COUNTER_ACTIVE_ADDR);
 	#endif
 }
 
@@ -115,7 +111,6 @@ Tile::Tile(uint32_t x, uint32_t y){
 Tile::~Tile(){
 	
 	delete(_signal_id);
-	delete(_signal_hosttime);
 	
 	//delete hardware modules
 	delete(_router);
@@ -205,13 +200,6 @@ USignal<uint32_t>* Tile::GetSignalId(){
 	return _signal_id; 
 }
 
-/**
- * @brief Get current signal for systime signal
- * @return A pointer to the instance of signal
- */
-USignal<uint32_t>* Tile::GetSignalHostTime(){
-	return _signal_hosttime;
-}
 
 /************************************* SETTERS **************************************/
 /**

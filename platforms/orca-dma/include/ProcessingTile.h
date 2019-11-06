@@ -85,6 +85,10 @@ private:
 	//we use inheritance to derive multiple tiles 
 	//with similar architecture.
 	
+	//hosttime magic wire
+	uint32_t _shosttime;
+	USignal<uint32_t>* _signal_hosttime;
+	
 public: 
 
 	ProcessingTile(uint32_t x, uint32_t y);
@@ -96,6 +100,8 @@ public:
 	
 	//getters for mems
 	void SetMem0(UMemory*);
+	
+	USignal<uint32_t>* GetSignalHostTime();
 	
 	std::string ToString();
 };

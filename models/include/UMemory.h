@@ -55,15 +55,15 @@ private:
 	uint32_t _sram_base;
 
 	#ifdef MEMORY_ENABLE_COUNTERS
-	UComm<uint32_t>* _counter_nload;
-	UComm<uint32_t>* _counter_nstore;
+	USignal<uint32_t>* _counter_nload;
+	USignal<uint32_t>* _counter_nstore;
 	#endif
 
 public:
 
 	#ifdef MEMORY_ENABLE_COUNTERS
-	UComm<uint32_t>* GetCommCounterLoad();
-	UComm<uint32_t>* GetCommCounterStore();
+	USignal<uint32_t>* GetSignalCounterLoad();
+	USignal<uint32_t>* GetSignalCounterStore();
 	void InitCounters(uint32_t store_counter_addr, uint32_t load_counter_addr);
 	#endif
 

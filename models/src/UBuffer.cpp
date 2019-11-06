@@ -68,7 +68,7 @@ void UBuffer<T>::pop(){
 template <typename T>
 void UBuffer<T>::push(T e){
 	
-	#ifndef BUFFER_OVERFLOW_CHECKING
+	#ifdef BUFFER_OVERFLOW_CHECKING
 	//prevents overflow
 	if(_size == _capacity)
 		throw std::runtime_error(this->GetName() + ": unable to push to a full queue.");
