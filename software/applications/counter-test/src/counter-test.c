@@ -33,6 +33,7 @@ void counter_test(void){
 		printf("CPU: shift=%u, branches=%u\n",  *CPU_COUNTER_SHIFT, *CPU_COUNTER_BRANCHES);
 		printf("CPU: jumps=%u, loadstore=%u\n", *CPU_COUNTER_JUMPS, *CPU_COUNTER_LOADSTORE);
 		printf("CPU: cycles=%u, stalls=%u\n", *CPU_COUNTER_CYCLES_TOTAL, *CPU_COUNTER_CYCLES_STALL);	
+		printf("CPU: hosttime=%u\n", *CPU_COUNTER_HOSTTIME);
 		printf("---\n");
 	
 		printf("ROUTER: active=%u\n", *ROUTER_COUNTER_ACTIVE);

@@ -18,7 +18,4 @@ volatile uint32_t* CPU_COUNTER_HOSTTIME  = (volatile uint32_t*) CPU_COUNTER_HOST
 volatile uint32_t* CPU_COUNTER_CYCLES_TOTAL = (volatile uint32_t*) CPU_COUNTER_CYCLES_TOTAL_ADDR;
 volatile uint32_t* CPU_COUNTER_CYCLES_STALL = (volatile uint32_t*) CPU_COUNTER_CYCLES_STALL_ADDR;
 
-
-//CPU_COUNTER_CYCLES_TOTAL
-
 volatile uint32_t* ROUTER_COUNTER_ACTIVE = (volatile uint32_t*) ROUTER_COUNTER_ACTIVE_ADDR;

@@ -33,6 +33,7 @@ extern volatile uint32_t* CPU_COUNTER_SHIFT;
 extern volatile uint32_t* CPU_COUNTER_BRANCHES;
 extern volatile uint32_t* CPU_COUNTER_JUMPS;
 extern volatile uint32_t* CPU_COUNTER_LOADSTORE;
+extern volatile uint32_t* CPU_COUNTER_HOSTTIME;
 extern volatile uint32_t* CPU_COUNTER_CYCLES_TOTAL;
 extern volatile uint32_t* CPU_COUNTER_CYCLES_STALL;
 #endif

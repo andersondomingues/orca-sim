@@ -70,7 +70,19 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 
 	//Check whether the address belongs to the main memory
 	if(address <= s->sram->GetLastAddr() && address > s->sram->GetBase()){
+		
+		#ifdef HFRISCV_ENABLE_COUNTERS
+		//update clock only when requested
+		if(address == _counter_hosttime->GetAddress()){
+
+			std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+			auto duration = now.time_since_epoch();
+			auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
 			
+			_counter_hosttime->Write(millis);
+		}
+		#endif
+		
 		switch(size){
 		case 4:
 			if(address & 3){
@@ -105,23 +117,6 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		return data;
 		
 	}else{
-		
-		/*if(address == _signal_systime->GetAddress()){
-		
-			//time_t seconds;
-			//seconds = time(NULL);
-			//return seconds;
-		
-			//requires sys/time.h
-			//struct timeval tv;
-			//gettimeofday(&tv,NULL);
-			//return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);    	
-				
-			std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
-			auto duration = now.time_since_epoch();
-			auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-			return millis;
-		}*/
 		
 		//Address does not belong to any bank, check for special addresses
 		switch(address){
@@ -283,7 +278,9 @@ USignal<uint32_t>* THellfireProcessor::GetSignalCounterCyclesTotal(){
 USignal<uint32_t>* THellfireProcessor::GetSignalCounterCyclesStall(){
 	return this->_counter_cycles_stall;
 }
-
+USignal<uint32_t>* THellfireProcessor::GetSignalHostTime(){
+	return this->_counter_hosttime;
+}
 
 /**
  * Initialize Counters
@@ -298,8 +295,9 @@ void THellfireProcessor::InitCounters(
 		uint32_t jumps_counter_addr, 
 		uint32_t loadstore_counter_addr,
 		uint32_t cycles_total_counter_addr, 
-		uint32_t cycles_stall_counter_addr){
-		
+		uint32_t cycles_stall_counter_addr,
+		uint32_t hosttime_addr){
+
 	this->_counter_iarith     = new USignal<uint32_t>(arith_counter_addr, GetName() + ".counters.iarith");
 	this->_counter_ilogical   = new USignal<uint32_t>(logical_counter_addr, GetName() + ".counters.ilogical");
 	this->_counter_ishift     = new USignal<uint32_t>(shift_counter_addr, GetName() + ".counters.ishift");
@@ -309,6 +307,8 @@ void THellfireProcessor::InitCounters(
 
 	this->_counter_cycles_total = new USignal<uint32_t>(cycles_total_counter_addr, GetName() + ".counters.cycles_total");
 	this->_counter_cycles_stall = new USignal<uint32_t>(cycles_stall_counter_addr, GetName() + ".counters.cycles_stall");
+	
+	this->_counter_hosttime = new USignal<uint32_t>(hosttime_addr, GetName() + ".counters.hosttime");
 }
 
 /**

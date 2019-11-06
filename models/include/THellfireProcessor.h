@@ -81,6 +81,7 @@ private:
 	USignal<uint32_t>* _counter_cycles_total;
 	USignal<uint32_t>* _counter_cycles_stall;
 	
+	USignal<uint32_t>* _counter_hosttime;
 	#endif
 	
 public:
@@ -96,6 +97,8 @@ public:
 	USignal<uint32_t>* GetSignalCounterCyclesTotal();
 	USignal<uint32_t>* GetSignalCounterCyclesStall();
 	
+	USignal<uint32_t>* GetSignalHostTime();
+	
 	void InitCounters(
 		uint32_t arith_counter_addr, 
 		uint32_t logical_counter_addr,
@@ -104,7 +107,8 @@ public:
 		uint32_t jumps_counter_addr, 
 		uint32_t loadstore_counter_addr,
 		uint32_t cycles_total_counter_addr, 
-		uint32_t cycles_stall_counter_addr);
+		uint32_t cycles_stall_counter_addr,
+		uint32_t hosttime_addr);
 	
 	void UpdateCounters(int opcode, int func3);
 	#endif

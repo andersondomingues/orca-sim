@@ -96,7 +96,8 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_cpu->InitCounters(
 		CPU_COUNTER_ARITH_ADDR, CPU_COUNTER_LOGICAL_ADDR, CPU_COUNTER_SHIFT_ADDR, 
 		CPU_COUNTER_BRANCHES_ADDR, CPU_COUNTER_JUMPS_ADDR, CPU_COUNTER_LOADSTORE_ADDR,
-		CPU_COUNTER_CYCLES_TOTAL_ADDR, CPU_COUNTER_CYCLES_STALL_ADDR
+		CPU_COUNTER_CYCLES_TOTAL_ADDR, CPU_COUNTER_CYCLES_STALL_ADDR,
+		CPU_COUNTER_HOSTTIME_ADDR
 	);
 
 	//memory mapping
@@ -116,16 +117,15 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_CYCLES_TOTAL_ADDR)), CPU_COUNTER_CYCLES_TOTAL_ADDR);
 	_cpu->GetSignalCounterCyclesStall()->MapTo(
 		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_CYCLES_STALL_ADDR)), CPU_COUNTER_CYCLES_STALL_ADDR);
-
-	//bind hosttime wire
-	//_cpu->GetSignalHostTime()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_HOSTTIME)), MAGIC_HOSTTIME);
+	_cpu->GetSignalHostTime()->MapTo(
+		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_HOSTTIME_ADDR)), CPU_COUNTER_HOSTTIME_ADDR);
 	#endif
 }
 
 ProcessingTile::~ProcessingTile(){
 
 	delete(_cpu);
-	delete(_mem0);	
+	delete(_mem0);
 }
 
 THellfireProcessor* ProcessingTile::GetCpu(){
