@@ -14,7 +14,7 @@ MUTEX_TYPE = 0
 MEM_ALLOC = 3
 HEAP_SIZE = 500000
 FLOATING_POINT = 0
-KERNEL_LOG = 0
+KERNEL_LOG = 2
 
 SRC_DIR = $(HFOS_DIR)
 
@@ -47,8 +47,7 @@ CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
 	-DFLOATING_POINT=$(FLOATING_POINT) \
 	-DKERNEL_LOG=$(KERNEL_LOG) \
 	$(COMPLINE) \
-	$(NOC_FLAGS) \
-	-DDEBUG_PORT
+	$(NOC_FLAGS)
 
 $(IMAGE_NAME).bin:
 	@echo "$'\e[7m==================================\e[0m"

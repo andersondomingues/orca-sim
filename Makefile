@@ -81,9 +81,12 @@ documentation:
 
 #visualization file for multitail
 vismtail:
-	@echo "#!/bin/sh" > ./tools/multitail.sh
+	@echo "#!/bin/sh" > ./tools/output-debug.sh
 	@echo "multitail ./logs/*debug.log -s $(ORCA_NOC_WIDTH)" \
-		>> ./tools/multitail.sh
+		>> ./tools/output-debug.sh
+	@echo "#!/bin/sh" > ./tools/output-uart.sh
+	@echo "multitail ./logs/*uart.log -s $(ORCA_NOC_WIDTH)" \
+		>> ./tools/output-uart.sh
 
 clean:
 	@echo "$'\e[7m==================================\e[0m"

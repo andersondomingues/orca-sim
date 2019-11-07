@@ -37,7 +37,8 @@ void producer_pubsub(void){
 	pubsub_advertise(pubinfo, brokerinfo, TOPIC_01);
 
 	//keep producing messages  
-	for(int counter = 0; counter < 10; counter = 0){
+	//for(int counter = 0; counter < 10; counter = 0){
+	for(;;){
 
 		//generate a bunch of values
 		for (int i = 0; i < PRODUCE_LENGTH; i++)
@@ -46,7 +47,7 @@ void producer_pubsub(void){
 		//publishes to the topic
 		pubsub_publish(TOPIC_01, buf, sizeof(buf));
 		
-		delay_ms(10);
+		//delay_ms(10);
 	}
 
 	//unasvertise TOPIC_01

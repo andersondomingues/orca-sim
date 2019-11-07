@@ -283,6 +283,12 @@ void UMemory::Dump(uint32_t base, uint32_t length){
  */
 UMemory::~UMemory(){
 	delete [] _mem;
+	
+	#ifdef MEMORY_ENABLE_COUNTERS
+	delete(_counter_nstore);
+	delete(_counter_nload);
+	#endif
+	
 }
 
 void UMemory::Reset(){

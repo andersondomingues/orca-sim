@@ -33,7 +33,7 @@
 #include <UBuffer.h>
 #include <UMemory.h>
 #include <USignal.h>
-#include <TNetif.h>
+//#include <TNetif.h>
 
 
 class udp_client_server_runtime_error : public std::runtime_error

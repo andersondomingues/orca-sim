@@ -24,7 +24,7 @@
 
 //model API
 #include <THellfireProcessor.h>
-#include <TNetif.h>
+#include <TDmaNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
 

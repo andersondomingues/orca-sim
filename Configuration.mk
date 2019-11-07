@@ -9,14 +9,16 @@
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
 GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -march=native -mtune=native -O3
-# -lasan -fsanitize=address
+#-lasan -fsanitize=address
 
 # Apps to be compiled within kernel image
-ORCA_APPLICATIONS := producer-consumer-pubsub counter-test
+ORCA_APPLICATIONS := producer-consumer-pubsub 
+# counter-test
 # noc_test4
 
 # Software extensions (experimental)
-ORCA_EXTENSIONS := orca-core orca-monitoring orca-pubsub 
+ORCA_EXTENSIONS := orca-core orca-pubsub
+#orca-monitoring
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
@@ -72,10 +74,10 @@ NETSOCKET_SERVER_PORT := 9999
 
 # ===============================================================[ BUFFER ]
 # Check whether the buffer is full before pushing data (depletes performance).
-BUFFER_OVERFLOW_CHECKING := YES
+BUFFER_OVERFLOW_CHECKING := NO
 
 # Check whether the buffer is empty before popping data (depletes performance).
-BUFFER_UNDERFLOW_CHECKING := YES
+BUFFER_UNDERFLOW_CHECKING := NO
 
 # Configure the capacity of the buffers used within the system. To disable 
 # network congestion, set this to a higher value. Please note that increasing t
@@ -97,7 +99,7 @@ MEMORY_READ_ADDRESS_CHECKING := NO
 MEMORY_WIPE_ADDRESS_CHECKING := NO
 
 # Enable counter for read and write operations (depletes performance).
-MEMORY_ENABLE_COUNTERS := YES
+MEMORY_ENABLE_COUNTERS := NO
 
 # ==============================================================[ HFRISCV ]
 # Check whether address are mapped to some memory range before writing
@@ -113,7 +115,7 @@ HFRISCV_WRITE_ADDRESS_CHECKING := NO
 HFRISCV_READ_ADDRESS_CHECKING := NO
 
 # Enable counter for instructions' classes (depletes performance).
-HFRISCV_ENABLE_COUNTERS := YES
+HFRISCV_ENABLE_COUNTERS := NO
 
 # ==============================================================[ NETIF ]
 # Check whether netif is writing to unmapped memory space
@@ -124,7 +126,7 @@ NETIF_READ_ADDRESS_CHECKING := NO
 
 # ==============================================================[ ROUTER ]
 # Enable counters for number of active cycles
-ROUTER_ENABLE_COUNTERS := YES
+ROUTER_ENABLE_COUNTERS := NO
 
 # Check whether destination port is connected when tranfering flits.
 # Transfering flit to routers not mapped into the topology results in

@@ -58,6 +58,9 @@ void _psclient_tsk(){
 
 	//enable publishers again
 	_psclient_enabled = 1; //enable publishers
+
+	PS_DEBUG("[PS] client started\n");
+
 	//keep running indefinitely
 	while (1){
 
@@ -80,28 +83,33 @@ void _psclient_tsk(){
 					//add a subscriber to the table, if not there already 
 					case PSMSG_SUBSCRIBE:{
 						
-						PS_DEBUG("cli: new sub cpu %d, port %d, topic %d\n",
-							e.cpu, e.port, e.topic);
-					
-						//try to insert in the list
-						val = pubsublist_add(_psclient_subscribers, e);
+						if(!pubsublist_has(_psclient_subscribers, e)){
+
+							PS_DEBUG("[PS] add sub cpu %d, port %d, topic %d\n",
+								e.cpu, e.port, e.topic);
+						
+							//try to insert in the list
+							val = pubsublist_add(_psclient_subscribers, e);
+						}
 						
 					} break;
 
 					//remove a subscriber from the table, if not removed yet
 					case PSMSG_UNSUBSCRIBE:{
 						
-						//try to remove from the list
-						val = pubsublist_remove(_psclient_subscribers, e);
-						
-						PS_DEBUG("cli: new unsub cpu %d, port %d, topic %d\n",
-							e.cpu, e.port, e.topic);
-						
+						if(pubsublist_has(_psclient_subscribers, e)){
+
+							//try to remove from the list
+							val = pubsublist_remove(_psclient_subscribers, e);
+							
+							PS_DEBUG("[PS]: rem sub cpu %d, port %d, topic %d\n",
+								e.cpu, e.port, e.topic);
+						}
 					} break;
 
 					//invalid opcode? 
 					default:{
-						//ignore
+						PS_DEBUG("GODAMN MAN YOU CRACK THE CAN OPEN AGAIN\n");
 					}
 
 				}
@@ -137,12 +145,11 @@ void pubsub_advertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinfo,
 		.channel = 0  //TODO: is channel required?
 	};
 	
-	PS_DEBUG("pub: adv opcode %d, cpu %d, port %d, topic %d\n",
+	PS_DEBUG("[PS] adv cpu %d, port %d, topic %d\n",
 		e.opcode, e.cpu, e.port, e.topic);
 	
 	//TODO: is channel required?
 	hf_send(brokerinfo.address, brokerinfo.port, (int8_t*)&e, sizeof(e), e.channel);
-	
 }
 
 /**
@@ -165,6 +172,9 @@ void pubsub_unadvertise(pubsub_node_info_t pubinfo, pubsub_node_info_t brokerinf
 		.channel = 0,
 		.port = pubinfo.port
 	};
+	
+	PS_DEBUG("[PS] unadv cpu %d, port %d, topic %d\n",
+		e.opcode, e.cpu, e.port, e.topic);
 	
 	hf_send(brokerinfo.address, brokerinfo.port, (int8_t*)&e, sizeof(e), e.channel);
 }
@@ -189,7 +199,7 @@ void pubsub_publish(topic_t topic, int8_t* msg, uint16_t size){
 			//send the message to the subscriber
 			hf_send(e.cpu, e.port, msg, size, e.channel);
 			
-			PS_DEBUG("pub to cpu %d, port %d, topic %d\n",
+			PS_DEBUG("[PS] pub cpu %d, port %d, topic %d\n",
 				e.cpu, e.port, e.topic);
 		}
 	}

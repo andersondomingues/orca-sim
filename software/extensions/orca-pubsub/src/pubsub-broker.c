@@ -33,30 +33,30 @@ void pubsub_broker_tsk(void){
 	int8_t buf[500];
 	uint16_t cpu, port, size;
 	int16_t val;
-	
+
 	pubsub_entry_t publishers[PUBSUBLIST_SIZE], subscribers[PUBSUBLIST_SIZE];
 	pubsub_entry_t p, e;
-	
+
 	pubsublist_init(publishers);
-	pubsublist_init(subscribers);	
+	pubsublist_init(subscribers);
 
 	//we create brokers always using the same port, see <pubsub-shared.h>
 	if (hf_comm_create(hf_selfid(), PS_BROKER_DEFAULT_PORT, 0))
 		panic(0xff);
-		
+
 	//keep running indefinitely
 	while (1){
 
 		//check whether some message arrived at channel i
-		int32_t i = hf_recvprobe(); 
+		int32_t i = hf_recvprobe();
 
 		if(i >= 0){
 
 			//receive data from driver
 			val = hf_recv(&cpu, &port, buf, &size, i);
 
-			PS_DEBUG("broker, cpu %d port %d size %d\n", 
-				cpu, port, size);
+			//PS_DEBUG("broker, cpu %d port %d size %d\n", 
+			//	cpu, port, size);
 
 			if (val){
 				printf("hf_recv(): error %d\n", val);
@@ -81,7 +81,8 @@ void pubsub_broker_tsk(void){
 							
 							//add it 
 							pubsublist_add(subscribers, e);
-										
+							PS_DEBUG("[PS] subscription cpu %d, port %d, topic %d,\n", e.cpu, e.port, e.topic);
+							
 							//notify publishers (clients)
 							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 								
@@ -92,44 +93,38 @@ void pubsub_broker_tsk(void){
 								if(p.topic == e.topic && p.opcode) {
 									
 									val = hf_send(p.cpu, PS_CLIENT_DEFAULT_PORT, (int8_t*)&e, sizeof(e), p.channel);
-									
-									if(val)
-										printf("morreu");	
-										
-									PS_DEBUG("brk: notified client cpu %d, port %d, topic %d,\n", p.cpu, p.port, p.topic);
+									PS_DEBUG("[PS] send sub cpu %d, port %d, topic %d,\n", p.cpu, p.port, p.topic);
+									if(val) printf("died\n");
 								}
 							}
 						}
 
-						// PS_DEBUG("--- list of subscribers -- \n");
-						// pubsublist_print(subscribers);
-
 					} break;
 
 					/** handle a message for unsubscription
-					 * a) remove the subscriber from the table, if any
-					 * b) if subscriber WAS in the table, notify publishers of that topic **/
+					 * remove the subscriber from the table, if any, then notify publishers of that topic **/
 					case PSMSG_UNSUBSCRIBE:{
-						
-						//notify each publisher
-						for(int i = 0; i < PUBSUBLIST_SIZE; i++){
-							
-							p = publishers[i];
-							
-							if(p.topic == e.topic){
-								
-								val = hf_send(p.cpu, p.port, (int8_t*)&e, sizeof(e), p.channel);
-								
-								if(val)
-									printf("morreu");	
+
+						//check whether the subscriber is in the list already
+						if(pubsublist_has(subscribers, e)){
+
+							//try to remove from the list
+							pubsublist_remove(subscribers, e);
+							PS_DEBUG("[PS] unsubscription cpu %d, port %d, topic %d,\n", e.cpu, e.port, e.topic);
+
+							//notify each publisher
+							for(int i = 0; i < PUBSUBLIST_SIZE; i++){
+
+								p = publishers[i];
+
+								if(p.topic == e.topic){
+
+									val = hf_send(p.cpu, p.port, (int8_t*)&e, sizeof(e), p.channel);
+									PS_DEBUG("[PS] send sub cpu %d, port %d, topic %d,\n", p.cpu, p.port, p.topic);
+									if(val) printf("died\n");
+								}
 							}
 						}
-						
-						//try to remove from the list
-						pubsublist_remove(subscribers, e);
-						
-						// PS_DEBUG("--- list of subscribers -- \n");
-						// pubsublist_print(subscribers);
 
 					} break;
 
@@ -144,8 +139,7 @@ void pubsub_broker_tsk(void){
 						//check whether the publisher is in the list already
 						if(!pubsublist_has(publishers, e)){
 							
-							PS_DEBUG("adding pub: cpu %d, port %d, topic %d\n", 
-								e.cpu, e.port, e.topic);
+							PS_DEBUG("[PS] advertising cpu %d, port %d, topic %d,\n", e.cpu, e.port, e.topic);
 
 							//try to add to the list
 							val = pubsublist_add(publishers, e);
@@ -157,12 +151,11 @@ void pubsub_broker_tsk(void){
 								for(int i = 0; i < PUBSUBLIST_SIZE; i++){
 
 									p = subscribers[i];
-																
+																									
 									//check whether the entry has the same target topic AND is valid
 									if(p.topic == e.topic && p.opcode == 0x1){
 										
-										PS_DEBUG("sending sub: cpu %d, port %d, topic %d\n", 
-											p.cpu, p.port, p.topic);
+										PS_DEBUG("[PS] notified client cpu %d, port %d, topic %d,\n", p.cpu, p.port, p.topic);
 										
 										//must send to the client
 										val = hf_send(e.cpu, PS_CLIENT_DEFAULT_PORT, (int8_t*)&p, sizeof(p), e.channel);
@@ -180,11 +173,9 @@ void pubsub_broker_tsk(void){
 
 						}
 
-						
-
-						PS_DEBUG("--- list of publishers -- \n");
-						pubsublist_print(publishers);
-						PS_DEBUG("------------------------- \n");
+						// PS_DEBUG("--- list of publishers -- \n");
+						// pubsublist_print(publishers);
+						// PS_DEBUG("------------------------- \n");
 
 					} break;
 
@@ -196,9 +187,9 @@ void pubsub_broker_tsk(void){
 						//try to remove from the table 
 						pubsublist_remove(publishers, e);
 						
-						PS_DEBUG("--- list of publishers -- \n");
-						pubsublist_print(publishers);
-						PS_DEBUG("------------------------- \n");
+						// PS_DEBUG("--- list of publishers -- \n");
+						// pubsublist_print(publishers);
+						// PS_DEBUG("------------------------- \n");
 
 					}break;
 

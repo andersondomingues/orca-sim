@@ -652,6 +652,9 @@ THellfireProcessor::~THellfireProcessor(){
 	
 	delete _counter_cycles_total;
 	delete _counter_cycles_stall;
+	
+	delete _counter_hosttime;
+
 	#endif
 }
 

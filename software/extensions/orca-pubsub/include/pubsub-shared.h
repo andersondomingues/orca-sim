@@ -37,7 +37,7 @@ enum PSMSG{
 typedef uint16_t topic_t;
 
 //an entry of publishers/subscribers lists.
-typedef struct{
+typedef struct pubsub_entry_t_struct {
 	uint16_t opcode;   //is this entry valid? (value fell when entry gets discarded)
 						    //this field also represents the opcode when used as message format
 	topic_t topic;     //unique identifier to the topic
@@ -50,7 +50,7 @@ typedef struct{
 } pubsub_entry_t;
 
 //identification of a broker process (addres + port)
-typedef struct{
+typedef struct pubsub_node_info_t_struct{
 	uint16_t address;  //address (number of the tile) in which the broker is running
 	uint16_t port;     //port in which the broker process in running
 } pubsub_node_info_t;

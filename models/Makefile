@@ -12,7 +12,6 @@ TARGET_DEPS := \
 	$(OUTPUTDIR)/USignal.o \
 	$(OUTPUTDIR)/UBuffer.o \
 	$(OUTPUTDIR)/UMemory.o \
-	$(OUTPUTDIR)/TNetif.o \
 	$(OUTPUTDIR)/TRouter.o \
 	$(OUTPUTDIR)/THellfireProcessor.o \
 	$(OUTPUTDIR)/TDmaNetif.o

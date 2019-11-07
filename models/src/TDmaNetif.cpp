@@ -227,7 +227,7 @@ void TDmaNetif::recvProcess(){
 		case DmaNetifRecvState::WAIT_PAYLOAD:{
 		
 			//repeats until there are no more flits to be received
-			if(_ib->size() > 0){	
+			if(_ib->size() > 0){
 			
 				//copy one flit into the auxiliary register and pop buffer
 				_recv_reg = _ib->top();
@@ -267,6 +267,7 @@ void TDmaNetif::recvProcess(){
 			//if the prog_recv signal has been set, stall the cpu,
 			//configure the number of flits to copy to the main memory
 			//and then chagne states
+			
 			if(_sig_prog_recv->Read() == 0x1){
 			
 				//must be read from the signal, because in case of flush the
@@ -446,15 +447,23 @@ void TDmaNetif::sendProcess(){
 
 				}				
 
-			//all flits copied to the aux memory, switch to noc-mode
-			}else{
+			//make sure the cpu have lowered the start signal at least once before 
+			//getting back to the waiting state (prevent duplicates)
+			}else {
+				_send_state = DmaNetifSendState::FLUSH;
+			}
+		} break;
+
+		case DmaNetifSendState::FLUSH:{	
+
+			if(_sig_prog_send->Read() == 0x0){
+				
 				_sig_send_status->Write(0x0);  //notify free
 				_send_state = DmaNetifSendState::WAIT_CONFIG_STALL;
-
-				//std::cout << "send done" <<std::endl;
-
+				
+				//if(this->GetName() == "003.netif")
+				//	std::cout << "flushed" << std::endl;				
 			}
-					
 		} break;
 	}
 }

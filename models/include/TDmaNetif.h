@@ -48,7 +48,8 @@ enum class DmaNetifRecvState{
 enum class DmaNetifSendState{
 	WAIT_CONFIG_STALL, //wait cpt to configure and raise _sig_send, stall
 	COPY_AND_RELEASE,  //copy content from memory, release cpu
-	SEND_DATA_TO_NOC   //write data to the network, raise _send_status 
+	SEND_DATA_TO_NOC,  //write data to the network, raise _send_status 
+	FLUSH              //wait for the cpu to lower the send signal (ack)
 };
 
 /**
