@@ -238,6 +238,21 @@ void UMemory::LoadBin(std::string filename, uint32_t base, uint32_t size){
 	}
 }
 
+void UMemory::SaveBin(std::string filename, uint32_t base, uint32_t size){
+	
+	//std::ofstream f(filename, std::ios::binary | std::ios::in | std::ios::out);
+	std::ofstream f(filename, std::ifstream::binary);
+	
+	if(f.is_open()){
+		f.write((char*)&_mem[base -_sram_base], sizeof(_mem[0]) * size);
+		f.close();
+	}else{
+	    //TODO: surround with try-catch instead of printing
+		std::string err_msg = this->GetName() + ": unable to save'" + filename + "'.";
+		throw std::runtime_error(err_msg);
+	}
+}
+
 /**
  * @brief Show the content of memory
  */

@@ -14,7 +14,8 @@ MUTEX_TYPE = 0
 MEM_ALLOC = 3
 HEAP_SIZE = 500000
 FLOATING_POINT = 0
-KERNEL_LOG = 2
+#KERNEL_LOG = 2
+KERNEL_LOG = $(KERNEL_LOG_LEVEL)
 
 SRC_DIR = $(HFOS_DIR)
 
@@ -57,7 +58,7 @@ $(IMAGE_NAME).bin:
 	make libc
 	make noc
 	make kernel 
-	ar rcs hellfire-os.a *.o	
+	ar rcs hellfire-os.a *.o
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Making Extensions ...           \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
@@ -82,8 +83,6 @@ $(IMAGE_NAME).bin:
 	hexdump -v -e '4/1 "%02x" "\n"' $(IMAGE_NAME).bin > $(IMAGE_NAME).txt
 	mv *.o *.elf *.bin *.cnt *.lst *.sec *.txt *.a ../bin
 
-
-	
 clean:
 	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt *.a
 

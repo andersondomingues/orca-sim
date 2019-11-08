@@ -92,8 +92,14 @@ public:
       * @param filename: Name of the file to be read.
       * @param location: Location of the memory area in which the contents of 
            the loaded file will be put. */
-    void LoadBin(std::string filename, uint32_t size, uint32_t addr = 0);
-		
+    void LoadBin(std::string filename, uint32_t base, uint32_t size);
+
+	/** Dump some memory as binary into a file
+	  * @param filename: file to write to
+	  * @param size: number of bytes to save
+	  * @param addr: starting address (does not considers base) */
+    void SaveBin(std::string filename, uint32_t base, uint32_t size);
+    
     /** Write zeros to the whole memory area.
       * @param base: Starting address of the region to be wiped.
       * @param length: Number of memory positions to be overwritten. */

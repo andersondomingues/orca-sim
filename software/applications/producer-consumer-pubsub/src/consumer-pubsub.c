@@ -38,6 +38,8 @@ void consumer_pubsub(void)
 	
 	//receiving process proceeds as for ordinary messages
 	while (1){
+	
+		//printf("counter: %d\n", counter);
 		
 		int32_t i = hf_recvprobe();
 	
@@ -50,9 +52,10 @@ void consumer_pubsub(void)
 			} else {
 				printf("cpu %d, port %d, ch %d, size %d, #%d [free queue: %d]\n",
 					cpu, port, i, size, counter, hf_queue_count(pktdrv_queue));
-				counter++;
 			}
 		}
+		
+		counter++;
 	}
 
 	//unsubscribe from TOPIC_01

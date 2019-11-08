@@ -52,6 +52,11 @@ void THellfireProcessor::bp(risc_v_state *s, uint32_t ir){
 int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 	
 	uint32_t data;
+	
+	//if(this->GetName() == "004.cpu"){
+	//if(address < s->sram->GetBase() || address > s->sram->GetLastAddr()){
+	//	std::cout << "pc: 0x" << std::hex << s->pc << ", addr: 0x"  << address << std::dec << std::endl;
+	//}
 	s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 		
 	return data;
@@ -147,7 +152,6 @@ USignal<int8_t>* THellfireProcessor::GetSignalStall(){
 USignal<int8_t>* THellfireProcessor::GetSignalIntr(){
 	return _signal_intr;
 }
-
 	
 /**
  * @brief Reads data from memory
@@ -157,11 +161,6 @@ USignal<int8_t>* THellfireProcessor::GetSignalIntr(){
  * @param value Value to be written to the address
  */
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
-
-	//if(address <= 0x4000675c){
-	//		dumpregs(s);
-	//		exit(0);
-	//}
 
 	//if the address belong to some memory range, write to it
 	if(address <= s->sram->GetLastAddr()){
@@ -569,6 +568,13 @@ fail:
 	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;         /*IRQ_COUNTER2*/
 	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;      /*IRQ_COUNTER_NOT*/
 	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;         /*IRQ_COUNTER*/
+	
+	/*
+	if(this->GetName() == "004.cpu"){
+		printf("pc: 0x%x\n", s->pc);
+	}
+	*/
+	
 	if (_signal_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff;/*IRQ_NOC*/
 
 	#ifdef HFRISCV_ENABLE_COUNTERS

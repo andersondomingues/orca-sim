@@ -36,35 +36,25 @@
 #include <Tile.h>
 
 /* MEMORY LAYOUT
-------------------- 0x40000000
+------------------- 0x40000000 <<-- code begin
 
        sram
-      (~2MB)
+      (~4MB)
 
-------------------- 0x40400000
+------------------- 0x40400000 <<-- stack
      empty space
-------------------- 0x80000000
- COMM_NOC_ACK       0x80000001
- COMM_NOC_INTR      0x80000002
- COMM_NOC_START     0x80000003
-      .....
-------------------- 0x90000000
-    mem1 (recv)
-    (128 bytes)
-------------------- 0x90000080
-    mem2 (send)
-    (128 bytes)
--------------------------------*/
+------------------- 0x40410000 <<-- mmio begin
+
+       mmio
+      (~FFFF)
+
+------------------- 0x4041FFFF <<-- mmio end
+
+*/
 
 //memory mapping
-#define MEM0_SIZE 0x00400000 /* main memory */
+#define MEM0_SIZE 0x0041FFFF /* main memory */
 #define MEM0_BASE 0x40000000
-
-//#define MEM1_SIZE 0x00000080 /* recv memory */
-//#define MEM1_BASE 0x90000000
-
-//#define MEM2_SIZE 0x00000080 /* send memory */
-//#define MEM2_BASE 0x90000080
 
 /**
  * @class ProcessingTile

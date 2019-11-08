@@ -137,14 +137,11 @@ void TDmaNetif::recvProcess(){
 	}
 */
 
-/*
-	if(this->GetName() == "004.netif"){
-		std::string dummy;
-		if(_recv_state == DmaNetifRecvState::WAIT_CONFIG_STALL)
-			std::cin >> dummy;
+	//if(this->GetName() == "004.netif" && _recv_payload_remaining != 0){
+	//	std::cout << "recv remains: " << _recv_payload_remaining << std::endl;
 
-	}
-*/
+	//}
+	
 
 	//recv state machine
 	switch(_recv_state){
@@ -258,7 +255,7 @@ void TDmaNetif::recvProcess(){
 					_recv_state = DmaNetifRecvState::WAIT_CONFIG_STALL;
 				}
 			}
-			
+
 		} break;
 
 		//wait for the cpu to configure the dma
@@ -276,13 +273,11 @@ void TDmaNetif::recvProcess(){
 
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
-				
-				//if(this->GetName() == "003.netif")
-				//	std::cout << "addr: 0x" << std::hex << _sig_prog_addr->Read() << std::endl;
-				
+
 				_sig_stall->Write(0x1); //stall cpu	
 
 			}
+
 		} break;
 		
 		//copy data, and release
@@ -326,6 +321,7 @@ void TDmaNetif::recvProcess(){
 			//if there is no more flits to receive, lower the interruption,
 			//restore the cpu (release stall), then change states
 			}else{
+			
 				_sig_stall->Write(0x0);
 				_sig_intr->Write(0x0);
 				
@@ -336,24 +332,28 @@ void TDmaNetif::recvProcess(){
 
 			}
 		} break;
-		
+				
 		case DmaNetifRecvState::FLUSH:{	
+
+			//if(this->GetName() == "004.netif")
+			//	std::cout << "flushed: " << xx++ << std::endl;
 
 			if(_sig_prog_recv->Read() == 0x0){
 				
 				_recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
 				
 				//if(this->GetName() == "003.netif")
-				//	std::cout << "flushed" << std::endl;				
+				//	std::cout << "flushed" << std::endl;
+				
+				//if(this->GetName() == "004.netif")
+				//	xx = 0;
 			}
 		
 		} break;
 	}
-	
-	//if(_recv_state != DmaNetifRecvState::WAIT_ADDR_FLIT)
-	//	std::cout << this->GetName() << " is at state => " << 
-	//		static_cast<std::underlying_type<DmaNetifRecvState>::type>(_recv_state) <<  std::endl;
+
 }
+
 
 void TDmaNetif::sendProcess(){
 

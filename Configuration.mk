@@ -1,7 +1,5 @@
 # =======================================================[ GLOBAL SETTINGS ]
-# Flags we set here will be propagated to all modules
-# TODO: check whether these flags are propagated to software
-# module or not
+# Flags we set here will be propagated to all hardware modules (not sw)
 # Currently adopted flags:
 # -Wall, -Wextra, Werror: activate a lot of warning at compile time
 # -g: attach debug information to the generated executable
@@ -12,13 +10,21 @@ GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -march=native -mtune=nati
 #-lasan -fsanitize=address
 
 # Apps to be compiled within kernel image
-ORCA_APPLICATIONS := producer-consumer-pubsub 
+ORCA_APPLICATIONS := producer-consumer
+# producer-consumer-pubsub 
 # counter-test
 # noc_test4
 
 # Software extensions (experimental)
 ORCA_EXTENSIONS := orca-core orca-pubsub
 #orca-monitoring
+
+# ============================================================[ HELLFIREOS ]
+# Set level of logging for the HellfireOS kernel. 
+# 0 => disabled 
+# 1 => interruption and dispatch information (default)
+# 2 => same as level one plus calls to kernel functions
+KERNEL_LOG_LEVEL := 2
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
@@ -74,10 +80,10 @@ NETSOCKET_SERVER_PORT := 9999
 
 # ===============================================================[ BUFFER ]
 # Check whether the buffer is full before pushing data (depletes performance).
-BUFFER_OVERFLOW_CHECKING := NO
+BUFFER_OVERFLOW_CHECKING := YES
 
 # Check whether the buffer is empty before popping data (depletes performance).
-BUFFER_UNDERFLOW_CHECKING := NO
+BUFFER_UNDERFLOW_CHECKING := YES
 
 # Configure the capacity of the buffers used within the system. To disable 
 # network congestion, set this to a higher value. Please note that increasing t
@@ -88,11 +94,11 @@ BUFFER_CAPACITY := 16
 # ===============================================================[ MEMORY ]
 # Check whether address are mapped to some memory range before writing
 # to memory. Set to YES to force checking (depletes performance).
-MEMORY_WRITE_ADDRESS_CHECKING := NO
+MEMORY_WRITE_ADDRESS_CHECKING := YES
 
 # Check whether address are mapped to some memory range before reading from
 # memory. Set to YES to force checking (depletes performance).
-MEMORY_READ_ADDRESS_CHECKING := NO
+MEMORY_READ_ADDRESS_CHECKING := YES
 
 # Check whether address are mapped to some memory range before wipeing
 # memory ranges. Set to YES to force checking (depletes performance).
@@ -106,13 +112,13 @@ MEMORY_ENABLE_COUNTERS := NO
 # to memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
 # TODO: check whether this options works
-HFRISCV_WRITE_ADDRESS_CHECKING := NO
+HFRISCV_WRITE_ADDRESS_CHECKING := YES
 
 # Check whether address are mapped to some memory range before reading
 # from memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
 # TODO: check whether this options works
-HFRISCV_READ_ADDRESS_CHECKING := NO
+HFRISCV_READ_ADDRESS_CHECKING := YES
 
 # Enable counter for instructions' classes (depletes performance).
 HFRISCV_ENABLE_COUNTERS := NO
@@ -241,3 +247,4 @@ export ORCA_NOC_HEIGHT
 export ORCA_NOC_WIDTH
 export ORCA_APPLICATIONS
 export ORCA_EXTENSIONS
+export KERNEL_LOG_LEVEL

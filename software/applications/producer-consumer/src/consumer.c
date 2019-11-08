@@ -13,6 +13,7 @@ void consumer(void)
         panic(0xff);
     }
 
+	delay_ms(2);
     counter = 0;
 	
     while (1){
@@ -25,7 +26,7 @@ void consumer(void)
 	
             if (val){
 				printf("hf_recv(): error %d\n", val);
-            } else {		
+            } else {
 	        	printf("cpu %d, port %d, ch %d, size %d, #%d [free queue: %d]\n",
                     cpu, port, i, size, counter, hf_queue_count(pktdrv_queue));
                 counter++;

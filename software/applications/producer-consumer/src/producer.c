@@ -21,7 +21,7 @@ void producer(void){
 	
     srand(hf_cpuid());
     
-    node = 1;
+    node = 4;
     counter = 0;
 	
     // generate a unique channel number for this CPU
