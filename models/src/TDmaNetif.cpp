@@ -264,6 +264,8 @@ void TDmaNetif::recvProcess(){
 			//if the prog_recv signal has been set, stall the cpu,
 			//configure the number of flits to copy to the main memory
 			//and then chagne states
+			//if(this->GetName() == "004.netif")
+			//	std::cout << "0x" << std::hex << (int)_sig_prog_recv->Read() << std::endl;
 			
 			if(_sig_prog_recv->Read() == 0x1){
 			
