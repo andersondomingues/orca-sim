@@ -296,14 +296,16 @@ int main(int __attribute__((unused)) argc, char** argv){
 	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
 		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 			
-			//netork tile
+			//schedule network bridge module, which starts at the first cycle
 			if(x == 0 && y == 0)
 				s->Schedule(Event(1, ((NetworkTile*)tiles[x][y])->GetSocket()));
 				
-			//processing tile
+			//schedule the cpu to start at the third cycle, because no instruction
+			//gets out the cpu before that cycle
 			else
-				s->Schedule(Event(4, ((ProcessingTile*)tiles[x][y])->GetCpu()));
+				s->Schedule(Event(3, ((ProcessingTile*)tiles[x][y])->GetCpu()));
 			
+			//all other hardware start at the first cycle
 			s->Schedule(Event(1, tiles[x][y]->GetRouter()));
 			s->Schedule(Event(1, tiles[x][y]->GetDmaNetif()));
 		}
@@ -321,20 +323,20 @@ int main(int __attribute__((unused)) argc, char** argv){
 			t1 = std::chrono::high_resolution_clock::now();
 			s->Run(ORCA_EPOCH_LENGTH);
 			t2 = std::chrono::high_resolution_clock::now();
-			
+
 			auto duration = std::chrono::duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
 			s->NextEpoch();
-			
+
 			//converts mili to seconds before calculating the frequency
 			double hertz = ((double)ORCA_EPOCH_LENGTH) / ((double)((double)duration / 1000.0));
 
 			//divide frequency by 1k (Hz -> KHz)
 			std::cout << "notice: epoch #" << s->GetEpochs() << " took ~" 
-                                << duration << "ms (running @ " << (hertz / 1000000.0)
+				<< duration << "ms (running @ " << (hertz / 1000000.0)
 				<< " MHz)" << std::endl;
-							
-			//simulate until reach the limit of pulses
+
 			#ifdef ORCA_EPOCHS_TO_SIM
+			//simulate until reach the limit of pulses
 			if(s->GetEpochs() >= ORCA_EPOCHS_TO_SIM)
 				break;
 			#endif
@@ -369,8 +371,9 @@ int main(int __attribute__((unused)) argc, char** argv){
 		
 			TDmaNetif* n = tiles[x][y]->GetDmaNetif();
 			std::cout << n->GetName() << ":"
-				<< " Send=" << static_cast<unsigned int>(n->GetSendState())
-				<< " Recv=" << static_cast<unsigned int>(n->GetRecvState()) << " |"
+				<< " SEND_STATE=" << static_cast<unsigned int>(n->GetSendState())
+				<< " RECV_STATE=" << static_cast<unsigned int>(n->GetRecvState())
+				// << " |"
 				<< std::endl;
 		}
 	}
@@ -387,8 +390,8 @@ int main(int __attribute__((unused)) argc, char** argv){
 			THellfireProcessor* n = t->GetCpu();
 			std::cout 
 				<< n->GetName() 
-				<< ": intr=" << (int)(n->GetSignalIntr()->Read()) 
-				<< ", stall=" << (int)(n->GetSignalStall()->Read()) << std::endl;
+				<< ": INTR=" << (int)(n->GetSignalIntr()->Read()) 
+				<< ", STALL=" << (int)(n->GetSignalStall()->Read()) << std::endl;
 		}
 	}
 

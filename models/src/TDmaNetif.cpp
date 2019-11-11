@@ -31,8 +31,6 @@
 
 #include <TDmaNetif.h>
 
-//int xyz = 0;
-
 TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
       
 	_sig_stall = nullptr;
@@ -170,14 +168,17 @@ void TDmaNetif::recvProcess(){
 				}
 				#endif 
 				
+				//write first flit to recv mem
 				_mem1->Write(_recv_address, (int8_t*)&_recv_reg, sizeof(FlitType)); //write to mem
 				_recv_address += sizeof(FlitType);
 				
 				//change states 
 				_recv_state = DmaNetifRecvState::WAIT_SIZE_FLIT;
 				
-				//if(this->GetName() == "003.netif")
+				//if(this->GetName() == "004.netif"){
 				//	std::cout << "recv addr 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << std::endl;
+				
+				//}
 			}
 		} break;
 		
@@ -222,40 +223,41 @@ void TDmaNetif::recvProcess(){
 		
 		//wait for remaining flits to arrive, and interrupt
 		case DmaNetifRecvState::WAIT_PAYLOAD:{
-		
-			//repeats until there are no more flits to be received
-			if(_ib->size() > 0){
+
+			//check whether there are more flits to receive
+			if(_recv_payload_remaining > 0){
 			
-				//copy one flit into the auxiliary register and pop buffer
-				_recv_reg = _ib->top();
-				_ib->pop();
+				//check whether there is any data in the buffer
+				if(_ib->size() > 0){
+			
+					//copy one flit into the auxiliary register and pop buffer
+					_recv_reg = _ib->top();
+					_ib->pop();
 
-				#ifdef NETIF_WRITE_ADDRESS_CHECKING
-				if(_recv_address < _mem1->GetBase() || _recv_address > _mem1->GetLastAddr()){
-					stringstream ss;
-					ss << this->GetName() << ", recv::WAIT_PAYLOAD, unable to write to _mem1 " << std::hex << "0x" << _recv_address << std::endl;
-					throw std::runtime_error(ss.str());
-				}
-				#endif 
+					#ifdef NETIF_WRITE_ADDRESS_CHECKING
+					if(_recv_address < _mem1->GetBase() || _recv_address > _mem1->GetLastAddr()){
+						stringstream ss;
+						ss << this->GetName() << ", recv::WAIT_PAYLOAD, unable to write to _mem1 " << std::hex << "0x" << _recv_address << std::endl;
+						throw std::runtime_error(ss.str());
+					}
+					#endif 
 
-				//write the flit to memory and increment memory counter
-				_mem1->Write(_recv_address, (int8_t*)&_recv_reg, sizeof(FlitType));
-				_recv_address += sizeof(FlitType);
-				
-				//one less flit to be received
-				_recv_payload_remaining--;
-				
-				//if(this->GetName() == "003.netif")
-				//	std::cout << "recv data 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << ", " << _recv_payload_remaining << " remaining" << std::endl;
-				
-				//whether the ni received all the payload, interrupt
-				//the cpu and change states
-				if(_recv_payload_remaining == 0){
-					_sig_intr->Write(0x1);
-					_recv_state = DmaNetifRecvState::WAIT_CONFIG_STALL;
+					//write the flit to memory and increment memory counter
+					_mem1->Write(_recv_address, (int8_t*)&_recv_reg, sizeof(FlitType));
+					_recv_address += sizeof(FlitType);
+					
+					//one less flit to be received
+					_recv_payload_remaining--;
+					
+					//if(this->GetName() == "003.netif")
+					//	std::cout << "recv data 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _recv_reg << ", " << _recv_payload_remaining << " remaining" << std::endl;
 				}
+
+			//whether the ni received all the payload, interrupt the cpu and change states
+			}else{
+				_sig_intr->Write(0x1);
+				_recv_state = DmaNetifRecvState::WAIT_CONFIG_STALL;
 			}
-
 		} break;
 
 		//wait for the cpu to configure the dma
@@ -269,27 +271,25 @@ void TDmaNetif::recvProcess(){
 			
 			if(_sig_prog_recv->Read() == 0x1){
 			
-				//must be read from the signal, because in case of flush the
-				//size to copy is zero
+				//configured via cpu. accounts the +2, so no 
+				//sum is necessary
 				_recv_payload_remaining = _sig_prog_size->Read(); 
-
+				
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
 
-				_sig_stall->Write(0x1); //stall cpu	
-
+				_sig_stall->Write(0x1); //stall cpu
 			}
 
 		} break;
-		
+
 		//copy data, and release
 		case DmaNetifRecvState::COPY_RELEASE:{
 		
 			//for each flit, copy from the auxiliary _mem1 memory
 			//to the _mem0 main memory
 			if(_recv_payload_remaining > 0){
-				
-				
+
 				#ifdef NETIF_READ_ADDRESS_CHECKING
 				if(_recv_address < _mem1->GetBase() || _recv_address > _mem1->GetLastAddr()){
 					stringstream ss;
@@ -297,7 +297,7 @@ void TDmaNetif::recvProcess(){
 					throw std::runtime_error(ss.str());
 				}
 				#endif 
-				
+
 				//read data to the auxiliary register
 				_mem1->Read(_recv_address, (int8_t*)&_recv_reg, sizeof(FlitType));
 				
@@ -310,7 +310,7 @@ void TDmaNetif::recvProcess(){
 					throw std::runtime_error(ss.str());
 				}
 				#endif 
-				
+
 				//write auxiliary flit to main memory
 				_mem0->Write(_recv_address + _sig_prog_addr->Read(), (int8_t*)&_recv_reg, sizeof(FlitType));
 				
@@ -323,15 +323,14 @@ void TDmaNetif::recvProcess(){
 			//if there is no more flits to receive, lower the interruption,
 			//restore the cpu (release stall), then change states
 			}else{
-			
+
 				_sig_stall->Write(0x0);
 				_sig_intr->Write(0x0);
-				
+
 				_recv_state = DmaNetifRecvState::FLUSH;
-				
+
 				// if(this->GetName() == "003.netif")
 				// 	std::cout << "recv end" << std::endl;
-
 			}
 		} break;
 				
@@ -340,7 +339,9 @@ void TDmaNetif::recvProcess(){
 			//if(this->GetName() == "004.netif")
 			//	std::cout << "flushed: " << xx++ << std::endl;
 
-			if(_sig_prog_recv->Read() == 0x0){
+			//return to the main state on the acknowledge
+			// --- wait for the buffer to get full to interrupt again
+			if(_sig_prog_recv->Read() == 0x0){// && _ib->size() > 0){
 				
 				_recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
 				
@@ -350,10 +351,8 @@ void TDmaNetif::recvProcess(){
 				//if(this->GetName() == "004.netif")
 				//	xx = 0;
 			}
-		
 		} break;
 	}
-
 }
 
 

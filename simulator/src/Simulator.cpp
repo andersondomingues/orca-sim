@@ -19,12 +19,17 @@ Simulator::Simulator(){
 	_timeout = 1;
 }
 
+/**
+  * @brief Runs an epoch of simulation
+  * @param time Number of cycles to run
+  * @return the time in which the last event was executed. Should
+  * roughly correspond to <time>. */
 SimulationTime Simulator::Run(SimulationTime time){
-	
+
 	_globalTime = 0;
 	_timeout = time;
 
-	std::future<SimulationTime> et;
+	//std::future<SimulationTime> et;
 
 	while(_globalTime <= _timeout){
 	
@@ -33,33 +38,24 @@ SimulationTime Simulator::Run(SimulationTime time){
 			break;
 		#endif
 
-		//get next event to be processed
+		//get next event to be processed. Since we use a priority
+		//queue to store events, the event nealy in time will be 
+		//popped first
 		Event e = _queue.top();
+		_queue.pop();
+		
+		//update global time 
+		_globalTime = e.time;
 
-		//check whether a cycle has ended and 
-		//commit signals
-		//if(_globalTime < e.time){
-			_globalTime = e.time;
-			//this->CommitSignals();
-		//}
-
-		//execute delta using future
-		//et = std::async(
-		//	std::launch::async, // | std::launch::deferred,
-		//	[e](){ return e.timedModel->Run(); }
-		//);
-		
-		//remove old event
-		_queue.pop();		
-		
-		//push new one 	
-		//et.wait();
-		
-		//e.time += et.get();
+		//schedule current event to be executed after a certain number 
+		//cycles, defined in the correspondent Run method
 		e.time += e.timedModel->Run();
+		
+		//push event back to the queue
 		_queue.push(e);
 	}
-	
+
+	//return point in time in which the last event was executed
 	return _globalTime;
 }
 
@@ -67,7 +63,9 @@ SimulationTime Simulator::Run(SimulationTime time){
 //	return;	
 //}
 
-
+/**
+  * @brief Generate the next epoch for a simulation session.
+  * @return ? */
 SimulationTime Simulator::NextEpoch(){
 
 	//commit all signals
@@ -76,8 +74,9 @@ SimulationTime Simulator::NextEpoch(){
 	//get the number of elements scheduled
 	uint32_t queue_size = _queue.size();
 
-	//time discount
-	SimulationTime discount = _globalTime;//-1;
+	//time discount -> all events will be send back in
+	//time that amount of time 
+	SimulationTime discount = _globalTime;
 	
 	//std::cout << "discount: " << discount << std::endl;
 	
@@ -94,14 +93,16 @@ SimulationTime Simulator::NextEpoch(){
 
 		_queue.pop();
 	}
-	
+
 	//put update events back in simulator's queue
 	for(uint32_t i = 0; i < queue_size; i++)
 		_queue.push(tmp_queue[i]);
 		
 	//update epochs counters
 	_epochs++;
-	
+
+	//std::cout << "_queue_size > " << _queue.size() << std::endl;
+
 	return _globalTime;
 }
 
