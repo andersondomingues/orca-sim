@@ -45,7 +45,7 @@ void app_main(void)
 		//allocate 90% cpu time for each of the tasks (producer, consumer, and broker)
 		case 7:
 			//hf_spawn(producer_pubsub, 0, 0, 0, "producer-ps-task", 8192);
-			hf_spawn(producer, 0, 0, 0, "producer-task", 8192);
+			//hf_spawn(producer, 0, 0, 0, "producer-task", 8192);
 			break;
 			
 		case 3:
@@ -54,7 +54,15 @@ void app_main(void)
 					
 		case 4:
 			//hf_spawn(consumer_pubsub, 0, 0, 0, "consumer-ps-task", 8192);
-			hf_spawn(consumer, 0, 0, 0, "consumer-task", 8192);
+			//hf_spawn(consumer, 0, 0, 0, "consumer-task", 8192);
+			break;
+
+		case 2:
+			hf_spawn(producer, 0, 0, 0, "producer-task", 4096);	
+			break;
+			
+		case 6:
+			hf_spawn(consumer, 0, 0, 0, "consumer-task", 4096);
 			break;
 			
 		default:

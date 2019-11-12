@@ -22,7 +22,7 @@ void producer(void){
 	
     srand(hf_cpuid());
     
-    node = 4;
+    node = 6;
     counter = 0;
 	
     // generate a unique channel number for this CPU
@@ -54,12 +54,10 @@ void producer(void){
 				channel, node, sizeof(uint32_t), *((uint32_t*)buf));
 		}
 
-
 		counter++;
 
 		//add some delay to avoid flooding the network
-		delay_ms(20);
-		//delay_ms(1);
+		delay_ms(1);
 	}
 }
 

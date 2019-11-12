@@ -17,6 +17,10 @@ void consumer(void)
 	//delay_ms(2);
     counter = 0;
 	
+	printf("buf: 0x%x\n", (uint32_t)buf);
+	
+	//while(1);
+	
     while (1){
 	
         int32_t i = hf_recvprobe();
@@ -28,8 +32,8 @@ void consumer(void)
             if (val){
 				printf("hf_recv(): error %d\n", val);
             } else {
-	        	printf("#%d [free queue: %d]\n", counter, hf_queue_count(pktdrv_queue));
-	        	printf("cpu %d, port %d, ch %d, size %d\n", cpu, port, i, size);
+	        	//printf("#%d [free queue: %d]\n", counter, hf_queue_count(pktdrv_queue));
+	        	//printf("cpu %d, port %d, ch %d, size %d\n", cpu, port, i, size);
 	        	printf("content %d\n", *((uint32_t*)buf));
 
 				//printf("\n------\n");

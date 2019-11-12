@@ -109,7 +109,7 @@ SimulationTime TRouter::Run(){
 		//find the destination using the address in the first flit
 		uint8_t target_port = this->GetRouteXY(_ib[_round_robin]->top()); 
 		
-		//printf("port: %d\n", target_port);
+		//printf("src: %d, trgt: %d\n", _round_robin, target_port);
 		
 		//check whether the destination port is bound to some other source port
 		bool bound = false;
@@ -145,7 +145,7 @@ SimulationTime TRouter::Run(){
 			if(_ib[i] == nullptr){
 				stringstream ss;
 				ss << this->GetName() << ": unable to route from unknown port" << std::endl;
-				std::runtime_error(ss.str());				
+				std::runtime_error(ss.str());
 			}
 			#endif
 				
