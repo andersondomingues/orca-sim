@@ -43,30 +43,31 @@ void app_main(void)
 	switch(hf_cpuid()){
 	
 		//allocate 90% cpu time for each of the tasks (producer, consumer, and broker)
-		case 7:
+		//case 7:
 			//hf_spawn(producer_pubsub, 0, 0, 0, "producer-ps-task", 8192);
 			//hf_spawn(producer, 0, 0, 0, "producer-task", 8192);
-			break;
+		//	break;
 			
-		case 3:
+		//case 3:
 			//hf_spawn(pubsub_broker_tsk, 0, 0, 0, "broker-ps-task", 8192);
-			break;		
+		//	break;		
 					
-		case 4:
+		//case 4:
 			//hf_spawn(consumer_pubsub, 0, 0, 0, "consumer-ps-task", 8192);
 			//hf_spawn(consumer, 0, 0, 0, "consumer-task", 8192);
-			break;
+		//	break;
 
-		case 2:
-			hf_spawn(producer, 0, 0, 0, "producer-task", 4096);	
+		//pubsub
+		case 1:
+			hf_spawn(producer, 0, 0, 0, "producer-task", 2048);	
 			break;
 			
-		case 6:
-			hf_spawn(consumer, 0, 0, 0, "consumer-task", 4096);
+		default : //case 6:
+			hf_spawn(consumer, 0, 0, 0, "consumer-task", 2048);
 			break;
 			
-		default:
-			break;
+		//default:
+			//break;
 	}
 	
 	//spawn for all cores

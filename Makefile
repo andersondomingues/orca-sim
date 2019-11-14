@@ -88,6 +88,14 @@ vismtail:
 	@echo "multitail ./logs/*uart.log -s $(ORCA_NOC_WIDTH)" \
 		>> ./tools/output-uart.sh
 
+#generate hex files from memdumps
+bp:
+	@echo "$'\e[7m==================================\e[0m"
+	@echo "$'\e[7m Generating Dumps, Please Wait... \e[0m"
+	@echo "$'\e[7m==================================\e[0m"
+	@cd breakpoints; bash ../tools/bin-to-hex.sh; rm -rf *.bin
+	@echo "Done."
+
 clean:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m          Cleaning up...          \e[0m"
@@ -102,4 +110,5 @@ clean:
 		$(BINARY_DIR)/*~ $(BINARY_DIR)/*.elf $(BINARY_DIR)/*.bin \
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec $(BINARY_DIR)/*.txt
 	rm -rf docs/doxygen/
+	rm -rf breakpoints/*.bin breakpoints/*.hex
 	#rm -rf logs/*.log

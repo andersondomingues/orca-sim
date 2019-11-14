@@ -51,16 +51,16 @@ class USignal : public ISignal {
 
 private:
 	/** pointer to the place where the bus data will be stored */
-    T* _t_ptr;
+    volatile T* _t_ptr;
 	 
 	/** internal storage (necessary when mmio is not used) */
-	T _t_storage;
+	volatile T _t_storage;
     
     /** an optional name to identify this bus during runtime */
 	std::string _t_name;
     
 	/** a memory address in case this is mapped using mmio */	
-	uint32_t _t_addr;
+	volatile uint32_t _t_addr;
 	
 public:
 

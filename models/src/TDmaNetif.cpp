@@ -31,6 +31,8 @@
 
 #include <TDmaNetif.h>
 
+int _number_of_goddamn_packets = 0;
+
 TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
       
 	_sig_stall = nullptr;
@@ -89,26 +91,37 @@ void TDmaNetif::SetMem2(UMemory* m2){
 }
 
 //getters
-USignal<int8_t>*  TDmaNetif::GetSignalStall(){ return _sig_stall; }
-USignal<int8_t>*  TDmaNetif::GetSignalIntr(){ return _sig_intr; }
-USignal<int8_t>*  TDmaNetif::GetSignalSendStatus(){ return _sig_send_status; }
-USignal<int32_t>*  TDmaNetif::GetSignalRecvStatus(){ return _sig_recv_status; }
-USignal<int32_t>* TDmaNetif::GetSignalProgAddr(){ return _sig_prog_addr; }
-USignal<int32_t>* TDmaNetif::GetSignalProgSize(){ return _sig_prog_size; }
-USignal<int8_t>*  TDmaNetif::GetSignalProgSend(){ return _sig_prog_send; }
-USignal<int8_t>*  TDmaNetif::GetSignalProgRecv(){ return _sig_prog_recv; }
+USignal<uint8_t>*  TDmaNetif::GetSignalStall(){ return _sig_stall; }
+USignal<uint8_t>*  TDmaNetif::GetSignalIntr(){ return _sig_intr; }
+
+USignal<uint8_t>*  TDmaNetif::GetSignalSendStatus(){ return _sig_send_status; }
+USignal<uint32_t>*  TDmaNetif::GetSignalRecvStatus(){ return _sig_recv_status; }
+
+USignal<uint8_t>*  TDmaNetif::GetSignalProgSend(){ return _sig_prog_send; }
+USignal<uint8_t>*  TDmaNetif::GetSignalProgRecv(){ return _sig_prog_recv; }
+
+USignal<uint32_t>* TDmaNetif::GetSignalProgAddr(){ return _sig_prog_addr; }
+USignal<uint32_t>* TDmaNetif::GetSignalProgSize(){ return _sig_prog_size; }
+
 
 //setters    
-void TDmaNetif::SetSignalStall(USignal<int8_t>* c){ _sig_stall = c; }
-void TDmaNetif::SetSignalIntr(USignal<int8_t>* c){ _sig_intr = c; }
-void TDmaNetif::SetSignalSendStatus(USignal<int8_t>* c){ _sig_send_status = c; }
-void TDmaNetif::SetSignalRecvStatus(USignal<int32_t>* c){ _sig_recv_status = c; }
-void TDmaNetif::SetSignalProgAddr(USignal<int32_t>* c){ _sig_prog_addr = c; }
-void TDmaNetif::SetSignalProgSize(USignal<int32_t>* c){ _sig_prog_size = c; }
-void TDmaNetif::SetSignalProgSend(USignal<int8_t>* c){ _sig_prog_send = c; }
-void TDmaNetif::SetSignalProgRecv(USignal<int8_t>* c){ _sig_prog_recv = c; }
+void TDmaNetif::SetSignalStall(USignal<uint8_t>* c){ _sig_stall = c; }
+void TDmaNetif::SetSignalIntr(USignal<uint8_t>* c){ _sig_intr = c; }
+
+void TDmaNetif::SetSignalSendStatus(USignal<uint8_t>* c){ _sig_send_status = c; }
+void TDmaNetif::SetSignalRecvStatus(USignal<uint32_t>* c){ _sig_recv_status = c; }
+
+void TDmaNetif::SetSignalProgSend(USignal<uint8_t>* c){ _sig_prog_send = c; }
+void TDmaNetif::SetSignalProgRecv(USignal<uint8_t>* c){ _sig_prog_recv = c; }
+
+void TDmaNetif::SetSignalProgAddr(USignal<uint32_t>* c){ _sig_prog_addr = c; }
+void TDmaNetif::SetSignalProgSize(USignal<uint32_t>* c){ _sig_prog_size = c; }
+
+
 
 SimulationTime TDmaNetif::Run(){
+
+	//std::cout << this->GetName() << std::endl;
 
 	//independent processes, can run serial
     this->recvProcess();
@@ -271,9 +284,18 @@ void TDmaNetif::recvProcess(){
 			
 			if(_sig_prog_recv->Read() == 0x1){
 			
+				//std::stringstream sname;
+				//sname << "breakpoints/packet" << _number_of_goddamn_packets++ << ".bin";
+				
+				//_mem1->SaveBin(sname.str(), 0, _mem1->GetSize());
+				
+			
+				//printf("NI ADDR: 0x%x\n", _sig_prog_addr->Read());
+			
 				//configured via cpu. accounts the +2, so no 
 				//sum is necessary
 				_recv_payload_remaining = _sig_prog_size->Read(); 
+				_sig_recv_status->Write(0x0);
 				
 				_recv_state = DmaNetifRecvState::COPY_RELEASE;
 				_recv_address = 0; //reset memory pointer
@@ -355,7 +377,6 @@ void TDmaNetif::recvProcess(){
 	}
 }
 
-
 void TDmaNetif::sendProcess(){
 
 	//send state machine
@@ -399,7 +420,6 @@ void TDmaNetif::sendProcess(){
 				//read from main memory
 				_mem0->Read(_send_address + _sig_prog_addr->Read(), (int8_t*)&_send_reg, sizeof(FlitType));
 				
-					
 				#ifdef NETIF_WRITE_ADDRESS_CHECKING
 				if(_send_address < _mem2->GetBase() || _send_address > _mem2->GetLastAddr()){
 					
@@ -446,7 +466,7 @@ void TDmaNetif::sendProcess(){
 
 					//std::cout << "send pushed 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << ", " << _send_payload_remaining << " remaining" <<std::endl;
 
-				}				
+				}
 
 			//make sure the cpu have lowered the start signal at least once before 
 			//getting back to the waiting state (prevent duplicates)

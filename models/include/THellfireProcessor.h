@@ -62,8 +62,8 @@ private:
 	uint32_t _last_pc;
 
 	//interruption wire
-	USignal<int8_t>* _signal_intr;
-	USignal<int8_t>* _signal_stall;
+	USignal<uint8_t>* _signal_intr;
+	USignal<uint8_t>* _signal_stall;
 	
 	//context
 	risc_v_state context;
@@ -122,11 +122,11 @@ public:
 	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
 	//ctor./dtor.
-	THellfireProcessor(string name, USignal<int8_t>* intr, USignal<int8_t>* stall);
+	THellfireProcessor(string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall);
 	~THellfireProcessor();
 	
-	USignal<int8_t>* GetSignalStall();
-	USignal<int8_t>* GetSignalIntr();
+	USignal<uint8_t>* GetSignalStall();
+	USignal<uint8_t>* GetSignalIntr();
 
 	//setters for memories
 	void SetMem0(UMemory*);

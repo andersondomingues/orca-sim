@@ -6,7 +6,8 @@
 # -std: required by old GCC to set c++17 as default the c++ 
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -march=native -mtune=native -O3 -lasan -fsanitize=address
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -lasan -fsanitize=address -O0
+#-march=native -mtune=native -O3 
 
 # Apps to be compiled within kernel image
 ORCA_APPLICATIONS := producer-consumer
@@ -15,7 +16,8 @@ ORCA_APPLICATIONS := producer-consumer
 # noc_test4
 
 # Software extensions (experimental)
-ORCA_EXTENSIONS := orca-core orca-pubsub
+ORCA_EXTENSIONS := orca-core 
+#orca-pubsub
 #orca-monitoring
 
 # ============================================================[ HELLFIREOS ]
@@ -28,11 +30,11 @@ KERNEL_LOG_LEVEL := 2
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 3
+ORCA_NOC_HEIGHT := 2
 
 # Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_WIDTH  := 3
+ORCA_NOC_WIDTH  := 2
 
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
@@ -41,6 +43,7 @@ ORCA_EPOCH_LENGTH  := 1000000
 
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
 ORCA_EPOCHS_TO_SIM := INF
+#ORCA_EPOCHS_TO_SIM := 3
 
 # Enable multithread simulation (experimental)
 ORCA_ENABLE_MULTITHREADING := NO
@@ -79,10 +82,10 @@ NETSOCKET_SERVER_PORT := 9999
 
 # ===============================================================[ BUFFER ]
 # Check whether the buffer is full before pushing data (depletes performance).
-BUFFER_OVERFLOW_CHECKING := YES
+BUFFER_OVERFLOW_CHECKING := NO
 
 # Check whether the buffer is empty before popping data (depletes performance).
-BUFFER_UNDERFLOW_CHECKING := YES
+BUFFER_UNDERFLOW_CHECKING := NO
 
 # Configure the capacity of the buffers used within the system. To disable 
 # network congestion, set this to a higher value. Please note that increasing t
@@ -93,11 +96,11 @@ BUFFER_CAPACITY := 16
 # ===============================================================[ MEMORY ]
 # Check whether address are mapped to some memory range before writing
 # to memory. Set to YES to force checking (depletes performance).
-MEMORY_WRITE_ADDRESS_CHECKING := YES
+MEMORY_WRITE_ADDRESS_CHECKING := NO
 
 # Check whether address are mapped to some memory range before reading from
 # memory. Set to YES to force checking (depletes performance).
-MEMORY_READ_ADDRESS_CHECKING := YES
+MEMORY_READ_ADDRESS_CHECKING := NO
 
 # Check whether address are mapped to some memory range before wipeing
 # memory ranges. Set to YES to force checking (depletes performance).
@@ -111,13 +114,13 @@ MEMORY_ENABLE_COUNTERS := NO
 # to memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
 # TODO: check whether this options works
-HFRISCV_WRITE_ADDRESS_CHECKING := YES
+HFRISCV_WRITE_ADDRESS_CHECKING := NO
 
 # Check whether address are mapped to some memory range before reading
 # from memory. Set to YES to force checking (depletes performance). This
 # option does not override the one in memory module.
 # TODO: check whether this options works
-HFRISCV_READ_ADDRESS_CHECKING := YES
+HFRISCV_READ_ADDRESS_CHECKING := NO
 
 # Enable counter for instructions' classes (depletes performance).
 HFRISCV_ENABLE_COUNTERS := NO

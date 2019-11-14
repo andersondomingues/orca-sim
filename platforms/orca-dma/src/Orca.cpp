@@ -392,14 +392,11 @@ int main(int __attribute__((unused)) argc, char** argv){
 				<< n->GetName() 
 				<< ": INTR=" << (int)(n->GetSignalIntr()->Read()) 
 				<< ", STALL=" << (int)(n->GetSignalStall()->Read()) << std::endl;
+				
+			((ProcessingTile*)tiles[x][y])->GetMem0()->
+				SaveBin(std::string(argv[1]) + n->GetName() + ".save.bin", MEM0_BASE, MEM0_SIZE);
 		}
 	}
-
-	//save memory image 
-	uint32_t dx = 1;
-	uint32_t dy = 1; 
-	((ProcessingTile*)tiles[dx][dy])->GetMem0()->
-		SaveBin(std::string(argv[1]) + ".save", MEM0_BASE, MEM0_SIZE);
 
 	delete(s);
 		

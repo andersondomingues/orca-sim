@@ -1,2 +1,2 @@
 #!/bin/sh
-multitail ./logs/*uart.log -s 3
+multitail ./logs/*uart.log -s 2

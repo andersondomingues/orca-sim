@@ -46,6 +46,7 @@ SimulationTime Simulator::Run(SimulationTime time){
 		
 		//update global time 
 		_globalTime = e.time;
+		//std::cout << e.time << " | " ;
 
 		//schedule current event to be executed after a certain number 
 		//cycles, defined in the correspondent Run method

@@ -39,7 +39,7 @@ std::string TRouter::GetPortName(int port){
 		case EAST:  return "EAST";
 		default: return "LOCAL";
 	}
-	return "";
+	return "???";
 }
 
 /**
@@ -97,6 +97,8 @@ uint32_t TRouter::GetRR(){
  * the Proccess abstract class.
  * @return The next time to schedule the event.*/
 SimulationTime TRouter::Run(){
+    
+   	//std::cout << this->GetName() << std::endl;
     
 	#ifdef ROUTER_ENABLE_COUNTERS
 	bool is_active = false;

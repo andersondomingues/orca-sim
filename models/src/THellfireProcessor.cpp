@@ -32,6 +32,8 @@
 
 #include "sys/time.h"
 
+#define RISCV_INVALID_OPCODE 0x0
+
 void THellfireProcessor::dumpregs(risc_v_state *s){
 	int32_t i;
 	
@@ -39,19 +41,43 @@ void THellfireProcessor::dumpregs(risc_v_state *s){
 		printf("r%02d [%08x] r%02d [%08x] r%02d [%08x] r%02d [%08x]\n", \
 		i, s->r[i], i+1, s->r[i+1], i+2, s->r[i+2], i+3, s->r[i+3]);
 	}
+
 	printf("pc: %08x\n", s->pc);
 	printf("\n");
 }
 
 void THellfireProcessor::bp(risc_v_state *s, uint32_t ir){
+
+	printf("breakpoint reached!\n");
 	printf("pc: %08x, ir: %08x\n", s->pc, ir);
+	printf("irq_status: %08x, irq_cause: %08x, irq_mask: %08x\n", s->status, s->cause, s->mask);
 	dumpregs(s);
-	getchar();
+
+	stringstream ss;
+	ss << "breakpoints/bp.0x" << std::hex << s->counter << std::dec << ".bin";
+	
+	switch(ir){
+		case 0x0: std::cout << "RISCV_INVALID_OPCODE"; break;
+		default:  std::cout << "UNKNOWN"; break;
+	}
+	
+	std::cout << std::endl;
+	//if(this->GetName() == "006.cpu" && address == 0x400001a8){
+	s->sram->SaveBin(ss.str(), s->sram->GetBase(), s->sram->GetSize());
+	
+	//getchar();
 }
 
 int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 	
 	uint32_t data;
+	
+	//if(this->GetName() == "006.cpu" && address == 0x400001a8){
+	//if(address == 0x40002c6c || address == 0x40002e48){
+	//if(address == 0x40002c5c){
+	// dispatcher if(this->GetName() == "006.cpu" && address == 0x4000513c){
+	//	this->bp(s, address);
+	//}
 	
 	s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 
@@ -68,7 +94,7 @@ int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 
 	uint32_t data;
-
+	
 	//Check whether the address belongs to the main memory
 	if(address <= s->sram->GetLastAddr() && address > s->sram->GetBase()){
 		
@@ -141,11 +167,11 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	}
 }
 
-USignal<int8_t>* THellfireProcessor::GetSignalStall(){
+USignal<uint8_t>* THellfireProcessor::GetSignalStall(){
 	return _signal_stall;
 }
 
-USignal<int8_t>* THellfireProcessor::GetSignalIntr(){
+USignal<uint8_t>* THellfireProcessor::GetSignalIntr(){
 	return _signal_intr;
 }
 	
@@ -158,12 +184,17 @@ USignal<int8_t>* THellfireProcessor::GetSignalIntr(){
  */
 void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
 
-	if(this->GetName() == "006.cpu" && address < 0x40006984){ 
+	//if(this->GetName() == "006.cpu" && address < 0x40006984){ 
 	//address == 0x4000c1dc){
+
+	//if(this->GetName() == "006.cpu" && address < 0x40005e7c){
+	//	bp(s, address);
+	//}
+	
 	//if(address < s->sram->GetBase() || address > s->sram->GetLastAddr()){
-		std::cout << "pc: 0x" << std::hex << s->pc << std::dec << std::endl;
+	//	std::cout << "pc: 0x" << std::hex << s->pc << std::dec << std::endl;
 		//dumpregs(s);
-	}
+	//}
 
 
 	//if the address belong to some memory range, write to it
@@ -217,8 +248,8 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 				s->status = 0; 
 				for (int i = 0; i < 4; i++) 
 					s->status_dly[i] = 0; 
-				}else{ 
-					s->status_dly[3] = value; 
+			}else{ 
+				s->status_dly[3] = value; 
 			}
 			return;
 		}
@@ -383,6 +414,27 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 
 SimulationTime THellfireProcessor::Run(){
 
+	//update "external counters"
+	s->counter++;
+
+	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;      /*IRQ_COMPARE2*/
+	if (s->compare == s->counter) s->cause |= 0x10;                                 /*IRQ_COMPARE*/
+	
+	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;      /*IRQ_COUNTER2_NOT*/
+	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;         /*IRQ_COUNTER2*/
+	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;      /*IRQ_COUNTER_NOT*/
+	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;         /*IRQ_COUNTER*/
+	
+	if (_signal_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff;/*IRQ_NOC*/
+
+	//skip current cycle if stall is risen
+	if(_signal_stall->Read() == 0x1){
+		#ifdef HFRISCV_ENABLE_COUNTERS
+		_counter_cycles_stall->Inc(1);
+		#endif
+		return 1;
+	}
+
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	_counter_cycles_total->Inc(1);
 	#endif
@@ -412,175 +464,165 @@ SimulationTime THellfireProcessor::Run(){
 		for (i = 0; i < 4; i++)
 			s->status_dly[i] = 0;
 	}
+	
+	inst = mem_fetch(s, s->pc);
 
-	//skip current cycle if stall is risen
-	if(_signal_stall->Read() == 0x1){
-		#ifdef HFRISCV_ENABLE_COUNTERS
-		_counter_cycles_stall->Inc(1);
-		#endif
-		return 1;
-	}else{
+	opcode = inst & 0x7f;
+	
+	rd = (inst >> 7) & 0x1f;
+	rs1 = (inst >> 15) & 0x1f;
+	rs2 = (inst >> 20) & 0x1f;
+	funct3 = (inst >> 12) & 0x7;
+	funct7 = (inst >> 25) & 0x7f;
+	imm_i = (inst & 0xfff00000) >> 20;
+	imm_s = ((inst & 0xf80) >> 7) | ((inst & 0xfe000000) >> 20);
+	imm_sb = ((inst & 0xf00) >> 7) | ((inst & 0x7e000000) >> 20) | ((inst & 0x80) << 4) | ((inst & 0x80000000) >> 19);
+	imm_u = inst & 0xfffff000;
+	imm_uj = ((inst & 0x7fe00000) >> 20) | ((inst & 0x100000) >> 9) | (inst & 0xff000) | ((inst & 0x80000000) >> 11); 
+	if (inst & 0x80000000){
+		imm_i |= 0xfffff000;
+		imm_s |= 0xfffff000;
+		imm_sb |= 0xffffe000;
+		imm_uj |= 0xffe00000;
+	}
+	ptr_l = r[rs1] + (int32_t)imm_i;
+	ptr_s = r[rs1] + (int32_t)imm_s;
+	r[0] = 0;
 
-		inst = mem_fetch(s, s->pc);
-
-		opcode = inst & 0x7f;
+	switch(opcode){
+		case 0x37: r[rd] = imm_u; break;										/* LUI */
+		case 0x17: r[rd] = s->pc + imm_u; break;									/* AUIPC */
 		
-		rd = (inst >> 7) & 0x1f;
-		rs1 = (inst >> 15) & 0x1f;
-		rs2 = (inst >> 20) & 0x1f;
-		funct3 = (inst >> 12) & 0x7;
-		funct7 = (inst >> 25) & 0x7f;
-		imm_i = (inst & 0xfff00000) >> 20;
-		imm_s = ((inst & 0xf80) >> 7) | ((inst & 0xfe000000) >> 20);
-		imm_sb = ((inst & 0xf00) >> 7) | ((inst & 0x7e000000) >> 20) | ((inst & 0x80) << 4) | ((inst & 0x80000000) >> 19);
-		imm_u = inst & 0xfffff000;
-		imm_uj = ((inst & 0x7fe00000) >> 20) | ((inst & 0x100000) >> 9) | (inst & 0xff000) | ((inst & 0x80000000) >> 11); 
-		if (inst & 0x80000000){
-			imm_i |= 0xfffff000;
-			imm_s |= 0xfffff000;
-			imm_sb |= 0xffffe000;
-			imm_uj |= 0xffe00000;
-		}
-		ptr_l = r[rs1] + (int32_t)imm_i;
-		ptr_s = r[rs1] + (int32_t)imm_s;
-		r[0] = 0;
-
-		switch(opcode){
-			case 0x37: r[rd] = imm_u; break;										/* LUI */
-			case 0x17: r[rd] = s->pc + imm_u; break;									/* AUIPC */
-			
-			case 0x6f: r[rd] = s->pc_next; s->pc_next = s->pc + imm_uj; break;				  /* JAL */
-			case 0x67: r[rd] = s->pc_next; s->pc_next = (r[rs1] + imm_i) & 0xfffffffe; break; /* JALR */
-			case 0x63:
-				/* Branch prediction may fail if jumping 0 positions.
-				TODO: check whether the architecture predict such jumps */
-				pc_next_prediction = s->pc_next;
+		case 0x6f: r[rd] = s->pc_next; s->pc_next = s->pc + imm_uj; break;				  /* JAL */
+		case 0x67: r[rd] = s->pc_next; s->pc_next = (r[rs1] + imm_i) & 0xfffffffe; break; /* JALR */
+		case 0x63:
+			/* Branch prediction may fail if jumping 0 positions.
+			TODO: check whether the architecture predict such jumps */
+			pc_next_prediction = s->pc_next;
+			switch(funct3){
+				case 0x0: if (r[rs1] == r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BEQ */
+				case 0x1: if (r[rs1] != r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BNE */
+				case 0x4: if (r[rs1] < r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLT */
+				case 0x5: if (r[rs1] >= r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGE */
+				case 0x6: if (u[rs1] < u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLTU */
+				case 0x7: if (u[rs1] >= u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGEU */
+				default: goto fail;
+			}
+			branch_taken = (pc_next_prediction != s->pc_next);
+			break;
+				
+		case 0x3:
+			switch(funct3){
+				case 0x0: r[rd] = (int8_t)mem_read(s,1,ptr_l); break;						/* LB */
+				case 0x1: r[rd] = (int16_t)mem_read(s,2,ptr_l); break;						/* LH */
+				case 0x2: r[rd] = mem_read(s,4,ptr_l); break;							/* LW */
+				case 0x4: r[rd] = (uint8_t)mem_read(s,1,ptr_l); break;						/* LBU */
+				case 0x5: r[rd] = (uint16_t)mem_read(s,2,ptr_l); break;						/* LHU */
+				default: goto fail;
+			}
+			break;
+		case 0x23:
+			switch(funct3){
+				case 0x0: mem_write(s,1,ptr_s,r[rs2]); break;							/* SB */
+				case 0x1: mem_write(s,2,ptr_s,r[rs2]); break;							/* SH */
+				case 0x2: mem_write(s,4,ptr_s,r[rs2]); break;							/* SW */
+				default: goto fail;
+			}
+			break;
+		case 0x13:
+			switch(funct3){
+				case 0x0: r[rd] = r[rs1] + (int32_t)imm_i; break;						/* ADDI */
+				case 0x2: r[rd] = r[rs1] < (int32_t)imm_i; break;		 				/* SLTI */
+				case 0x3: r[rd] = u[rs1] < (uint32_t)imm_i; break;						/* SLTIU */
+				case 0x4: r[rd] = r[rs1] ^ (int32_t)imm_i; break;						/* XORI */
+				case 0x6: r[rd] = r[rs1] | (int32_t)imm_i; break;						/* ORI */
+				case 0x7: r[rd] = r[rs1] & (int32_t)imm_i; break;						/* ANDI */
+				case 0x1: r[rd] = u[rs1] << (rs2 & 0x3f); break;						/* SLLI */
+				case 0x5:
+					switch(funct7){
+						case 0x0: r[rd] = u[rs1] >> (rs2 & 0x3f); break;				/* SRLI */
+						case 0x20: r[rd] = r[rs1] >> (rs2 & 0x3f); break;				/* SRAI */
+						default: goto fail;
+					}
+					break;
+				default: goto fail;
+			}
+			break;
+		case 0x33:
+			if (funct7 == 0x1){											/* RV32M */
 				switch(funct3){
-					case 0x0: if (r[rs1] == r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BEQ */
-					case 0x1: if (r[rs1] != r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BNE */
-					case 0x4: if (r[rs1] < r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLT */
-					case 0x5: if (r[rs1] >= r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGE */
-					case 0x6: if (u[rs1] < u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLTU */
-					case 0x7: if (u[rs1] >= u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGEU */
+					case 0:	r[rd] = (((int64_t)r[rs1] * (int64_t)r[rs2]) & 0xffffffff); break;		    /* MUL */
+					case 1:	r[rd] = ((((int64_t)r[rs1] * (int64_t)r[rs2]) >> 32) & 0xffffffff); break;	/* MULH */
+					case 2:	r[rd] = ((((int64_t)r[rs1] * (uint64_t)u[rs2]) >> 32) & 0xffffffff); break;	/* MULHSU */
+					case 3:	r[rd] = ((((uint64_t)u[rs1] * (uint64_t)u[rs2]) >> 32) & 0xffffffff); break;/* MULHU */
+					case 4:	if (r[rs2]) r[rd] = r[rs1] / r[rs2]; else r[rd] = 0; break;					/* DIV */
+					case 5:	if (r[rs2]) r[rd] = u[rs1] / u[rs2]; else r[rd] = 0; break;					/* DIVU */
+					case 6:	if (r[rs2]) r[rd] = r[rs1] % r[rs2]; else r[rd] = 0; break;					/* REM */
+					case 7:	if (r[rs2]) r[rd] = u[rs1] % u[rs2]; else r[rd] = 0; break;					/* REMU */
 					default: goto fail;
 				}
-				branch_taken = (pc_next_prediction != s->pc_next);
 				break;
-					
-			case 0x3:
+			}else{
 				switch(funct3){
-					case 0x0: r[rd] = (int8_t)mem_read(s,1,ptr_l); break;						/* LB */
-					case 0x1: r[rd] = (int16_t)mem_read(s,2,ptr_l); break;						/* LH */
-					case 0x2: r[rd] = mem_read(s,4,ptr_l); break;							/* LW */
-					case 0x4: r[rd] = (uint8_t)mem_read(s,1,ptr_l); break;						/* LBU */
-					case 0x5: r[rd] = (uint16_t)mem_read(s,2,ptr_l); break;						/* LHU */
-					default: goto fail;
-				}
-				break;
-			case 0x23:
-				switch(funct3){
-					case 0x0: mem_write(s,1,ptr_s,r[rs2]); break;							/* SB */
-					case 0x1: mem_write(s,2,ptr_s,r[rs2]); break;							/* SH */
-					case 0x2: mem_write(s,4,ptr_s,r[rs2]); break;							/* SW */
-					default: goto fail;
-				}
-				break;
-			case 0x13:
-				switch(funct3){
-					case 0x0: r[rd] = r[rs1] + (int32_t)imm_i; break;						/* ADDI */
-					case 0x2: r[rd] = r[rs1] < (int32_t)imm_i; break;		 				/* SLTI */
-					case 0x3: r[rd] = u[rs1] < (uint32_t)imm_i; break;						/* SLTIU */
-					case 0x4: r[rd] = r[rs1] ^ (int32_t)imm_i; break;						/* XORI */
-					case 0x6: r[rd] = r[rs1] | (int32_t)imm_i; break;						/* ORI */
-					case 0x7: r[rd] = r[rs1] & (int32_t)imm_i; break;						/* ANDI */
-					case 0x1: r[rd] = u[rs1] << (rs2 & 0x3f); break;						/* SLLI */
-					case 0x5:
+					case 0x0:
 						switch(funct7){
-							case 0x0: r[rd] = u[rs1] >> (rs2 & 0x3f); break;				/* SRLI */
-							case 0x20: r[rd] = r[rs1] >> (rs2 & 0x3f); break;				/* SRAI */
+							case 0x0: r[rd] = r[rs1] + r[rs2]; break;				/* ADD */
+							case 0x20: r[rd] = r[rs1] - r[rs2]; break;				/* SUB */
 							default: goto fail;
 						}
 						break;
+					case 0x1: r[rd] = r[rs1] << r[rs2]; break;						/* SLL */
+					case 0x2: r[rd] = r[rs1] < r[rs2]; break;		 				/* SLT */
+					case 0x3: r[rd] = u[rs1] < u[rs2]; break;		 				/* SLTU */
+					case 0x4: r[rd] = r[rs1] ^ r[rs2]; break;						/* XOR */
+					case 0x5:
+						switch(funct7){
+							case 0x0: r[rd] = u[rs1] >> u[rs2]; break;				/* SRL */
+							case 0x20: r[rd] = r[rs1] >> r[rs2]; break;				/* SRA */
+							default: goto fail;
+						}
+						break;
+					case 0x6: r[rd] = r[rs1] | r[rs2]; break;						/* OR */
+					case 0x7: r[rd] = r[rs1] & r[rs2]; break;						/* AND */
 					default: goto fail;
 				}
 				break;
-			case 0x33:
-				if (funct7 == 0x1){											/* RV32M */
-					switch(funct3){
-						case 0:	r[rd] = (((int64_t)r[rs1] * (int64_t)r[rs2]) & 0xffffffff); break;		    /* MUL */
-						case 1:	r[rd] = ((((int64_t)r[rs1] * (int64_t)r[rs2]) >> 32) & 0xffffffff); break;	/* MULH */
-						case 2:	r[rd] = ((((int64_t)r[rs1] * (uint64_t)u[rs2]) >> 32) & 0xffffffff); break;	/* MULHSU */
-						case 3:	r[rd] = ((((uint64_t)u[rs1] * (uint64_t)u[rs2]) >> 32) & 0xffffffff); break;/* MULHU */
-						case 4:	if (r[rs2]) r[rd] = r[rs1] / r[rs2]; else r[rd] = 0; break;					/* DIV */
-						case 5:	if (r[rs2]) r[rd] = u[rs1] / u[rs2]; else r[rd] = 0; break;					/* DIVU */
-						case 6:	if (r[rs2]) r[rd] = r[rs1] % r[rs2]; else r[rd] = 0; break;					/* REM */
-						case 7:	if (r[rs2]) r[rd] = u[rs1] % u[rs2]; else r[rd] = 0; break;					/* REMU */
-						default: goto fail;
-					}
-					break;
-				}else{
-					switch(funct3){
-						case 0x0:
-							switch(funct7){
-								case 0x0: r[rd] = r[rs1] + r[rs2]; break;				/* ADD */
-								case 0x20: r[rd] = r[rs1] - r[rs2]; break;				/* SUB */
-								default: goto fail;
-							}
-							break;
-						case 0x1: r[rd] = r[rs1] << r[rs2]; break;						/* SLL */
-						case 0x2: r[rd] = r[rs1] < r[rs2]; break;		 				/* SLT */
-						case 0x3: r[rd] = u[rs1] < u[rs2]; break;		 				/* SLTU */
-						case 0x4: r[rd] = r[rs1] ^ r[rs2]; break;						/* XOR */
-						case 0x5:
-							switch(funct7){
-								case 0x0: r[rd] = u[rs1] >> u[rs2]; break;				/* SRL */
-								case 0x20: r[rd] = r[rs1] >> r[rs2]; break;				/* SRA */
-								default: goto fail;
-							}
-							break;
-						case 0x6: r[rd] = r[rs1] | r[rs2]; break;						/* OR */
-						case 0x7: r[rd] = r[rs1] & r[rs2]; break;						/* AND */
-						default: goto fail;
-					}
-					break;
-				}
-				break;
-			default:
+			}
+			break;
+		default:
 fail:
-				stringstream ss;
-				ss << this->GetName() << ":invalid opcode (pc=0x" << std::hex << s->pc;
-				ss << " opcode=0x" << std::hex << inst << ")";
-		
-				dumpregs(s);
-				
-				throw std::runtime_error(ss.str());
-				break;
-		}
-		
-		_last_pc = s->pc;
-		s->pc = s->pc_next;
-		s->pc_next = s->pc_next + 4;
-		s->status = s->status_dly[0];
-		for (i = 0; i < 3; i++)
-			s->status_dly[i] = s->status_dly[i+1];
-	}
+			stringstream ss;
+			ss << this->GetName() << ":invalid opcode (pc=0x" << std::hex << s->pc;
+			ss << " opcode=0x" << std::hex << inst << ")";
 	
-	s->counter++;
+			dumpregs(s);
+			bp(s, RISCV_INVALID_OPCODE);
 			
-	if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;      /*IRQ_COMPARE2*/
-	if (s->compare == s->counter) s->cause |= 0x10;                                 /*IRQ_COMPARE*/
-	if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;      /*IRQ_COUNTER2_NOT*/
-	if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;         /*IRQ_COUNTER2*/
-	if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;      /*IRQ_COUNTER_NOT*/
-	if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;         /*IRQ_COUNTER*/
-	
-	/*
-	if(this->GetName() == "004.cpu"){
-		printf("pc: 0x%x\n", s->pc);
+			throw std::runtime_error(ss.str());
+			break;
 	}
-	*/
 	
-	if (_signal_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff;/*IRQ_NOC*/
+	_last_pc = s->pc;
+	s->pc = s->pc_next;
+	s->pc_next = s->pc_next + 4;
+	s->status = s->status_dly[0];
+	for (i = 0; i < 3; i++)
+		s->status_dly[i] = s->status_dly[i+1];
+
+	//MOVI DAQUI
+	
+	//s->counter++;
+			
+	//if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;      /*IRQ_COMPARE2*/
+	//if (s->compare == s->counter) s->cause |= 0x10;                                 /*IRQ_COMPARE*/
+	
+	//if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;      /*IRQ_COUNTER2_NOT*/
+	//if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;         /*IRQ_COUNTER2*/
+	//if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;      /*IRQ_COUNTER_NOT*/
+	//if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;         /*IRQ_COUNTER*/
+	
+	//if (_signal_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff;/*IRQ_NOC*/
+	
 
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	this->UpdateCounters(opcode, funct3);
@@ -623,7 +665,7 @@ void THellfireProcessor::SetMem0(UMemory* m){
 	s->sram = m;
 }
 
-THellfireProcessor::THellfireProcessor(string name, USignal<int8_t>* intr, USignal<int8_t>* stall) : TimedModel(name) {
+THellfireProcessor::THellfireProcessor(string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall) : TimedModel(name) {
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));

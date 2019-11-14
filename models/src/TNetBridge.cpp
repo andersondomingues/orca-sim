@@ -145,6 +145,8 @@ udp_server* TNetBridge::GetUdpServer(){
  */
 SimulationTime TNetBridge::Run(){
     
+    //std::cout << this->GetName() << std::endl;
+    
 	this->udpToNocProcess(); //process for receiving from the UDP socket
     this->nocToUdpProcess(); //process for sending through the UDP socket
     return 1; //takes exactly 1 cycle to run both processes

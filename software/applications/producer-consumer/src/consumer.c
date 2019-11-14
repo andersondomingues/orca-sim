@@ -14,10 +14,10 @@ void consumer(void)
         panic(0xff);
     }
 
-	//delay_ms(2);
+	delay_ms(2);
     counter = 0;
 	
-	printf("buf: 0x%x\n", (uint32_t)buf);
+	//printf("buf: 0x%x\n", (uint32_t)buf);
 	
 	//while(1);
 	
@@ -32,9 +32,13 @@ void consumer(void)
             if (val){
 				printf("hf_recv(): error %d\n", val);
             } else {
-	        	//printf("#%d [free queue: %d]\n", counter, hf_queue_count(pktdrv_queue));
+	        	printf("#%d [free queue: %d]\n", counter, hf_queue_count(pktdrv_queue));
 	        	//printf("cpu %d, port %d, ch %d, size %d\n", cpu, port, i, size);
 	        	printf("content %d\n", *((uint32_t*)buf));
+
+				//if(counter != *((uint32_t*)buf))
+				//	hf_kill(hf_selfid());
+				//	printf("oomp!\n");
 
 				//printf("\n------\n");
 	        	//hexdump(buf, sizeof(uint32_t) * 2);

@@ -78,14 +78,17 @@ private:
     FlitType _send_reg;
     
     //control signals 
-	USignal<int8_t>*  _sig_stall;       //OUT: stalls cpu while copying from/to main memory
-	USignal<int8_t>*  _sig_intr;        //OUT: request cpu interruption signal (same for both processes)
-	USignal<int8_t>*  _sig_send_status; //OUT: 0x0 when in ready state
-	USignal<int32_t>* _sig_recv_status; //OUT: 0x0 when in ready state, updated but unused
-	USignal<int32_t>* _sig_prog_addr;   //IN
-	USignal<int32_t>* _sig_prog_size;   //IN
-	USignal<int8_t>*  _sig_prog_send;   //IN
-	USignal<int8_t>*  _sig_prog_recv;   //IN
+	USignal<uint8_t>*  _sig_stall;       //OUT: stalls cpu while copying from/to main memory
+	USignal<uint8_t>*  _sig_intr;        //OUT: request cpu interruption signal (same for both processes)
+
+	USignal<uint8_t>*  _sig_send_status; //OUT: 0x0 when in ready state
+	USignal<uint32_t>* _sig_recv_status; //OUT: 0x0 when in ready state, updated but unused
+
+	USignal<uint8_t>*  _sig_prog_send;   //IN
+	USignal<uint8_t>*  _sig_prog_recv;   //IN
+	
+	USignal<uint32_t>* _sig_prog_addr;   //IN
+	USignal<uint32_t>* _sig_prog_size;   //IN
 	
 	//recv specific vars
 	uint32_t _recv_payload_size;       //total size of the payload (flits)
@@ -107,24 +110,30 @@ public:
 	DmaNetifSendState GetSendState();
     
     //getters
-    USignal<int8_t>*  GetSignalStall();
-	USignal<int8_t>*  GetSignalIntr();
-	USignal<int8_t>*  GetSignalSendStatus();
-	USignal<int32_t>*  GetSignalRecvStatus();
-	USignal<int32_t>* GetSignalProgAddr();
-	USignal<int32_t>* GetSignalProgSize();
-	USignal<int8_t>*  GetSignalProgSend();
-	USignal<int8_t>*  GetSignalProgRecv();
+    USignal<uint8_t>*  GetSignalStall();
+	USignal<uint8_t>*  GetSignalIntr();
+
+	USignal<uint8_t>*  GetSignalSendStatus();
+	USignal<uint32_t>*  GetSignalRecvStatus();
+
+	USignal<uint8_t>*  GetSignalProgSend();
+	USignal<uint8_t>*  GetSignalProgRecv();
+
+	USignal<uint32_t>* GetSignalProgAddr();
+	USignal<uint32_t>* GetSignalProgSize();
 
 	//setters
-    void SetSignalStall(USignal<int8_t>*);
-	void SetSignalIntr(USignal<int8_t>*);
-	void SetSignalSendStatus(USignal<int8_t>*);
-	void SetSignalRecvStatus(USignal<int32_t>*);
-	void SetSignalProgAddr(USignal<int32_t>*);
-	void SetSignalProgSize(USignal<int32_t>*);
-	void SetSignalProgSend(USignal<int8_t>*);
-	void SetSignalProgRecv(USignal<int8_t>*);
+    void SetSignalStall(USignal<uint8_t>*);
+	void SetSignalIntr(USignal<uint8_t>*);
+
+	void SetSignalSendStatus(USignal<uint8_t>*);
+	void SetSignalRecvStatus(USignal<uint32_t>*);
+
+	void SetSignalProgSend(USignal<uint8_t>*);
+	void SetSignalProgRecv(USignal<uint8_t>*);
+
+	void SetSignalProgAddr(USignal<uint32_t>*);
+	void SetSignalProgSize(USignal<uint32_t>*);
 
     //internal processes
     void sendProcess();

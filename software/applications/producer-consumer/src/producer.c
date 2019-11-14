@@ -18,14 +18,12 @@ void producer(void){
 
     //delay necessary for the kernel to 
     //create the comm
-    //delay_ms(60);
+   	delay_ms(2);
 	
-    srand(hf_cpuid());
+    //srand(hf_cpuid());
     
-    node = 6;
+    node = 3;
     counter = 0;
-	
-    // generate a unique channel number for this CPU
     channel = hf_cpuid();
     
     while (1){
@@ -59,5 +57,8 @@ void producer(void){
 		//add some delay to avoid flooding the network
 		delay_ms(1);
 	}
+	
+	//hf_kill(hf_selfid());
+	//while(1);
 }
 

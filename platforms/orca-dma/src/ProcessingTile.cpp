@@ -54,16 +54,16 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetMem2()->SetName(this->GetName() + ".mem2");
 
 	//bind control signals to hardware (cpu side)
-	this->GetSignalStall()->MapTo(_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
-	this->GetSignalIntr()->MapTo(_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
-	this->GetSignalSendStatus()->MapTo(_mem0->GetMap(SIGNAL_SEND_STATUS), SIGNAL_SEND_STATUS);
-	this->GetSignalRecvStatus()->MapTo((int32_t*)_mem0->GetMap(SIGNAL_RECV_STATUS), SIGNAL_RECV_STATUS);
+	this->GetSignalStall()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
+	this->GetSignalIntr()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
+	this->GetSignalSendStatus()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_SEND_STATUS), SIGNAL_SEND_STATUS);
+	this->GetSignalRecvStatus()->MapTo((uint32_t*)_mem0->GetMap(SIGNAL_RECV_STATUS), SIGNAL_RECV_STATUS);
 
-	this->GetSignalProgSend()->MapTo(_mem0->GetMap(SIGNAL_PROG_SEND), SIGNAL_PROG_SEND);
-	this->GetSignalProgRecv()->MapTo(_mem0->GetMap(SIGNAL_PROG_RECV), SIGNAL_PROG_RECV);
+	this->GetSignalProgSend()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_PROG_SEND), SIGNAL_PROG_SEND);
+	this->GetSignalProgRecv()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_PROG_RECV), SIGNAL_PROG_RECV);
 	
-	this->GetSignalProgAddr()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_ADDR)), SIGNAL_PROG_ADDR);
-	this->GetSignalProgSize()->MapTo((int32_t*)(_mem0->GetMap(SIGNAL_PROG_SIZE)), SIGNAL_PROG_SIZE);
+	this->GetSignalProgAddr()->MapTo((uint32_t*)(_mem0->GetMap(SIGNAL_PROG_ADDR)), SIGNAL_PROG_ADDR);
+	this->GetSignalProgSize()->MapTo((uint32_t*)(_mem0->GetMap(SIGNAL_PROG_SIZE)), SIGNAL_PROG_SIZE);
 
 	#ifdef MEMORY_ENABLE_COUNTERS
 	//map main memory counter

@@ -53,18 +53,19 @@ Tile::Tile(uint32_t x, uint32_t y){
 	_netif  = new TDmaNetif (this->GetName() + ".netif");
 
 	//ni sig wires
-	_signal_stall       = new USignal<int8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
-	_signal_intr        = new USignal<int8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
-	_signal_send_status = new USignal<int8_t>(SIGNAL_SEND_STATUS, this->GetName() + ".send_status");
-	_signal_recv_status = new USignal<int32_t>(SIGNAL_RECV_STATUS, this->GetName() + ".recv_status");
-	_signal_prog_send   = new USignal<int8_t>(SIGNAL_PROG_SEND, this->GetName() + ".progr_send");
-	_signal_prog_recv   = new USignal<int8_t>(SIGNAL_PROG_RECV, this->GetName() + ".progr_recv");
-	_signal_prog_addr   = new USignal<int32_t>(SIGNAL_PROG_ADDR, this->GetName() + ".progr_addr");
-	_signal_prog_size   = new USignal<int32_t>(SIGNAL_PROG_SIZE, this->GetName() + ".progr_size");
+	_signal_stall       = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
+	_signal_intr        = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
+	_signal_send_status = new USignal<uint8_t>(SIGNAL_SEND_STATUS, this->GetName() + ".send_status");
+	_signal_recv_status = new USignal<uint32_t>(SIGNAL_RECV_STATUS, this->GetName() + ".recv_status");
+	_signal_prog_send   = new USignal<uint8_t>(SIGNAL_PROG_SEND, this->GetName() + ".progr_send");
+	_signal_prog_recv   = new USignal<uint8_t>(SIGNAL_PROG_RECV, this->GetName() + ".progr_recv");
+	_signal_prog_addr   = new USignal<uint32_t>(SIGNAL_PROG_ADDR, this->GetName() + ".progr_addr");
+	_signal_prog_size   = new USignal<uint32_t>(SIGNAL_PROG_SIZE, this->GetName() + ".progr_size");
 
 	//reset control wires
     _signal_stall->Write(0);
 	_signal_intr->Write(0); 
+	
 	_signal_send_status->Write(0);
 	_signal_recv_status->Write(0);
 	_signal_prog_send->Write(0);
@@ -130,14 +131,17 @@ Tile::~Tile(){
 }
 
 /************************************* GETTERS **************************************/
-USignal<int8_t>*  Tile::GetSignalStall(){ return _signal_stall; }
-USignal<int8_t>*  Tile::GetSignalIntr(){ return _signal_intr; }
-USignal<int8_t>*  Tile::GetSignalSendStatus(){ return _signal_send_status; }
-USignal<int32_t>*  Tile::GetSignalRecvStatus(){ return _signal_recv_status; }
-USignal<int32_t>* Tile::GetSignalProgAddr(){ return _signal_prog_addr; }
-USignal<int32_t>* Tile::GetSignalProgSize(){ return _signal_prog_size; }
-USignal<int8_t>*  Tile::GetSignalProgSend(){ return _signal_prog_send; }
-USignal<int8_t>*  Tile::GetSignalProgRecv(){ return _signal_prog_recv; }
+USignal<uint8_t>*  Tile::GetSignalStall(){ return _signal_stall; }
+USignal<uint8_t>*  Tile::GetSignalIntr(){ return _signal_intr; }
+
+USignal<uint8_t>*  Tile::GetSignalSendStatus(){ return _signal_send_status; }
+USignal<uint32_t>*  Tile::GetSignalRecvStatus(){ return _signal_recv_status; }
+
+USignal<uint8_t>*  Tile::GetSignalProgSend(){ return _signal_prog_send; }
+USignal<uint8_t>*  Tile::GetSignalProgRecv(){ return _signal_prog_recv; }
+
+USignal<uint32_t>* Tile::GetSignalProgAddr(){ return _signal_prog_addr; }
+USignal<uint32_t>* Tile::GetSignalProgSize(){ return _signal_prog_size; }
 
 
 /*

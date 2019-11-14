@@ -7,9 +7,10 @@ ORCA_CORE_LIB := ext-$(ORCA_CORE_NAME).a
 
 # Update these lines with your source code
 ORCA_CORE_OBJS := \
-	orca-core.o \
-	orca-hardware-counters.o \
-	orca-systime.o
+	orca-core.o
+	
+#orca-hardware-counters.o \
+#	orca-systime.o
 
 #pack everithing in a single lib
 $(ORCA_CORE_LIB) : $(ORCA_CORE_OBJS)

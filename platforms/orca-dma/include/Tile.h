@@ -44,13 +44,15 @@
 #define SIGNAL_CPU_STALL    0x40410000  /* 8 bits */
 #define SIGNAL_CPU_INTR     0x40410001
 #define SIGNAL_SEND_STATUS  0x40410002
-
+//0x40410003
 #define SIGNAL_RECV_STATUS  0x40410004 
-
-
+//0x40410005
+//0x40410006
+//0x40410007
 #define SIGNAL_PROG_SEND    0x40410008
 #define SIGNAL_PROG_RECV    0x40410009
-
+//0x4041000A
+//0x4041000B
 #define SIGNAL_PROG_ADDR    0x4041000C  /* 32 bits */
 #define SIGNAL_PROG_SIZE    0x40410010
 
@@ -95,17 +97,17 @@ private:
 	UMemory* _mem1; //recv memory
 	UMemory* _mem2; //send memory
 		
-	USignal<int8_t>* _signal_stall;
-	USignal<int8_t>* _signal_intr;
+	USignal<uint8_t>* _signal_stall;
+	USignal<uint8_t>* _signal_intr;
 	
-	USignal<int8_t>* _signal_send_status;
-	USignal<int32_t>* _signal_recv_status;
+	USignal<uint8_t>* _signal_send_status;
+	USignal<uint32_t>* _signal_recv_status;
 	
-	USignal<int8_t>* _signal_prog_send;
-	USignal<int8_t>* _signal_prog_recv;
+	USignal<uint8_t>* _signal_prog_send;
+	USignal<uint8_t>* _signal_prog_recv;
 	
-	USignal<int32_t>* _signal_prog_addr;
-	USignal<int32_t>* _signal_prog_size;	
+	USignal<uint32_t>* _signal_prog_addr;
+	USignal<uint32_t>* _signal_prog_size;	
 	
 	//self-id wire
 	USignal<uint32_t>* _signal_id;
@@ -124,24 +126,24 @@ public:
 	UMemory* GetMem2();
 	
 	//getters
-    USignal<int8_t>*  GetSignalStall();
-	USignal<int8_t>*  GetSignalIntr();
-	USignal<int8_t>*  GetSignalSendStatus();
-	USignal<int32_t>* GetSignalRecvStatus();
-	USignal<int32_t>* GetSignalProgAddr();
-	USignal<int32_t>* GetSignalProgSize();
-	USignal<int8_t>*  GetSignalProgSend();
-	USignal<int8_t>*  GetSignalProgRecv();
+    USignal<uint8_t>*  GetSignalStall();
+	USignal<uint8_t>*  GetSignalIntr();
+	USignal<uint8_t>*  GetSignalSendStatus();
+	USignal<uint32_t>* GetSignalRecvStatus();
+	USignal<uint32_t>* GetSignalProgAddr();
+	USignal<uint32_t>* GetSignalProgSize();
+	USignal<uint8_t>*  GetSignalProgSend();
+	USignal<uint8_t>*  GetSignalProgRecv();
 
 	//setters
-    void SetSignalStall(USignal<int8_t>*);
-	void SetSignalIntr(USignal<int8_t>*);
-	void SetSignalSendStatus(USignal<int8_t>*);
-	void SetSignalRecvStatus(USignal<int32_t>*);
-	void SetSignalProgAddr(USignal<int32_t>*);
-	void SetSignalProgSize(USignal<int32_t>*);
-	void SetSignalProgSend(USignal<int8_t>*);
-	void SetSignalProgRecv(USignal<int8_t>*);
+    void SetSignalStall(USignal<uint8_t>*);
+	void SetSignalIntr(USignal<uint8_t>*);
+	void SetSignalSendStatus(USignal<uint8_t>*);
+	void SetSignalRecvStatus(USignal<uint32_t>*);
+	void SetSignalProgAddr(USignal<uint32_t>*);
+	void SetSignalProgSize(USignal<uint32_t>*);
+	void SetSignalProgSend(USignal<uint8_t>*);
+	void SetSignalProgRecv(USignal<uint8_t>*);
 	
 	USignal<uint32_t>* GetSignalId();
 	
