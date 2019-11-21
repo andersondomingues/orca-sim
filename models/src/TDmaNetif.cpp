@@ -133,21 +133,6 @@ SimulationTime TDmaNetif::Run(){
 
 void TDmaNetif::recvProcess(){
 
-/*
-	if(this->GetName() == "004.netif"){
-		
-		switch(_recv_state){
-			case DmaNetifRecvState::WAIT_ADDR_FLIT: std::cout << "wait addr" << std::endl; break;
-			case DmaNetifRecvState::WAIT_SIZE_FLIT: std::cout << "wait size" << std::endl; break;
-			case DmaNetifRecvState::WAIT_PAYLOAD:   std::cout << "wait payload" << std::endl; break;
-			case DmaNetifRecvState::WAIT_CONFIG_STALL: std::cout << "wait conf stall" << std::endl; break;
-			case DmaNetifRecvState::COPY_RELEASE:   std::cout << "copy release" << std::endl; break;
-			case DmaNetifRecvState::FLUSH:          std::cout << "flush" << std::endl; break;
-			default: break;
-		}
-	}
-*/
-
 	//if(this->GetName() == "004.netif" && _recv_payload_remaining != 0){
 	//	std::cout << "recv remains: " << _recv_payload_remaining << std::endl;
 

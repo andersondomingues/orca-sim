@@ -197,12 +197,14 @@ void TNetBridge::udpToNocProcess(){
 		case TNetBridgeRecvState::READY:{
 						
 			//packet has arrived and the network is not sending packets
-			if(_signal_recv->Read() == 0x1){
+			if(_signal_recv->Read() == 0x1 && !_ob->full()){
 			
 				//push the first flit to the NoC, whatever the content.
 				FlitType* buf = (FlitType*) _recv_buffer;
 				_out_reg = buf[0];
 				_ob->push(_out_reg);
+				
+				//std::cout << std::hex << _out_reg << std::dec << std::endl;
 				
 				//proceed to the next state
 				_recv_state = TNetBridgeRecvState::READ_LEN;
@@ -213,7 +215,7 @@ void TNetBridge::udpToNocProcess(){
 				int32_t z = x + y * 4;
 				
 				std::chrono::time_point<std::chrono::system_clock> now;
-				now = std::chrono::system_clock::now();				
+				now = std::chrono::system_clock::now();
 				
 				auto duration = now.time_since_epoch();
 				auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();		
@@ -232,16 +234,25 @@ void TNetBridge::udpToNocProcess(){
 		//of the burst. We determine how many cycle we spend bursting data out of 
 		//the module in this state.
 		case TNetBridgeRecvState::READ_LEN:{
-		
-			//there is no condition to trigger this state as the data 
-			//is already stored to the memory. we increment the number 
-			//of flits in two given that neither address and size flits
-			//are accounted.
-			_flits_to_recv = ((FlitType*)_recv_buffer)[1] + 2; 
-			_flits_to_recv_count = 2;
 			
-			//proceed to next state
-			_recv_state = TNetBridgeRecvState::RECV_PAYLOAD;
+			if(!_ob->full()){
+
+				FlitType* buf = (FlitType*) _recv_buffer;
+				_out_reg = buf[1];
+				_ob->push(_out_reg);
+			
+				//there is no condition to trigger this state as the data 
+				//is already stored to the memory. we increment the number 
+				//of flits in two given that neither address and size flits
+				//are accounted.
+				_flits_to_recv = _out_reg + 2; 
+				_flits_to_recv_count = 2;
+				
+				std::cout << std::hex << _out_reg << std::dec << std::endl;
+				
+				//proceed to next state
+				_recv_state = TNetBridgeRecvState::RECV_PAYLOAD;
+			}
 		
 		} break;
 		
@@ -252,13 +263,16 @@ void TNetBridge::udpToNocProcess(){
 			//no more flits to recv, go back to the first state
 			if(_flits_to_recv_count >= _flits_to_recv){
 				_signal_recv->Write(0x0);
-				_recv_state = TNetBridgeRecvState::RECV_PAYLOAD;
+				_recv_state = TNetBridgeRecvState::READY;
 
 			//still have flits to send
-			}else{
+			}else if (!_ob->full()){
 				_out_reg = ((FlitType*)_recv_buffer)[_flits_to_recv_count++];
 				_ob->push(_out_reg);
+				
 			}
+
+			//std::cout << std::hex << _out_reg << std::dec << std::endl;
 		
 		} break;
 	}	

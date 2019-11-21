@@ -6,8 +6,7 @@
 # -std: required by old GCC to set c++17 as default the c++ 
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native
-#-lasan -fsanitize=address
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native -lasan -fsanitize=address
 
 # Apps to be compiled within kernel image
 ORCA_APPLICATIONS := producer-consumer
@@ -91,7 +90,7 @@ BUFFER_UNDERFLOW_CHECKING := NO
 # network congestion, set this to a higher value. Please note that increasing t
 # the capacity of buffers also increases the memory usage of the simulator. (
 # The default for this option is 8 flits.
-BUFFER_CAPACITY := 16
+BUFFER_CAPACITY := 8
 
 # ===============================================================[ MEMORY ]
 # Check whether address are mapped to some memory range before writing
@@ -139,7 +138,7 @@ ROUTER_ENABLE_COUNTERS := NO
 # Check whether destination port is connected when tranfering flits.
 # Transfering flit to routers not mapped into the topology results in
 # crash. Set to YES to force checking (depletes performance).
-ROUTER_PORT_CONNECTED_CHECKING := YES
+ROUTER_PORT_CONNECTED_CHECKING := NO
 
 # ========================================================================
 # GENERATION OF COMPILATION PARAMETERS STARTS HERE.

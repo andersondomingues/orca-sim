@@ -58,9 +58,9 @@ void app_main(void)
 		//	break;
 
 		//pubsub
-		case 1:
-			hf_spawn(producer, 0, 0, 0, "producer-task", 2048);	
-			break;
+		//case 1:
+		//	hf_spawn(producer, 0, 0, 0, "producer-task", 2048);	
+		//	break;
 			
 		default : //case 6:
 			hf_spawn(consumer, 0, 0, 0, "consumer-task", 2048);
