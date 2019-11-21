@@ -118,6 +118,7 @@ private:
 	USignal<int8_t>* _signal_recv; 
    
 	ofstream output_debug;
+	ofstream output_uart;
 	
 	pthread_t _t;
 	 

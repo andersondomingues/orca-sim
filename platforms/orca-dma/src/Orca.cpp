@@ -297,17 +297,19 @@ int main(int __attribute__((unused)) argc, char** argv){
 		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 			
 			//schedule network bridge module, which starts at the first cycle
-			if(x == 0 && y == 0)
+			if(x == 0 && y == 0){
 				s->Schedule(Event(1, ((NetworkTile*)tiles[x][y])->GetSocket()));
 				
 			//schedule the cpu to start at the third cycle, because no instruction
 			//gets out the cpu before that cycle
-			else
+			}else{
 				s->Schedule(Event(3, ((ProcessingTile*)tiles[x][y])->GetCpu()));
+				s->Schedule(Event(1, ((ProcessingTile*)tiles[x][y])->GetDmaNetif()));
+			}
 			
 			//all other hardware start at the first cycle
 			s->Schedule(Event(1, tiles[x][y]->GetRouter()));
-			s->Schedule(Event(1, tiles[x][y]->GetDmaNetif()));
+
 		}
 	}
 
@@ -369,7 +371,9 @@ int main(int __attribute__((unused)) argc, char** argv){
 	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
 		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 		
-			TDmaNetif* n = tiles[x][y]->GetDmaNetif();
+			if(x == 0 && y == 0) continue;
+		
+			TDmaNetif* n = ((ProcessingTile*)(tiles[x][y]))->GetDmaNetif();
 			std::cout << n->GetName() << ":"
 				<< " SEND_STATE=" << static_cast<unsigned int>(n->GetSendState())
 				<< " RECV_STATE=" << static_cast<unsigned int>(n->GetRecvState())

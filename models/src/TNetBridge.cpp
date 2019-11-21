@@ -51,6 +51,7 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 
 	//open debug file
 	output_debug.open("logs/000.net_debug.log", std::ofstream::out | std::ofstream::trunc);
+	output_uart.open("logs/000.net_uart.log", std::ofstream::out | std::ofstream::trunc);
 	
 	//create a new signal so that the module can be interrupted by
 	//the external network when a new packet arrives
@@ -75,26 +76,25 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 
 	const std::string& server_addr = NETSOCKET_SERVER_ADDRESS;
 	_udp_server = new udp_server(server_addr, NETSOCKET_SERVER_PORT);
-		
-	if(pthread_create(&_t, NULL, TNetBridge::udpRecvThread, this)){
-		std::cout << "unable to create new thread using lpthread." << std:: endl;
-	}
-	
+
 	//this code depends on linux's libraries. I warned you.
 	output_debug << "UDP bridge is up" << std::endl;
 	
 	//instantiate a new input buffer (only input is buferred)
 	_ib = new UBuffer<FlitType>(this->GetName() + ".buffer.in", BUFFER_CAPACITY);
+		
+	this->Reset();
 	
 	udpRecvThread_terminate = 0;
+	if(pthread_create(&_t, NULL, TNetBridge::udpRecvThread, this)){
+		std::cout << "unable to create new thread using lpthread." << std:: endl;
+	}
 	
-	this->Reset();
 }
 
 USignal<int8_t>* TNetBridge::GetSignalRecv(){
 	return _signal_recv;
 }
-
 
 uint8_t* TNetBridge::GetBuffer(){
 	return _recv_buffer;
@@ -112,9 +112,13 @@ TNetBridge::~TNetBridge(){
 	delete(_udp_server);
 	
 	udpRecvThread_terminate = 1;
-	//(void) pthread_join(_t, 0);
 	
 	output_debug.close();
+	output_uart.close();
+
+	//commented out due it prevents simulation
+	//from finish	
+	//(void) pthread_join(_t, 0);
 }
 
 /**

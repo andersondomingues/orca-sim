@@ -68,8 +68,13 @@ class ProcessingTile : private Tile{
 
 private:
 
+	TDmaNetif* _netif;
 	THellfireProcessor* _cpu; //hfrisv-core
-	UMemory* _mem0; //main memory
+
+	//main memory
+	UMemory* _mem0;
+	UMemory* _mem1;
+	UMemory* _mem2;
 	
 	//NOTE: other hardware is defined in Tile.h as 
 	//we use inheritance to derive multiple tiles 
@@ -79,10 +84,44 @@ private:
 	uint32_t _shosttime;
 	USignal<uint32_t>* _signal_hosttime;
 	
+	USignal<uint8_t>*  _signal_stall;
+	USignal<uint8_t>*  _signal_intr;
+	USignal<uint8_t>*  _signal_send_status;
+	USignal<uint32_t>* _signal_recv_status;
+	USignal<uint32_t>* _signal_prog_addr;
+	USignal<uint32_t>* _signal_prog_size;
+	USignal<uint8_t>*  _signal_prog_send;
+	USignal<uint8_t>*  _signal_prog_recv;
+	
 public: 
 
 	ProcessingTile(uint32_t x, uint32_t y);
 	~ProcessingTile();
+	
+	TDmaNetif* GetDmaNetif();
+
+	UMemory* GetMem1();
+	UMemory* GetMem2();
+	
+	//getters
+    USignal<uint8_t>*  GetSignalStall();
+	USignal<uint8_t>*  GetSignalIntr();
+	USignal<uint8_t>*  GetSignalSendStatus();
+	USignal<uint32_t>* GetSignalRecvStatus();
+	USignal<uint32_t>* GetSignalProgAddr();
+	USignal<uint32_t>* GetSignalProgSize();
+	USignal<uint8_t>*  GetSignalProgSend();
+	USignal<uint8_t>*  GetSignalProgRecv();
+
+	//setters
+    void SetSignalStall(USignal<uint8_t>*);
+	void SetSignalIntr(USignal<uint8_t>*);
+	void SetSignalSendStatus(USignal<uint8_t>*);
+	void SetSignalRecvStatus(USignal<uint32_t>*);
+	void SetSignalProgAddr(USignal<uint32_t>*);
+	void SetSignalProgSize(USignal<uint32_t>*);
+	void SetSignalProgSend(USignal<uint8_t>*);
+	void SetSignalProgRecv(USignal<uint8_t>*);
 	
 	//getters
 	THellfireProcessor* GetCpu();

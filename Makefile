@@ -21,7 +21,7 @@ TOOLS_DIR     := $(CURDIR)/tools
 SOFTWARE_DIR  := $(CURDIR)/software
 
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
-.PHONY: clean documentation multitail
+.PHONY: clean documentation multitail tools
 
 #compile everything if necessary and run
 #simulatotion requires the simulator and software 
@@ -96,6 +96,13 @@ bp:
 	@cd breakpoints; bash ../tools/bin-to-hex.sh; rm -rf *.bin
 	@echo "Done."
 
+#compile all tools at once
+tools:
+	@echo "$'\e[7m==================================\e[0m"
+	@echo "$'\e[7m   Building tools, Please Wait... \e[0m"
+	@echo "$'\e[7m==================================\e[0m"
+	make -C tools/orca-udptest
+
 clean:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m          Cleaning up...          \e[0m"
@@ -106,9 +113,9 @@ clean:
 	@make -C $(MODELS_DIR) clean
 	@make -C $(PLATFORMS_DIR)/$(PLATFORM) clean
 	@make -C $(SOFTWARE_DIR) clean
-	rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
+	@rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
 		$(BINARY_DIR)/*~ $(BINARY_DIR)/*.elf $(BINARY_DIR)/*.bin \
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec $(BINARY_DIR)/*.txt
-	rm -rf docs/doxygen/
-	rm -rf breakpoints/*.bin breakpoints/*.hex
-	#rm -rf logs/*.log
+	@rm -rf docs/doxygen/
+	@rm -rf breakpoints/*.bin breakpoints/*.hex
+	@make -C tools/orca-udptest clean

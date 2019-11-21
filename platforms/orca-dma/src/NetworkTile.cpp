@@ -39,16 +39,12 @@ NetworkTile::NetworkTile(uint32_t x, uint32_t y) : Tile(x, y){
 		
 	//update naming of internal hardware parts (from internal class)
 	this->GetRouter()->SetName(this->GetName() + ".router");
-	this->GetDmaNetif()->SetName(this->GetName() + ".netif");
-	this->GetMem1()->SetName(this->GetName() + ".mem1");
-	this->GetMem2()->SetName(this->GetName() + ".mem2");
 	
 	//peripherals	
 	_socket = new TNetBridge(this->GetName() + ".bridge");
 	
 	_socket->SetOutputBuffer(this->GetRouter()->GetInputBuffer(LOCAL));
 	this->GetRouter()->SetOutputBuffer(_socket->GetInputBuffer(), LOCAL);
-	
 }
 
 NetworkTile::~NetworkTile(){
@@ -63,8 +59,7 @@ TNetBridge* NetworkTile::GetSocket(){
 std::string NetworkTile::ToString(){
 	stringstream ss;
 	ss << _name << "={" << _socket->GetName() 
-	   << ", " << this->GetRouter()->GetName() 
-	   << ", " << this->GetDmaNetif()->GetName() << "}";
+	   << ", " << this->GetRouter()->GetName() << "}";
 	
 	return ss.str();
 }

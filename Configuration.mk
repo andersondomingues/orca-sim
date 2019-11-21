@@ -6,8 +6,8 @@
 # -std: required by old GCC to set c++17 as default the c++ 
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -lasan -fsanitize=address -O0
-#-march=native -mtune=native -O3 
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native
+#-lasan -fsanitize=address
 
 # Apps to be compiled within kernel image
 ORCA_APPLICATIONS := producer-consumer
@@ -39,7 +39,7 @@ ORCA_NOC_WIDTH  := 2
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
 # values may provide inaccurate measurements of the achieved frequency.
-ORCA_EPOCH_LENGTH  := 1000000
+ORCA_EPOCH_LENGTH  := 2000000
 
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
 ORCA_EPOCHS_TO_SIM := INF
@@ -139,7 +139,7 @@ ROUTER_ENABLE_COUNTERS := NO
 # Check whether destination port is connected when tranfering flits.
 # Transfering flit to routers not mapped into the topology results in
 # crash. Set to YES to force checking (depletes performance).
-ROUTER_PORT_CONNECTED_CHECKING := NO
+ROUTER_PORT_CONNECTED_CHECKING := YES
 
 # ========================================================================
 # GENERATION OF COMPILATION PARAMETERS STARTS HERE.

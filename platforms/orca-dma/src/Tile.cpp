@@ -50,56 +50,6 @@ Tile::Tile(uint32_t x, uint32_t y){
 	
 	//peripherals	
 	_router = new TRouter(this->GetName() + ".router", x, y);
-	_netif  = new TDmaNetif (this->GetName() + ".netif");
-
-	//ni sig wires
-	_signal_stall       = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
-	_signal_intr        = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
-	_signal_send_status = new USignal<uint8_t>(SIGNAL_SEND_STATUS, this->GetName() + ".send_status");
-	_signal_recv_status = new USignal<uint32_t>(SIGNAL_RECV_STATUS, this->GetName() + ".recv_status");
-	_signal_prog_send   = new USignal<uint8_t>(SIGNAL_PROG_SEND, this->GetName() + ".progr_send");
-	_signal_prog_recv   = new USignal<uint8_t>(SIGNAL_PROG_RECV, this->GetName() + ".progr_recv");
-	_signal_prog_addr   = new USignal<uint32_t>(SIGNAL_PROG_ADDR, this->GetName() + ".progr_addr");
-	_signal_prog_size   = new USignal<uint32_t>(SIGNAL_PROG_SIZE, this->GetName() + ".progr_size");
-
-	//reset control wires
-    _signal_stall->Write(0);
-	_signal_intr->Write(0); 
-	
-	_signal_send_status->Write(0);
-	_signal_recv_status->Write(0);
-	_signal_prog_send->Write(0);
-	_signal_prog_recv->Write(0);
-	_signal_prog_addr->Write(0);
-	_signal_prog_size->Write(0);
-		
-	//bind control signals to hardware (netif side)
-	_netif->SetSignalStall(_signal_stall);
-	_netif->SetSignalIntr(_signal_intr);
-	_netif->SetSignalSendStatus(_signal_send_status);
-	_netif->SetSignalRecvStatus(_signal_recv_status);
-	_netif->SetSignalProgSend(_signal_prog_send);
-	_netif->SetSignalProgRecv(_signal_prog_recv);
-	_netif->SetSignalProgAddr(_signal_prog_addr);
-	_netif->SetSignalProgSize(_signal_prog_size);
-	
-	//bind netif to router
-	_router->SetOutputBuffer(_netif->GetInputBuffer(), LOCAL);
-	_netif->SetOutputBuffer(_router->GetInputBuffer(LOCAL));
-
-	//create new memories for the NI
-	_mem1 = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, 0); //read from noc 
-	_mem2 = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, 0); //write to noc
-
-	//bind memories
-	_netif->SetMem1(_mem1);	
-	_netif->SetMem2(_mem2);
-
-	//counter initialization
-	#ifdef MEMORY_ENABLE_COUNTERS
-	_mem1->InitCounters(M1_COUNTER_STORE_ADDR, M1_COUNTER_LOAD_ADDR);
-	_mem2->InitCounters(M2_COUNTER_STORE_ADDR, M2_COUNTER_LOAD_ADDR);
-	#endif
 	
 	#ifdef ROUTER_ENABLE_COUNTERS
 	_router->InitCounters(ROUTER_COUNTER_ACTIVE_ADDR);
@@ -115,34 +65,8 @@ Tile::~Tile(){
 	
 	//delete hardware modules
 	delete(_router);
-	delete(_netif);
-	delete(_mem1);
-	delete(_mem2);
-	
-	//delete signals 
-	delete(_signal_stall);
-	delete(_signal_intr);
-	delete(_signal_send_status);
-	delete(_signal_recv_status);
-	delete(_signal_prog_send);
-	delete(_signal_prog_recv);
-	delete(_signal_prog_addr);
-	delete(_signal_prog_size);	
+
 }
-
-/************************************* GETTERS **************************************/
-USignal<uint8_t>*  Tile::GetSignalStall(){ return _signal_stall; }
-USignal<uint8_t>*  Tile::GetSignalIntr(){ return _signal_intr; }
-
-USignal<uint8_t>*  Tile::GetSignalSendStatus(){ return _signal_send_status; }
-USignal<uint32_t>*  Tile::GetSignalRecvStatus(){ return _signal_recv_status; }
-
-USignal<uint8_t>*  Tile::GetSignalProgSend(){ return _signal_prog_send; }
-USignal<uint8_t>*  Tile::GetSignalProgRecv(){ return _signal_prog_recv; }
-
-USignal<uint32_t>* Tile::GetSignalProgAddr(){ return _signal_prog_addr; }
-USignal<uint32_t>* Tile::GetSignalProgSize(){ return _signal_prog_size; }
-
 
 /*
 	//setters
@@ -164,29 +88,6 @@ TRouter* Tile::GetRouter(){
 	return _router; 
 }
 
-/**
- * @brief Get current NI module
- * @return A pointer to the instance of NI
- */
-TDmaNetif*  Tile::GetDmaNetif(){
-	return _netif;
-}
-
-/**
- * @brief Get sender memory module 
- * @return A pointer to the instance of memory
- */
-UMemory* Tile::GetMem1(){
-	return _mem1;
-}
-
-/**
- * @brief Get recv memory module
- * @return A pointer to the instance of memory
- */
-UMemory* Tile::GetMem2(){
-	return _mem2;
-}
 
 /**
  * @brief Get current tile name

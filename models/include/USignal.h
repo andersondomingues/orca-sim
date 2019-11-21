@@ -42,7 +42,6 @@ public:
 
 };
 
-
 /**
  * The USignal class models a generic bus of width equals to the sizeof(T)
  */

@@ -36,14 +36,58 @@
  * other. */
 ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 
+	//ni sig wires
+	_signal_stall       = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
+	_signal_intr        = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
+	_signal_send_status = new USignal<uint8_t>(SIGNAL_SEND_STATUS, this->GetName() + ".send_status");
+	_signal_recv_status = new USignal<uint32_t>(SIGNAL_RECV_STATUS, this->GetName() + ".recv_status");
+	_signal_prog_send   = new USignal<uint8_t>(SIGNAL_PROG_SEND, this->GetName() + ".progr_send");
+	_signal_prog_recv   = new USignal<uint8_t>(SIGNAL_PROG_RECV, this->GetName() + ".progr_recv");
+	_signal_prog_addr   = new USignal<uint32_t>(SIGNAL_PROG_ADDR, this->GetName() + ".progr_addr");
+	_signal_prog_size   = new USignal<uint32_t>(SIGNAL_PROG_SIZE, this->GetName() + ".progr_size");
+
 	//create a cpu and memory in addition to current tile hardware
-	_mem0 = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu  = new THellfireProcessor(this->GetName() + ".cpu", this->GetSignalIntr(), this->GetSignalStall());
+	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
+	_cpu   = new THellfireProcessor(this->GetName() + ".cpu", _signal_intr, _signal_stall);
+	_netif  = new TDmaNetif (this->GetName() + ".netif");
 	
 	//binds cpu to the main memory
 	_cpu->SetMem0(_mem0);
-	this->GetDmaNetif()->SetMem0(_mem0);
+	_netif->SetMem0(_mem0);
 	
+	//reset control wires
+    _signal_stall->Write(0);
+	_signal_intr->Write(0); 
+	
+	_signal_send_status->Write(0);
+	_signal_recv_status->Write(0);
+	_signal_prog_send->Write(0);
+	_signal_prog_recv->Write(0);
+	_signal_prog_addr->Write(0);
+	_signal_prog_size->Write(0);
+		
+	//bind control signals to hardware (netif side)
+	_netif->SetSignalStall(_signal_stall);
+	_netif->SetSignalIntr(_signal_intr);
+	_netif->SetSignalSendStatus(_signal_send_status);
+	_netif->SetSignalRecvStatus(_signal_recv_status);
+	_netif->SetSignalProgSend(_signal_prog_send);
+	_netif->SetSignalProgRecv(_signal_prog_recv);
+	_netif->SetSignalProgAddr(_signal_prog_addr);
+	_netif->SetSignalProgSize(_signal_prog_size);
+	
+	//bind netif to router
+	this->GetRouter()->SetOutputBuffer(_netif->GetInputBuffer(), LOCAL);
+	_netif->SetOutputBuffer(this->GetRouter()->GetInputBuffer(LOCAL));
+
+	//create new memories for the NI
+	_mem1 = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, 0); //read from noc 
+	_mem2 = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, 0); //write to noc
+
+	//bind memories
+	_netif->SetMem1(_mem1);	
+	_netif->SetMem2(_mem2);
+
 	//bind self-id wire (care to save the value before the bind)
 	this->GetSignalId()->MapTo((uint32_t*)(_mem0->GetMap(MAGIC_TILE_ID)), MAGIC_TILE_ID);
 	
@@ -74,14 +118,14 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 		(uint32_t*)(_mem0->GetMap(M0_COUNTER_LOAD_ADDR)), M0_COUNTER_LOAD_ADDR);
 
 	//map secondary memory counters (counter were initialized by superclass already, only mapping is required).
-	this->GetMem1()->GetSignalCounterStore()->MapTo(
+	_mem1->GetMem1()->GetSignalCounterStore()->MapTo(
 		(uint32_t*)(_mem0->GetMap(M1_COUNTER_STORE_ADDR)), M1_COUNTER_STORE_ADDR);
-	this->GetMem1()->GetSignalCounterLoad()->MapTo(
+	_mem1->GetMem1()->GetSignalCounterLoad()->MapTo(
 		(uint32_t*)(_mem0->GetMap(M1_COUNTER_LOAD_ADDR)), M1_COUNTER_LOAD_ADDR);
 
-	this->GetMem2()->GetSignalCounterStore()->MapTo(
+	_mem2->GetMem2()->GetSignalCounterStore()->MapTo(
 		(uint32_t*)(_mem0->GetMap(M2_COUNTER_STORE_ADDR)), M2_COUNTER_STORE_ADDR);
-	this->GetMem2()->GetSignalCounterLoad()->MapTo(
+	_mem2->GetMem2()->GetSignalCounterLoad()->MapTo(
 		(uint32_t*)(_mem0->GetMap(M2_COUNTER_LOAD_ADDR)), M2_COUNTER_LOAD_ADDR);
 	#endif
 
@@ -126,11 +170,63 @@ ProcessingTile::~ProcessingTile(){
 
 	delete(_cpu);
 	delete(_mem0);
+	
+	delete(_netif);
+	delete(_mem1);
+	delete(_mem2);
+	
+	//delete signals 
+	delete(_signal_stall);
+	delete(_signal_intr);
+	delete(_signal_send_status);
+	delete(_signal_recv_status);
+	delete(_signal_prog_send);
+	delete(_signal_prog_recv);
+	delete(_signal_prog_addr);
+	delete(_signal_prog_size);	
 }
 
 THellfireProcessor* ProcessingTile::GetCpu(){
 	return _cpu;
 } 
+
+
+/**
+ * @brief Get current NI module
+ * @return A pointer to the instance of NI
+ */
+TDmaNetif*  ProcessingTile::GetDmaNetif(){
+	return _netif;
+}
+
+/**
+ * @brief Get sender memory module 
+ * @return A pointer to the instance of memory
+ */
+UMemory* ProcessingTile::GetMem1(){
+	return _mem1;
+}
+
+/**
+ * @brief Get recv memory module
+ * @return A pointer to the instance of memory
+ */
+UMemory* ProcessingTile::GetMem2(){
+	return _mem2;
+}
+
+/************************************* GETTERS **************************************/
+USignal<uint8_t>*  ProcessingTile::GetSignalStall(){ return _signal_stall; }
+USignal<uint8_t>*  ProcessingTile::GetSignalIntr(){ return _signal_intr; }
+
+USignal<uint8_t>*  ProcessingTile::GetSignalSendStatus(){ return _signal_send_status; }
+USignal<uint32_t>*  ProcessingTile::GetSignalRecvStatus(){ return _signal_recv_status; }
+
+USignal<uint8_t>*  ProcessingTile::GetSignalProgSend(){ return _signal_prog_send; }
+USignal<uint8_t>*  ProcessingTile::GetSignalProgRecv(){ return _signal_prog_recv; }
+
+USignal<uint32_t>* ProcessingTile::GetSignalProgAddr(){ return _signal_prog_addr; }
+USignal<uint32_t>* ProcessingTile::GetSignalProgSize(){ return _signal_prog_size; }
 
 /**
  * @brief Get current signal for systime signal
