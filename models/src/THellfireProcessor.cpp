@@ -72,11 +72,13 @@ int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
 	
 	uint32_t data;
 	
+	//if(this->GetName() == "003.cpu"){
 	//if(this->GetName() == "006.cpu" && address == 0x400001a8){
-	//if(address == 0x40002c6c || address == 0x40002e48){
+		//if(address == 0x40002c6c || address == 0x40002e48){
 	//if(address == 0x40002c5c){
 	// dispatcher if(this->GetName() == "006.cpu" && address == 0x4000513c){
 	//	this->bp(s, address);
+		//printf("pc: 0x%x\n", s->pc);
 	//}
 	
 	s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)

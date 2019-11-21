@@ -6,31 +6,32 @@
 # -std: required by old GCC to set c++17 as default the c++ 
 # -march, -mtune: optimize code for current machine architecture
 # -lasan, -fsanitize: add memory sanitizer to code
-GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native -lasan -fsanitize=address
+GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native 
+#-lasan -fsanitize=address
 
-# Apps to be compiled within kernel image
-ORCA_APPLICATIONS := producer-consumer
-# producer-consumer-pubsub 
+# Apps to be compiled within kernel image. For multiple applications, 
+# use spacebar to separate names. Applications defined here will not 
+# be included in compilation unless you edit the file 
+#          extensions/orca-core/src/orca-core.cpp,
+# where you should set the spawn of tasks in each of the cores. 
+ORCA_APPLICATIONS := producer-consumer-pubsub producer-consumer
 # counter-test
 # noc_test4
 
 # Software extensions (experimental)
-ORCA_EXTENSIONS := orca-core 
-#orca-pubsub
-#orca-monitoring
+ORCA_EXTENSIONS := orca-core orca-pubsub orca-monitoring
 
 # ============================================================[ HELLFIREOS ]
 # Set level of logging for the HellfireOS kernel. 
 # 0 => disabled 
 # 1 => interruption and dispatch information (default)
 # 2 => same as level one plus calls to kernel functions
-KERNEL_LOG_LEVEL := 2
+KERNEL_LOG_LEVEL := 0
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 2
-
+ORCA_NOC_HEIGHT := 3 
 # Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
 ORCA_NOC_WIDTH  := 2

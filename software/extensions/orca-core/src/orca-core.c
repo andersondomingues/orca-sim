@@ -23,8 +23,8 @@
 //application-specific header
 //#include "../../../applications/counter-test/include/counter-test.h"
 #include "../../../applications/producer-consumer/include/producer-consumer.h"
-//#include "../../../extensions/orca-pubsub/include/pubsub-broker.h"
-//#include "../../../applications/producer-consumer-pubsub/include/producer-consumer-pubsub.h"
+#include "../../../extensions/orca-pubsub/include/pubsub-broker.h"
+#include "../../../applications/producer-consumer-pubsub/include/producer-consumer-pubsub.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -38,36 +38,32 @@ void app_main(void)
 	//#elif CPU_ID == 32
     //
 
-    printf("cpu_id: %d\n", hf_cpuid());
+    //printf("cpu_id: %d\n", hf_cpuid());
 
 	switch(hf_cpuid()){
-	
-		//allocate 90% cpu time for each of the tasks (producer, consumer, and broker)
-		//case 7:
-			//hf_spawn(producer_pubsub, 0, 0, 0, "producer-ps-task", 8192);
-			//hf_spawn(producer, 0, 0, 0, "producer-task", 8192);
-		//	break;
-			
-		//case 3:
-			//hf_spawn(pubsub_broker_tsk, 0, 0, 0, "broker-ps-task", 8192);
-		//	break;		
-					
-		//case 4:
-			//hf_spawn(consumer_pubsub, 0, 0, 0, "consumer-ps-task", 8192);
-			//hf_spawn(consumer, 0, 0, 0, "consumer-task", 8192);
-		//	break;
 
-		//pubsub
-		//case 1:
-		//	hf_spawn(producer, 0, 0, 0, "producer-task", 2048);	
-		//	break;
-			
-		default : //case 6:
-			hf_spawn(consumer, 0, 0, 0, "consumer-task", 2048);
+		//PRODUTOR-CONSUMIDOR
+		//hf_spawn(producer, 0, 0, 0, "producer-task", 2048);	
+		//hf_spawn(consumer, 0, 0, 0, "consumer-task", 2048);
+	
+		case 1: // << EKF
+			hf_spawn(producer_pubsub, 0, 0, 0, "producer-ps-task", 2048);
 			break;
 			
-		//default:
-			//break;
+		case 3: // << BROKER
+			hf_spawn(pubsub_broker_tsk, 0, 0, 0, "broker-ps-task", 2048);
+			break;
+
+		case 2: // << PID
+			hf_spawn(consumer_pubsub, 0, 0, 0, "consumer-ps-task", 2048);
+			break;
+		
+		//case 3: // << CONSUMER
+		//	hf_spawn(consumer, 0, 0, 0, "consumer", 2048);
+		//	break;
+			
+		default: // << NONE
+			break;
 	}
 	
 	//spawn for all cores

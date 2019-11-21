@@ -78,7 +78,10 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 	_udp_server = new udp_server(server_addr, NETSOCKET_SERVER_PORT);
 
 	//this code depends on linux's libraries. I warned you.
-	output_debug << "UDP bridge is up" << std::endl;
+	output_uart
+		<< "Virtual Ethernet Adapter is up." << std::endl 
+		<< "Server ip:" << NETSOCKET_SERVER_ADDRESS << ":" << NETSOCKET_SERVER_PORT << std::endl
+		<< "Client ip:" << NETSOCKET_CLIENT_ADDRESS << ":" << NETSOCKET_CLIENT_PORT << std::endl;
 	
 	//instantiate a new input buffer (only input is buferred)
 	_ib = new UBuffer<FlitType>(this->GetName() + ".buffer.in", BUFFER_CAPACITY);
@@ -248,7 +251,7 @@ void TNetBridge::udpToNocProcess(){
 				_flits_to_recv = _out_reg + 2; 
 				_flits_to_recv_count = 2;
 				
-				std::cout << std::hex << _out_reg << std::dec << std::endl;
+				//std::cout << std::hex << _out_reg << std::dec << std::endl;
 				
 				//proceed to next state
 				_recv_state = TNetBridgeRecvState::RECV_PAYLOAD;

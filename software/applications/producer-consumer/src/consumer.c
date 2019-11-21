@@ -32,7 +32,7 @@ void consumer(void)
             if (val){
 				printf("hf_recv(): error %d\n", val);
             } else {
-	        	printf("#%d [free queue: %d]\n", counter, hf_queue_count(pktdrv_queue));
+	        	//printf("#%d [free queue: %d]\n", counter, hf_queue_count(pktdrv_queue));
 	        	//printf("cpu %d, port %d, ch %d, size %d\n", cpu, port, i, size);
 	        	printf("content %d\n", *((uint32_t*)buf));
 

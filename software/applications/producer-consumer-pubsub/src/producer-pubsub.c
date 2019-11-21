@@ -47,7 +47,7 @@ void producer_pubsub(void){
 		//publishes to the topic
 		pubsub_publish(TOPIC_01, buf, sizeof(buf));
 		
-		//delay_ms(10);
+		delay_ms(1);
 	}
 
 	//unasvertise TOPIC_01

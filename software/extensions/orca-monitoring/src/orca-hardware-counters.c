@@ -25,3 +25,5 @@ volatile uint32_t* CPU_COUNTER_CYCLES_STALL = (volatile uint32_t*) CPU_COUNTER_C
 #ifdef ROUTER_ENABLE_COUNTERS
 volatile uint32_t* ROUTER_COUNTER_ACTIVE = (volatile uint32_t*) ROUTER_COUNTER_ACTIVE_ADDR;
 #endif
+
+//funcs

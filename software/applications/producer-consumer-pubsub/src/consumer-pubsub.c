@@ -19,7 +19,7 @@ void consumer_pubsub(void)
 		panic(0xff);
 	}
 
-	//delay_ms(10);
+	delay_ms(5);
 
 	//info for this node (design time)
 	pubsub_node_info_t subinfo = {
