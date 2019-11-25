@@ -117,15 +117,17 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_mem0->GetSignalCounterLoad()->MapTo(
 		(uint32_t*)(_mem0->GetMap(M0_COUNTER_LOAD_ADDR)), M0_COUNTER_LOAD_ADDR);
 
-	//map secondary memory counters (counter were initialized by superclass already, only mapping is required).
-	_mem1->GetMem1()->GetSignalCounterStore()->MapTo(
+	//map secondary memory counters
+	_mem1->InitCounters(M1_COUNTER_STORE_ADDR, M1_COUNTER_LOAD_ADDR);
+	_mem1->GetSignalCounterStore()->MapTo(
 		(uint32_t*)(_mem0->GetMap(M1_COUNTER_STORE_ADDR)), M1_COUNTER_STORE_ADDR);
-	_mem1->GetMem1()->GetSignalCounterLoad()->MapTo(
+	_mem1->GetSignalCounterLoad()->MapTo(
 		(uint32_t*)(_mem0->GetMap(M1_COUNTER_LOAD_ADDR)), M1_COUNTER_LOAD_ADDR);
 
-	_mem2->GetMem2()->GetSignalCounterStore()->MapTo(
+	_mem2->InitCounters(M2_COUNTER_STORE_ADDR, M2_COUNTER_LOAD_ADDR);
+	_mem2->GetSignalCounterStore()->MapTo(
 		(uint32_t*)(_mem0->GetMap(M2_COUNTER_STORE_ADDR)), M2_COUNTER_STORE_ADDR);
-	_mem2->GetMem2()->GetSignalCounterLoad()->MapTo(
+	_mem2->GetSignalCounterLoad()->MapTo(
 		(uint32_t*)(_mem0->GetMap(M2_COUNTER_LOAD_ADDR)), M2_COUNTER_LOAD_ADDR);
 	#endif
 

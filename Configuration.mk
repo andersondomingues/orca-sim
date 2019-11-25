@@ -39,7 +39,7 @@ ORCA_NOC_WIDTH  := 2
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
 # values may provide inaccurate measurements of the achieved frequency.
-ORCA_EPOCH_LENGTH  := 2000000
+ORCA_EPOCH_LENGTH  := 1000000
 
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
 ORCA_EPOCHS_TO_SIM := INF
@@ -107,7 +107,7 @@ MEMORY_READ_ADDRESS_CHECKING := NO
 MEMORY_WIPE_ADDRESS_CHECKING := NO
 
 # Enable counter for read and write operations (depletes performance).
-MEMORY_ENABLE_COUNTERS := NO
+MEMORY_ENABLE_COUNTERS := YES
 
 # ==============================================================[ HFRISCV ]
 # Check whether address are mapped to some memory range before writing
@@ -123,7 +123,7 @@ HFRISCV_WRITE_ADDRESS_CHECKING := NO
 HFRISCV_READ_ADDRESS_CHECKING := NO
 
 # Enable counter for instructions' classes (depletes performance).
-HFRISCV_ENABLE_COUNTERS := NO
+HFRISCV_ENABLE_COUNTERS := YES
 
 # ==============================================================[ NETIF ]
 # Check whether netif is writing to unmapped memory space
@@ -134,7 +134,7 @@ NETIF_READ_ADDRESS_CHECKING := NO
 
 # ==============================================================[ ROUTER ]
 # Enable counters for number of active cycles
-ROUTER_ENABLE_COUNTERS := NO
+ROUTER_ENABLE_COUNTERS := YES
 
 # Check whether destination port is connected when tranfering flits.
 # Transfering flit to routers not mapped into the topology results in

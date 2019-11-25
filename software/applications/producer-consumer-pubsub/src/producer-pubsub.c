@@ -5,6 +5,9 @@
 #include "../../orca-pubsub/include/pubsub-shared.h"
 #include "../../orca-pubsub/include/pubsub-publisher.h"
 
+// enable monitoring
+#include <orca-hardware-counters.h>
+
 #define PRODUCE_LENGTH 32
 
 #define BROKER_ADDR 3
@@ -40,6 +43,9 @@ void producer_pubsub(void){
 	//for(int counter = 0; counter < 10; counter = 0){
 	for(;;){
 
+		uint32_t time_b, time_e;
+		time_b = GetCounter_CPU_HostTime();
+		
 		//generate a bunch of values
 		for (int i = 0; i < PRODUCE_LENGTH; i++)
 			buf[i] = i;
@@ -48,6 +54,10 @@ void producer_pubsub(void){
 		pubsub_publish(TOPIC_01, buf, sizeof(buf));
 		
 		delay_ms(1);
+		
+		time_e = GetCounter_CPU_HostTime();
+		printf("total time (ms): %d", time_e - time_b);
+		
 	}
 
 	//unasvertise TOPIC_01
