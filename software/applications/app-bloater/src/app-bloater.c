@@ -78,7 +78,7 @@ void bloat(uint32_t funcptr, uint32_t stacksize, uint16_t cpu, uint16_t port, ui
 	buffer_16[7] = 0x0;                //padding
 	
 	buffer_32[4] = strlen(task_name);  //task_name_len
-	strcpy(&(buffer_32[5]), task_name);   //task_name 
+	strcpy((int8_t*)&(buffer_32[5]), task_name);   //task_name 
 
 	// hexdump(buffer, BUFFER_SIZE);
 	// printf("\n");

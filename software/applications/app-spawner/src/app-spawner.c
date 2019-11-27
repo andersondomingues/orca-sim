@@ -6,43 +6,44 @@
 //maximum packet length for transfering task info
 #define MESSAGE_PAYLOAD_SIZE 200
 
+// |------- 32 bits -------|
+// _________________________
+//         functptr
+// _________________________
+//         stacksize
+// _________________________
+//   period    |   capacity
+// ____________|____________
+//   deadline  |   padding
+// ____________|____________
+//         name length      
+// _________________________
+//        name data (...)
+// _________________________
 void app_spawner_spawn(int8_t* buffer, uint32_t buffer_len){
 
-	// uint32_t* buffer_32 = (uint32_t*) buffer;
-	// uint16_t* buffer_16 = (uint16_t*) buffer;
+	char task_name[40];
 
-	// //extract task name from package
-	// printf("task name: \n");
+	uint32_t taskname, stack_size, funcptr;
+	uint16_t period, capacity, deadline;
 
-	// //extract stack size
-	// printf("stack size: %d\n", buffer_32[1]);
+	uint32_t* buffer_32 = (uint32_t*) buffer;
+	uint16_t* buffer_16 = (uint16_t*) buffer;
 
-	// //locate address of tasks func
-	// printf("func addr: %d\n", buffer_32[0]);
-	// // void (*fun_ptr)(void) = (void (*)(void))task_base_ptr;
+	//unpack data
+	funcptr = buffer_32[0];
+	stack_size = buffer_32[1];
 
-	// //real time params
-	// printf("rt: period=%d, capacity=%d, deadline=%d\n", 
-	// 	buffer_16[4], buffer_16[5], buffer_16[6]);
+	period   = buffer_16[4];
+	capacity = buffer_16[5];
+	deadline = buffer_16[6];
 
-	// hf_spawn(fun_ptr, 0, 0, 0, "migrated_task_001", 4096);
+	strcpy(task_name, &(buffer_32[5]));
 
-	//copy contents from the buffer to the new location
-	//memcpy(task_base_ptr, task_code, task_size);
+	printf("spawning %s 0x%x (%d/%d/%d) \n",
+		task_name, funcptr, period, capacity, deadline);
 
-	//TODO: adjust jumps and other relevant instructions to 
-	//reflect current application base pointer
-		
-	//spawn the task
-	//TODO: we assume that the entry-point of the task
-	//is located at the first instruction of the executable
-	//code. It may change given that some tasks may have 
-	//more than one function and the order of functions is 
-	//arbitrarily changed by the compiler.
-	//TODO: task name and period must be parameterizable.
-		
-	
-	//TODO: restore task context
+	hf_spawn((void*)funcptr, period, capacity, deadline, task_name, stack_size);
 }
 
 /** this task spawns applications once it receive the proper
@@ -75,8 +76,8 @@ void app_spawner(void)
 
 			//check whether the received parameters are valid
 			if (!val){
-				printf("SPAWNER: task spawn requested from %d:%d (requester), task size=%d\n", cpu, task, size);
-				// app_spawner_spawn(buf, size);
+				// printf("SPAWNER: task spawn requested from %d:%d (requester), task size=%d\n", cpu, task, size);
+				app_spawner_spawn(buf, size);
 			}else{
 				printf("hf_recv(): error %d\n", val);
 			}

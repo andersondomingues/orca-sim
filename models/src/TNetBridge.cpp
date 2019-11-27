@@ -92,7 +92,6 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 	if(pthread_create(&_t, NULL, TNetBridge::udpRecvThread, this)){
 		std::cout << "unable to create new thread using lpthread." << std:: endl;
 	}
-	
 }
 
 USignal<int8_t>* TNetBridge::GetSignalRecv(){
@@ -299,9 +298,9 @@ void TNetBridge::nocToUdpProcess(){
 				//change states
 				_send_state = TNetBridgeSendState::SEND_LEN;
 				
-				/*
+				
 				#ifdef NETBRIDGE_ENABLE_LOG_OUTPUT
-				uint32_t x = msg[4];
+				uint32_t x = buf[4];
 				
 				std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();				
 				auto duration = now.time_since_epoch();
@@ -311,7 +310,6 @@ void TNetBridge::nocToUdpProcess(){
 							 << " TO " << _udp_client->get_addr() << ":" << _udp_client->get_port() 
 							 << " FROM #" << x << std::endl << std::flush;
 				#endif
-				*/
 			}
 		
 		} break;

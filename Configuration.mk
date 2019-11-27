@@ -14,9 +14,7 @@ GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=
 # be included in compilation unless you edit the file 
 #          extensions/orca-core/src/orca-core.cpp,
 # where you should set the spawn of tasks in each of the cores. 
-ORCA_APPLICATIONS := producer-consumer-pubsub producer-consumer
-# counter-test
-# noc_test4
+ORCA_APPLICATIONS := producer-consumer-pubsub producer-consumer app-spawner app-bloater
 
 # Software extensions (experimental)
 ORCA_EXTENSIONS := orca-core orca-pubsub orca-monitoring
@@ -26,7 +24,7 @@ ORCA_EXTENSIONS := orca-core orca-pubsub orca-monitoring
 # 0 => disabled 
 # 1 => interruption and dispatch information (default)
 # 2 => same as level one plus calls to kernel functions
-KERNEL_LOG_LEVEL := 0
+KERNEL_LOG_LEVEL := 1
 
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
