@@ -20,11 +20,14 @@
 //basic resources
 #include "orca-core.h"
 
-//application-specific header
-//#include "../../../applications/counter-test/include/counter-test.h"
-#include "../../../applications/producer-consumer/include/producer-consumer.h"
+//task-specific headers
 #include "../../../extensions/orca-pubsub/include/pubsub-broker.h"
+
+#include "../../../applications/producer-consumer/include/producer-consumer.h"
 #include "../../../applications/producer-consumer-pubsub/include/producer-consumer-pubsub.h"
+
+#include "../../../applications/app-spawner/include/app-spawner.h"
+#include "../../../applications/app-bloater/include/app-bloater.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -47,21 +50,25 @@ void app_main(void)
 		//hf_spawn(consumer, 0, 0, 0, "consumer-task", 2048);
 	
 		case 1: // << EKF
-			hf_spawn(producer_pubsub, 0, 0, 0, "producer-ps-task", 2048);
-			break;
-			
-		case 3: // << BROKER
-			hf_spawn(pubsub_broker_tsk, 0, 0, 0, "broker-ps-task", 2048);
+			hf_spawn(producer_pubsub, 0, 0, 0, "producer-ps-task", 1024);   //best effort
 			break;
 
 		case 2: // << PID
-			hf_spawn(consumer_pubsub, 0, 0, 0, "consumer-ps-task", 2048);
+			hf_spawn(consumer_pubsub, 10, 9, 10, "consumer-ps-task", 2048); //~90%
+			hf_spawn(app_spawner, 10, 1, 10, "app-spawner", 1024);          //~10%
 			break;
-		
-		//case 3: // << CONSUMER
-		//	hf_spawn(consumer, 0, 0, 0, "consumer", 2048);
-		//	break;
-			
+
+		case 3: // << BROKER
+			hf_spawn(pubsub_broker_tsk, 10, 9, 10, "broker-ps-task", 2048); //~90%
+			break;
+
+		case 4: // << new PID
+			hf_spawn(app_spawner, 10, 1, 10, "app-spawner", 1024);          //~10%
+			break;
+
+		case 5: // bloater
+			hf_spawn(app_bloater, 10, 9, 10, "app-bloater", 4096);          //~10%
+
 		default: // << NONE
 			break;
 	}
