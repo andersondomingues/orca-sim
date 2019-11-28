@@ -290,15 +290,13 @@ void TNetBridge::nocToUdpProcess(){
 			//fall whether we have any flit coming from the noc
 			if(_ib->size() > 0){
 			
+				// std::cout << "READY" << std::endl << std::flush;
+
 				//put address flit into the send buffer
 				FlitType* buf = (FlitType*)_send_buffer;
 				buf[0] = _ib->top();
 				_ib->pop();
-				
-				//change states
-				_send_state = TNetBridgeSendState::SEND_LEN;
-				
-				
+								
 				#ifdef NETBRIDGE_ENABLE_LOG_OUTPUT
 				uint32_t x = buf[4];
 				
@@ -310,6 +308,9 @@ void TNetBridge::nocToUdpProcess(){
 							 << " TO " << _udp_client->get_addr() << ":" << _udp_client->get_port() 
 							 << " FROM #" << x << std::endl << std::flush;
 				#endif
+
+				//change states
+				_send_state = TNetBridgeSendState::SEND_LEN;			
 			}
 		
 		} break;
@@ -320,9 +321,13 @@ void TNetBridge::nocToUdpProcess(){
 		
 			if(_ib->size() > 0){
 			
+				// std::cout << "SEND_LEN" << std::endl << std::flush;
+
 				//put address flit into the send buffer
-				((FlitType*)_send_buffer)[1] = _ib->top();
-				_flits_to_send = _ib->top();
+				FlitType* buf = (FlitType*)_send_buffer;
+				buf[1] = _ib->top();
+
+				_flits_to_send = _ib->top() + 2;
 				_flits_to_send_count = 2; //<-- starts in two due to we have added address and size flits
 				_ib->pop();
 				
@@ -338,12 +343,21 @@ void TNetBridge::nocToUdpProcess(){
 			//still have flits to receive from the noc
 			if(_flits_to_send_count < _flits_to_send){
 			
-				//add next flit to the buffer
-				((FlitType*)_send_buffer)[_flits_to_send_count++] = _ib->top();
-				_ib->pop();			
+				// std::cout << "ADD FLIT" << std::endl << std::flush;
+
+				if(_ib->size() > 0){
+
+					FlitType* buf = (FlitType*)_send_buffer;
+					buf[_flits_to_send_count] = _ib->top();
+					_ib->pop();
+
+					_flits_to_send_count++;
+				}
 
 			}else{
 	
+				// std::cout << "SEND ALL" << std::endl << std::flush;
+
 				//send message through the udp socket
 				_udp_client->send((const char*)_send_buffer, SEND_BUFFER_LEN);
 				

@@ -46,7 +46,7 @@ void app_main(void)
 	switch(hf_cpuid()){
 
 		//PRODUTOR-CONSUMIDOR
-		//hf_spawn(producer, 0, 0, 0, "producer-task", 2048);	
+		//hf_spawn(producer, 0, 0, 0, "producer-task", 2048);
 		//hf_spawn(consumer, 0, 0, 0, "consumer-task", 2048);
 	
 		case 1: // << EKF
@@ -54,12 +54,12 @@ void app_main(void)
 			break;
 
 		case 2: // << PID
-			hf_spawn(consumer_pubsub, 10, 9, 10, "consumer-ps-task", 2048); //~90%
+			hf_spawn(consumer_pubsub, 10, 5, 10, "consumer-ps-task", 2048); //~90%
 			hf_spawn(app_spawner, 10, 1, 10, "app-spawner", 1024);          //~10%
 			break;
 
 		case 3: // << BROKER
-			hf_spawn(pubsub_broker_tsk, 10, 9, 10, "broker-ps-task", 2048); //~90%
+			hf_spawn(pubsub_broker_tsk, 10, 5, 10, "broker-ps-task", 2048); //~90%
 			break;
 
 		case 4: // << new PID
@@ -67,7 +67,7 @@ void app_main(void)
 			break;
 
 		case 5: // bloater
-			hf_spawn(app_bloater, 10, 9, 10, "app-bloater", 4096);          //~10%
+			hf_spawn(app_bloater, 10, 5, 10, "app-bloater", 4096);          //~10%
 
 		default: // << NONE
 			break;

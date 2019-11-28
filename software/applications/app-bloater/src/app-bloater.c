@@ -6,8 +6,8 @@
 #define BLOAT_DELAY 20
 #define BUFFER_SIZE 96
 
-#define BLOAT_INITIAL_DELAY 100
-#define BLOAT_PERIOD_DELAY  100
+#define BLOAT_INITIAL_DELAY 1
+#define BLOAT_PERIOD_DELAY  10
 
 /* BLOAT PACKET INFO
 	-> uint32_t func_addr
@@ -87,6 +87,9 @@ void bloat(uint32_t funcptr, uint32_t stacksize, uint16_t cpu, uint16_t port, ui
 	hf_send(cpu, port, buffer, sizeof(buffer), 1234);
 	printf("bloat %d:%d with task %s 0x%x (%d/%d/%d) \n",
 		cpu, port, task_name, funcptr, period, capacity, deadline);
+
+
+	hf_send(0, port, buffer, sizeof(buffer), 1234);
 }
 
 /** this task spawns applications once it receive the proper
