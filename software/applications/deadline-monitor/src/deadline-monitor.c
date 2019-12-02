@@ -1,34 +1,13 @@
 #include <hellfire.h>
 #include <noc.h>
 
-#include <app-bloater.h>
+#include <deadline-monitor.h>
 
-#define BLOAT_DELAY 20
 #define BUFFER_SIZE 96
-
-#define BLOAT_INITIAL_DELAY 100
-#define BLOAT_PERIOD_DELAY  2000
-
-/* BLOAT PACKET INFO
-	-> uint32_t func_addr
-	-> uint32_t stack_size
-	-> uint16_t rt_period
-	-> uint16_t rt_capacity
-	-> uint16_t rt_deadline
-	-> uint16_t ___padding0
-	-> uint32_t name_len
-	-> char* name_data */
-
-//this task does nothing
-void bloat_idle_task(){
-
-	for (;;){
-		
-	}
-}
+#define TASK_ID 2
 
 //create a bloat package and send it to the target cpu
-void bloat(uint32_t funcptr, uint32_t stacksize, uint16_t cpu, uint16_t port, uint16_t task_counter){
+void respawn(uint32_t funcptr, uint32_t stacksize, uint16_t cpu, uint16_t port, uint16_t task_counter){
 
 	int8_t buffer[BUFFER_SIZE];
 	char task_name[40], tmp_str[40];
@@ -39,8 +18,8 @@ void bloat(uint32_t funcptr, uint32_t stacksize, uint16_t cpu, uint16_t port, ui
 	uint16_t* buffer_16 = (uint16_t*) buffer;
 
 	//add an unique name to the task to be spawned
-	strcpy(task_name, "bloat_");
-	itoa(task_counter, tmp_str, 10);
+	strcpy(task_name, "consumer-pubsub");
+	itoa(task_counter, tmp_str, 15);
 	strcat(task_name, tmp_str);
 	// printf("task name: %s\n", task_name);
 
@@ -80,43 +59,32 @@ void bloat(uint32_t funcptr, uint32_t stacksize, uint16_t cpu, uint16_t port, ui
 	buffer_32[4] = strlen(task_name);  //task_name_len
 	strcpy((int8_t*)&(buffer_32[5]), task_name);   //task_name 
 
-	// hexdump(buffer, BUFFER_SIZE);
-	// printf("\n");
-
 	//send
 	hf_send(cpu, port, buffer, sizeof(buffer), 1234);
-	printf("%d: requester %d:%d for task %s 0x%x (%d/%d/%d) \n",
-		hf_selfid(), cpu, port, task_name, funcptr, period, capacity, deadline);
-
+	printf("respawned %d:%d with task %s 0x%x (%d/%d/%d) \n",
+		cpu, port, task_name, funcptr, period, capacity, deadline);
+		
+	while(1); //prevents the function from spawning multiple tasks 
 }
 
-/** this task spawns applications once it receive the proper
- * configuration. Configuration include the name of the 
- * task to be spawned, stack size, and real-time parameters */
-void app_bloater(void)
-{
-	uint16_t target_cpu = 2, target_port = 4000, task_counter = 0;
+void deadline_monitor(){
 
-	if (hf_comm_create(hf_selfid(), 5000, 0))
+	if (hf_comm_create(hf_selfid(), 1432, 0))
 		panic(0xff);
 
-	delay_ms(BLOAT_INITIAL_DELAY);
+	//delay_ms(20);
 
-	//keep probing for new requests
-	while (1){
+	while(1){
 	
-		//spawn one task every 200ms
-		delay_ms(BLOAT_PERIOD_DELAY); 
-
-		//create bloat package and sent it
-		bloat((uint32_t)(&bloat_idle_task), 1024, target_cpu, target_port, task_counter++);
+		int32_t dlm = hf_dlm(TASK_ID);
+		printf("mom: %d\n", dlm);
 		
-		if(task_counter == 32){
-			printf("%d: done requesting tasks\n", hf_selfid());
-			break;
+		//print the number of deadline misses for task two
+		if(dlm > 2){
+			printf("!! DEADLINES MISSED > 3, REALLOC !!\n");
+			respawn(
+				(uint32_t)(krnl_tcb[TASK_ID].ptask), 
+				4096, 4, 4000, 0);
 		}
 	}
-	
-	while(1); //holds indefinitelly
-	
 }

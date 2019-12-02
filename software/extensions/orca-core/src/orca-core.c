@@ -28,6 +28,7 @@
 
 #include "../../../applications/app-spawner/include/app-spawner.h"
 #include "../../../applications/app-bloater/include/app-bloater.h"
+#include "../../../applications/deadline-monitor/include/deadline-monitor.h"
 
 //Task mapping routine and entry-point. Please note that 
 //task mapping is done through software and the code below
@@ -50,16 +51,17 @@ void app_main(void)
 		//hf_spawn(consumer, 0, 0, 0, "consumer-task", 2048);
 	
 		case 1: // << EKF
-			hf_spawn(producer_pubsub, 0, 0, 0, "producer-ps-task", 1024);   //best effort
+			hf_spawn(producer_pubsub, 10, 1, 10, "producer-ps-task", 1024);   //10%
 			break;
 
 		case 2: // << PID
-			hf_spawn(consumer_pubsub, 10, 5, 10, "consumer-ps-task", 2048); //~90%
 			hf_spawn(app_spawner, 10, 1, 10, "app-spawner", 1024);          //~10%
+			hf_spawn(consumer_pubsub, 10, 1, 10, "consumer-ps-task", 2048); //~10%
+			hf_spawn(deadline_monitor, 10, 1, 10, "deadline-monitor", 1024); //~10%
 			break;
 
 		case 3: // << BROKER
-			hf_spawn(pubsub_broker_tsk, 10, 5, 10, "broker-ps-task", 2048); //~90%
+			hf_spawn(pubsub_broker_tsk, 10, 1, 10, "broker-ps-task", 2048); //~10%
 			break;
 
 		case 4: // << new PID
@@ -67,7 +69,7 @@ void app_main(void)
 			break;
 
 		case 5: // bloater
-			hf_spawn(app_bloater, 10, 5, 10, "app-bloater", 4096);          //~10%
+			hf_spawn(app_bloater, 10, 1, 10, "app-bloater", 4096);          //~10%
 
 		default: // << NONE
 			break;

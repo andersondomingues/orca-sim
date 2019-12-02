@@ -24,7 +24,7 @@ void app_spawner_spawn(int8_t* buffer, uint32_t buffer_len){
 
 	char task_name[40];
 
-	uint32_t taskname, stack_size, funcptr;
+	uint32_t stack_size, funcptr;
 	uint16_t period, capacity, deadline;
 
 	uint32_t* buffer_32 = (uint32_t*) buffer;
@@ -38,10 +38,10 @@ void app_spawner_spawn(int8_t* buffer, uint32_t buffer_len){
 	capacity = buffer_16[5];
 	deadline = buffer_16[6];
 
-	strcpy(task_name, &(buffer_32[5]));
+	strcpy(task_name, (char*)&(buffer_32[5]));
 
-	printf("spawning %s 0x%x (%d/%d/%d) \n",
-		task_name, funcptr, period, capacity, deadline);
+	printf("%d: spawning %s 0x%x (%d/%d/%d) \n",
+		hf_selfid(), task_name, funcptr, period, capacity, deadline);
 
 	hf_spawn((void*)funcptr, period, capacity, deadline, task_name, stack_size);
 }
@@ -82,5 +82,6 @@ void app_spawner(void)
 				printf("hf_recv(): error %d\n", val);
 			}
 		}
+
 	}
 }

@@ -17,7 +17,7 @@
 #define PS_CLIENT_STACKSIZE 8192
 
 //enable/disable debug prints
-#define PS_DEBUG_ENABLE 1
+#define PS_DEBUG_ENABLE 0
 
 #if PS_DEBUG_ENABLE != 0
 #define PS_DEBUG(...) printf(__VA_ARGS__)

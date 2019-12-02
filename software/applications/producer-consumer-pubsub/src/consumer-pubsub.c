@@ -50,12 +50,12 @@ void consumer_pubsub(void)
 			if (val){
 				printf("hf_recv(): error %d\n", val);
 			} else {
-				printf("cpu %d, port %d, ch %d, size %d, #%d [free queue: %d]\n",
-					cpu, port, i, size, counter, hf_queue_count(pktdrv_queue));
+				//printf("cpu %d, port %d, ch %d, size %d, #%d [free queue: %d]\n",
+				//	cpu, port, i, size, counter, hf_queue_count(pktdrv_queue));
+				printf("%d: received packet number %d\n", hf_selfid(), counter++);
 			}
 		}
 		
-		counter++;
 	}
 
 	//unsubscribe from TOPIC_01

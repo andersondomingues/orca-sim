@@ -53,11 +53,10 @@ void producer_pubsub(void){
 		//publishes to the topic
 		pubsub_publish(TOPIC_01, buf, sizeof(buf));
 		
-		delay_ms(1);
-		
 		time_e = GetCounter_CPU_HostTime();
-		printf("total time (ms): %d", time_e - time_b);
+		printf("%d: packet sent, took %dms\n", hf_selfid(), time_e - time_b);
 		
+		delay_ms(5);
 	}
 
 	//unasvertise TOPIC_01
