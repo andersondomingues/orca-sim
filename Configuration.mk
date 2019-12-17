@@ -1,21 +1,11 @@
 # ========================================================================
-# GLOBAL SETTINGS: 
-# In this section we set compiling and linking flags, optimizations, etc. 
+# GLOBAL SETTINGS
 # ========================================================================
-COMPILER_FAGS := -Wall -Wextra -Werror -g3 -O3 
+COMPLINE := -Wall -Wextra -Werror -g3 -O3 
 #-lasan -fsanitize=address
 
-# Number of cycles before calling the frequency analisys tool. Shorter
-# values may compromise the performance of the simulation, while higher
-# values may provide inaccurate measurements of the achieved frequency.
-ORCA_EPOCH_LENGTH  := 2000000
-
-# Number of pulses to simulate. Set to INF to simulate indefinitely.
-ORCA_EPOCHS_TO_SIM := INF
-
 # ========================================================================
-# GENERATION OF COMPILATION PARAMETERS STARTS HERE.
-# DO NOT MODIFY BELOW THIS LINE!
+# SAFETY AND DEBUGGING
 # ========================================================================
 # Check whether some event has been schedule to run in some point of 
 # time prior to the beggining. First event must always be schedule to 
@@ -28,6 +18,9 @@ URSA_ZERO_TIME_CHECKING := NO
 # YES to force checking (depletes performance).
 URSA_QUEUE_SIZE_CHECKING := NO
 
+# Max number of schedulable elements. More slots represent more 
+URSA_MAX_QUEUE_SIZE := 20
+
 # ========================================================================
 # GENERATION OF COMPILATION PARAMETERS STARTS HERE.
 # DO NOT MODIFY BELOW THIS LINE!
@@ -36,89 +29,4 @@ URSA_QUEUE_SIZE_CHECKING := NO
 BUFFER_OVERFLOW_CHECKING := NO
 
 # Check whether the buffer is empty before popping data (depletes performance).
-BUFFER_UNDERFLOW_CHECKINGmemory := NO
-
-# ========================================================================
-# GENERATION OF COMPILATION PARAMETERS STARTS HERE.
-# DO NOT MODIFY BELOW THIS LINE!
-# ========================================================================
-
-#ORCA parameters
-ifneq ($(ORCA_EPOCHS_TO_SIM), INF)
-COMPLINE := $(COMPLINE) -DORCA_EPOCHS_TO_SIM=$(ORCA_EPOCHS_TO_SIM)
-endif
-
-COMPLINE := $(COMPLINE) \
-	-DORCA_NOC_HEIGHT=$(ORCA_NOC_HEIGHT) \
-	-DORCA_NOC_WIDTH=$(ORCA_NOC_WIDTH) \
-	-DORCA_EPOCH_LENGTH=$(ORCA_EPOCH_LENGTH)
-
-ifeq ($(ORCA_ENABLE_MULTITHREADING), YES)
-	COMPLINE := $(COMPLINE) -DORCA_ENABLE_MULTITHREADING
-endif 
-
-#URSA parameters
-ifeq ($(URSA_ZERO_TIME_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DURSA_ZERO_TIME_CHECKING
-endif
-ifeq ($(URSA_QUEUE_SIZE_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DURSA_QUEUE_SIZE_CHECKING
-endif
-
-#netsocket parameters
-ifeq ($(NETSOCKET_LOG_OUTGOING_PACKETS), YES)
-	COMPLINE := $(COMPLINE) -DNETSOCKET_LOG_OUTGOING_PACKETS
-endif
-ifeq ($(NETSOCKET_LOG_INCOMING_PACKETS), YES)
-	COMPLINE := $(COMPLINE) -DNETSOCKET_LOG_INCOMING_PACKETS
-endif
-
-COMPLINE := $(COMPLINE) \
-	-DNETSOCKET_CLIENT_ADDRESS=$(NETSOCKET_CLIENT_ADDRESS) \
-	-DNETSOCKET_CLIENT_PORT=$(NETSOCKET_CLIENT_PORT) \
-	-DNETSOCKET_SERVER_ADDRESS=$(NETSOCKET_SERVER_ADDRESS) \
-	-DNETSOCKET_SERVER_PORT=$(NETSOCKET_SERVER_PORT)
-
-#buffer parameters
-ifeq ($(BUFFER_OVERFLOW_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DBUFFER_OVERFLOW_CHECKING
-endif
-ifeq ($(BUFFER_UNDERFLOW_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DBUFFER_UNDERFLOW_CHECKING
-endif
-
-#memory parameters
-ifeq ($(MEMORY_WRITE_ADDRESS_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DMEMORY_WRITE_ADDRESS_CHECKING
-endif
-ifeq ($(MEMORY_READ_ADDRESS_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DMEMORY_READ_ADDRESS_CHECKING
-endif
-ifeq ($(MEMORY_WIPE_ADDRESS_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DMEMORY_WIPE_ADDRESS_CHECKING
-endif
-ifeq ($(MEMORY_ENABLE_COUNTERS), YES)
-	COMPLINE := $(COMPLINE) -DMEMORY_ENABLE_COUNTERS
-endif
-
-#hfriscv parameters
-ifeq ($(HFRISCV_WRITE_ADDRESS_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DHFRISCV_WRITE_ADDRESS_CHECKING
-endif
-ifeq ($(HFRISCV_READ_ADDRESS_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DHFRISCV_READ_ADDRESS_CHECKING
-endif
-ifeq ($(HFRISCV_ENABLE_COUNTERS), YES)
-	COMPLINE := $(COMPLINE) -DHFRISCV_ENABLE_COUNTERS
-endif
-
-#router parameters
-ifeq ($(ROUTER_ENABLE_COUNTERS), YES)
-	COMPLINE := $(COMPLINE) -DROUTER_ENABLE_COUNTERS
-endif
-ifeq ($(ROUTER_PORT_CONNECTED_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DROUTER_PORT_CONNECTED_CHECKING
-endif
-
-export COMPLINE
-export GLOBAL_SETTINGS
+BUFFER_UNDERFLOW_CHECKING := NO
