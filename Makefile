@@ -32,7 +32,8 @@ TARGET_DEPS := \
 	$(OUTPUTDIR)/Model.o \
 	$(OUTPUTDIR)/TimedModel.o \
 	$(OUTPUTDIR)/UntimedModel.o \
-	$(OUTPUTDIR)/Simulator.o 
+	$(OUTPUTDIR)/Simulator.o \
+	$(OUTPUTDIR)/EventQueue.o 
 
 #pack file into a static library to be used later
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)

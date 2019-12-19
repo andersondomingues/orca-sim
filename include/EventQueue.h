@@ -7,14 +7,13 @@ class EventQueue{
 
 private:
 	Event* _heap[URSA_MAX_QUEUE_SIZE];
-    unsigned short int _count; 	
+    unsigned int _count;
 
 public:
 
 	EventQueue();
 	~EventQueue();
 
-	#pragma region QUEUE_INTERFACE
 	/**
 	 * Pushes a new value to the queue.
 	 * @param t element to be pushed to queue.
@@ -28,13 +27,20 @@ public:
 	 * @return The event with least time tag.
 	 * */
 	Event* Pop();
-	#pragma endregion
 
-	#pragma region HEAP_IMPL_METHODS
+	/**
+	 * Reorganize the internal array to 
+	 * make a min heap. 
+	 * @param index Position of the subtree root
+	 * */
 	void _Heapify(unsigned short int index);
 
-	#pragma endregion
-
+	/**
+	 *
+	 * 
+	 * */
+	int _GetParent()
+	
 };
 
 #endif
