@@ -3,9 +3,9 @@
 How to:
 
 1) clone this repository
-2) clone https://github.com/andersondomingues/hellfireos into /software (must be /orca-sim/software/hellfireos)
-3) make clean && make
-4) run as "./bin/single-core.exe image.bin"
+2) clone https://github.com/andersondomingues/hellfireos into ``/software`` (must be ``/orca-sim/software/hellfireos``)
+3) ``make clean && make``
+4) run as ``./bin/single-core.exe image.bin``
 
 ## Project organisation
 
