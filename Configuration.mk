@@ -37,7 +37,8 @@ ORCA_NOC_WIDTH  := 2
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
 # values may provide inaccurate measurements of the achieved frequency.
-ORCA_EPOCH_LENGTH  := 1000000
+#ORCA_EPOCH_LENGTH  := 1000000
+ORCA_EPOCH_LENGTH  := 50000000
 
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
 ORCA_EPOCHS_TO_SIM := INF

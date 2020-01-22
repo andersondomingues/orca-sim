@@ -1,6 +1,7 @@
 #configuration
 #PLATFORM         := orca-generic
-PLATFORM          := orca-dma
+#PLATFORM          := orca-dma
+PLATFORM := single-core
 APPLICATIONS_DIR := applications
 
 #libnames
