@@ -14,7 +14,7 @@ GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=
 # be included in compilation unless you edit the file 
 #          extensions/orca-core/src/orca-core.cpp,
 # where you should set the spawn of tasks in each of the cores. 
-ORCA_APPLICATIONS := producer-consumer-pubsub producer-consumer app-spawner app-bloater deadline-monitor
+ORCA_APPLICATIONS := #producer-consumer-pubsub producer-consumer app-spawner app-bloater deadline-monitor
 
 # Software extensions (experimental)
 ORCA_EXTENSIONS := orca-core orca-pubsub orca-monitoring
@@ -122,7 +122,14 @@ HFRISCV_WRITE_ADDRESS_CHECKING := NO
 HFRISCV_READ_ADDRESS_CHECKING := NO
 
 # Enable counter for instructions' classes (depletes performance).
-HFRISCV_ENABLE_COUNTERS := YES
+HFRISCV_ENABLE_COUNTERS := NO
+
+# Set the operation mode for the core, can be 
+# either CYCLE or INSTRUCTION (default).
+# - CYCLE: enable cycle counting per instruction and branch prediction
+# - INSTRUCTION: all instruction take one cycle to exit the pipeline
+#HFRISCV_MODE := CYCLE
+HFRISCV_MODE := INSTRUCTION
 
 # ==============================================================[ NETIF ]
 # Check whether netif is writing to unmapped memory space
@@ -232,6 +239,9 @@ ifeq ($(HFRISCV_READ_ADDRESS_CHECKING), YES)
 endif
 ifeq ($(HFRISCV_ENABLE_COUNTERS), YES)
 	COMPLINE := $(COMPLINE) -DHFRISCV_ENABLE_COUNTERS
+endif
+ifeq ($(HFRISCV_MODE), CYCLE)
+	COMPLINE := $(COMPLINE) -DHFRISCV_CYCLE_ACCURACY 
 endif
 
 #router parameters

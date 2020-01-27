@@ -448,7 +448,9 @@ SimulationTime THellfireProcessor::Run(){
 	//	"irq: "<< std::dec << (int)_signal_intr->Read() << 
 	//	std::endl;
 
+	#ifdef HFRISCV_CYCLE_ACCURACY
 	uint32_t pc_next_prediction;
+	#endif
 		
 	uint32_t inst, i;
 	uint32_t opcode, rd, rs1, rs2, funct3, funct7, imm_i, imm_s, imm_sb, imm_u, imm_uj;
@@ -456,7 +458,9 @@ SimulationTime THellfireProcessor::Run(){
 	uint32_t *u = (uint32_t *)s->r;
 	uint32_t ptr_l, ptr_s;
 	
+	#ifdef HFRISCV_CYCLE_ACCURACY
 	uint32_t branch_taken = 0;
+	#endif
 	
 	if (s->status && (s->cause & s->mask)){
 		s->epc = s->pc_next;
@@ -500,7 +504,11 @@ SimulationTime THellfireProcessor::Run(){
 		case 0x63:
 			/* Branch prediction may fail if jumping 0 positions.
 			TODO: check whether the architecture predict such jumps */
+			
+			#ifdef HFRISCV_CYCLE_ACCURACY
 			pc_next_prediction = s->pc_next;
+			#endif
+			
 			switch(funct3){
 				case 0x0: if (r[rs1] == r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BEQ */
 				case 0x1: if (r[rs1] != r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BNE */
@@ -510,7 +518,11 @@ SimulationTime THellfireProcessor::Run(){
 				case 0x7: if (u[rs1] >= u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGEU */
 				default: goto fail;
 			}
+			
+			#ifdef HFRISCV_CYCLE_ACCURACY
 			branch_taken = (pc_next_prediction != s->pc_next);
+			#endif 
+			
 			break;
 				
 		case 0x3:
@@ -634,6 +646,8 @@ fail:
 	//memory I/O. In the later case. Since we simulate the pipeline
 	//by executing one instruction per cycle (starting from the 3th cycle),
 	//we add 1 cycle to simulate I/O delay.
+	
+	#ifdef HFRISCV_CYCLE_ACCURACY
 	switch(opcode){
 		case 0x63:
 			if(branch_taken){
@@ -650,6 +664,9 @@ fail:
 			return 1;
 			break;
 	}
+	#else
+	return 1;
+	#endif
 }
 
 risc_v_state THellfireProcessor::GetState(){

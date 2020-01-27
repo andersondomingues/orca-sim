@@ -43,7 +43,7 @@ void app_main(void)
     //
 
     //printf("cpu_id: %d\n", hf_cpuid());
-
+/*
 	switch(hf_cpuid()){
 
 		//PRODUTOR-CONSUMIDOR
@@ -74,7 +74,7 @@ void app_main(void)
 		default: // << NONE
 			break;
 	}
-	
+	*/
 	//spawn for all cores
 	//hf_spawn(counter_test, 0, 0, 0, "counters_test", 4096);
 
