@@ -1,17 +1,11 @@
-# &#181; Rapid-Simulation API (URSA), and ORCA MPSoC
+# ORCASIM
 
-URSA is a lightweigth API for the rapid simulation of computing systems. The goal of the project is to provide an alternative to the cubersome, expensive, and buggy on-the-shelf tools. 
+How to:
 
-ORCA MPSoC is manycore processor based on RiscV architecture. 
-
-## An Overview on the project(s)...
-
-URSA comprises a discrete event simulator that enables the cycle-accurate simulation of hardware models. We describe such models using C++ language. For the sake of simplicity, no libraries other than those provided with your C++ compiler are required. The project is entirely object-oriented, well organized, and properly documented. 
-
-![Components of URSA and their interaction.](https://raw.githubusercontent.com/andersondomingues/ursa/stable/docs/URSA.png?raw=true)
-
-- The simulation API provides the primitives for modeling hardware as C++ classes;
-- Models are compiled into a single class library and serve as basis for different simulators;
+1) clone this repository
+2) clone https://github.com/andersondomingues/hellfireos into ``/software`` (must be ``/orca-sim/software/hellfireos``)
+3) ``make clean && make``
+4) run as ``./bin/single-core.exe image.bin``
 
 ## Project organisation
 
