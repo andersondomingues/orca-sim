@@ -4,53 +4,39 @@ URSA is a lightweigth API for the rapid simulation of computing systems. The goa
 
 ## An Overview on the project...
 
-URSA comprises a discrete event simulator that enables the cycle-accurate simulation of hardware models. We describe such models using C++ language. For the sake of simplicity, no libraries other than those provided with your C++ compiler are required. The project is entirely object-oriented, well organized, and properly documented. 
+URSA comprises a discrete event simulator that enables the cycle-accurate simulation of hardware models. We describe such models using C++ language using URSA API. No libraries other than those provided with your C++ compiler are required. 
 
-![Components of URSA and their interaction.](https://raw.githubusercontent.com/andersondomingues/ursa/stable/docs/URSA.png?raw=true)
+## Project organization
 
-- The simulation API provides the primitives for modeling hardware as C++ classes;
-- Models are compiled into a single class library and serve as basis for different simulators;
-
-## Project organisation
-
-- ``/bin`` : compiled binaries and external libraries
-- ``/docs`` : contains a tutorial and images used in this MD file, also serving as output folder for doxygen
+- ``/lib`` : stores the compiled library after the compilation process
+- ``/docs`` : API documentation and tutorials
 - ``/logs`` : output from the hardware models, as well as other implementation-specific outputs and debugging
 - ``/models`` : general purpose hardware models (independent modules)
-- ``/platforms`` : platform-specific hardware models (top-level modules)
-- ``/simulator`` : URSA's core
-- ``/software`` : software to be deployed to emulated platforms
-- ``/tools`` : several scripts and helpers
+- ``/platforms`` : top-level modules for platform-specific hardware
+- ``/core`` : URSA's simulation engine
 
 ## Project Status
 
-- We have succefully emulated a fully-functional MPSoC platform comprising of a mesh-based NoC architecture interconnecting up to 16x16 processing elements (256 cores). We currently support only the ORCA platform (see ``/platform/orca-generic`` and ``/models`` folders), although other platforms can be emulated as well.
+- We have succefully emulated a fully-functional MPSoC platform comprising of a mesh-based NoC architecture interconnecting up to 16x16 processing elements (256 cores). 
+- We provide generic models that can be used to make new platforms, including buffers and memory modules. See [URSA models repository](https://github.com/andersondomingues/ursa-models) for more information.
+- Additional We provide models for the ORCA platform separatelly. See [ORCA models repository](https://github.com/andersondomingues/orca-models) for more information.
 
 ## Project Roadmap
 
-- Develop software components to provide self-adaptive traits to ORCA platform. We rely on a fork of the [HellfireOS](https://github.com/andersondomingues/hellfireos) operating system. 
-- Develop benchmarks, so that we can accurately measure the performance of the simulation
-- Study other models to speed-up the simulation
-- Debugging and visualization tools
+- Development of benchmarks [URSA benchmark repository](https://github.com/andersondomingues/ursa-benchmark) 
+- Study other models for the trade-off simulation speed-up vs. accuracy
+- Debugging and visualization tools, including a GDB RSV implementation
 
-## Getting Started
+## Getting Started (tutorial)
 
-- A very short tutorail is included in ``docs/URSA_Sulphane - The Lazy Manual``. 
+- See ``/docs/tutorial.md``
 
-## Generating API Docuemtnation
+## Generating API Documentation
 
 - Make sure you have installed ``doxygen`` and ``rviz`` to your system.
 - In the root directory, type ``make documentation``. Documentation will be deployed to ``docs/doxygen`` folder.
 - You can access docs by opening ``docs/doxygen/html/index.html`` in any web browser (e.g., ``firefox``).
 - LaTeX documentation can be generate by  typeing ``make -C docs/doxygen/latex/``. The output file ``docs/doxygen/latex/refman.pdf`` contains the generated documentation. 
-
-## Third-Party Work
-
-- HF-RISCV. The hf-riscv core is maintained by Sergio Johann (sjohann81). More information on his work can be found at [his repository](https://github.com/sjohann81). Also, our model of hf-riscv core is very based on the one provided by him. 
-
-- HEMPS (and HERMES). The GAPH group maintains the HEMPS project. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html). Provided network-on-chip router model is based on the RTL models available at [their repository](https://github.com/GaphGroup/hemps). 
-
-- HELLFIREOS. We use [sjohann81's HellfireOS operating system](https://github.com/sjohann81) within the processing tiles of the ORCA platform. 
 
 ## Licensing
 
