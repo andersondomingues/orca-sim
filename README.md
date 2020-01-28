@@ -11,9 +11,9 @@ URSA comprises a discrete event simulator that enables the cycle-accurate simula
 - ``/lib`` : stores the compiled library after the compilation process
 - ``/docs`` : API documentation and tutorials
 - ``/logs`` : output from the hardware models, as well as other implementation-specific outputs and debugging
-- ``/models`` : general purpose hardware models (independent modules)
+- ``/include`` : library headers
 - ``/platforms`` : top-level modules for platform-specific hardware
-- ``/core`` : URSA's simulation engine
+- ``/src`` : source code
 
 ## Project Status
 
