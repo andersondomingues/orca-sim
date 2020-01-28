@@ -1,7 +1,7 @@
 # ========================================================================
 # GLOBAL SETTINGS
 # ========================================================================
-COMPLINE := -Wall -Wextra -Werror -g3 -O3 
+URSA_COMPLINE := -Wall -Wextra -Werror -g3 -O3 
 #-lasan -fsanitize=address
 
 # ========================================================================
@@ -18,15 +18,21 @@ URSA_ZERO_TIME_CHECKING := NO
 # YES to force checking (depletes performance).
 URSA_QUEUE_SIZE_CHECKING := NO
 
-# Max number of schedulable elements. More slots represent more 
+# Max number of schedulable elements. Adjust the value to match the number 
+# of simulated events.
 URSA_MAX_QUEUE_SIZE := 20
 
 # ========================================================================
-# GENERATION OF COMPILATION PARAMETERS STARTS HERE.
-# DO NOT MODIFY BELOW THIS LINE!
-# ========================================================================
-# Check whether the buffer is full before pushing data (depletes performance).
-BUFFER_OVERFLOW_CHECKING := NO
+# !
+# !  DO NOT MODIFY BELOW LINES
+# !
+ifeq ($(URSA_ZERO_TIME_CHECKING), YES)
+	URSA_COMPLINE := $(COMPLINE) -DURSA_ZERO_TIME_CHECKING
+endif
+ifeq ($(URSA_QUEUE_SIZE_CHECKING), YES)
+	URSA_COMPLINE := $(COMPLINE) -DURSA_QUEUE_SIZE_CHECKING
+endif
 
-# Check whether the buffer is empty before popping data (depletes performance).
-BUFFER_UNDERFLOW_CHECKING := NO
+URSA_COMPLINE := $(URSA_COMPLINE) -DURSA_MAX_QUEUE_SIZE=$(URSA_MAX_QUEUE_SIZE) 
+
+export URSA_COMPLINE
