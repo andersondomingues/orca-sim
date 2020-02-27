@@ -43,7 +43,7 @@ void app_main(void)
     //
 
     //printf("cpu_id: %d\n", hf_cpuid());
-/*
+
 	switch(hf_cpuid()){
 
 		//PRODUTOR-CONSUMIDOR
@@ -56,7 +56,7 @@ void app_main(void)
 
 		case 2: // << PID
 			hf_spawn(app_spawner, 10, 1, 10, "app-spawner", 1024);          //~10%
-			hf_spawn(consumer_pubsub, 10, 1, 10, "consumer-ps-task", 2048); //~10%
+			hf_spawn(consumer_pubsub, 10, 1, 3, "consumer-ps-task", 2048); //~10%
 			hf_spawn(deadline_monitor, 10, 1, 10, "deadline-monitor", 1024); //~10%
 			break;
 
@@ -74,7 +74,7 @@ void app_main(void)
 		default: // << NONE
 			break;
 	}
-	*/
+	
 	//spawn for all cores
 	//hf_spawn(counter_test, 0, 0, 0, "counters_test", 4096);
 

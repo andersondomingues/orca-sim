@@ -72,12 +72,12 @@ void deadline_monitor(){
 	if (hf_comm_create(hf_selfid(), 1432, 0))
 		panic(0xff);
 
-	//delay_ms(20);
+	delay_ms(20);
 
 	while(1){
 	
-		int32_t dlm = hf_dlm(TASK_ID);
-		printf("mom: %d\n", dlm);
+		volatile int32_t dlm = hf_dlm(TASK_ID);
+		printf("%d: missed deadlines=%d\n", hf_selfid(), dlm);
 		
 		//print the number of deadline misses for task two
 		if(dlm > 2){

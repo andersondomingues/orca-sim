@@ -273,6 +273,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			dumpregs(s);
 			output_debug.close();
 			output_uart.close();
+            abort();
 			return;
 	}
 		

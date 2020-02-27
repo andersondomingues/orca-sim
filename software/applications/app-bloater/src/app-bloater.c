@@ -23,7 +23,7 @@
 void bloat_idle_task(){
 
 	for (;;){
-		
+		printf("%d: bloat -.-\n", hf_selfid());
 	}
 }
 
@@ -33,7 +33,7 @@ void bloat(uint32_t funcptr, uint32_t stacksize, uint16_t cpu, uint16_t port, ui
 	int8_t buffer[BUFFER_SIZE];
 	char task_name[40], tmp_str[40];
 
-	uint16_t period = 10, capacity = 1, deadline = 2;
+	uint16_t period = 10, capacity = 1, deadline = 10;
 
 	uint32_t* buffer_32 = (uint32_t*) buffer;
 	uint16_t* buffer_16 = (uint16_t*) buffer;

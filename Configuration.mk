@@ -14,7 +14,7 @@ GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=
 # be included in compilation unless you edit the file 
 #          extensions/orca-core/src/orca-core.cpp,
 # where you should set the spawn of tasks in each of the cores. 
-ORCA_APPLICATIONS := #producer-consumer-pubsub producer-consumer app-spawner app-bloater deadline-monitor
+ORCA_APPLICATIONS := producer-consumer-pubsub producer-consumer app-spawner app-bloater deadline-monitor
 
 # Software extensions (experimental)
 ORCA_EXTENSIONS := orca-core orca-pubsub orca-monitoring
@@ -29,7 +29,7 @@ KERNEL_LOG_LEVEL := 1
 # ==================================================================[ ORCA ]
 # Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 3 
+ORCA_NOC_HEIGHT := 3
 # Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
 # otherwise simulation won't compile.
 ORCA_NOC_WIDTH  := 2
@@ -37,8 +37,8 @@ ORCA_NOC_WIDTH  := 2
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
 # values may provide inaccurate measurements of the achieved frequency.
-#ORCA_EPOCH_LENGTH  := 1000000
-ORCA_EPOCH_LENGTH  := 50000000
+ORCA_EPOCH_LENGTH  := 10000000
+#ORCA_EPOCH_LENGTH  := 50000000
 
 # Number of pulses to simulate. Set to INF to simulate indefinitely.
 ORCA_EPOCHS_TO_SIM := INF
@@ -106,7 +106,7 @@ MEMORY_READ_ADDRESS_CHECKING := NO
 MEMORY_WIPE_ADDRESS_CHECKING := NO
 
 # Enable counter for read and write operations (depletes performance).
-MEMORY_ENABLE_COUNTERS := YES
+MEMORY_ENABLE_COUNTERS := NO
 
 # ==============================================================[ HFRISCV ]
 # Check whether address are mapped to some memory range before writing
@@ -122,7 +122,7 @@ HFRISCV_WRITE_ADDRESS_CHECKING := NO
 HFRISCV_READ_ADDRESS_CHECKING := NO
 
 # Enable counter for instructions' classes (depletes performance).
-HFRISCV_ENABLE_COUNTERS := NO
+HFRISCV_ENABLE_COUNTERS := YES
 
 # Set the operation mode for the core, can be 
 # either CYCLE or INSTRUCTION (default).
@@ -140,7 +140,7 @@ NETIF_READ_ADDRESS_CHECKING := NO
 
 # ==============================================================[ ROUTER ]
 # Enable counters for number of active cycles
-ROUTER_ENABLE_COUNTERS := YES
+ROUTER_ENABLE_COUNTERS := NO
 
 # Check whether destination port is connected when tranfering flits.
 # Transfering flit to routers not mapped into the topology results in

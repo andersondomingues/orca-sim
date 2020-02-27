@@ -35,7 +35,7 @@ uint32_t GetCounter_CPU_ShiftInstr(){  return *CPU_COUNTER_SHIFT; }
 uint32_t GetCounter_CPU_BranchInstr(){ return *CPU_COUNTER_BRANCHES; }
 uint32_t GetCounter_CPU_JumpsInstr(){  return *CPU_COUNTER_JUMPS; }
 uint32_t GetCounter_CPU_LoadStoreInstr(){ return *CPU_COUNTER_LOADSTORE; }
-uint32_t GetCounter_CPU_HostTime(){ return *CPU_COUNTER_HOSTTIME; }
+inline uint32_t GetCounter_CPU_HostTime(){ return *CPU_COUNTER_HOSTTIME; }
 uint32_t GetCounter_CPU_CyclesTotal(){ return *CPU_COUNTER_CYCLES_TOTAL; }
 uint32_t GetCounter_CPU_CyclesStall(){ return *CPU_COUNTER_CYCLES_STALL; }
 

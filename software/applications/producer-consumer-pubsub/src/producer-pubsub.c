@@ -6,7 +6,7 @@
 #include "../../orca-pubsub/include/pubsub-publisher.h"
 
 // enable monitoring
-#include <orca-hardware-counters.h>
+//#include <orca-hardware-counters.h>
 
 #define PRODUCE_LENGTH 32
 
