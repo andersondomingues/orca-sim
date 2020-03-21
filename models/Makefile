@@ -1,5 +1,6 @@
 #directory configuration
 SOURCEDIR :=./src
+HEADERDIR :=./include
 OUTPUTDIR :=./bin
 LIBNAME :=libmod.a
 
@@ -25,7 +26,7 @@ $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes (.cpp) into %.o files
-$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp 
+$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp  $(HEADERDIR)/%.h 
 	g++ $(CPPFLAGS) $< -o $@ 
 
 #remove any preoviosly generated file

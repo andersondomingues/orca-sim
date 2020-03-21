@@ -1,7 +1,7 @@
 #configuration
 #PLATFORM         := orca-generic
-PLATFORM          := orca-dma
-#PLATFORM := single-core
+#PLATFORM          := orca-dma
+PLATFORM := single-core
 APPLICATIONS_DIR := applications
 
 #libnames
@@ -21,6 +21,16 @@ MODELS_DIR    := $(CURDIR)/models
 TOOLS_DIR     := $(CURDIR)/tools
 SOFTWARE_DIR  := $(CURDIR)/software
 
+# get the application source files to build a proper depedency ckecking make
+# OS not included in the depedency check
+# concat all *.c, *.cpp, *f file found in the selected applications
+$(info $$ORCA_APPLICATIONS is [${ORCA_APPLICATIONS}])
+$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.c')))
+$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.cpp')))
+$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.h')))
+$(info $$APP_SRCS is [${APP_SRCS}])
+#export APP_SRCS
+
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
 .PHONY: clean documentation multitail tools
 
@@ -31,15 +41,15 @@ SOFTWARE_DIR  := $(CURDIR)/software
 # - hardware models depends on the simulator
 # - platform depends on simulator and hardware models
 # - visualization file for multitail has no dependency
-all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) vismtail
+all: $(BINARY_DIR)/$(PLATFORM_BIN) $(SOFTWARE_DIR)/$(IMAGE_BIN) vismtail
 	@echo "$'\e[7m====================================\e[0m"
 	@echo "$'\e[7m  All done! Starting simulation...  \e[0m"
 	@echo "$'\e[7m====================================\e[0m"
 	@echo " => lauching $(PLATFORM) instance:"
-	$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) 
+	#$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) 
 
 #URSA's simulation library
-$(BINARY_DIR)/$(SIMULATOR_LIB):
+$(BINARY_DIR)/$(SIMULATOR_LIB): $(SIMULATOR_DIR)/src/*.cpp  $(SIMULATOR_DIR)/include/*.h 
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building URSA's libsim       \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
@@ -47,7 +57,7 @@ $(BINARY_DIR)/$(SIMULATOR_LIB):
 	cp $(SIMULATOR_DIR)/bin/$(SIMULATOR_LIB) $(BINARY_DIR)/$(SIMULATOR_LIB)
 
 #library containing hardware models
-$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(SIMULATOR_LIB)
+$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(SIMULATOR_LIB) $(MODELS_DIR)/src/*.cpp  $(MODELS_DIR)/include/*.h
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building hardware models     \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
@@ -55,7 +65,7 @@ $(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(SIMULATOR_LIB)
 	cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
 
 #platform executable
-$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(SIMULATOR_LIB) $(BINARY_DIR)/$(MODELS_LIB)
+$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(PLATFORM)/include/*.h
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building the platform        \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
@@ -63,11 +73,13 @@ $(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(SIMULATOR_LIB) $(BINARY_DIR)/$(MO
 	cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
 
 #software (kernel + loader)
-$(BINARY_DIR)/$(IMAGE_BIN):
+#image: $(BINARY_DIR)/$(IMAGE_BIN)
+$(SOFTWARE_DIR)/$(IMAGE_BIN): $(APP_SRCS)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m Building software (kernel + apps)\e[0m"
 	@echo "$'\e[7m==================================\e[0m"	
-	make -C $(SOFTWARE_DIR) $(IMAGE_BIN)
+	remake -C $(SOFTWARE_DIR) $(IMAGE_BIN) --debug
+	cp $(SOFTWARE_DIR)/$(IMAGE_BIN) $(BINARY_DIR)/$(IMAGE_BIN)
 
 #documentation
 #last line refers to a bug in tabu.sty. A replacement for
