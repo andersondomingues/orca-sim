@@ -1,7 +1,7 @@
 #configuration
 #PLATFORM         := orca-generic
-#PLATFORM          := orca-dma
-PLATFORM := single-core
+#PLATFORM         := orca-dma
+PLATFORM         := single-core
 APPLICATIONS_DIR := applications
 
 #libnames
@@ -24,12 +24,15 @@ SOFTWARE_DIR  := $(CURDIR)/software
 # get the application source files to build a proper depedency ckecking make
 # OS not included in the depedency check
 # concat all *.c, *.cpp, *f file found in the selected applications
-$(info $$ORCA_APPLICATIONS is [${ORCA_APPLICATIONS}])
 $(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.c')))
 $(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.cpp')))
 $(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.h')))
-$(info $$APP_SRCS is [${APP_SRCS}])
-#export APP_SRCS
+
+# do the same also for the extensions
+$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.c')))
+$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.cpp')))
+$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.h')))
+
 
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
 .PHONY: clean documentation multitail tools
@@ -46,7 +49,7 @@ all: $(BINARY_DIR)/$(PLATFORM_BIN) $(SOFTWARE_DIR)/$(IMAGE_BIN) vismtail
 	@echo "$'\e[7m  All done! Starting simulation...  \e[0m"
 	@echo "$'\e[7m====================================\e[0m"
 	@echo " => lauching $(PLATFORM) instance:"
-	#$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) 
+	$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) 
 
 #URSA's simulation library
 $(BINARY_DIR)/$(SIMULATOR_LIB): $(SIMULATOR_DIR)/src/*.cpp  $(SIMULATOR_DIR)/include/*.h 
@@ -73,12 +76,11 @@ $(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(PL
 	cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
 
 #software (kernel + loader)
-#image: $(BINARY_DIR)/$(IMAGE_BIN)
-$(SOFTWARE_DIR)/$(IMAGE_BIN): $(APP_SRCS)
+$(SOFTWARE_DIR)/$(IMAGE_BIN): $(APP_SRCS) $(EXT_SRCS)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m Building software (kernel + apps)\e[0m"
 	@echo "$'\e[7m==================================\e[0m"	
-	remake -C $(SOFTWARE_DIR) $(IMAGE_BIN) --debug
+	make -C $(SOFTWARE_DIR) $(IMAGE_BIN) 
 	cp $(SOFTWARE_DIR)/$(IMAGE_BIN) $(BINARY_DIR)/$(IMAGE_BIN)
 
 #documentation

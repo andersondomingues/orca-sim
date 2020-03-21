@@ -4,6 +4,9 @@ HEADERDIR :=./include
 OUTPUTDIR :=./bin
 LIBNAME :=libmod.a
 
+LIBSIM_PATH:=../simulator
+LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
+
 #include flags (plus external flags)
 CPPFLAGS :=-I./include -I../simulator/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
 
@@ -22,7 +25,7 @@ TARGET_DEPS := \
 #$(OUTPUTDIR)/TArm7TDMI.o
 
 #compress all generated object files into a pack
-$(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
+$(OUTPUTDIR)/$(LIBNAME): $(LIBSIM) $(TARGET_DEPS)
 	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes (.cpp) into %.o files

@@ -34,7 +34,7 @@ TARGET_DEPS := \
 HEADER_FILES := $(wildcard $(HEADERDIR)/*.h)
 
 #compiler an instance of the simulator 
-$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(TARGET_DEPS) $(HEADER_FILES)
+$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(LIBMOD) $(LIBSIM) $(TARGET_DEPS) $(HEADER_FILES)
 	g++ $(TARGET_DEPS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe $(LD_FLAGS) $(GCC_FLAGS)
 
 #remove previously generated files

@@ -25,13 +25,15 @@ include $(HFOS_DIR)/lib/lib.mak
 include $(HFOS_DIR)/drivers/noc.mak
 include $(HFOS_DIR)/sys/kernel.mak
 
-#include tasks 
-include $(HFOS_DIR)/../applications/*/app.mak
-include $(HFOS_DIR)/../extensions/*/ext.mak
+#compile only the requested tasks 
+$(foreach module,$(ORCA_APPLICATIONS),$(eval include applications/$(module)/app.mak))
+#compile only the requested extensions 
+$(foreach module,$(ORCA_EXTENSIONS),$(eval include extensions/$(module)/ext.mak))
 
 #phonies
 .PHONY: clean
 
+# common definition to all software modules
 INC_DIRS += -I $(HFOS_DIR)/lib/include \
 			-I $(HFOS_DIR)/sys/include \
 			-I $(HFOS_DIR)/drivers/noc/include \
@@ -50,7 +52,13 @@ CFLAGS += -DCPU_ARCH=$(CPU_ARCH) \
 	$(COMPLINE) \
 	$(NOC_FLAGS)
 
-$(IMAGE_NAME).bin:
+# concat the required libs to build the image 
+$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_STATIC_LIBS := $(APP_STATIC_LIBS) app-$(module).a))
+$(foreach module,$(ORCA_EXTENSIONS),   $(eval EXT_STATIC_LIBS := $(EXT_STATIC_LIBS) ext-$(module).a))
+OS_STATIC_LIBS := hellfire-os.a
+STATIC_LIBS := $(OS_STATIC_LIBS) $(APP_STATIC_LIBS) $(EXT_STATIC_LIBS)
+
+$(OS_STATIC_LIBS):
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Making Kernel ...               \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
@@ -59,29 +67,18 @@ $(IMAGE_NAME).bin:
 	make noc
 	make kernel 
 	ar rcs hellfire-os.a *.o
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m  Making Extensions ...           \e[0m"
-	@echo "$'\e[7m==================================\e[0m"
-	@for ext in $(ORCA_EXTENSIONS) ; do \
-		make ext-$$ext.a ; \
-	done
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m  Making Apps ...                 \e[0m"
-	@echo "$'\e[7m==================================\e[0m"		
-	for app in $(ORCA_APPLICATIONS) ; do \
-		make app-$$app.a ; \
-	done
+
+$(IMAGE_NAME).bin: $(STATIC_LIBS)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Linking Software ...            \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	$(LD) $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(IMAGE_NAME).elf *.o
+	$(LD) --start-group *.a --end-group $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(IMAGE_NAME).elf 
 	$(DUMP) --disassemble --reloc $(IMAGE_NAME).elf > $(IMAGE_NAME).lst
 	$(DUMP) -h $(IMAGE_NAME).elf > $(IMAGE_NAME).sec
 	$(DUMP) -s $(IMAGE_NAME).elf > $(IMAGE_NAME).cnt
 	$(OBJ) -O binary $(IMAGE_NAME).elf $(IMAGE_NAME).bin
 	$(SIZE) $(IMAGE_NAME).elf
 	hexdump -v -e '4/1 "%02x" "\n"' $(IMAGE_NAME).bin > $(IMAGE_NAME).txt
-	mv *.o *.elf *.bin *.cnt *.lst *.sec *.txt *.a ../bin
 
 clean:
 	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt *.a
