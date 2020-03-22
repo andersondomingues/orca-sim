@@ -1,7 +1,0 @@
-A problem is preventing doxygen from generating latex documents. 
-
-How to fix: replace textlive tabu.sty file from 
-/usr/share/TEXTLIVE/texmf-dist/tex/latex/tabu/ to the one provided. 
-
-See original 
-post here >> https://medium.com/@elnee/how-to-fix-doxygen-latex-errors-with-doxyparams-broken-tabu-package-3bca6ccefe7e

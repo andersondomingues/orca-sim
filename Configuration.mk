@@ -9,6 +9,14 @@
 GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=native 
 #-lasan -fsanitize=address
 
+# Select the target platform. Different hardware architectures
+# are deployed to /platforms folder. We currently provide two
+# example architectures: (i) a single-core riscv processor core
+# based on the HF-RiscV processor and (ii) a NoC-based 
+# mesh-topologic manycore that uses the same processor core. 
+# PLATFORM := (orca-dma | single-core)
+PLATFORM      := orca-dma
+
 # Apps to be compiled within kernel image. For multiple applications, 
 # use spacebar to separate names. Applications defined here will not 
 # be included in compilation unless you edit the file 
