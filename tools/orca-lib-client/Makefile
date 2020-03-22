@@ -13,14 +13,14 @@ TRGTDEPS = \
 
 #compile all classes (.cpp) into %.o files
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp 
-	g++ $(CPPFLAGS) $< -o $@ -c 
+	$(Q)g++ $(CPPFLAGS) $< -o $@ -c 
 
 #make application executable
 $(BINDIR)/$(LIBNAME): $(TRGTDEPS)
-	ar rcs $(BINDIR)/$(LIBNAME) $(TRGTDEPS)
+	$(Q)ar rcs $(BINDIR)/$(LIBNAME) $(TRGTDEPS)
 
 all: $(BINDIR)/$(LIBNAME)
-	echo "done."
+	$(Q)echo "done."
 
 clean:
-	rm -rf ./bin/*.exe ./bin/*.o
+	$(Q)rm -rf ./bin/*.exe ./bin/*.o

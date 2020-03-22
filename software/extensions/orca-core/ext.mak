@@ -14,4 +14,4 @@ ORCA_CORE_SRCS := $(wildcard $(ORCA_CORE_SRC)/*.c)
 ORCA_CORE_OBJS :=  $(ORCA_CORE_SRCS:.c=.o)
 
 $(ORCA_CORE_LIB) : $(ORCA_CORE_OBJS)
-	ar rcs $(ORCA_CORE_LIB) $(ORCA_CORE_OBJS) 
+	$(Q)$(AR) rcs $(ORCA_CORE_LIB) $(ORCA_CORE_OBJS) 

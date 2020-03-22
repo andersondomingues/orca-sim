@@ -62,24 +62,24 @@ $(OS_STATIC_LIBS):
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Making Kernel ...               \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make hal
-	make libc
-	make noc
-	make kernel 
-	ar rcs hellfire-os.a *.o
+	$(Q)make hal
+	$(Q)make libc
+	$(Q)make noc
+	$(Q)make kernel 
+	$(Q)$(AR) rcs hellfire-os.a *.o
 
 $(IMAGE_NAME).bin: $(STATIC_LIBS)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m  Linking Software ...            \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	$(LD) --start-group *.a --end-group $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(IMAGE_NAME).elf 
-	$(DUMP) --disassemble --reloc $(IMAGE_NAME).elf > $(IMAGE_NAME).lst
-	$(DUMP) -h $(IMAGE_NAME).elf > $(IMAGE_NAME).sec
-	$(DUMP) -s $(IMAGE_NAME).elf > $(IMAGE_NAME).cnt
-	$(OBJ) -O binary $(IMAGE_NAME).elf $(IMAGE_NAME).bin
-	$(SIZE) $(IMAGE_NAME).elf
-	hexdump -v -e '4/1 "%02x" "\n"' $(IMAGE_NAME).bin > $(IMAGE_NAME).txt
+	$(Q)$(LD) --start-group *.a --end-group $(LDFLAGS) -T$(LINKER_SCRIPT) -o $(IMAGE_NAME).elf 
+	$(Q)$(DUMP) --disassemble --reloc $(IMAGE_NAME).elf > $(IMAGE_NAME).lst
+	$(Q)$(DUMP) -h $(IMAGE_NAME).elf > $(IMAGE_NAME).sec
+	$(Q)$(DUMP) -s $(IMAGE_NAME).elf > $(IMAGE_NAME).cnt
+	$(Q)$(OBJ) -O binary $(IMAGE_NAME).elf $(IMAGE_NAME).bin
+	$(Q)$(SIZE) $(IMAGE_NAME).elf
+	$(Q)hexdump -v -e '4/1 "%02x" "\n"' $(IMAGE_NAME).bin > $(IMAGE_NAME).txt
 
 clean:
-	rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt *.a
+	$(Q)rm -rf *.o *~ *.elf *.bin *.cnt *.lst *.sec *.txt *.a
 

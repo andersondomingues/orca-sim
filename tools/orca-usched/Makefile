@@ -14,12 +14,12 @@ TRGTDEPS = \
 
 #compile all classes (.cpp) into %.o files
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp 
-	g++ $(CPPFLAGS) $< -o $@ -c $(GTK_FLAGS_P)
+	$(Q)g++ $(CPPFLAGS) $< -o $@ -c $(GTK_FLAGS_P)
 
 #make application executable
 all: $(TRGTDEPS)
-	g++ $(BINDIR)/*.o -o $(BINDIR)/$(APPNAME).exe $(CPPFLAGS) $(GTK_FLAGS_P) $(GTK_LINKK_P)
+	$(Q)g++ $(BINDIR)/*.o -o $(BINDIR)/$(APPNAME).exe $(CPPFLAGS) $(GTK_FLAGS_P) $(GTK_LINKK_P)
 
 clean:
-	rm -rf ./bin/*.exe ./bin/*.o
+	$(Q)rm -rf ./bin/*.exe ./bin/*.o
 	

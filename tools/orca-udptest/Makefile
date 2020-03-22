@@ -12,18 +12,18 @@ TRGTDEPS = \
 
 #compile all classes (.cpp) into %.o files
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp 
-	g++ $(CPPFLAGS) $< -o $@ -c 
+	$(Q)g++ $(CPPFLAGS) $< -o $@ -c 
 
 #make application executable
 all: $(TRGTDEPS) 
-	make -C ../orca-lib-client
-	cp ../orca-lib-client/bin/$(LIBORCA) $(BINDIR)
-	make -C ../orca-lib-client clean
-	g++ $(BINDIR)/orca-udptest-client.o $(BINDIR)/$(LIBORCA) -o $(BINDIR)/$(APPNAME1).exe $(CPPFLAGS)
-	g++ $(BINDIR)/orca-udptest-server.o $(BINDIR)/$(LIBORCA) -o $(BINDIR)/$(APPNAME2).exe $(CPPFLAGS)
-	mv $(BINDIR)/$(APPNAME1).exe ../../bin
-	mv $(BINDIR)/$(APPNAME2).exe ../../bin
+	$(Q)make -C ../orca-lib-client
+	$(Q)cp ../orca-lib-client/bin/$(LIBORCA) $(BINDIR)
+	$(Q)make -C ../orca-lib-client clean
+	$(Q)g++ $(BINDIR)/orca-udptest-client.o $(BINDIR)/$(LIBORCA) -o $(BINDIR)/$(APPNAME1).exe $(CPPFLAGS)
+	$(Q)g++ $(BINDIR)/orca-udptest-server.o $(BINDIR)/$(LIBORCA) -o $(BINDIR)/$(APPNAME2).exe $(CPPFLAGS)
+	$(Q)mv $(BINDIR)/$(APPNAME1).exe ../../bin
+	$(Q)mv $(BINDIR)/$(APPNAME2).exe ../../bin
 
 clean:
-	rm -rf ./bin/*.exe ./bin/*.o ./bin/*.a
+	$(Q)rm -rf ./bin/*.exe ./bin/*.o ./bin/*.a
 	

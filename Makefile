@@ -10,6 +10,13 @@ SIMULATOR_LIB     := libsim.a
 MODELS_LIB        := libmod.a
 IMAGE_BIN         := image.bin
 
+# Be silent per default, but 'make V=1' will show all compiler calls.
+ifneq ($(V),1)
+export Q := @
+# Do not print "Entering directory ...".
+MAKEFLAGS += --no-print-directory
+endif
+
 #include optmizations
 include ./Configuration.mk
 
@@ -56,32 +63,32 @@ $(BINARY_DIR)/$(SIMULATOR_LIB): $(SIMULATOR_DIR)/src/*.cpp  $(SIMULATOR_DIR)/inc
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building URSA's libsim       \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(SIMULATOR_DIR) -j 8
-	cp $(SIMULATOR_DIR)/bin/$(SIMULATOR_LIB) $(BINARY_DIR)/$(SIMULATOR_LIB)
+	$(Q)make -C $(SIMULATOR_DIR) -j 8
+	$(Q)cp $(SIMULATOR_DIR)/bin/$(SIMULATOR_LIB) $(BINARY_DIR)/$(SIMULATOR_LIB)
 
 #library containing hardware models
 $(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(SIMULATOR_LIB) $(MODELS_DIR)/src/*.cpp  $(MODELS_DIR)/include/*.h
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building hardware models     \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(MODELS_DIR) -j 8
-	cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
+	$(Q)make -C $(MODELS_DIR) -j 8
+	$(Q)cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
 
 #platform executable
 $(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(PLATFORM)/include/*.h
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building the platform        \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(PLATFORMS_DIR)/$(PLATFORM) -j 8
-	cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
+	$(Q)make -C $(PLATFORMS_DIR)/$(PLATFORM) -j 8
+	$(Q)cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
 
 #software (kernel + loader)
 $(SOFTWARE_DIR)/$(IMAGE_BIN): $(APP_SRCS) $(EXT_SRCS)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m Building software (kernel + apps)\e[0m"
 	@echo "$'\e[7m==================================\e[0m"	
-	make -C $(SOFTWARE_DIR) $(IMAGE_BIN) 
-	cp $(SOFTWARE_DIR)/$(IMAGE_BIN) $(BINARY_DIR)/$(IMAGE_BIN)
+	$(Q)make -C $(SOFTWARE_DIR) $(IMAGE_BIN) 
+	$(Q)cp $(SOFTWARE_DIR)/$(IMAGE_BIN) $(BINARY_DIR)/$(IMAGE_BIN)
 
 #documentation
 #last line refers to a bug in tabu.sty. A replacement for
@@ -91,8 +98,8 @@ documentation:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m    Building API Documentation    \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	doxygen
-	cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
+	$(Q)doxygen
+	$(Q)cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
 
 #visualization file for multitail
 vismtail:
@@ -122,15 +129,13 @@ clean:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m          Cleaning up...          \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	@echo $(COMPLINE)
-	@echo "$'\e[7m==================================\e[0m"
 	@make -C $(SIMULATOR_DIR) clean
 	@make -C $(MODELS_DIR) clean
 	@make -C $(PLATFORMS_DIR)/$(PLATFORM) clean
 	@make -C $(SOFTWARE_DIR) clean
-	@rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
+	$(Q)rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
 		$(BINARY_DIR)/*~ $(BINARY_DIR)/*.elf $(BINARY_DIR)/*.bin \
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec $(BINARY_DIR)/*.txt
-	@rm -rf docs/doxygen/
-	@rm -rf breakpoints/*.bin breakpoints/*.hex
-	@make -C tools/orca-udptest clean
+	$(Q)rm -rf docs/doxygen/
+	$(Q)rm -rf breakpoints/*.bin breakpoints/*.hex
+	$(Q)make -C tools/orca-udptest clean

@@ -26,12 +26,12 @@ TARGET_DEPS := \
 
 #compress all generated object files into a pack
 $(OUTPUTDIR)/$(LIBNAME): $(LIBSIM) $(TARGET_DEPS)
-	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
+	$(Q)ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes (.cpp) into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp  $(HEADERDIR)/%.h 
-	g++ $(CPPFLAGS) $< -o $@ 
+	$(Q)g++ $(CPPFLAGS) $< -o $@ 
 
 #remove any preoviosly generated file
 clean:
-	rm -rf bin/*.a 	rm -rf bin/*.o
+	$(Q)rm -rf bin/*.a 	rm -rf bin/*.o
