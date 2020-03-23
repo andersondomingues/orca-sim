@@ -706,6 +706,8 @@ THellfireProcessor::THellfireProcessor(string name, USignal<uint8_t>* intr, USig
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
+	_FPmult = new UntimedFPMultiplier("FPmult");
+	_Intmult = new UntimedIntMultiplier("Intmult");
 	
 	s->vector = 0;
 	s->cause = 0;
@@ -746,9 +748,15 @@ THellfireProcessor::~THellfireProcessor(){
 	delete _counter_hosttime;
 
 	#endif
+
+	delete _FPmult;
+	delete _Intmult;
 }
 
 void THellfireProcessor::Reset(){
     //TODO: to be implemented
+
+	_FPmult->Reset();
+	_Intmult->Reset();
     return;
 }

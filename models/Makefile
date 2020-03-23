@@ -26,7 +26,7 @@ TARGET_DEPS := \
 #$(OUTPUTDIR)/TArm7TDMI.o
 
 #compress all generated object files into a pack
-$(OUTPUTDIR)/$(LIBNAME): $(LIBSIM) $(TARGET_DEPS)
+$(OUTPUTDIR)/$(LIBNAME):  $(LIBSIM) $(TARGET_DEPS)
 	$(Q)ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes (.cpp) into %.o files

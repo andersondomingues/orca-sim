@@ -45,3 +45,5 @@ bin/*.lst
 bin/*.sec
 bin/*.txt
 
+bin/output-debug.sh
+bin/output-uart.sh

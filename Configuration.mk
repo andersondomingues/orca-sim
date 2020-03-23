@@ -15,7 +15,7 @@ GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=
 # based on the HF-RiscV processor and (ii) a NoC-based 
 # mesh-topologic manycore that uses the same processor core. 
 # PLATFORM := (orca-dma | single-core)
-PLATFORM      := orca-dma
+PLATFORM      := single-core
 
 # Apps to be compiled within kernel image. For multiple applications, 
 # use spacebar to separate names. Applications defined here will not 
@@ -114,7 +114,7 @@ MEMORY_READ_ADDRESS_CHECKING := NO
 MEMORY_WIPE_ADDRESS_CHECKING := NO
 
 # Enable counter for read and write operations (depletes performance).
-MEMORY_ENABLE_COUNTERS := NO
+MEMORY_ENABLE_COUNTERS := YES
 
 # ==============================================================[ HFRISCV ]
 # Check whether address are mapped to some memory range before writing
