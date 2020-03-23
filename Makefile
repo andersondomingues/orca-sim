@@ -11,9 +11,6 @@ MODELS_LIB    := libmod.a
 # what you are doing here).
 PLATFORM_BIN      := $(PLATFORM).exe
 
-# the name of the RISCV software file to be emulated
-IMAGE_BIN         := image.bin
-
 # Be silent per default, but 'make V=1' will show all compiler calls.
 ifneq ($(V),1)
 export Q := @
@@ -25,25 +22,12 @@ endif
 include ./Configuration.mk
 
 #directory configurations (paths)
- := $(CURDIR)/simulator
+URSA_DIR      := $(CURDIR)/simulator
 BINARY_DIR    := $(CURDIR)/bin
 PLATFORMS_DIR := $(CURDIR)/platforms
 MODELS_DIR    := $(CURDIR)/models
 TOOLS_DIR     := $(CURDIR)/tools
 SOFTWARE_DIR  := $(CURDIR)/software
-
-# get the application source files to build a proper depedency ckecking make
-# OS not included in the depedency check
-# concat all *.c, *.cpp, *f file found in the selected applications
-$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.c')))
-$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.cpp')))
-$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.h')))
-
-# do the same also for the extensions
-$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.c')))
-$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.cpp')))
-$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.h')))
-
 
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
 .PHONY: clean documentation multitail tools
@@ -55,14 +39,14 @@ $(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find
 # - hardware models depends on the simulator
 # - platform depends on simulator and hardware models
 # - visualization file for multitail has no dependency
-all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) vismtail
+all: $(BINARY_DIR)/$(PLATFORM_BIN) vismtail
 	@echo "$'\e[7m====================================\e[0m"
 	@echo "$'\e[7m  All done!                         \e[0m"
 	@echo "$'\e[7m====================================\e[0m"
 	@echo " => simulation tool $(PLATFORM_BIN) is ready."
 
 #URSA's simulation library
-$(BINARY_DIR)/$(URSA_LIB): $(URSA_DIR)/src/*.cpp  $(SURSA_DIR)/include/*.h 
+$(BINARY_DIR)/$(URSA_LIB): $(URSA_DIR)/src/*.cpp  $(URSA_DIR)/include/*.h 
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building URSA's libsim       \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
