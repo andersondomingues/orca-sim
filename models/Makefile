@@ -18,7 +18,8 @@ TARGET_DEPS := \
 	$(OUTPUTDIR)/UMemory.o \
 	$(OUTPUTDIR)/TRouter.o \
 	$(OUTPUTDIR)/THellfireProcessor.o \
-	$(OUTPUTDIR)/TDmaNetif.o
+	$(OUTPUTDIR)/TDmaNetif.o \
+	$(OUTPUTDIR)/UMult.o
 
 
 #$(OUTPUTDIR)/TDmaNetif.o

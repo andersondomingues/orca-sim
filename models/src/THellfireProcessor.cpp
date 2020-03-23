@@ -29,6 +29,7 @@
 
 #include <THellfireProcessor.h>
 #include <USignal.h>
+#include <UMult.h>
 
 #include "sys/time.h"
 
@@ -159,6 +160,14 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			case COMPARE2:		return s->compare2;
 			case UART_READ:		return getchar();
 			case UART_DIVISOR:	return 0;
+			// floating point multiplier
+			case MULT_RESULT:      return _FPmult->GetResult();
+			case MULT_OP1:         return _FPmult->GetOp1();
+			case MULT_OP2:         return _FPmult->GetOp2();
+			// int multiplier
+			case INT_MULT_RESULT:  return _Intmult->GetResult();
+			case INT_MULT_OP1:     return _Intmult->GetOp1();
+			case INT_MULT_OP2:     return _Intmult->GetOp2();
 		}
 			
 		//may the requested address fall in unmapped range, halt the simulation
@@ -257,17 +266,25 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		}
 		
 		case IRQ_VECTOR:	s->vector = value; return;
-		case IRQ_CAUSE:	s->cause = value; return;
+		case IRQ_CAUSE:		s->cause = value; return;
 		case IRQ_MASK:		s->mask = value; return;
 		case IRQ_EPC:		s->epc = value; return;
 		case COUNTER:		s->counter = value; return;
 		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
 		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
 
-		case DEBUG_ADDR: output_debug << (int8_t)(value & 0xff) << std::flush; return;
-		case UART_WRITE: output_uart << (int8_t)(value & 0xff) << std::flush; return;
-		case UART_DIVISOR: return;
-
+		case DEBUG_ADDR:	output_debug << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_WRITE:	output_uart << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_DIVISOR:	return;
+		// floating point multiplier
+		case MULT_RESULT:	return; // do nothing
+		case MULT_OP1:		_FPmult->SetOp1(value); return; 
+		case MULT_OP2:		_FPmult->SetOp2(value); return; 
+		// int multiplier
+		case INT_MULT_RESULT:	return; // do nothing
+		case INT_MULT_OP1:	_Intmult->SetOp1(value); return; 
+		case INT_MULT_OP2:	_Intmult->SetOp2(value); return; 
+		
 		case EXIT_TRAP:
 			std::cout << this->GetName() << ": exit trap triggered! " << std::endl;
 			dumpregs(s);
