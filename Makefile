@@ -1,45 +1,21 @@
-#configuration
-#PLATFORM         := orca-generic
-#PLATFORM         := orca-dma
-PLATFORM         := single-core
-APPLICATIONS_DIR := applications
-
-#libnames
-PLATFORM_BIN      := $(PLATFORM).exe
-SIMULATOR_LIB     := libsim.a
-MODELS_LIB        := libmod.a
-IMAGE_BIN         := image.bin
-
-# Be silent per default, but 'make V=1' will show all compiler calls.
-ifneq ($(V),1)
-export Q := @
-# Do not print "Entering directory ...".
-MAKEFLAGS += --no-print-directory
-endif
-
-#include optmizations
+# Includes parameters from the configuration file
 include ./Configuration.mk
 
+# Name of URSA library, compiled as a static library.
+URSA_LIB      := libsim.a
+
+# Name of the library containing the hardware models. 
+MODELS_LIB    := libmod.a
+
+# Additional parameters (do not modify them unless you know
+# what you are doing here).
+PLATFORM_BIN      := $(PLATFORM).exe
+
 #directory configurations (paths)
-SIMULATOR_DIR := $(CURDIR)/simulator
+URSA_DIR := $(CURDIR)/simulator
 BINARY_DIR    := $(CURDIR)/bin
 PLATFORMS_DIR := $(CURDIR)/platforms
 MODELS_DIR    := $(CURDIR)/models
-TOOLS_DIR     := $(CURDIR)/tools
-SOFTWARE_DIR  := $(CURDIR)/software
-
-# get the application source files to build a proper depedency ckecking make
-# OS not included in the depedency check
-# concat all *.c, *.cpp, *f file found in the selected applications
-$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.c')))
-$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.cpp')))
-$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.h')))
-
-# do the same also for the extensions
-$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.c')))
-$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.cpp')))
-$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.h')))
-
 
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
 .PHONY: clean documentation multitail tools
@@ -51,44 +27,35 @@ $(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find
 # - hardware models depends on the simulator
 # - platform depends on simulator and hardware models
 # - visualization file for multitail has no dependency
-all: $(BINARY_DIR)/$(PLATFORM_BIN) $(SOFTWARE_DIR)/$(IMAGE_BIN) vismtail
+all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) vismtail
 	@echo "$'\e[7m====================================\e[0m"
-	@echo "$'\e[7m  All done! Starting simulation...  \e[0m"
+	@echo "$'\e[7m  All done!                         \e[0m"
 	@echo "$'\e[7m====================================\e[0m"
-	@echo " => lauching $(PLATFORM) instance:"
-	$(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) 
+	@echo " => simulation tool $(PLATFORM_BIN) is ready."
 
 #URSA's simulation library
-$(BINARY_DIR)/$(SIMULATOR_LIB): $(SIMULATOR_DIR)/src/*.cpp  $(SIMULATOR_DIR)/include/*.h 
+$(BINARY_DIR)/$(URSA_LIB):
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building URSA's libsim       \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	$(Q)make -C $(SIMULATOR_DIR) -j 8
-	$(Q)cp $(SIMULATOR_DIR)/bin/$(SIMULATOR_LIB) $(BINARY_DIR)/$(SIMULATOR_LIB)
+	make -C $(URSA_DIR) -j 8
+	cp $(URSA_DIR)/bin/$(URSA_LIB) $(BINARY_DIR)/$(URSA_LIB)
 
 #library containing hardware models
-$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(SIMULATOR_LIB) $(MODELS_DIR)/src/*.cpp  $(MODELS_DIR)/include/*.h
+$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(URSA_LIB)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building hardware models     \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	$(Q)make -C $(MODELS_DIR) -j 8
-	$(Q)cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
+	make -C $(MODELS_DIR) -j 8
+	cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
 
 #platform executable
-$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(PLATFORM)/include/*.h
+$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(BINARY_DIR)/$(MODELS_LIB)
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building the platform        \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	$(Q)make -C $(PLATFORMS_DIR)/$(PLATFORM) -j 8
-	$(Q)cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
-
-#software (kernel + loader)
-$(SOFTWARE_DIR)/$(IMAGE_BIN): $(APP_SRCS) $(EXT_SRCS)
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m Building software (kernel + apps)\e[0m"
-	@echo "$'\e[7m==================================\e[0m"	
-	$(Q)make -C $(SOFTWARE_DIR) $(IMAGE_BIN) 
-	$(Q)cp $(SOFTWARE_DIR)/$(IMAGE_BIN) $(BINARY_DIR)/$(IMAGE_BIN)
+	make -C $(PLATFORMS_DIR)/$(PLATFORM) -j 8
+	cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
 
 #documentation
 #last line refers to a bug in tabu.sty. A replacement for
@@ -98,17 +65,17 @@ documentation:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m    Building API Documentation    \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	$(Q)doxygen
-	$(Q)cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
+	doxygen
+	cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
 
-#visualization file for multitail
+#generete script for multitail (visualization, requires multitail)
 vismtail:
-	@echo "#!/bin/sh" > ./tools/output-debug.sh
+	@echo "#!/bin/sh" > $(BINARY_DIR)/output-debug.sh
 	@echo "multitail ./logs/*debug.log -s $(ORCA_NOC_WIDTH)" \
-		>> ./tools/output-debug.sh
-	@echo "#!/bin/sh" > ./tools/output-uart.sh
+		>> $(BINARY_DIR)/output-debug.sh
+	@echo "#!/bin/sh" > $(BINARY_DIR)/output-uart.sh
 	@echo "multitail ./logs/*uart.log -s $(ORCA_NOC_WIDTH)" \
-		>> ./tools/output-uart.sh
+		>> $(BINARY_DIR)/output-uart.sh
 
 #generate hex files from memdumps
 bp:
@@ -118,24 +85,18 @@ bp:
 	@cd breakpoints; bash ../tools/bin-to-hex.sh; rm -rf *.bin
 	@echo "Done."
 
-#compile all tools at once
-tools:
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m   Building tools, Please Wait... \e[0m"
-	@echo "$'\e[7m==================================\e[0m"
-	make -C tools/orca-udptest
-
 clean:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m          Cleaning up...          \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	@make -C $(SIMULATOR_DIR) clean
+	@echo $(COMPLINE)
+	@echo "$'\e[7m==================================\e[0m"
+	@make -C $(URSA_DIR) clean
 	@make -C $(MODELS_DIR) clean
 	@make -C $(PLATFORMS_DIR)/$(PLATFORM) clean
-	@make -C $(SOFTWARE_DIR) clean
-	$(Q)rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
+	@rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
 		$(BINARY_DIR)/*~ $(BINARY_DIR)/*.elf $(BINARY_DIR)/*.bin \
-		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec $(BINARY_DIR)/*.txt
-	$(Q)rm -rf docs/doxygen/
-	$(Q)rm -rf breakpoints/*.bin breakpoints/*.hex
-	$(Q)make -C tools/orca-udptest clean
+		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec \
+		$(BINARY_DIR)/*.txt $(BINARY_DIR)/*.sh
+	@rm -rf docs/doxygen/
+	@rm -rf breakpoints/*.bin breakpoints/*.hex
