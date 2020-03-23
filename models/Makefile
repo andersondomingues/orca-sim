@@ -1,7 +1,11 @@
 #directory configuration
 SOURCEDIR :=./src
+HEADERDIR :=./include
 OUTPUTDIR :=./bin
 LIBNAME :=libmod.a
+
+LIBSIM_PATH:=../simulator
+LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
 
 #include flags (plus external flags)
 CPPFLAGS :=-I./include -I../simulator/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
@@ -21,13 +25,13 @@ TARGET_DEPS := \
 #$(OUTPUTDIR)/TArm7TDMI.o
 
 #compress all generated object files into a pack
-$(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
-	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
+$(OUTPUTDIR)/$(LIBNAME): $(LIBSIM) $(TARGET_DEPS)
+	$(Q)ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes (.cpp) into %.o files
-$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp 
-	g++ $(CPPFLAGS) $< -o $@ 
+$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp  $(HEADERDIR)/%.h 
+	$(Q)g++ $(CPPFLAGS) $< -o $@ 
 
 #remove any preoviosly generated file
 clean:
-	rm -rf bin/*.a 	rm -rf bin/*.o
+	$(Q)rm -rf bin/*.a 	rm -rf bin/*.o
