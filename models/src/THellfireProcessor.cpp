@@ -147,7 +147,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		return data;
 		
 	}else{
-		
+		int simd_idx=0;
 		//Address does not belong to any bank, check for special addresses
 		switch(address){
 			case IRQ_VECTOR:	return s->vector;
@@ -168,6 +168,11 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			case INT_MULT_RESULT:  return _Intmult->GetResult();
 			case INT_MULT_OP1:     return _Intmult->GetOp1();
 			case INT_MULT_OP2:     return _Intmult->GetOp2();
+
+			// SIMD floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers
+			case VET_MULT_RESULT ... (VET_MULT_RESULT+SIMD_SIZE-1): simd_idx= (address-VET_MULT_RESULT)/sizeof(float); cout << "rIDX(res): " << simd_idx << endl; return _FPmultV[simd_idx]->GetResult();
+			case VET_MULT_OP1 ... (VET_MULT_OP1+SIMD_SIZE-1):       simd_idx= (address-VET_MULT_OP1)/sizeof(float);    cout << "rIDX(op1): " << simd_idx << endl; return _FPmultV[simd_idx]->GetOp1(); 
+			case VET_MULT_OP2 ... (VET_MULT_OP2+SIMD_SIZE-1):       simd_idx= (address-VET_MULT_OP2)/sizeof(float);    cout << "rIDX(op2): " << simd_idx << endl; return _FPmultV[simd_idx]->GetOp2();
 		}
 			
 		//may the requested address fall in unmapped range, halt the simulation
@@ -250,7 +255,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		
 		return; //succefully written		
 	}
-		
+	int simd_idx=0;
 	//may the request memory space be out of the mapped memory range, we assume
 	//the code is pointing to some of the special addresses		
 	switch(address){
@@ -284,7 +289,11 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		case INT_MULT_RESULT:	return; // do nothing
 		case INT_MULT_OP1:	_Intmult->SetOp1(value); return; 
 		case INT_MULT_OP2:	_Intmult->SetOp2(value); return; 
-		
+		// SIMD floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers
+		case VET_MULT_RESULT ... (VET_MULT_RESULT+SIMD_SIZE-1):   return; // do nothing
+		case VET_MULT_OP1 ... (VET_MULT_OP1+SIMD_SIZE-1):     simd_idx= (address-VET_MULT_OP1)/sizeof(float);  cout << "wIDX(op1): " << simd_idx << endl; _FPmultV[simd_idx]->SetOp1(value); return; 
+		case VET_MULT_OP2 ... (VET_MULT_OP2+SIMD_SIZE-1):     simd_idx= (address-VET_MULT_OP2)/sizeof(float);  cout << "wIDX(op2): " << simd_idx << endl; _FPmultV[simd_idx]->SetOp2(value); return; 		
+
 		case EXIT_TRAP:
 			std::cout << this->GetName() << ": exit trap triggered! " << std::endl;
 			dumpregs(s);
@@ -704,10 +713,17 @@ void THellfireProcessor::SetMem0(UMemory* m){
 
 THellfireProcessor::THellfireProcessor(string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall) : TimedModel(name) {
 
+	UntimedFPMultiplier * auxFPMult; 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
+
+	// create the multipliers
 	_FPmult = new UntimedFPMultiplier("FPmult");
 	_Intmult = new UntimedIntMultiplier("Intmult");
+	for(int i=0;i<SIMD_SIZE;i++){
+		auxFPMult = new UntimedFPMultiplier("FPmult["+std::to_string(i)+"]");
+		_FPmultV.push_back(auxFPMult);
+	}
 	
 	s->vector = 0;
 	s->cause = 0;
@@ -751,6 +767,9 @@ THellfireProcessor::~THellfireProcessor(){
 
 	delete _FPmult;
 	delete _Intmult;
+	for(int i=0;i<SIMD_SIZE;i++)
+		delete _FPmultV[i];
+	_FPmultV.clear();	
 }
 
 void THellfireProcessor::Reset(){
@@ -758,5 +777,7 @@ void THellfireProcessor::Reset(){
 
 	_FPmult->Reset();
 	_Intmult->Reset();
+	for(int i=0;i<SIMD_SIZE;i++)
+		_FPmultV[i]->Reset();
     return;
 }

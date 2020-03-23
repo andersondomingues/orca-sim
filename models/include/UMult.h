@@ -39,7 +39,12 @@
 #define INT_MULT_RESULT		0xf000010C
 #define INT_MULT_OP1		0xf0000110
 #define INT_MULT_OP2		0xf0000114
-
+// SIMD floating point multiplier, capable of up to 16 mult in 'parallel'
+#define VET_MULT_RESULT		0xf0000120 // 120, 124, 128, ... 156
+#define VET_MULT_OP1		0xf0000160
+#define VET_MULT_OP2		0xf0000200
+// # of 4 bytes inst executesd in paralel in the SIMD ULA 
+#define SIMD_SIZE           16
 
 /**
  * This class models an external (memory-mapped) combinational FP multipler

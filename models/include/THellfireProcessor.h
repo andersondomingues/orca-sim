@@ -75,6 +75,7 @@ private:
 
 	UntimedFPMultiplier*  _FPmult;
 	UntimedIntMultiplier* _Intmult;
+	vector<UntimedFPMultiplier*>  _FPmultV;
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	USignal<uint32_t>* _counter_iarith;
