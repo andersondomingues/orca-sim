@@ -11,11 +11,39 @@ MODELS_LIB    := libmod.a
 # what you are doing here).
 PLATFORM_BIN      := $(PLATFORM).exe
 
+# the name of the RISCV software file to be emulated
+IMAGE_BIN         := image.bin
+
+# Be silent per default, but 'make V=1' will show all compiler calls.
+ifneq ($(V),1)
+export Q := @
+# Do not print "Entering directory ...".
+MAKEFLAGS += --no-print-directory
+endif
+
+#include optmizations
+include ./Configuration.mk
+
 #directory configurations (paths)
-URSA_DIR := $(CURDIR)/simulator
+ := $(CURDIR)/simulator
 BINARY_DIR    := $(CURDIR)/bin
 PLATFORMS_DIR := $(CURDIR)/platforms
 MODELS_DIR    := $(CURDIR)/models
+TOOLS_DIR     := $(CURDIR)/tools
+SOFTWARE_DIR  := $(CURDIR)/software
+
+# get the application source files to build a proper depedency ckecking make
+# OS not included in the depedency check
+# concat all *.c, *.cpp, *f file found in the selected applications
+$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.c')))
+$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.cpp')))
+$(foreach module,$(ORCA_APPLICATIONS), $(eval APP_SRCS := $(APP_SRCS) $(shell find $(SOFTWARE_DIR)/applications/$(module) -type f -name '*.h')))
+
+# do the same also for the extensions
+$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.c')))
+$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.cpp')))
+$(foreach module,$(ORCA_EXTENSIONS), $(eval EXT_SRCS := $(EXT_SRCS) $(shell find $(SOFTWARE_DIR)/extensions/$(module) -type f -name '*.h')))
+
 
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
 .PHONY: clean documentation multitail tools
@@ -34,28 +62,28 @@ all: $(BINARY_DIR)/$(PLATFORM_BIN) $(BINARY_DIR)/$(IMAGE_BIN) vismtail
 	@echo " => simulation tool $(PLATFORM_BIN) is ready."
 
 #URSA's simulation library
-$(BINARY_DIR)/$(URSA_LIB):
+$(BINARY_DIR)/$(URSA_LIB): $(URSA_DIR)/src/*.cpp  $(SURSA_DIR)/include/*.h 
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building URSA's libsim       \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(URSA_DIR) -j 8
-	cp $(URSA_DIR)/bin/$(URSA_LIB) $(BINARY_DIR)/$(URSA_LIB)
+	$(Q)make -C $(URSA_DIR) -j 8
+	$(Q)cp $(URSA_DIR)/bin/$(URSA_LIB) $(BINARY_DIR)/$(URSA_LIB)
 
 #library containing hardware models
-$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(URSA_LIB)
+$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(URSA_LIB) $(MODELS_DIR)/src/*.cpp  $(MODELS_DIR)/include/*.h
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building hardware models     \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(MODELS_DIR) -j 8
-	cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
+	$(Q)make -C $(MODELS_DIR) -j 8
+	$(Q)cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
 
 #platform executable
-$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(BINARY_DIR)/$(MODELS_LIB)
+$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(PLATFORM)/include/*.h
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building the platform        \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	make -C $(PLATFORMS_DIR)/$(PLATFORM) -j 8
-	cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
+	$(Q)make -C $(PLATFORMS_DIR)/$(PLATFORM) -j 8
+	$(Q)cp $(PLATFORMS_DIR)/$(PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
 
 #documentation
 #last line refers to a bug in tabu.sty. A replacement for
@@ -65,8 +93,8 @@ documentation:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m    Building API Documentation    \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	doxygen
-	cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
+	$(Q)doxygen
+	$(Q)cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
 
 #generete script for multitail (visualization, requires multitail)
 vismtail:
@@ -89,14 +117,13 @@ clean:
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m          Cleaning up...          \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
-	@echo $(COMPLINE)
-	@echo "$'\e[7m==================================\e[0m"
-	@make -C $(URSA_DIR) clean
-	@make -C $(MODELS_DIR) clean
-	@make -C $(PLATFORMS_DIR)/$(PLATFORM) clean
-	@rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
+	$(Q)make -C $(URSA_DIR) clean
+	$(Q)make -C $(MODELS_DIR) clean
+	$(Q)make -C $(PLATFORMS_DIR)/$(PLATFORM) clean
+	$(Q)rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
 		$(BINARY_DIR)/*~ $(BINARY_DIR)/*.elf $(BINARY_DIR)/*.bin \
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec \
 		$(BINARY_DIR)/*.txt $(BINARY_DIR)/*.sh
-	@rm -rf docs/doxygen/
-	@rm -rf breakpoints/*.bin breakpoints/*.hex
+	$(Q)rm -rf docs/doxygen/
+	$(Q)rm -rf logs/*.log
+	$(Q)rm -rf breakpoints/*.bin breakpoints/*.hex
