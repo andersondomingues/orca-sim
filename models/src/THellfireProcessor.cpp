@@ -170,9 +170,13 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			case INT_MULT_OP2:     return _Intmult->GetOp2();
 
 			// SIMD floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers
-			case VET_MULT_RESULT ... (VET_MULT_RESULT+SIMD_SIZE-1): simd_idx= (address-VET_MULT_RESULT)/sizeof(float); cout << "rIDX(res): " << simd_idx << endl; return _FPmultV[simd_idx]->GetResult();
-			case VET_MULT_OP1 ... (VET_MULT_OP1+SIMD_SIZE-1):       simd_idx= (address-VET_MULT_OP1)/sizeof(float);    cout << "rIDX(op1): " << simd_idx << endl; return _FPmultV[simd_idx]->GetOp1(); 
-			case VET_MULT_OP2 ... (VET_MULT_OP2+SIMD_SIZE-1):       simd_idx= (address-VET_MULT_OP2)/sizeof(float);    cout << "rIDX(op2): " << simd_idx << endl; return _FPmultV[simd_idx]->GetOp2();
+			case VET_MULT_RESULT ... (VET_MULT_RESULT+(SIMD_SIZE*4)-1): simd_idx= (address-VET_MULT_RESULT)/sizeof(float); cout << "rIDX(res): " << simd_idx << endl; return _FPmultV[simd_idx]->GetResult();
+			case VET_MULT_OP1 ... (VET_MULT_OP1+(SIMD_SIZE*4)-1):       simd_idx= (address-VET_MULT_OP1)/sizeof(float);    cout << "rIDX(op1): " << simd_idx << endl; return _FPmultV[simd_idx]->GetOp1(); 
+			case VET_MULT_OP2 ... (VET_MULT_OP2+(SIMD_SIZE*4)-1):       simd_idx= (address-VET_MULT_OP2)/sizeof(float);    cout << "rIDX(op2): " << simd_idx << endl; return _FPmultV[simd_idx]->GetOp2();
+
+			//case VET_MULT_RESULT+SIMD_SIZE: simd_idx= (address-VET_MULT_OP1)/sizeof(float);    cout << "rIDX(op1): " << simd_idx << endl; return _FPmultV[simd_idx]->GetOp1(); 
+			//case VET_MULT_OP1+SIMD_SIZE: simd_idx= (address-VET_MULT_OP2)/sizeof(float);    cout << "rIDX(op2): " << simd_idx << endl; return _FPmultV[simd_idx]->GetOp2();
+			//case VET_MULT_OP2+SIMD_SIZE: simd_idx= (address-VET_MULT_RESULT)/sizeof(float); cout << "rIDX(res): " << simd_idx << endl; return _FPmultV[simd_idx]->GetResult();
 		}
 			
 		//may the requested address fall in unmapped range, halt the simulation
@@ -290,9 +294,13 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		case INT_MULT_OP1:	_Intmult->SetOp1(value); return; 
 		case INT_MULT_OP2:	_Intmult->SetOp2(value); return; 
 		// SIMD floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers
-		case VET_MULT_RESULT ... (VET_MULT_RESULT+SIMD_SIZE-1):   return; // do nothing
-		case VET_MULT_OP1 ... (VET_MULT_OP1+SIMD_SIZE-1):     simd_idx= (address-VET_MULT_OP1)/sizeof(float);  cout << "wIDX(op1): " << simd_idx << endl; _FPmultV[simd_idx]->SetOp1(value); return; 
-		case VET_MULT_OP2 ... (VET_MULT_OP2+SIMD_SIZE-1):     simd_idx= (address-VET_MULT_OP2)/sizeof(float);  cout << "wIDX(op2): " << simd_idx << endl; _FPmultV[simd_idx]->SetOp2(value); return; 		
+		case VET_MULT_RESULT ... (VET_MULT_RESULT+(SIMD_SIZE*4)-1):   return; // do nothing
+		case VET_MULT_OP1 ... (VET_MULT_OP1+(SIMD_SIZE*4)-1):     simd_idx= (address-VET_MULT_OP1)/sizeof(float);  cout << "wIDX(op1): " << simd_idx << endl; _FPmultV[simd_idx]->SetOp1(value); return; 
+		case VET_MULT_OP2 ... (VET_MULT_OP2+(SIMD_SIZE*4)-1):     simd_idx= (address-VET_MULT_OP2)/sizeof(float);  cout << "wIDX(op2): " << simd_idx << endl; _FPmultV[simd_idx]->SetOp2(value); return; 		
+
+		//case VET_MULT_RESULT+SIMD_SIZE:   return; // do nothing
+		//case VET_MULT_OP1+SIMD_SIZE:     simd_idx= (address-VET_MULT_OP1)/sizeof(float);  cout << "wIDX(op1): " << simd_idx << endl; _FPmultV[simd_idx]->SetOp1(value); return; 
+		//case VET_MULT_OP2+SIMD_SIZE:     simd_idx= (address-VET_MULT_OP2)/sizeof(float);  cout << "wIDX(op2): " << simd_idx << endl; _FPmultV[simd_idx]->SetOp2(value); return; 		
 
 		case EXIT_TRAP:
 			std::cout << this->GetName() << ": exit trap triggered! " << std::endl;
