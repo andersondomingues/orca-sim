@@ -71,7 +71,11 @@ public:
 	uint32_t GetOp2() {	return _op2.i;	};
 
 	// setters
-	void SetOp1(uint32_t op1) {	_op1.i = op1; 	};
+	void SetOp1(uint32_t op1) {	
+		_op1.f = (float)op1; 	
+		printf("op1.i == %d \n",_op1.i);
+		printf("op1.f == %f \n",_op1.f);
+		};
 	void SetOp2(uint32_t op2) {	_op2.i = op2; 	};
 
 	void Reset(){_op1.i=0; _op2.i=0;};
