@@ -46,6 +46,21 @@
 // # of 4 bytes inst executesd in paralel in the SIMD ULA 
 #define SIMD_SIZE           16
 
+/*
+Things to be Done:
+- replace builtin mult for float in libc 
+   Runtime Function: float __mulsf3 (float a, float b)
+   https://gcc.gnu.org/onlinedocs/gccint/Soft-float-library-routines.html#Soft-float-library-routines
+downside: ALL float *, including those used by libraries, will be replaced by this custom mult 
+- implement RISCV instructions Custom0 and Custom1
+  https://github.com/riscv/riscv-opcodes/blob/master/opcodes-custom
+  not supported by the toolchain. then one has to use a macro similar to 
+  https://github.com/riscv/riscv-gnu-toolchain/issues/190#issuecomment-264083212
+  to insert a word in the code. Then the hardware must be customized to decode this instruction
+- use of ecall ?!?!?
+
+*/
+
 /**
  * This class models an external (memory-mapped) combinational FP multipler
  * TODO: does it work with signed values ?!?!
