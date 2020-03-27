@@ -82,167 +82,22 @@ void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 
 	std::cout << "router-comm: " << r1->GetInputBuffer(p1)->GetName()
 			  << " <---> " << r2->GetInputBuffer(p2)->GetName() << std::endl;
-
-}
-
-void check_params(){
-
-	//orca params 
-	#ifndef ORCA_NOC_HEIGHT
-	std::runtime_error("ORCA_NOC_HEIGHT must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_NOC_HEIGHT set to " << ORCA_NOC_HEIGHT << std::endl;
-	#endif
-	
-	#ifndef ORCA_NOC_HEIGHT
-	std::runtime_error("ORCA_NOC_WIDTH must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_NOC_WIDTH set to " << ORCA_NOC_WIDTH << std::endl;
-	#endif
-
-	#ifndef ORCA_EPOCH_LENGTH
-	std::runtime_error("ORCA_EPOCH_LENGTH must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_EPOCH_LENGTH set to " << ORCA_EPOCH_LENGTH << std::endl;
-	#endif
-
-	#ifndef ORCA_EPOCHS_TO_SIM
-	std::cout << "ORCA_EPOCHS_TO_SIM set to INFINITE" << std::endl;
-	#else
-	std::cout << "ORCA_EPOCHS_TO_SIM set to " << ORCA_EPOCHS_TO_SIM << std::endl;
-	#endif
-	
-	//ursa params
-	#ifndef URSA_ZERO_TIME_CHECKING
-	std::cout << "URSA_ZERO_TIME_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "URSA_ZERO_TIME_CHECKING set to " << URSA_ZERO_TIME_CHECKING << std::endl;
-	#endif
-
-	#ifndef URSA_QUEUE_SIZE_CHECKING
-	std::cout << "URSA_QUEUE_SIZE_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "URSA_QUEUE_SIZE_CHECKING set to " << URSA_QUEUE_SIZE_CHECKING << std::endl;
-	#endif
-	
-	//netsocket logs
-	#ifndef NETSOCKET_LOG_OUTGOING_PACKETS
-	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS disabled" << std::endl;
-	#else
-	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS enabled" << std::endl;
-	#endif
-
-	#ifndef NETSOCKET_LOG_INCOMING_PACKETS
-	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS disabled" << std::endl;
-	#else
-	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS enabled" << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_CLIENT_ADDRESS
-	std::cout << "NETSOCKET_CLIENT_ADDRESS is " << NETSOCKET_CLIENT_ADDRESS << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_CLIENT_PORT
-	std::cout << "NETSOCKET_CLIENT_PORT is " << NETSOCKET_CLIENT_PORT << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_SERVER_ADDRESS
-	std::cout << "NETSOCKET_SERVER_ADDRESS is " << NETSOCKET_SERVER_ADDRESS << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_SERVER_PORT
-	std::cout << "NETSOCKET_SERVER_PORT is " << NETSOCKET_SERVER_PORT << std::endl;
-	#endif
-	
-	//buffers
-	#ifndef BUFFER_OVERFLOW_CHECKING
-	std::cout << "BUFFER_OVERFLOW_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "BUFFER_OVERFLOW_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef BUFFER_UNDERFLOW_CHECKING
-	std::cout << "BUFFER_UNDERFLOW_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "BUFFER_UNDERFLOW_CHECKING enabled" << std::endl;
-	#endif
-	
-	//memory
-	#ifndef MEMORY_WRITE_ADDRESS_CHECKING
-	std::cout << "MEMORY_WRITE_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "MEMORY_WRITE_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef MEMORY_READ_ADDRESS_CHECKING
-	std::cout << "MEMORY_READ_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "MEMORY_READ_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef MEMORY_WIPE_ADDRESS_CHECKING
-	std::cout << "MEMORY_WIPE_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "MEMORY_WIPE_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef MEMORY_ENABLE_COUNTERS
-	std::cout << "MEMORY_ENABLE_COUNTERS disabled" << std::endl;
-	#else
-	std::cout << "MEMORY_ENABLE_COUNTERS enabled" << std::endl;
-	#endif
-	
-	//hfriscv
-	#ifndef HFRISCV_WRITE_ADDRESS_CHECKING
-	std::cout << "HFRISCV_WRITE_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "HFRISCV_WRITE_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef HFRISCV_READ_ADDRESS_CHECKING
-	std::cout << "HFRISCV_READ_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "HFRISCV_READ_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef HFRISCV_ENABLE_COUNTERS
-	std::cout << "HFRISCV_ENABLE_COUNTERS disabled" << std::endl;
-	#else
-	std::cout << "HFRISCV_ENABLE_COUNTERS enabled" << std::endl;
-	#endif
-	
-	//router	
-	#ifndef ROUTER_ENABLE_COUNTERS
-	std::cout << "ROUTER_ENABLE_COUNTERS disabled" << std::endl;
-	#else
-	std::cout << "ROUTER_ENABLE_COUNTERS enabled" << std::endl;
-	#endif
-	
-	#ifndef ROUTER_PORT_CONNECTED_CHECKING
-	std::cout << "ROUTER_PORT_CONNECTED_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "ROUTER_PORT_CONNECTED_CHECKING enabled" << std::endl;
-	#endif
-	
 }
 
 int main(int __attribute__((unused)) argc, char** argv){
 
-    //argc = argc; //workaround to use -Wextra
+    //display usage message
+    if(argc < 2){
+        std::cout << "usage: \n\t" << argv[0] << " <software-image>" << std::endl;
+        return 1;
+    }
+    
+    std::string param1 = std::string(argv[1]);
 
 	//register interruption handler
 	signal(SIGINT, sig_handler);
 
 	std::cout << "URSA/ORCA Platform " << std::endl;
-
-	std::cout << "==============[ PARAMETERS ]" << std::endl;	
-	try{
-		check_params();
-	}catch(std::runtime_error& e){
-		std::cout << e.what() << std::endl;
-		return 1;
-	}
-	
 	std::cout << "==============[ TILE COMPOSITION ]" << std::endl;
 	
 	//populate tiles
@@ -281,7 +136,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 			if(x == 0 && y == 0) continue;
 		
 			//index = x + ORCA_NOC_WIDTH * y;
-			((ProcessingTile*)tiles[x][y])->GetMem0()->LoadBin(std::string(argv[1]), MEM0_BASE, MEM0_SIZE);
+			((ProcessingTile*)tiles[x][y])->GetMem0()->LoadBin(param1, MEM0_BASE, MEM0_SIZE);
 		}
 	}
 
