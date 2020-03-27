@@ -43,7 +43,7 @@ all: $(BINARY_DIR)/$(PLATFORM_BIN) vismtail
 	@echo "$'\e[7m====================================\e[0m"
 	@echo "$'\e[7m  All done!                         \e[0m"
 	@echo "$'\e[7m====================================\e[0m"
-	@echo " => simulation tool $(PLATFORM_BIN) is ready."
+	@echo " => $(PLATFORM_BIN) deployed to /bin folder."
 
 #URSA's simulation library
 $(BINARY_DIR)/$(URSA_LIB): $(URSA_DIR)/src/*.cpp  $(URSA_DIR)/include/*.h 
@@ -78,7 +78,6 @@ documentation:
 	@echo "$'\e[7m    Building API Documentation    \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
 	$(Q)doxygen
-	$(Q)cp ./tools/tabu.sty ./docs/doxygen/latex/ -rf
 
 #generete script for multitail (visualization, requires multitail)
 vismtail:
@@ -88,14 +87,6 @@ vismtail:
 	@echo "#!/bin/sh" > $(BINARY_DIR)/output-uart.sh
 	@echo "multitail ./logs/*uart.log -s $(ORCA_NOC_WIDTH)" \
 		>> $(BINARY_DIR)/output-uart.sh
-
-#generate hex files from memdumps
-bp:
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m Generating Dumps, Please Wait... \e[0m"
-	@echo "$'\e[7m==================================\e[0m"
-	@cd breakpoints; bash ../tools/bin-to-hex.sh; rm -rf *.bin
-	@echo "Done."
 
 clean:
 	@echo "$'\e[7m==================================\e[0m"
@@ -109,5 +100,4 @@ clean:
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec \
 		$(BINARY_DIR)/*.txt $(BINARY_DIR)/*.sh
 	$(Q)rm -rf docs/doxygen/
-	$(Q)rm -rf logs/*.log
-	$(Q)rm -rf breakpoints/*.bin breakpoints/*.hex
+	$(Q)rm -rf $(BINARY_DIR)/logs/*.log
