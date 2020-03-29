@@ -35,6 +35,8 @@ TARGET_DEPS := \
 # include headers in the dependecy check
 HEADER_FILES := $(wildcard $(HEADERDIR)/*.h)
 
+include ./Configuration.mk
+
 #compiler an instance of the simulator 
 $(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(TARGET_DEPS) $(HEADER_FILES)
 	$(Q)g++ $(TARGET_DEPS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe $(LD_FLAGS) $(GCC_FLAGS)

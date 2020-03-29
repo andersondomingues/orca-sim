@@ -15,7 +15,7 @@ LIBMOD:=$(LIBMOD_PATH)/bin/libmod.a
 LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
 
 #Flags to be used during compilation of the platform. Note 
-#that they may be different form flags used for compiling
+#that they may be different form flags used for compiling 
 #dependencies.
 GCC_FLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
     -Iinclude -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
@@ -32,6 +32,9 @@ TARGET_DEPS := \
 
 # include headers in the dependecy check
 HEADER_FILES := $(wildcard $(HEADERDIR)/*.h)
+
+# single core does not have hw/sw configuration parameters
+-include ./Configuration.mk
 
 #compiler an instance of the simulator 
 $(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(LIBMOD) $(LIBSIM) $(TARGET_DEPS) $(HEADER_FILES)

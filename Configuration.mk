@@ -35,12 +35,6 @@ ORCA_EXTENSIONS := orca-core orca-pubsub orca-monitoring
 KERNEL_LOG_LEVEL := 1
 
 # ==================================================================[ ORCA ]
-# Width (x-axis coordinate) of the network-on-chip. Cannot be zero,
-# otherwise simulation won't compile.
-ORCA_NOC_HEIGHT := 3
-# Width (y-axis coordinate) of the network-on-chip. Cannot be zero,
-# otherwise simulation won't compile.
-ORCA_NOC_WIDTH  := 2
 
 # Number of cycles before calling the frequency analisys tool. Shorter
 # values may compromise the performance of the simulation, while higher
