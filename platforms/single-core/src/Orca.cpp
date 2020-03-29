@@ -67,18 +67,6 @@ static void sig_handler(int _){
 
 void check_params(){
 
-	//orca params 
-	#ifndef ORCA_NOC_HEIGHT
-	std::runtime_error("ORCA_NOC_HEIGHT must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_NOC_HEIGHT set to " << ORCA_NOC_HEIGHT << std::endl;
-	#endif
-	
-	#ifndef ORCA_NOC_HEIGHT
-	std::runtime_error("ORCA_NOC_WIDTH must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_NOC_WIDTH set to " << ORCA_NOC_WIDTH << std::endl;
-	#endif
 
 	#ifndef ORCA_EPOCH_LENGTH
 	std::runtime_error("ORCA_EPOCH_LENGTH must be defined in Configuration.mk\n");
@@ -104,49 +92,7 @@ void check_params(){
 	#else
 	std::cout << "URSA_QUEUE_SIZE_CHECKING set to " << URSA_QUEUE_SIZE_CHECKING << std::endl;
 	#endif
-	
-	//netsocket logs
-	#ifndef NETSOCKET_LOG_OUTGOING_PACKETS
-	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS disabled" << std::endl;
-	#else
-	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS enabled" << std::endl;
-	#endif
 
-	#ifndef NETSOCKET_LOG_INCOMING_PACKETS
-	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS disabled" << std::endl;
-	#else
-	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS enabled" << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_CLIENT_ADDRESS
-	std::cout << "NETSOCKET_CLIENT_ADDRESS is " << NETSOCKET_CLIENT_ADDRESS << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_CLIENT_PORT
-	std::cout << "NETSOCKET_CLIENT_PORT is " << NETSOCKET_CLIENT_PORT << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_SERVER_ADDRESS
-	std::cout << "NETSOCKET_SERVER_ADDRESS is " << NETSOCKET_SERVER_ADDRESS << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_SERVER_PORT
-	std::cout << "NETSOCKET_SERVER_PORT is " << NETSOCKET_SERVER_PORT << std::endl;
-	#endif
-	
-	//buffers
-	#ifndef BUFFER_OVERFLOW_CHECKING
-	std::cout << "BUFFER_OVERFLOW_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "BUFFER_OVERFLOW_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef BUFFER_UNDERFLOW_CHECKING
-	std::cout << "BUFFER_UNDERFLOW_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "BUFFER_UNDERFLOW_CHECKING enabled" << std::endl;
-	#endif
-	
 	//memory
 	#ifndef MEMORY_WRITE_ADDRESS_CHECKING
 	std::cout << "MEMORY_WRITE_ADDRESS_CHECKING disabled" << std::endl;
@@ -189,19 +135,6 @@ void check_params(){
 	std::cout << "HFRISCV_ENABLE_COUNTERS disabled" << std::endl;
 	#else
 	std::cout << "HFRISCV_ENABLE_COUNTERS enabled" << std::endl;
-	#endif
-	
-	//router	
-	#ifndef ROUTER_ENABLE_COUNTERS
-	std::cout << "ROUTER_ENABLE_COUNTERS disabled" << std::endl;
-	#else
-	std::cout << "ROUTER_ENABLE_COUNTERS enabled" << std::endl;
-	#endif
-	
-	#ifndef ROUTER_PORT_CONNECTED_CHECKING
-	std::cout << "ROUTER_PORT_CONNECTED_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "ROUTER_PORT_CONNECTED_CHECKING enabled" << std::endl;
 	#endif
 	
 }

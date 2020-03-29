@@ -4,9 +4,6 @@ include ./Configuration.mk
 # Name of URSA library, compiled as a static library.
 URSA_LIB      := libsim.a
 
-# Name of the library containing the hardware models. 
-MODELS_LIB    := libmod.a
-
 # Additional parameters (do not modify them unless you know
 # what you are doing here).
 PLATFORM_BIN      := $(PLATFORM).exe
@@ -17,9 +14,6 @@ export Q := @
 # Do not print "Entering directory ...".
 MAKEFLAGS += --no-print-directory
 endif
-
-#include optmizations
-include ./Configuration.mk
 
 #directory configurations (paths)
 URSA_DIR      := $(CURDIR)/simulator
@@ -53,16 +47,8 @@ $(BINARY_DIR)/$(URSA_LIB): $(URSA_DIR)/src/*.cpp  $(URSA_DIR)/include/*.h
 	$(Q)make -C $(URSA_DIR) -j 8
 	$(Q)cp $(URSA_DIR)/bin/$(URSA_LIB) $(BINARY_DIR)/$(URSA_LIB)
 
-#library containing hardware models
-$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(URSA_LIB) $(MODELS_DIR)/src/*.cpp  $(MODELS_DIR)/include/*.h
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m     Building hardware models     \e[0m"
-	@echo "$'\e[7m==================================\e[0m"
-	$(Q)make -C $(MODELS_DIR) -j 8
-	$(Q)cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
-
 #platform executable
-$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(PLATFORM)/include/*.h
+$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB)  $(PLATFORMS_DIR)/$(PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(PLATFORM)/include/*.h
 	@echo "$'\e[7m==================================\e[0m"
 	@echo "$'\e[7m     Building the platform        \e[0m"
 	@echo "$'\e[7m==================================\e[0m"
