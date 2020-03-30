@@ -28,6 +28,8 @@
 
 #include <ProcessingTile.h>
 
+#include <TMult.h>
+
 /** 
  * Default constructor.
  * Instantiate and bind internal hardware to each
@@ -42,12 +44,24 @@ ProcessingTile::ProcessingTile() {
 	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
 	_cpu   = new THellfireProcessor(this->GetName() + ".cpu", _signal_intr, _signal_stall);
 	
+	//Timed multiplier
+	//_seqMult = new TimedFPMultiplier(this->GetName() + ".seq_mult");
+
 	//binds cpu to the main memory
 	_cpu->SetMem0(_mem0);
 	
+
+	//binds cpu to vetorial sequential multipliers	
+	TimedFPMultiplier* auxMult;
+	for(int i=0;i<SIMD_SIZE;i++){
+		auxMult = new TimedFPMultiplier(this->GetName() + ".seq_mult_vet["+std::to_string(i)+"]");
+		_seqMultVet.push_back(auxMult);
+		_cpu->SetSeqMultVet(_seqMultVet[i]);
+	}
+
 	//reset control wires
-    _signal_stall->Write(0);
-	_signal_intr->Write(0); 
+	_signal_stall->Write(0);
+	_signal_intr->Write(0);
 	
 
 	//bind control signals to hardware (cpu side)
@@ -123,6 +137,10 @@ USignal<uint32_t>* ProcessingTile::GetSignalHostTime(){
 
 UMemory* ProcessingTile::GetMem0(){
 	return _mem0;
+}
+
+TimedFPMultiplier* ProcessingTile::GetSeqMultVet(int idx){
+	return _seqMultVet[idx];
 }
 
 std::string ProcessingTile::ToString(){
