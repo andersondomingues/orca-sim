@@ -69,7 +69,7 @@ class TimedFPMultiplier : public TimedModel{
 
 		// setters
 		void SetOp1(uint32_t op1) {
-			printf("setting op1/n");
+			//printf("setting op1/n");
 			_op1.f = (float)op1;
 		};
 

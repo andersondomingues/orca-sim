@@ -182,6 +182,19 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 				simd_idx= (address-VET_MULT_OP2)/sizeof(float);    
 				//cout << "rIDX(op2): " << simd_idx << endl; 
 				return _FPmultV[simd_idx]->GetOp2();
+			// SIMD sequential floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers 
+			case VET_SEQ_MULT_RESULT ... (VET_SEQ_MULT_RESULT+(SIMD_SIZE*4)-1): 
+				simd_idx= (address-VET_SEQ_MULT_RESULT)/sizeof(float); 
+				//cout << "Timed rIDX(res): " << simd_idx << endl; 
+				return _FPSeqMultV[simd_idx]->GetResult();
+			case VET_SEQ_MULT_OP1 ... (VET_SEQ_MULT_OP1+(SIMD_SIZE*4)-1):       
+				simd_idx= (address-VET_SEQ_MULT_OP1)/sizeof(float);    
+				//cout << "Timed rIDX(op1): " << simd_idx << endl; 
+				return _FPSeqMultV[simd_idx]->GetOp1(); 
+			case VET_SEQ_MULT_OP2 ... (VET_SEQ_MULT_OP2+(SIMD_SIZE*4)-1): 
+				simd_idx= (address-VET_SEQ_MULT_OP2)/sizeof(float);
+				cout << "Timed rIDX(op2): " << simd_idx << endl; 
+				return _FPSeqMultV[simd_idx]->GetOp2();
 		}
 			
 		//may the requested address fall in unmapped range, halt the simulation
@@ -308,7 +321,21 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			simd_idx= (address-VET_MULT_OP2)/sizeof(float);  
 			//cout << "wIDX(op2): " << simd_idx << endl; 
 			_FPmultV[simd_idx]->SetOp2(value); 
-			return; 		
+			return; 
+
+		// SIMD sequential floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers 
+		case VET_SEQ_MULT_RESULT ... (VET_SEQ_MULT_RESULT+(SIMD_SIZE*4)-1):   return; // do nothing
+		case VET_SEQ_MULT_OP1 ... (VET_SEQ_MULT_OP1+(SIMD_SIZE*4)-1):     
+			simd_idx= (address-VET_SEQ_MULT_OP1)/sizeof(float);  
+			//cout << "Timed wIDX(op1): " << simd_idx << endl; 
+			_FPSeqMultV[simd_idx]->SetOp1(value); 
+			return; 
+		case VET_SEQ_MULT_OP2 ... (VET_SEQ_MULT_OP2+(SIMD_SIZE*4)-1):     
+			simd_idx= (address-VET_SEQ_MULT_OP2)/sizeof(float);  
+			//cout << "Timed wIDX(op2): " << simd_idx << endl; 
+			_FPSeqMultV[simd_idx]->SetOp2(value); 
+			return; 
+
 		case EXIT_TRAP:
 			std::cout << this->GetName() << ": exit trap triggered! " << std::endl;
 			dumpregs(s);
