@@ -22,7 +22,8 @@ PLATFORM      := single-core
 # be included in compilation unless you edit the file 
 #          extensions/orca-core/src/orca-core.cpp,
 # where you should set the spawn of tasks in each of the cores. 
-ORCA_APPLICATIONS := producer-consumer-pubsub producer-consumer app-spawner app-bloater deadline-monitor
+# ORCA_APPLICATIONS := producer-consumer-pubsub producer-consumer app-spawner app-bloater deadline-monitor
+ORCA_APPLICATIONS := mnist-ext-vet-seq-mult
 
 # Software extensions (experimental)
 ORCA_EXTENSIONS := orca-core orca-pubsub orca-monitoring

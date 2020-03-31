@@ -25,6 +25,7 @@
 #include <UMemory.h>
 #include <USignal.h>
 #include <UMult.h>
+#include <TMult.h>
 
 #define EXIT_TRAP		0xe0000000
 #define IRQ_VECTOR		0xf0000000
@@ -75,8 +76,10 @@ private:
 
 	UntimedFPMultiplier*  _FPmult;
 	UntimedIntMultiplier* _Intmult;
+
 	vector<UntimedFPMultiplier*>  _FPmultV;
-	
+	vector<TimedFPMultiplier*>  _FPSeqMultV;
+
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	USignal<uint32_t>* _counter_iarith;
 	USignal<uint32_t>* _counter_ilogical;
@@ -138,6 +141,9 @@ public:
 	//setters for memories
 	void SetMem0(UMemory*);
 	
+	//setter for sequential multiplier
+	void SetSeqMultVet(TimedFPMultiplier*);
+
 	SimulationTime Run();
 	
 	//file output

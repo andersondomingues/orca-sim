@@ -29,6 +29,7 @@
 #include <THellfireProcessor.h>
 #include <UMemory.h>
 #include <USignal.h>
+#include <TMult.h>
 
 /* MEMORY LAYOUT
 ------------------- 0x40000000 <<-- code begin
@@ -116,6 +117,9 @@ private:
 	//main memory
 	UMemory* _mem0;
 	
+	//Sequential multiplier
+	vector<TimedFPMultiplier*> _seqMultVet;
+
 	//NOTE: other hardware is defined in Tile.h as 
 	//we use inheritance to derive multiple tiles 
 	//with similar architecture.
@@ -133,19 +137,23 @@ public:
 	~ProcessingTile();
 	
 	//getters
-    USignal<uint8_t>*  GetSignalStall();
+    	USignal<uint8_t>*  GetSignalStall();
 	USignal<uint8_t>*  GetSignalIntr();
 
 	//setters
-    void SetSignalStall(USignal<uint8_t>*);
+	void SetSignalStall(USignal<uint8_t>*);
 	void SetSignalIntr(USignal<uint8_t>*);
 	
 	//getters
 	THellfireProcessor* GetCpu();
 	UMemory* GetMem0();
-	
+	TimedFPMultiplier* GetSeqMultVet(int idx);
+
 	//getters for mems
 	void SetMem0(UMemory*);
+	
+	//getter for sequential multiplier
+	void SetSeqMultVet(TimedFPMultiplier*);
 	
 	USignal<uint32_t>* GetSignalHostTime();
 	
