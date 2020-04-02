@@ -15,7 +15,7 @@ GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=
 # based on the HF-RiscV processor and (ii) a NoC-based 
 # mesh-topologic manycore that uses the same processor core. 
 # PLATFORM := (orca-dma | single-core)
-PLATFORM      := single-core
+PLATFORM      := single-core-nn
 
 # Apps to be compiled within kernel image. For multiple applications, 
 # use spacebar to separate names. Applications defined here will not 
