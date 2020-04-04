@@ -91,6 +91,13 @@ public:
      */
     T Read();
 	 
+	/**
+	 * @brief Read the value stored into the bus
+	 * @param displacement index of an contiguous array of MMIOs
+	 * @return the value
+	 */
+	T USignal<T>::Read(uint32_t displacement);
+
 	 /**
 	  * @brief Maps current Signal to the internal storage
 	  */
@@ -109,6 +116,7 @@ public:
      * @param val Value to be writen to the bus
      */
     void Write(T val);
+	// TODO, include operator =
     
 	/**
 	 * @brief Increments the value of the bus by the given value.
