@@ -30,6 +30,7 @@
 
 //api includes
 #include <UntimedModel.h>
+#include <UMemory.h>
 
 /**
  * This interface permit all Signals to share a same base type, thus being
@@ -70,13 +71,14 @@ public:
      * @param addre (optinal) Address to which the bus is mapped in memory.
      */
 	 USignal(T* t_ptr, uint32_t addr, std::string name);
+     USignal(uint32_t addr, std::string name);
 	
 	 /**
      * @brief Constructor. Create new Signal using internal storage
      * @param name (optional) An arbitrary name for the instance.
      * @param addre (optinal) Address to which the bus is mapped in memory.
      */
-	 USignal(uint32_t addr, std::string name);
+	 USignal(std::string name);
     
     /**
      * @brief Destructor. 
@@ -99,11 +101,12 @@ public:
 	 /**
 	  * @brief Maps current Signal to an external storage, updates internal reference 
 	  * and sets a new address.
-	  * @param m External storage address
-	  * @param p Reference address
+	  * @param memptr External storage memory place
+	  * @param address Memory address if using memory maps
+      * @param keep_val Set to true to keep current signal val
 	  */
-	 void MapTo(T* m, uint32_t p, bool keep_val = true);
-	 
+	 void MapTo(MemoryType* memptr, MemoryAddr address, bool keep_val = true);
+
     /**
      * @brief Writes some value to the bus
      * @param val Value to be writen to the bus
@@ -127,7 +130,13 @@ public:
 	 * @returns The address of mmio (zero if not mapped)
 	*/
 	uint32_t GetAddress();
-	
+
+    /**
+     * @brief Set an address for this signal
+     * */
+    void SetAddress(MemoryAddr);
+
+
 	/**
 	 * @brief Return the name of the Signal. 
 	 * @returns The name of the Signal or empty if no name has been set.

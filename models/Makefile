@@ -14,6 +14,7 @@ CPPFLAGS :=-I./include -I../simulator/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
 TARGET_DEPS := \
 	$(OUTPUTDIR)/TNetBridge.o \
 	$(OUTPUTDIR)/USignal.o \
+	$(OUTPUTDIR)/USignalSet.o \
 	$(OUTPUTDIR)/UBuffer.o \
 	$(OUTPUTDIR)/UMemory.o \
 	$(OUTPUTDIR)/TRouter.o \

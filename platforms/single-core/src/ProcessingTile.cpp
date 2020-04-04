@@ -35,8 +35,8 @@
 ProcessingTile::ProcessingTile() {
 
 	//ni sig wires
-	_signal_stall       = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
-	_signal_intr        = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
+	_signal_stall = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
+	_signal_intr  = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
 	
 	//create a cpu and memory in addition to current tile hardware
 	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
@@ -51,16 +51,14 @@ ProcessingTile::ProcessingTile() {
 	
 
 	//bind control signals to hardware (cpu side)
-	this->GetSignalStall()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
-	this->GetSignalIntr()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
+	this->GetSignalStall()->MapTo(_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
+	this->GetSignalIntr()->MapTo(_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
 	
 	#ifdef MEMORY_ENABLE_COUNTERS
 	//map main memory counter
 	_mem0->InitCounters(M0_COUNTER_STORE_ADDR, M0_COUNTER_LOAD_ADDR);
-	_mem0->GetSignalCounterStore()->MapTo(
-		(uint32_t*)(_mem0->GetMap(M0_COUNTER_STORE_ADDR)), M0_COUNTER_STORE_ADDR);
-	_mem0->GetSignalCounterLoad()->MapTo(
-		(uint32_t*)(_mem0->GetMap(M0_COUNTER_LOAD_ADDR)), M0_COUNTER_LOAD_ADDR);
+	_mem0->GetSignalCounterStore()->MapTo(_mem0->GetMap(M0_COUNTER_STORE_ADDR), M0_COUNTER_STORE_ADDR);
+	_mem0->GetSignalCounterLoad()->MapTo(_mem0->GetMap(M0_COUNTER_LOAD_ADDR), M0_COUNTER_LOAD_ADDR);
 	#endif
 
 	//----------------- initialize counters for the cpu
@@ -73,24 +71,15 @@ ProcessingTile::ProcessingTile() {
 	);
 
 	//memory mapping
-	_cpu->GetSignalCounterArith()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_ARITH_ADDR)), CPU_COUNTER_ARITH_ADDR);
-	_cpu->GetSignalCounterLogical()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_LOGICAL_ADDR)), CPU_COUNTER_LOGICAL_ADDR);
-	_cpu->GetSignalCounterShift()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_SHIFT_ADDR)), CPU_COUNTER_SHIFT_ADDR);
-	_cpu->GetSignalCounterBranches()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_BRANCHES_ADDR)), CPU_COUNTER_BRANCHES_ADDR);
-	_cpu->GetSignalCounterJumps()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_JUMPS_ADDR)), CPU_COUNTER_JUMPS_ADDR);
-	_cpu->GetSignalCounterLoadStore()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_LOADSTORE_ADDR)), CPU_COUNTER_LOADSTORE_ADDR);
-	_cpu->GetSignalCounterCyclesTotal()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_CYCLES_TOTAL_ADDR)), CPU_COUNTER_CYCLES_TOTAL_ADDR);
-	_cpu->GetSignalCounterCyclesStall()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_CYCLES_STALL_ADDR)), CPU_COUNTER_CYCLES_STALL_ADDR);
-	_cpu->GetSignalHostTime()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_HOSTTIME_ADDR)), CPU_COUNTER_HOSTTIME_ADDR);
+	_cpu->GetSignalCounterArith()->MapTo(_mem0->GetMap(CPU_COUNTER_ARITH_ADDR), CPU_COUNTER_ARITH_ADDR);
+	_cpu->GetSignalCounterLogical()->MapTo(_mem0->GetMap(CPU_COUNTER_LOGICAL_ADDR), CPU_COUNTER_LOGICAL_ADDR);
+	_cpu->GetSignalCounterShift()->MapTo(_mem0->GetMap(CPU_COUNTER_SHIFT_ADDR), CPU_COUNTER_SHIFT_ADDR);
+	_cpu->GetSignalCounterBranches()->MapTo(_mem0->GetMap(CPU_COUNTER_BRANCHES_ADDR), CPU_COUNTER_BRANCHES_ADDR);
+	_cpu->GetSignalCounterJumps()->MapTo(_mem0->GetMap(CPU_COUNTER_JUMPS_ADDR), CPU_COUNTER_JUMPS_ADDR);
+	_cpu->GetSignalCounterLoadStore()->MapTo(_mem0->GetMap(CPU_COUNTER_LOADSTORE_ADDR), CPU_COUNTER_LOADSTORE_ADDR);
+	_cpu->GetSignalCounterCyclesTotal()->MapTo(_mem0->GetMap(CPU_COUNTER_CYCLES_TOTAL_ADDR), CPU_COUNTER_CYCLES_TOTAL_ADDR);
+	_cpu->GetSignalCounterCyclesStall()->MapTo(_mem0->GetMap(CPU_COUNTER_CYCLES_STALL_ADDR), CPU_COUNTER_CYCLES_STALL_ADDR);
+	_cpu->GetSignalHostTime()->MapTo(_mem0->GetMap(CPU_COUNTER_HOSTTIME_ADDR), CPU_COUNTER_HOSTTIME_ADDR);
 	#endif
 }
 
