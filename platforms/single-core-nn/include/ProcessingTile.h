@@ -78,13 +78,13 @@ NN_TOTAL_MEM_HEIGHT determines the total number of words (32bits) of
 the weight and the input memories. These two memories feed the MAC Units.
 Assuming NN_TOTAL_MEM_HEIGHT = 1024 (4KBytes), the memory map is:
 	0x40500000 - uint32_t weight[NN_TOTAL_MEM_HEIGHT]
-	0x40501000 - uint32_t input[NN_TOTAL_MEM_HEIGHT]
+	0x40580000 - uint32_t input[NN_TOTAL_MEM_HEIGHT]
 
 In fact, the weight and input is divided into individual banks such that 
 it is possible to load each MACs in parallel. Since SIMD_SIZE tells the 
 # of MACs running in parallel, then the actual memory map per bank is:
-	0x40420000 - uint32_t weight[SIMD_SIZE][NN_TOTAL_MEM_HEIGHT/SIMD_SIZE]
-	0x40421000 - uint32_t input[SIMD_SIZE][NN_TOTAL_MEM_HEIGHT/SIMD_SIZE]
+	0x40500000 - uint32_t weight[SIMD_SIZE][NN_TOTAL_MEM_HEIGHT/SIMD_SIZE]
+	0x40580000 - uint32_t input[SIMD_SIZE][NN_TOTAL_MEM_HEIGHT/SIMD_SIZE]
 
 where, for instance:
 	-  weight[0][0]  is the 1st address of the MAC0
@@ -95,14 +95,25 @@ where, for instance:
 #define MEM0_SIZE 0x008FFFFF 
 #define MEM0_BASE 0x40000000
 //NN memory
-#define NN_TOTAL_MEM_HEIGHT 1024 // 1024 positions of 32bits words
+#define NN_MEM_TOTAL_HEIGHT 1024 // 1024 positions of 32bits words
 #define NN_MEM_BANK_HEIGHT   NN_MEM_TOTAL_HEIGHT/SIMD_SIZE
-#define BASE_NN_MEM_ADDR 0x40500000
-#define MEMW_BASE 0x40000000
-#define MEMI_BASE 0x40000000
+//#define BASE_NN_MEM_ADDR 0x40500000
+#define MEMW_BASE 0x40500000
+#define MEMI_BASE 0x40580000
 
 //->>>> first available address for memory mapping 0x40410000
-// the registers defined for the DMA are defined in the TDmaMult.h file
+// DMA MMIO registers
+//0x40410000 => memory mapped control wires
+#define SIGNAL_CPU_STALL    0x40410000  // 8 bits
+#define SIGNAL_CPU_INTR     0x40410001
+#define SIGNAL_DMA_PROG     0x40410002
+
+// jumping to 0x404120xx, otherwise it wont fit before the memory counters
+#define DMA_BURST_SIZE       0x40412000  // 32 bits 
+#define DMA_WEIGHT_MEM_ADDR  0x40412004
+#define DMA_INPUT_MEM_ADDR   0x40412008  
+#define DMA_MAC_OUT          0x4041200C
+
 
 //0x40411xxx => memory mapped counters
 #ifdef MEMORY_ENABLE_COUNTERS
@@ -148,8 +159,8 @@ private:
 	//main memory
 	UMemory* _mem0;
 	// NN memories
-	UMemory* _memW;
-	UMemory* _memI;
+	USignal<uint32_t>* _memW;
+	USignal<uint32_t>* _memI;
 	
 	//Sequential multiplier
 	vector<TimedFPMultiplier*> _seqMultVet;
@@ -163,11 +174,9 @@ private:
 	USignal<uint32_t>* _signal_hosttime;
 	
 	//control signals
-	USignal<uint8_t>*  _sig_stall;       // stalls cpu while copying from the memories
-	USignal<uint8_t>*  _sig_intr;        // request cpu interruption signal 
-	USignal<uint8_t>*  _sig_dma_status;  // 0x0 when in ready state
-	//TODO required ?!!?!
-	USignal<uint8_t>*  _sig_dma_prog;    // when 0x1, it starts the DMA
+	USignal<uint8_t>*  _sig_stall;          // stalls cpu while copying from the memories
+	USignal<uint8_t>*  _sig_dma_prog;       // flag to start the DMA
+	USignal<uint8_t>*  _sig_intr;			// dummy signal required by the CPU. not really used since we dont have interrupts in this design
 	
 	//data signals 
 	//data sent from the processor to program the DMA
@@ -183,19 +192,19 @@ public:
 	
 	//getters
     USignal<uint8_t>*  GetSignalStall();
-	USignal<uint8_t>*  GetSignalIntr();
-	//TODO why do i need getter for the internal signals if they are used only internally ?!?!?
+	USignal<uint8_t>*  GetSignalDmaProg();
+	USignal<uint8_t>*  GetSignalIntr();    ///> required only by the cpu and orca. not really usefull 
 
 	//setters
 	//TODO why do i need setters for the internal signals if they are used only internally ?!?!?
-	void SetSignalStall(USignal<uint8_t>*);
-	void SetSignalIntr(USignal<uint8_t>*);
+	//void SetSignalStall(USignal<uint8_t>*);
+	//void SetSignalDmaProg(USignal<uint8_t>*);
 	
 	//getters
 	THellfireProcessor* GetCpu();
 	UMemory* GetMem0();
-	UMemory* GetMemW();
-	UMemory* GetMemI();
+	USignal<uint32_t>* GetMemW();
+	USignal<uint32_t>* GetMemI();
 	TimedFPMultiplier* GetSeqMultVet(int idx);
 	
 	//getter for sequential multiplier

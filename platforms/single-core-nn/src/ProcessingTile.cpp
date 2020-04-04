@@ -31,10 +31,10 @@
  * other. */
 ProcessingTile::ProcessingTile() {
 	//DMA control signals
-	_sig_stall   = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
-	_sig_intr    = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
-	_sig_dma_status = new USignal<uint8_t>(SIGNAL_DMA_STATUS, this->GetName() + ".dma_status");
-	_sig_dma_prog   = new USignal<uint8_t>(SIGNAL_DMA_PROG,  this->GetName() + ".dma_prog");
+	_sig_stall      = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
+	_sig_dma_prog   = new USignal<uint8_t>(SIGNAL_DMA_PROG, this->GetName() + ".dma_prog");
+	// dummy signal required by the cpu
+	_sig_intr       = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
 
 	//DMA data signals
 	_sig_burst_size      = new USignal<uint32_t>(DMA_BURST_SIZE, this->GetName() + ".burst_size");
@@ -46,37 +46,25 @@ ProcessingTile::ProcessingTile() {
 	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
 	_cpu   = new THellfireProcessor(this->GetName() + ".cpu", _sig_intr, _sig_stall);
 	
-	_memW  = new UMemory(this->GetName() + ".memW", NN_MEM_SIZE, MEMW_BASE); //weight memory
-	_memI  = new UMemory(this->GetName() + ".memI", NN_MEM_SIZE, MEMI_BASE); //input  memory
-
-	//Timed multiplier controller
-	_dma = new TDmaMult(this->GetName() + ".dma_mult");
-
-	//binds cpu to the main memory
-	_cpu->SetMem0(_mem0);
-	// binds the DMA to the NN memories
-	_dma->SetMemW(_memW);
-	_dma->SetMemI(_memI);
-	// bind ctrl signals to the DMA
-    _dma->SetSignalStall(_sig_stall);
-	_dma->SetSignalIntr(_sig_intr);
-	_dma->SetSignalDmaStatus(_sig_dma_status);
-	_dma->SetSignalDmaProg(_sig_dma_prog);
-	// bind data signals to the DMA
-	_dma->SetSignalBurstSize(_sig_burst_size);
-	_dma->SetSignalWeightMemAddr(_sig_weight_mem_addr);
-	_dma->SetSignalInputMemAddr(_sig_input_mem_addr);
-	_dma->SetSignalMacOut(_sig_mac_out);      
-
 	//binds cpu to vetorial sequential multipliers	
 	TimedFPMultiplier* auxMult;
 	for(int i=0;i<SIMD_SIZE;i++){
 		auxMult = new TimedFPMultiplier(this->GetName() + ".seq_mult_vet["+std::to_string(i)+"]");
 		_seqMultVet.push_back(auxMult);
 		_cpu->SetSeqMultVet(_seqMultVet[i]);
-		// TODO will only work with one multiplier
-		_dma->SetMult(auxMult);
 	}
+
+	// TODO create the mult and memW/memI in a loop controlled by SIMD_SIZE
+	//Timed multiplier controller
+	//_memW  = new UMemory(this->GetName() + ".memW", NN_MEM_SIZE, MEMW_BASE); //weight memory
+	//_memI  = new UMemory(this->GetName() + ".memI", NN_MEM_SIZE, MEMI_BASE); //input  memory
+	_memW = new USignal<uint32_t>(MEMW_BASE, this->GetName() + ".memW[0]");
+	_memI = new USignal<uint32_t>(MEMI_BASE, this->GetName() + ".memI[0]");
+	_dma  = new TDmaMult(this->GetName() + ".dma_mult", _sig_stall, _sig_dma_prog, _sig_burst_size,
+				 _sig_weight_mem_addr, _sig_input_mem_addr, _sig_mac_out, _memW, _memI, NN_MEM_BANK_HEIGHT,
+				 _seqMultVet[0]);
+	//binds cpu to the main memory
+	_cpu->SetMem0(_mem0);   
 
 	//bind control signals to hardware (cpu side)
 	this->GetSignalStall()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
@@ -133,9 +121,8 @@ ProcessingTile::~ProcessingTile(){
 
 	//delete signals 
 	delete(_sig_stall);
-	delete(_sig_intr);
-	delete(_sig_dma_status); 
 	delete(_sig_dma_prog);
+	delete(_sig_intr);
 	delete(_sig_burst_size);
 	delete(_sig_weight_mem_addr);
 	delete(_sig_input_mem_addr);
@@ -146,9 +133,8 @@ void ProcessingTile::Reset(){
 
 	//reset control wires
 	_sig_stall->Write(0);
+	_sig_dma_prog ->Write(0);
 	_sig_intr->Write(0);
-	_sig_dma_status->Write(0);
-	_sig_dma_prog->Write(0);
 
 	//DMA data signals
 	_sig_burst_size->Write(0);
@@ -163,6 +149,7 @@ THellfireProcessor* ProcessingTile::GetCpu(){
 
 /************************************* GETTERS **************************************/
 USignal<uint8_t>*  ProcessingTile::GetSignalStall(){ return _sig_stall; }
+USignal<uint8_t>*  ProcessingTile::GetSignalDmaProg(){ return _sig_dma_prog; }
 USignal<uint8_t>*  ProcessingTile::GetSignalIntr(){ return _sig_intr; }
 
 /**
@@ -174,8 +161,8 @@ USignal<uint32_t>* ProcessingTile::GetSignalHostTime(){
 }
 
 UMemory* ProcessingTile::GetMem0(){	return _mem0;}
-UMemory* ProcessingTile::GetMemW(){	return _memW;}
-UMemory* ProcessingTile::GetMemI(){	return _memI;}
+USignal<uint32_t>* ProcessingTile::GetMemW(){	return _memW;}
+USignal<uint32_t>* ProcessingTile::GetMemI(){	return _memI;}
 
 TimedFPMultiplier* ProcessingTile::GetSeqMultVet(int idx){
 	return _seqMultVet[idx];

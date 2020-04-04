@@ -96,7 +96,7 @@ public:
 	 * @param displacement index of an contiguous array of MMIOs
 	 * @return the value
 	 */
-	T USignal<T>::Read(uint32_t displacement);
+	T Read(uint32_t displacement);
 
 	 /**
 	  * @brief Maps current Signal to the internal storage

@@ -135,7 +135,7 @@ T USignal<T>::Read(){
  */
 template <typename T>
 T USignal<T>::Read(uint32_t displacement){
-	return *_t_ptr[displacement];
+	return _t_ptr[displacement];
 }
 
 /**

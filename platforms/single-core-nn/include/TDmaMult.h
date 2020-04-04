@@ -31,23 +31,10 @@
 #include <USignal.h>
 #include <TMult.h>
 
-// MMIO registers
-//0x40410000 => memory mapped control wires
-#define SIGNAL_CPU_STALL    0x40410000  // 8 bits
-#define SIGNAL_CPU_INTR     0x40410001
-//#define SIGNAL_DMA_STATUS   0x40410002
-//#define SIGNAL_DMA_PROG     0x40410003  //  TODO is it required ?!?!
-
-// jumping to 0x40420000, otherwise it wont fit before the memory counters
-#define DMA_BURST_SIZE       0x40420000  // 32 bits 
-#define DMA_WEIGHT_MEM_ADDR  0x40420004
-#define DMA_INPUT_MEM_ADDR   0x40420008  
-#define DMA_MAC_OUT          0x4042000C
-
 enum class DmaState{
-	WAIT_CONFIG_STALL, //wait cpt to configure and raise _sig_send, stall
-	COPY_FROM_MEM,     //copy content from memory, release cpu
-	FLUSH              //wait for the cpu to lower the send signal (ack)
+	WAIT_CONFIG_STALL, ///< wait cpt to configure and raise _sig_send, stall.
+	COPY_FROM_MEM,     ///< copy content from memory, release cpu.
+	FLUSH              ///< wait for the cpu to lower the send signal (ack).
 };
 
 /**
@@ -62,10 +49,10 @@ class TDmaMult: public TimedModel{
 
 private:
 
-	/// Pointer to weight memory.
-	UMemory* _memW;
-	/// Pointer to input memory .
-	UMemory* _memI;
+	/// Pointer to base address of the weight memory.
+	USignal<uint32_t>* _memW;
+	/// Pointer to base address of the input memory .
+	USignal<uint32_t>* _memI;
 	/// Pointer to the MAC.
 	TimedFPMultiplier* _mult;
 	/// States for DMA process.
@@ -74,6 +61,7 @@ private:
 	///@{
 	/// control signals.
 	USignal<uint8_t>*  _sig_stall;      ///< (OUT): stalls cpu while the DMA is copying from the memories.
+	USignal<uint8_t>*  _sig_dma_prog;   ///< (IN): processor writes 1 to start the DMA.
 	///@}
 
 	///@{
@@ -101,24 +89,29 @@ private:
 	uint8_t _mul_ready;  ///< signal between the 2nd and the 3rd pipeline stages.
 	///@}
 
-	//data sent from the processor to program the DMA
-	uint32_t _burst_size;       //total number of multiplications
-	uint32_t _weight_mem_addr;  //initial address of the weight memory
-	uint32_t _input_mem_addr;   //initial address of the input memory	
-
+	///@{
+	/// internal data register. Data sent from the processor to program the DMA.
+	uint32_t _burst_size;       ///< total number of multiplications.
+	uint32_t _weight_mem_addr;  ///< initial address of the weight memory.
+	uint32_t _input_mem_addr;   ///< initial address of the input memory.	
+	uint32_t _mem_height;       ///< max # of words in the NN memory.
 	//others 
-	uint32_t _remaining;        //number of data to be read
+	uint32_t _remaining;        ///< count number of data to be read.
+	///@}
+
+	///@{
+    /// Internal processes -- 3 stage pipeline.
+    void ReadData();	///< 1st pipeline stage, i.e. data fetch
+	void DoMult();		///< 2nd pipeline stage, multiplication
+	void DoAcc();		///< 3rd pipeline stage, accumulation
 
 public:	
     
     //getters
-    //DmaNetifRecvState GetRecvState();
 	DmaState GetDmaState();
     
     //getters
     USignal<uint8_t>*  GetSignalStall();
-	USignal<uint8_t>*  GetSignalIntr();
-	USignal<uint8_t>*  GetSignalDmaStatus();
 	USignal<uint8_t>*  GetSignalDmaProg();
 
 	USignal<uint32_t>* GetSignalBurstSize();
@@ -126,32 +119,9 @@ public:
 	USignal<uint32_t>* GetSignalInputMemAddr();
 	USignal<uint32_t>* GetSignalMacOut();
 
-	//setters
-    void SetSignalStall(USignal<uint8_t>*);
-	void SetSignalIntr(USignal<uint8_t>*);
-	void SetSignalDmaStatus(USignal<uint8_t>*);
-	void SetSignalDmaProg(USignal<uint8_t>*);
-
-	void SetSignalBurstSize(USignal<uint32_t>*);
-	void SetSignalWeightMemAddr(USignal<uint32_t>*);
-	void SetSignalInputMemAddr(USignal<uint32_t>*);
-	void SetSignalMacOut(USignal<uint32_t>*);
-
-    //internal processes -- 3 stage pipeline
-    void ReadData();
-	void DoMult();
-	void DoAcc();
-
     //other 
     SimulationTime Run();
     void Reset();
-
-	//memories
-	void SetMemW(UMemory*);
-	void SetMemI(UMemory*);
-
-	//mult
-	void SetMult(TimedFPMultiplier*);
 
     /** ctor
      * @param name: name of the module.
@@ -162,11 +132,12 @@ public:
 	 * @param mac_out: MMIO with the register with the final result from the MAC, to be read by the processor.
 	 * @param memW: pointer to the base address of the weight memory bank.
 	 * @param memI: pointer to the base address of the input memory bank.
+	 * @param mem_bank_height: the height of each memory bank, in 32bit words
 	 * @param mac: pointer to the MAC module.
 	 * */
-    TDmaMult(string name, USignal<uint8_t>* stall, USignal<uint32_t>* burst_size, 
+    TDmaMult(string name, USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, 
 		USignal<uint32_t>* weight_mem_addr, USignal<uint32_t>* input_mem_addr, USignal<uint32_t>* mac_out,
-		UMemory* memW, UMemory* memI, TimedFPMultiplier* mac);
+		USignal<uint32_t>* memW, USignal<uint32_t>* memI, uint32_t mem_height, TimedFPMultiplier* mac);
 		
 	/** dtor
 	 * */
