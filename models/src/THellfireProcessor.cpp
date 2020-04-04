@@ -32,6 +32,7 @@
 #include <UMult.h>
 #include <TMult.h>
 
+
 #include "sys/time.h"
 
 #define RISCV_INVALID_OPCODE 0x0
@@ -195,6 +196,12 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 				simd_idx= (address-VET_SEQ_MULT_OP2)/sizeof(float);
 				cout << "Timed rIDX(op2): " << simd_idx << endl; 
 				return _FPSeqMultV[simd_idx]->GetOp2();
+/*
+			// SIMD sequential floating point multiplier - with DMA
+			case DMA_MAC_OUT ... (DMA_MAC_OUT+(SIMD_SIZE*4)-1): 
+				simd_idx= (address-DMA_MAC_OUT)/sizeof(float);
+				return (volatile uint32_t)DMA_MAC_OUT[simd_idx];
+*/
 		}
 			
 		//may the requested address fall in unmapped range, halt the simulation
@@ -335,6 +342,23 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 			//cout << "Timed wIDX(op2): " << simd_idx << endl; 
 			_FPSeqMultV[simd_idx]->SetOp2(value); 
 			return; 
+
+		// SIMD sequential floating point multiplier - with DMA 
+		// TODO these MMIO assignments
+		/*
+		case DMA_BURST_SIZE ... (DMA_BURST_SIZE+(SIMD_SIZE*4)-1):
+			simd_idx= (address-DMA_BURST_SIZE)/sizeof(float);    
+			(volatile uint32_t*)(DMA_BURST_SIZE[simd_idx]) = value;
+			return; 
+		case DMA_WEIGHT_MEM_ADDR ... (DMA_WEIGHT_MEM_ADDR+(SIMD_SIZE*4)-1):
+			simd_idx= (address-DMA_WEIGHT_MEM_ADDR)/sizeof(float);    
+			(volatile uint32_t*)DMA_WEIGHT_MEM_ADDR[simd_idx] = value; 
+			return; 
+		case DMA_INPUT_MEM_ADDR ... (DMA_INPUT_MEM_ADDR+(SIMD_SIZE*4)-1):
+			simd_idx= (address-DMA_INPUT_MEM_ADDR)/sizeof(float);    
+			(volatile uint32_t*)DMA_INPUT_MEM_ADDR[simd_idx] = value; 
+			return; 
+*/
 
 		case EXIT_TRAP:
 			std::cout << this->GetName() << ": exit trap triggered! " << std::endl;

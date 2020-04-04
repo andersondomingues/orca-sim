@@ -36,45 +36,75 @@
 ------------------- 0x40000000 <<-- code begin
 
        sram
-      (~4MB)
+      (4MBytes)
 
 ------------------- 0x40400000 <<-- stack
-     empty space
+     empty space 
+	 (64KBytes)
 ------------------- 0x40410000 <<-- mmio begin
-
        mmio
-      (~FFFF)
+     (1Mbytes - 64KBytes)
+	
+	0x40410000 => various MMIO registers
+	0x40411xxx => MMIO performance counters
+	0x404120xx => mmio NN DMA
+	0x40412100 until 0x404FFFFF => available
 
-------------------- 0x4041FFFF <<-- mmio end
+------------------- 0x404FFFFF <<-- mmio end
 
+
+------------------- 0x40500000 <<-- mmio NN MEM banks
+
+    NN MEM banks
+     (NN_TOTAL_MEM_HEIGHT * 2 * 4 Bytes) // # of positions * # memories (weight and input) * size of the word
+	 (4MBytes)
+
+------------------- 0x408FFFFF <<-- mmio NN MEM banks 
+
+total memory space: 9MBytes
+max NN_TOTAL_MEM_HEIGHT = 512 * 1024. 
+It means that the max size for weight is 2MBytes. the same size for inputs.
+
+------------------- 0x404120xx <<-- mmio NN DMA
+since there are up to 16 MACs, it is neceseray to reserve
+4 32-bit resgisters X 16 MACs = 4 x 4 x 16 = 256 bytes of MMIO for the NN DMA
+	0x40412000 DMA0
+	0x40412010 DMA1
+	0x40412020 DMA2
+	...
+	0x404120F0 DMA15
+------------------- 0x40500000 <<-- mmio NN MEM banks
+NN_TOTAL_MEM_HEIGHT determines the total number of words (32bits) of 
+the weight and the input memories. These two memories feed the MAC Units.
+Assuming NN_TOTAL_MEM_HEIGHT = 1024 (4KBytes), the memory map is:
+	0x40500000 - uint32_t weight[NN_TOTAL_MEM_HEIGHT]
+	0x40501000 - uint32_t input[NN_TOTAL_MEM_HEIGHT]
+
+In fact, the weight and input is divided into individual banks such that 
+it is possible to load each MACs in parallel. Since SIMD_SIZE tells the 
+# of MACs running in parallel, then the actual memory map per bank is:
+	0x40420000 - uint32_t weight[SIMD_SIZE][NN_TOTAL_MEM_HEIGHT/SIMD_SIZE]
+	0x40421000 - uint32_t input[SIMD_SIZE][NN_TOTAL_MEM_HEIGHT/SIMD_SIZE]
+
+where, for instance:
+	-  weight[0][0]  is the 1st address of the MAC0
+	-  weight[15][0] is the 1st address of the MAC15
 */
 
-//memory mapping
-#define MEM0_SIZE 0x0041FFFF /* main memory */
+//main memory mapping
+#define MEM0_SIZE 0x008FFFFF 
 #define MEM0_BASE 0x40000000
-
+//NN memory
+#define NN_TOTAL_MEM_HEIGHT 1024 // 1024 positions of 32bits words
+#define NN_MEM_BANK_HEIGHT   NN_MEM_TOTAL_HEIGHT/SIMD_SIZE
+#define BASE_NN_MEM_ADDR 0x40500000
+#define MEMW_BASE 0x40000000
+#define MEMI_BASE 0x40000000
 
 //->>>> first available address for memory mapping 0x40410000
+// the registers defined for the DMA are defined in the TDmaMult.h file
 
-//0x40410000 => memory mapped control wires
-#define SIGNAL_CPU_STALL    0x40410000  /* 8 bits */
-#define SIGNAL_CPU_INTR     0x40410001
-#define SIGNAL_SEND_STATUS  0x40410002
-//0x40410003
-#define SIGNAL_RECV_STATUS  0x40410004
-//0x40410005
-//0x40410006
-//0x40410007
-#define SIGNAL_PROG_SEND    0x40410008
-#define SIGNAL_PROG_RECV    0x40410009
-//0x4041000A
-//0x4041000B
-#define SIGNAL_PROG_ADDR    0x4041000C  /* 32 bits */
-#define SIGNAL_PROG_SIZE    0x40410010
-
-#define MAGIC_TILE_ID       0x40411000  
-
-//0x403F1xxx => memory mapped counters
+//0x40411xxx => memory mapped counters
 #ifdef MEMORY_ENABLE_COUNTERS
 #define M0_COUNTER_STORE_ADDR (0x40411010)
 #define M0_COUNTER_LOAD_ADDR  (0x40411014)
@@ -117,13 +147,12 @@ private:
 
 	//main memory
 	UMemory* _mem0;
+	// NN memories
+	UMemory* _memW;
+	UMemory* _memI;
 	
 	//Sequential multiplier
 	vector<TimedFPMultiplier*> _seqMultVet;
-
-	//NOTE: other hardware is defined in Tile.h as 
-	//we use inheritance to derive multiple tiles 
-	//with similar architecture.
 
 	// DMA unit reponsible to transfer weight and input data from the main memory 
 	// directly to the vector multipliers
@@ -133,29 +162,41 @@ private:
 	uint32_t _shosttime;
 	USignal<uint32_t>* _signal_hosttime;
 	
-	USignal<uint8_t>*  _signal_stall;
-	USignal<uint8_t>*  _signal_intr;
+	//control signals
+	USignal<uint8_t>*  _sig_stall;       // stalls cpu while copying from the memories
+	USignal<uint8_t>*  _sig_intr;        // request cpu interruption signal 
+	USignal<uint8_t>*  _sig_dma_status;  // 0x0 when in ready state
+	//TODO required ?!!?!
+	USignal<uint8_t>*  _sig_dma_prog;    // when 0x1, it starts the DMA
 	
+	//data signals 
+	//data sent from the processor to program the DMA
+	USignal<uint32_t>* _sig_burst_size;       // total number of multiplications
+	USignal<uint32_t>* _sig_weight_mem_addr;  // initial address of the weight memory
+	USignal<uint32_t>* _sig_input_mem_addr;   // initial address of the input memory
+	//data read by the processor after the interruption
+	USignal<uint32_t>* _sig_mac_out;          // register with the final result from the MAC, to be read by the processor	
 public: 
 
 	ProcessingTile();
 	~ProcessingTile();
 	
 	//getters
-    	USignal<uint8_t>*  GetSignalStall();
+    USignal<uint8_t>*  GetSignalStall();
 	USignal<uint8_t>*  GetSignalIntr();
+	//TODO why do i need getter for the internal signals if they are used only internally ?!?!?
 
 	//setters
+	//TODO why do i need setters for the internal signals if they are used only internally ?!?!?
 	void SetSignalStall(USignal<uint8_t>*);
 	void SetSignalIntr(USignal<uint8_t>*);
 	
 	//getters
 	THellfireProcessor* GetCpu();
 	UMemory* GetMem0();
+	UMemory* GetMemW();
+	UMemory* GetMemI();
 	TimedFPMultiplier* GetSeqMultVet(int idx);
-
-	//getters for mems
-	void SetMem0(UMemory*);
 	
 	//getter for sequential multiplier
 	void SetSeqMultVet(TimedFPMultiplier*);
@@ -164,6 +205,8 @@ public:
 	
 	std::string ToString();
 	std::string GetName();
+
+	void Reset();
 };
 
 

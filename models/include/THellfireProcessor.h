@@ -43,7 +43,10 @@
 #define UART_READ		0xf00000e0
 #define UART_DIVISOR	0xf00000f0
 // floating point multiplier
-// see UMult.h to check the addresses related to these modules
+// see UMult.h and TMult.h to check the addresses related to these modules
+
+// # of 4 bytes inst executesd in paralel in the SIMD ULA 
+#define SIMD_SIZE           1
 
 #define ntohs(A) ( ((A)>>8) | (((A)&0xff)<<8) )
 #define htons(A) ntohs(A)

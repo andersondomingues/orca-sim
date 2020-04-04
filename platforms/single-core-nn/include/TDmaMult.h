@@ -19,36 +19,34 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __TDMANETIF_H
-#define __TDMANETIF_H
-
-//usually equals to routers' buffer len
-#define NI_BUFFER_LEN 16
+#ifndef __TDMAMULT_H
+#define __TDMAMULT_H
 
 //std API
 #include <iostream>
 
 //simulator API
 #include <TimedModel.h>
-#include <UBuffer.h>
 #include <UMemory.h>
 #include <USignal.h>
+#include <TMult.h>
 
-typedef uint16_t FlitType;
+// MMIO registers
+//0x40410000 => memory mapped control wires
+#define SIGNAL_CPU_STALL    0x40410000  // 8 bits
+#define SIGNAL_CPU_INTR     0x40410001
+//#define SIGNAL_DMA_STATUS   0x40410002
+//#define SIGNAL_DMA_PROG     0x40410003  //  TODO is it required ?!?!
 
-enum class DmaNetifRecvState{
-	WAIT_ADDR_FLIT,     //wait some flit to arrive at the local port
-	WAIT_SIZE_FLIT,     //read size flit to determine how many will come next
-	WAIT_PAYLOAD,       //wait for remaining flits to arrive, and interrupt
-	WAIT_CONFIG_STALL,  //wait for the cpu to configure the dma
-	COPY_RELEASE,       //stalls cpu, copy data, and release
-	FLUSH               //waits for the CPU to lower the recv signal (prevents in tandem recv)
-};
+// jumping to 0x40420000, otherwise it wont fit before the memory counters
+#define DMA_BURST_SIZE       0x40420000  // 32 bits 
+#define DMA_WEIGHT_MEM_ADDR  0x40420004
+#define DMA_INPUT_MEM_ADDR   0x40420008  
+#define DMA_MAC_OUT          0x4042000C
 
-enum class DmaNetifSendState{
+enum class DmaState{
 	WAIT_CONFIG_STALL, //wait cpt to configure and raise _sig_send, stall
-	COPY_AND_RELEASE,  //copy content from memory, release cpu
-	SEND_DATA_TO_NOC,  //write data to the network, raise _send_status 
+	COPY_FROM_MEM,     //copy content from memory, release cpu
 	FLUSH              //wait for the cpu to lower the send signal (ack)
 };
 
@@ -64,98 +62,116 @@ class TDmaMult: public TimedModel{
 
 private:
 
-	//Pointer to main memory, recv mem, and send mem
-	UMemory* _mem0;
-	UMemory* _mem1; //recv_mem
-	UMemory* _mem2; //send_mem
-
-	//States for send and recv processes
-    DmaNetifRecvState _recv_state;
-    DmaNetifSendState _send_state;
+	/// Pointer to weight memory.
+	UMemory* _memW;
+	/// Pointer to input memory .
+	UMemory* _memI;
+	/// Pointer to the MAC.
+	TimedFPMultiplier* _mult;
+	/// States for DMA process.
+    DmaState _dma_state;
     
-    //store temporary flits
-    FlitType _recv_reg;
-    FlitType _send_reg;
-    
-    //control signals 
-	USignal<uint8_t>*  _sig_stall;       //OUT: stalls cpu while copying from/to main memory
-	USignal<uint8_t>*  _sig_intr;        //OUT: request cpu interruption signal (same for both processes)
+	///@{
+	/// control signals.
+	USignal<uint8_t>*  _sig_stall;      ///< (OUT): stalls cpu while the DMA is copying from the memories.
+	///@}
 
-	USignal<uint8_t>*  _sig_send_status; //OUT: 0x0 when in ready state
-	USignal<uint32_t>* _sig_recv_status; //OUT: 0x0 when in ready state, updated but unused
+	///@{
+    /// data sent from the processor to program the DMA.
+	USignal<uint32_t>* _sig_burst_size;       ///< IN: total number of multiplications.
+	USignal<uint32_t>* _sig_weight_mem_addr;  ///< IN: initial address of the weight memory.
+	USignal<uint32_t>* _sig_input_mem_addr;   ///< IN: initial address of the input memory.
+	///@}
 
-	USignal<uint8_t>*  _sig_prog_send;   //IN
-	USignal<uint8_t>*  _sig_prog_recv;   //IN
-	
-	USignal<uint32_t>* _sig_prog_addr;   //IN
-	USignal<uint32_t>* _sig_prog_size;   //IN 
-	
-	//recv specific vars
-	uint32_t _recv_payload_size;       //total size of the payload (flits)
-	uint32_t _recv_payload_remaining;  //number of flits received or sent (reused through states)
-	uint32_t _recv_address;            //memory position to which to write to
-	
-	//send specific vars
-	uint32_t _send_payload_size;       //total size of the payload (flits)
-	uint32_t _send_payload_remaining;  //number of flits to copy to write to the noc 
-	uint32_t _send_address;            //memory position to which to read from
-    
-    //NOC router interface. Both the NI and Router has buffers at the input (not output).
-    UBuffer<FlitType>* _ib;
-    UBuffer<FlitType>* _ob;
+	///@{
+    /// data read by the processor after the interruption.
+	/// OUT: register with the final result from the MAC, to be read by the processor.
+	USignal<uint32_t>* _sig_mac_out;      
+	///@}
+
+	///@{
+    /// internal registers between the pipeline stages.
+	uint32_t  _reg_mul;  ///< data 'register' between the 2nd and the 3rd pipeline stages. The result of the multiplication.
+	uint32_t  _reg_mac;  ///< data 'register' with the output of the MAC.
+	///@}
+
+	///@{
+	/// pipeline signals.
+	uint8_t _mul_loaded; ///< signal between the 1st and the 2nd pipeline stages.
+	uint8_t _mul_ready;  ///< signal between the 2nd and the 3rd pipeline stages.
+	///@}
+
+	//data sent from the processor to program the DMA
+	uint32_t _burst_size;       //total number of multiplications
+	uint32_t _weight_mem_addr;  //initial address of the weight memory
+	uint32_t _input_mem_addr;   //initial address of the input memory	
+
+	//others 
+	uint32_t _remaining;        //number of data to be read
+
 public:	
     
     //getters
-    DmaNetifRecvState GetRecvState();
-	DmaNetifSendState GetSendState();
+    //DmaNetifRecvState GetRecvState();
+	DmaState GetDmaState();
     
     //getters
     USignal<uint8_t>*  GetSignalStall();
 	USignal<uint8_t>*  GetSignalIntr();
+	USignal<uint8_t>*  GetSignalDmaStatus();
+	USignal<uint8_t>*  GetSignalDmaProg();
 
-	USignal<uint8_t>*  GetSignalSendStatus();
-	USignal<uint32_t>*  GetSignalRecvStatus();
-
-	USignal<uint8_t>*  GetSignalProgSend();
-	USignal<uint8_t>*  GetSignalProgRecv();
-
-	USignal<uint32_t>* GetSignalProgAddr();
-	USignal<uint32_t>* GetSignalProgSize();
+	USignal<uint32_t>* GetSignalBurstSize();
+	USignal<uint32_t>* GetSignalWeightMemAddr();
+	USignal<uint32_t>* GetSignalInputMemAddr();
+	USignal<uint32_t>* GetSignalMacOut();
 
 	//setters
     void SetSignalStall(USignal<uint8_t>*);
 	void SetSignalIntr(USignal<uint8_t>*);
+	void SetSignalDmaStatus(USignal<uint8_t>*);
+	void SetSignalDmaProg(USignal<uint8_t>*);
 
-	void SetSignalSendStatus(USignal<uint8_t>*);
-	void SetSignalRecvStatus(USignal<uint32_t>*);
+	void SetSignalBurstSize(USignal<uint32_t>*);
+	void SetSignalWeightMemAddr(USignal<uint32_t>*);
+	void SetSignalInputMemAddr(USignal<uint32_t>*);
+	void SetSignalMacOut(USignal<uint32_t>*);
 
-	void SetSignalProgSend(USignal<uint8_t>*);
-	void SetSignalProgRecv(USignal<uint8_t>*);
-
-	void SetSignalProgAddr(USignal<uint32_t>*);
-	void SetSignalProgSize(USignal<uint32_t>*);
-
-    //internal processes
-    void sendProcess();
-    void recvProcess();
+    //internal processes -- 3 stage pipeline
+    void ReadData();
+	void DoMult();
+	void DoAcc();
 
     //other 
     SimulationTime Run();
     void Reset();
 
 	//memories
-	void SetMem0(UMemory*);
-	void SetMem1(UMemory*);
-	void SetMem2(UMemory*);
+	void SetMemW(UMemory*);
+	void SetMemI(UMemory*);
 
-	//buffers
-	void SetOutputBuffer(UBuffer<FlitType>* ob); //packets go to the router
-	UBuffer<FlitType>* GetInputBuffer();         //packets come from the router
+	//mult
+	void SetMult(TimedFPMultiplier*);
 
-    //ctor./dtor.
-    TDmaMult(string name);
+    /** ctor
+     * @param name: name of the module.
+	 * @param stall: signal to stall the processor while the DMA is going on.
+     * @param burst_size: MMIO with the total number of multiplications.
+     * @param weight_mem_addr: MMIO with the initial address of the weight memory.
+	 * @param input_mem_addr: MMIO with the initial address of the input memory.
+	 * @param mac_out: MMIO with the register with the final result from the MAC, to be read by the processor.
+	 * @param memW: pointer to the base address of the weight memory bank.
+	 * @param memI: pointer to the base address of the input memory bank.
+	 * @param mac: pointer to the MAC module.
+	 * */
+    TDmaMult(string name, USignal<uint8_t>* stall, USignal<uint32_t>* burst_size, 
+		USignal<uint32_t>* weight_mem_addr, USignal<uint32_t>* input_mem_addr, USignal<uint32_t>* mac_out,
+		UMemory* memW, UMemory* memI, TimedFPMultiplier* mac);
+		
+	/** dtor
+	 * */
     ~TDmaMult();
 };
 
 
-#endif /* __TDMANETIF_H */
+#endif /* __TDMAMULT_H */

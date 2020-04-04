@@ -43,8 +43,6 @@
 #define VET_MULT_RESULT		0xf0000120 // 120, 124, 128, ... 156
 #define VET_MULT_OP1		0xf0000160
 #define VET_MULT_OP2		0xf0000200
-// # of 4 bytes inst executesd in paralel in the SIMD ULA 
-#define SIMD_SIZE           16
 
 /*
 Things to be Done:

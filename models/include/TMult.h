@@ -30,7 +30,6 @@
 
 //api includes
 #include <TimedModel.h>
-//#include <USignal.h>
 
 // SIMD floating point sequential multiplier, capable of up to 16 mult in 'parallel'
 #define VET_SEQ_MULT_RESULT		0xf0000240 // 420, 424, 428, ... 456
@@ -53,7 +52,8 @@ class TimedFPMultiplier : public TimedModel{
 		//#endif
 
 		union DataMult _op1;
-		union DataMult _op2;
+		union DataMult _op2;  
+		// TODO if we use USignal here, it might be possible to access the memory pointers and improve the performance
 
 	public:	
 		TimedFPMultiplier(std::string name): TimedModel(name) {
