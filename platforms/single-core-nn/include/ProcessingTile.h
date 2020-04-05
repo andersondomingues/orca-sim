@@ -201,11 +201,13 @@ public:
 	//void SetSignalDmaProg(USignal<uint8_t>*);
 	
 	//getters
-	THellfireProcessor* GetCpu();
 	UMemory* GetMem0();
 	USignal<uint32_t>* GetMemW();
 	USignal<uint32_t>* GetMemI();
+	// getters for the scheduler
+	THellfireProcessor* GetCpu();
 	TimedFPMultiplier* GetSeqMultVet(int idx);
+	TDmaMult* GetDma();
 	
 	//getter for sequential multiplier
 	void SetSeqMultVet(TimedFPMultiplier*);

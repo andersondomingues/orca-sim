@@ -146,6 +146,9 @@ void ProcessingTile::Reset(){
 THellfireProcessor* ProcessingTile::GetCpu(){
 	return _cpu;
 } 
+TDmaMult* ProcessingTile::GetDma(){
+	return _dma;
+}
 
 /************************************* GETTERS **************************************/
 USignal<uint8_t>*  ProcessingTile::GetSignalStall(){ return _sig_stall; }

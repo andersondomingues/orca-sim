@@ -156,7 +156,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 		return 1;
 	}
 	
-	std::cout << "==============[ TILE COMPOSITION ]" << std::endl;
+	std::cout << "==============[ TILE COMPOSITION ]" << std::endl; 
 	
 	//create new tile (single)
 	tile = new ProcessingTile();
@@ -164,7 +164,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 	//load bin into memory
 	tile->GetMem0()->LoadBin(std::string(argv[1]), MEM0_BASE, MEM0_SIZE);
 	
-	std::cout << "==============[ SIMULATION ]" << std::endl;
+	std::cout << "==============[ SIMULATION ]" << std::endl;  
 	
 	//instantiate simulation
 	Simulator* s = new Simulator();
@@ -173,7 +173,10 @@ int main(int __attribute__((unused)) argc, char** argv){
 	
 	//schedule pcore
 	s->Schedule(Event(3, tile->GetCpu()));
-	
+
+	//schedule dma
+	s->Schedule(Event(2, tile->GetDma()));
+
 	//schedule vetorial sequential multiplier
 	for(int i=0;i<SIMD_SIZE;i++) { 
 		s->Schedule(Event(1, tile->GetSeqMultVet(i)));
