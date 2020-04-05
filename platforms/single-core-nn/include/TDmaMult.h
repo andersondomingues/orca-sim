@@ -34,6 +34,7 @@
 enum class DmaState{
 	WAIT_CONFIG_STALL, ///< wait cpt to configure and raise _sig_send, stall.
 	COPY_FROM_MEM,     ///< copy content from memory, release cpu.
+	COPY_TO_CPU,
 	FLUSH              ///< wait for the cpu to lower the send signal (ack).
 };
 
@@ -49,10 +50,12 @@ class TDmaMult: public TimedModel{
 
 private:
 
-	/// Pointer to base address of the weight memory.
-	USignal<uint32_t>* _memW;
-	/// Pointer to base address of the input memory .
-	USignal<uint32_t>* _memI;
+	/// pointer to the main memory
+	UMemory* _mem0;
+	/// base address of the weight memory.
+	uint32_t _memW;
+	/// base address of the input memory .
+	uint32_t _memI;
 	/// Pointer to the MAC.
 	TimedFPMultiplier* _mult;
 	/// States for DMA process.
@@ -97,6 +100,10 @@ private:
 	uint32_t _mem_height;       ///< max # of words in the NN memory.
 	//others 
 	uint32_t _remaining;        ///< count number of data to be read.
+	/// base address of the weight memory.
+	uint32_t _w_mem_idx;
+	/// base address of the input memory .
+	uint32_t _i_mem_idx;	
 	///@}
 
 	///@{
@@ -137,7 +144,7 @@ public:
 	 * */
     TDmaMult(string name, USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, 
 		USignal<uint32_t>* weight_mem_addr, USignal<uint32_t>* input_mem_addr, USignal<uint32_t>* mac_out,
-		USignal<uint32_t>* memW, USignal<uint32_t>* memI, uint32_t mem_height, TimedFPMultiplier* mac);
+		uint32_t memW, uint32_t memI, uint32_t mem_height, UMemory* main_mem, TimedFPMultiplier* mac);
 		
 	/** dtor
 	 * */

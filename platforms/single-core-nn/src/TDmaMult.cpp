@@ -37,7 +37,7 @@ TDmaMult::TDmaMult(std::string name,
 	//signals
 	USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, USignal<uint32_t>* weight_mem_addr, 
 	USignal<uint32_t>* input_mem_addr, USignal<uint32_t>* mac_out,
-	USignal<uint32_t>* memW, USignal<uint32_t>* memI, uint32_t mem_height, TimedFPMultiplier* mac
+	uint32_t memW, uint32_t memI, uint32_t mem_height, UMemory* main_mem, TimedFPMultiplier* mac
 	) : TimedModel(name) {
       
 	// control signal sent to the proc
@@ -50,8 +50,12 @@ TDmaMult::TDmaMult(std::string name,
 	_sig_input_mem_addr = input_mem_addr;
 	// data signals sent to the proc
 	_sig_mac_out = mac_out;
-	// constant
+	// constants
 	_mem_height = mem_height;
+	_memW = memW;
+	_memI = memI;
+
+	_mem0 = main_mem;
 	
 	// internal control 'registers' between the pipeline stages
 	_mul_loaded  = 0;
@@ -63,9 +67,7 @@ TDmaMult::TDmaMult(std::string name,
 
 	// binding the modules
     _mult = mac;
-	_memW = memW;
-	_memI = memI;
-	
+
 	this->Reset();
 }
 
@@ -113,8 +115,11 @@ void TDmaMult::DoAcc(){
 			if (_mul_ready == 0x1){
 				_reg_mac += _reg_mul;
 			} break;
-		case DmaState::FLUSH:
+		case DmaState::COPY_TO_CPU:
 			_sig_mac_out->Write(_reg_mac);  // send the final result back to the processor
+			printf("MAC  %f\n", (float)_reg_mac);
+			break;
+		case DmaState::FLUSH:
 			break;
 	}
 }
@@ -128,6 +133,7 @@ void TDmaMult::DoMult(){
 	else {
 		if (_mul_loaded == 0x1){
 			_reg_mul = _mult->GetResult();
+			printf("MULT  %f\n", (float)_reg_mul);
 			_mul_ready = 1;
 		}else{
 			_mul_ready = 0;
@@ -156,11 +162,14 @@ void TDmaMult::ReadData(){
 				// output: _sig_size + 2 cycles latter, the register _reg_mac has the result
 				_burst_size = _sig_burst_size->Read();
 				if (_burst_size >_mem_height){
-					std::cout << "ERROR: burst size exeeded the NN memory capacity" << std::endl;
-					//TODO what to do in case of errors ?!?!
+					stringstream s;
+					s << this->GetName() << ": burst size exedded the NN memory capacity.";
+					throw std::runtime_error(s.str());
 				} 
-				_weight_mem_addr = _sig_weight_mem_addr->Read();
-				_input_mem_addr = _sig_input_mem_addr->Read();
+				//_weight_mem_addr = _sig_weight_mem_addr->Read();
+				//_input_mem_addr = _sig_input_mem_addr->Read();
+				_w_mem_idx = _memW;
+				_i_mem_idx = _memI;
 				_remaining = _burst_size;
 				// TODO one alternative is to receive only the burst size from the processor and have the base addr fixed
 				//_weight_mem_addr = _memW->GetAddress();
@@ -179,7 +188,9 @@ void TDmaMult::ReadData(){
 			
 			if(_remaining > 0){
 				// there are not registers, but simple wires connecting the mem to the mult
-				uint32_t weight_wire, input_wire;  
+				uint32_t input_wire;
+				int8_t * w_ptr, * i_ptr;
+				float weight_wire;
 				
 				// #ifdef NETIF_READ_ADDRESS_CHECKING
 				// uint32_t addr = _send_address + _sig_prog_addr->Read();
@@ -194,8 +205,11 @@ void TDmaMult::ReadData(){
 				//read from main memory
 //				_memW->Read(_weight_mem_addr , (int8_t*)&weight_wire, sizeof(uint32_t));
 //				_memI->Read(_input_mem_addr , (int8_t*)&input_wire, sizeof(uint32_t));
-				weight_wire = _memW->Read(_weight_mem_addr);
-				input_wire  = _memI->Read(_input_mem_addr);
+				
+				w_ptr = _mem0->GetMap(_w_mem_idx);
+				weight_wire = *(float*)w_ptr;
+				i_ptr = _mem0->GetMap(_i_mem_idx);
+				input_wire  = *(uint32_t*)i_ptr;
 
 				// #ifdef NETIF_WRITE_ADDRESS_CHECKING
 				// if(_send_address < _mem2->GetBase() || _send_address > _mem2->GetLastAddr()){
@@ -205,6 +219,9 @@ void TDmaMult::ReadData(){
 				// 	throw std::runtime_error(ss.str());
 				// }
 				// #endif 
+
+				printf("READING W (0x%X - %p): %f\n", _w_mem_idx, w_ptr, weight_wire);
+				printf("READING I (0x%X - %p): %d\n", _i_mem_idx, i_ptr, input_wire);
 				
 				//write auxiliary flit to auxiliary memory
 				_mult->SetOp1(weight_wire);
@@ -212,8 +229,10 @@ void TDmaMult::ReadData(){
 				_mul_loaded = 1; 
 				
 				_remaining--; //one less packet to send
-				_weight_mem_addr++;
-				_input_mem_addr++;
+				_w_mem_idx +=4;
+				_i_mem_idx +=4;
+				//_weight_mem_addr++;
+				//_input_mem_addr++;
 				
 				// std::cout << "send copied 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << std::endl;
 
@@ -222,16 +241,21 @@ void TDmaMult::ReadData(){
 				
 				// std::cout << "send stalled" << std::endl;
 				_mul_loaded = 0; 
-				_dma_state = DmaState::FLUSH;
+				_dma_state = DmaState::COPY_TO_CPU;
 			}
 
 		} break;	
 
+		case DmaState::COPY_TO_CPU:
+			// result is written back to the output MMIO register
+			_dma_state = DmaState::FLUSH;
+			break;
+
 		// just waits few clock cycles. currently, only one cycle
-		case DmaState::FLUSH:{
+		case DmaState::FLUSH:
 			_dma_state = DmaState::WAIT_CONFIG_STALL;
-			// TODO cannot release stall too early !
-			_sig_stall->Write(0x0);        //low stall
-		} break;
+			_sig_dma_prog->Write(0x0);     //lower the start signal
+			_sig_stall->Write(0x0);        //lowering stall and giving the control back to the processor
+			break;
 	}
 }

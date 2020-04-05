@@ -163,7 +163,26 @@ int main(int __attribute__((unused)) argc, char** argv){
 	
 	//load bin into memory
 	tile->GetMem0()->LoadBin(std::string(argv[1]), MEM0_BASE, MEM0_SIZE);
-	
+
+/*
+	printf("MEM info: base %X - last %X - size %d\n",tile->GetMem0()->GetBase(), tile->GetMem0()->GetLastAddr(), tile->GetMem0()->GetSize());
+	long addr = 0x40500000;
+	int i, data;
+	float dataf;
+	int8_t * ptr;
+	for(i=0;i<10;i++){
+		ptr = tile->GetMem0()->GetMap(addr+i*4);
+		dataf = *(float*)ptr;
+		printf("WVET (%d - %p): %f\n",i, ptr, dataf);
+	}
+
+	addr = 0x40580000;
+	for(i=0;i<10;i++){
+		ptr = tile->GetMem0()->GetMap(addr+i*4);
+		data = *(uint32_t*)ptr;
+		printf("IVET (%d - %p): %d - %X\n",i, ptr, data, data);
+	}	
+*/	
 	std::cout << "==============[ SIMULATION ]" << std::endl;  
 	
 	//instantiate simulation

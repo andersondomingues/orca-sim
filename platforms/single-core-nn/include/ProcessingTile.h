@@ -159,8 +159,8 @@ private:
 	//main memory
 	UMemory* _mem0;
 	// NN memories
-	USignal<uint32_t>* _memW;
-	USignal<uint32_t>* _memI;
+	//USignal<uint32_t>* _memW;
+	//USignal<uint32_t>* _memI;
 	
 	//Sequential multiplier
 	vector<TimedFPMultiplier*> _seqMultVet;

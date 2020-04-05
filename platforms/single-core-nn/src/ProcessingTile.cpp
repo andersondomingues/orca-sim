@@ -58,17 +58,28 @@ ProcessingTile::ProcessingTile() {
 	//Timed multiplier controller
 	//_memW  = new UMemory(this->GetName() + ".memW", NN_MEM_SIZE, MEMW_BASE); //weight memory
 	//_memI  = new UMemory(this->GetName() + ".memI", NN_MEM_SIZE, MEMI_BASE); //input  memory
-	_memW = new USignal<uint32_t>(MEMW_BASE, this->GetName() + ".memW[0]");
-	_memI = new USignal<uint32_t>(MEMI_BASE, this->GetName() + ".memI[0]");
+	//_memW = new USignal<uint32_t>(MEMW_BASE, this->GetName() + ".memW[0]");
+	//_memI = new USignal<uint32_t>(MEMI_BASE, this->GetName() + ".memI[0]");
+	//_memW = new USignal<uint32_t>(MEMW_BASE, this->GetName() + ".memW[0]");
+	//_memI = new USignal<uint32_t>(MEMI_BASE, this->GetName() + ".memI[0]");
 	_dma  = new TDmaMult(this->GetName() + ".dma_mult", _sig_stall, _sig_dma_prog, _sig_burst_size,
-				 _sig_weight_mem_addr, _sig_input_mem_addr, _sig_mac_out, _memW, _memI, NN_MEM_BANK_HEIGHT,
-				 _seqMultVet[0]);
+				 _sig_weight_mem_addr, _sig_input_mem_addr, _sig_mac_out, (uint32_t)MEMW_BASE, (uint32_t)MEMI_BASE, 
+				 NN_MEM_BANK_HEIGHT, _mem0, _seqMultVet[0]);
 	//binds cpu to the main memory
 	_cpu->SetMem0(_mem0);   
 
 	//bind control signals to hardware (cpu side)
-	this->GetSignalStall()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
-	this->GetSignalIntr()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
+	_sig_stall->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
+	_sig_dma_prog->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_DMA_PROG), SIGNAL_DMA_PROG);
+	_sig_intr->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
+
+	_sig_burst_size->MapTo((uint32_t*)_mem0->GetMap(DMA_BURST_SIZE), DMA_BURST_SIZE);
+	_sig_weight_mem_addr->MapTo((uint32_t*)_mem0->GetMap(DMA_WEIGHT_MEM_ADDR), DMA_WEIGHT_MEM_ADDR);
+	_sig_input_mem_addr->MapTo((uint32_t*)_mem0->GetMap(DMA_INPUT_MEM_ADDR), DMA_INPUT_MEM_ADDR);
+	_sig_mac_out->MapTo((uint32_t*)_mem0->GetMap(DMA_MAC_OUT), DMA_MAC_OUT);
+
+	//_memW->MapTo((uint32_t*)_mem0->GetMap(MEMW_BASE), MEMW_BASE);
+	//_memI->MapTo((uint32_t*)_mem0->GetMap(MEMI_BASE), MEMI_BASE);
 
 	#ifdef MEMORY_ENABLE_COUNTERS
 	//map main memory counter
@@ -115,8 +126,8 @@ ProcessingTile::ProcessingTile() {
 ProcessingTile::~ProcessingTile(){
 	delete(_cpu);
 	delete(_mem0);
-	delete(_memW);
-	delete(_memI);
+	//delete(_memW);
+	//delete(_memI);
 	delete(_dma);
 
 	//delete signals 
@@ -164,8 +175,8 @@ USignal<uint32_t>* ProcessingTile::GetSignalHostTime(){
 }
 
 UMemory* ProcessingTile::GetMem0(){	return _mem0;}
-USignal<uint32_t>* ProcessingTile::GetMemW(){	return _memW;}
-USignal<uint32_t>* ProcessingTile::GetMemI(){	return _memI;}
+//USignal<uint32_t>* ProcessingTile::GetMemW(){	return _memW;}
+//USignal<uint32_t>* ProcessingTile::GetMemI(){	return _memI;}
 
 TimedFPMultiplier* ProcessingTile::GetSeqMultVet(int idx){
 	return _seqMultVet[idx];
