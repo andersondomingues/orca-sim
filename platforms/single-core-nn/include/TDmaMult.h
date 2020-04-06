@@ -118,6 +118,7 @@ public:
 	DmaState GetDmaState();
     
     //getters
+	/*
     USignal<uint8_t>*  GetSignalStall();
 	USignal<uint8_t>*  GetSignalDmaProg();
 
@@ -125,7 +126,7 @@ public:
 	USignal<uint32_t>* GetSignalWeightMemAddr();
 	USignal<uint32_t>* GetSignalInputMemAddr();
 	USignal<uint32_t>* GetSignalMacOut();
-
+*/
     //other 
     SimulationTime Run();
     void Reset();

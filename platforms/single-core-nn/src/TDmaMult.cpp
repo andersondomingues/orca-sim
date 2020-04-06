@@ -77,6 +77,7 @@ TDmaMult::~TDmaMult(){
 void TDmaMult::Reset(){
     // all relevant data go to their initial value at this state
 	_dma_state = DmaState::WAIT_CONFIG_STALL;
+	_sig_mac_out->Write(0x0);
 }
 
 DmaState TDmaMult::GetDmaState(){
@@ -84,6 +85,7 @@ DmaState TDmaMult::GetDmaState(){
 }
 
 //getters
+/*
 USignal<uint8_t>*  TDmaMult::GetSignalStall(){ return _sig_stall; }
 USignal<uint8_t>*  TDmaMult::GetSignalDmaProg(){ return _sig_dma_prog; }
 
@@ -91,6 +93,7 @@ USignal<uint32_t>* TDmaMult::GetSignalBurstSize(){ return _sig_burst_size; }
 USignal<uint32_t>* TDmaMult::GetSignalWeightMemAddr(){ return _sig_weight_mem_addr; }
 USignal<uint32_t>* TDmaMult::GetSignalInputMemAddr(){ return _sig_input_mem_addr; }
 USignal<uint32_t>* TDmaMult::GetSignalMacOut(){ return _sig_mac_out; }
+*/
 
 SimulationTime TDmaMult::Run(){
 
@@ -109,7 +112,7 @@ void TDmaMult::DoAcc(){
 	switch(_dma_state){	
 		case DmaState::WAIT_CONFIG_STALL:
 			_reg_mac = 0;
-			_sig_mac_out->Write(0x0);
+			//_sig_mac_out->Write(0x0);
 			break;
 		case DmaState::COPY_FROM_MEM:
 			if (_mul_ready == 0x1){
@@ -253,7 +256,13 @@ void TDmaMult::ReadData(){
 
 		// just waits few clock cycles. currently, only one cycle
 		case DmaState::FLUSH:
+			float res;
+			uint32_t res_i;
 			_dma_state = DmaState::WAIT_CONFIG_STALL;
+			printf("FLUSH0\n");
+			_mem0->Read(0x4041200C,(int8_t*)&res_i,4);
+			res = (float) res_i;
+			printf("FLUSH2 (%p) %d - %d - %f\n",_mem0->GetMap(0x4041200C),*(uint32_t*)_mem0->GetMap(0x4041200C), res_i, res);
 			_sig_dma_prog->Write(0x0);     //lower the start signal
 			_sig_stall->Write(0x0);        //lowering stall and giving the control back to the processor
 			break;

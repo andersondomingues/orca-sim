@@ -588,6 +588,22 @@ SimulationTime THellfireProcessor::Run(){
 	ptr_s = r[rs1] + (int32_t)imm_s;
 	r[0] = 0;
 
+
+	if (s->pc >= 0x4000651c && s->pc <= 0x400065d8){
+		// if it is a store
+		if (opcode == 0x23){
+			printf("store addr: 0x%X\n",ptr_s);
+		}
+		if (s->pc == 0x40006568){
+			printf("FLUSH4 (%p) %d; opcode = 0x%X; pc = 0x%X \n",s->sram->GetMap(0x4041200C),*(uint32_t*)s->sram->GetMap(0x4041200C), opcode, s->pc);
+		}else
+		{
+			printf("FLUSH3 (%p) %d; opcode = 0x%X; pc = 0x%X \n",s->sram->GetMap(0x4041200C),*(uint32_t*)s->sram->GetMap(0x4041200C), opcode, s->pc);
+		}
+	}
+
+
+
 	switch(opcode){
 		case 0x37: r[rd] = imm_u; break;										/* LUI */
 		case 0x17: r[rd] = s->pc + imm_u; break;									/* AUIPC */
