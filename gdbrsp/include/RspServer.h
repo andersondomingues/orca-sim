@@ -1,8 +1,10 @@
 #ifndef _RSP_SERVER_H
 #define _RSP_SERVER_H
 
-#include <UdpServer.h>
-#include <RspPCore.h>
+#include <UdpAsyncServer.h>
+#include <iostream>
+
+using namespace std;
 
 #define RSP_BUFFER_SIZE 1000
 
@@ -11,25 +13,21 @@ class RspServer{
 
 private:
     //upd server instance, see UdpServe.h
-    UdpServer* _server;
+    UdpAsyncServer* _server;
 
     //ip address and udp port for THIS processor
     std::string _ipaddr;
-    uint32_t _udpport;
+    int _udpport;
 
-    //buffers to communicate with gdbcliet
-    char _buffer_in[RSP_BUFFER_SIZE];
-    char _buffer_out[RSP_BUFFER_SIZE];
-
-    //pcore reference
-    RspPCore* _pcore;
+    char _output_buffer[RSP_BUFFER_SIZE];
+    char _input_buffer[RSP_BUFFER_SIZE];
 
 public:
     /**
      * Ctor.
      */
-    RspServer(std::string ipaddr, uint32_t udpport, RspPCore* core);
-
+    RspServer(std::string ipaddr, uint32_t udpport);   
+    
     /**
      * Dtor.
      */
@@ -38,7 +36,9 @@ public:
     /**
      * Updates message status
      */
-    RspUpdate();
+    int Receive(char* buffer);
+    uint8_t Checksum(char* buffer, int size);
+    int Respond(std::string data);
 };
 
 #endif /* _RSP_SERVER_H */

@@ -16,7 +16,7 @@ TARGET_DEPS := \
 	$(OUTPUTDIR)/RspServer.o
 
 all: $(OUTPUTDIR)/$(LIBNAME)
-	$(Q)echo "done."
+	$(Q)g++ $(OUTPUTDIR)/*.o -o $(OUTPUTDIR)/a.out
 
 #compress all generated object files into a pack
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)

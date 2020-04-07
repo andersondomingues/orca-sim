@@ -52,8 +52,7 @@ UdpAsyncServer::UdpAsyncServer(int port){
     server_address.sin_addr.s_addr = INADDR_ANY;
     bzero(&(server_address.sin_zero),8);
     
-    if (bind(socket_fd,(struct sockaddr *)&server_address, sizeof(struct sockaddr)) == -1
-    ) {
+    if (bind(socket_fd,(struct sockaddr *)&server_address, sizeof(struct sockaddr)) == -1) {
          this->Error(UdpAsyncError::SOCKET_BIND);
     }
 
@@ -63,7 +62,11 @@ UdpAsyncServer::UdpAsyncServer(int port){
 }
 
 
-int UdpAsyncServer::Recv(char* data){
+int UdpAsyncServer::Send(char* data, int length){
+    return sendto(socket_fd, data, length, 0, (struct sockaddr*)&client_address, sizeof(struct sockaddr));
+}
+
+int UdpAsyncServer::Receive(char* data){
    
         readfds = original_socket;
         writefds = original_stdin;//problem
@@ -96,16 +99,3 @@ UdpAsyncServer::~UdpAsyncServer(){
     close(socket_fd);
 }
 
-
-int main(){
-
-    char buffer[4000];
-
-    UdpAsyncServer* server = new UdpAsyncServer(5000);
-
-    while(1){
-        server->Recv(buffer);
-    }
-
-
-}

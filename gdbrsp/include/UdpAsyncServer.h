@@ -62,14 +62,14 @@ class UdpAsyncServer{
          * @param length The number of bytes to send
          * @return Returns 0 when sucefful, otherwise error num.
          */
-        int Send(char* data, uint32_t length);
+        int Send(char* data, int length);
 
         /**
          * Receives data from the GDB client.
          * @param data Location to store data in.
          * @return Returns the number of received bytes or -1
          * */
-        int Recv(char* data);
+        int Receive(char* data);
 
         void Error(UdpAsyncError erra);
 
