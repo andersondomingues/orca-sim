@@ -23,12 +23,16 @@
 
 #include <TMult.h>
 
-uint32_t TimedFPMultiplier::GetResult() {
-    union DataMult res;
-    res.f = _op1.f*_op2.f;
+float TimedFPMultiplier::GetResult() {
+    //union DataMult res;
+	float res;
+    //res.f = _op1.f*_op2.f;
+	res = _op1 * _op2;
     //printf("XXXXXXXXXXXXXXXXXX GetResultInt   %d x %d = %d\n", _op1.i, _op2.i, res.i);
     //printf("XXXXXXXXXXXXXXXXXX GetResultFloat %.8f x %.8f = %.8f\n", _op1.f, _op2.f, res.f);
-    return res.i ;
+    //return res.i ;
+    //return res.f ;
+    return res ;
 };
 
 SimulationTime TimedFPMultiplier::Run(){

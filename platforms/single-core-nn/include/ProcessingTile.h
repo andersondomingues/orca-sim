@@ -184,7 +184,7 @@ private:
 	USignal<uint32_t>* _sig_weight_mem_addr;  // initial address of the weight memory
 	USignal<uint32_t>* _sig_input_mem_addr;   // initial address of the input memory
 	//data read by the processor after the interruption
-	USignal<uint32_t>* _sig_mac_out;          // register with the final result from the MAC, to be read by the processor	
+	USignal<float>* _sig_mac_out;          // register with the final result from the MAC, to be read by the processor	
 public: 
 
 	ProcessingTile();

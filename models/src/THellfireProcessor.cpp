@@ -588,7 +588,7 @@ SimulationTime THellfireProcessor::Run(){
 	ptr_s = r[rs1] + (int32_t)imm_s;
 	r[0] = 0;
 
-
+/*
 	if (s->pc >= 0x4000651c && s->pc <= 0x400065d8){
 		// if it is a store
 		if (opcode == 0x23){
@@ -602,7 +602,7 @@ SimulationTime THellfireProcessor::Run(){
 		}
 	}
 
-
+*/
 
 	switch(opcode){
 		case 0x37: r[rd] = imm_u; break;										/* LUI */

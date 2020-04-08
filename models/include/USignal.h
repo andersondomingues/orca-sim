@@ -149,6 +149,7 @@ template class USignal<bool>;  //wire
 template class USignal<uint8_t>;  //mem word
 template class USignal<uint16_t>; //dmni/noc word
 template class USignal<uint32_t>; //proc word
+template class USignal<float>;    // float cooprocessor output
 template class USignal<uint64_t>; //double word
 template class USignal<int8_t>;  //mem word
 template class USignal<int16_t>; //dmni/noc word

@@ -40,7 +40,7 @@ ProcessingTile::ProcessingTile() {
 	_sig_burst_size      = new USignal<uint32_t>(DMA_BURST_SIZE, this->GetName() + ".burst_size");
 	_sig_weight_mem_addr = new USignal<uint32_t>(DMA_WEIGHT_MEM_ADDR, this->GetName() + ".weight_mem_addr");
 	_sig_input_mem_addr  = new USignal<uint32_t>(DMA_INPUT_MEM_ADDR, this->GetName() + ".input_mem_addr");
-	_sig_mac_out         = new USignal<uint32_t>(DMA_MAC_OUT, this->GetName() + ".mac_out");
+	_sig_mac_out         = new USignal<float>(DMA_MAC_OUT, this->GetName() + ".mac_out");
 
 	//create a cpu and memory in addition to current tile hardware
 	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
@@ -76,7 +76,7 @@ ProcessingTile::ProcessingTile() {
 	_sig_burst_size->MapTo((uint32_t*)_mem0->GetMap(DMA_BURST_SIZE), DMA_BURST_SIZE);
 	_sig_weight_mem_addr->MapTo((uint32_t*)_mem0->GetMap(DMA_WEIGHT_MEM_ADDR), DMA_WEIGHT_MEM_ADDR);
 	_sig_input_mem_addr->MapTo((uint32_t*)_mem0->GetMap(DMA_INPUT_MEM_ADDR), DMA_INPUT_MEM_ADDR);
-	_sig_mac_out->MapTo((uint32_t*)_mem0->GetMap(DMA_MAC_OUT), DMA_MAC_OUT);
+	_sig_mac_out->MapTo((float*)_mem0->GetMap(DMA_MAC_OUT), DMA_MAC_OUT);
 
 	//_memW->MapTo((uint32_t*)_mem0->GetMap(MEMW_BASE), MEMW_BASE);
 	//_memI->MapTo((uint32_t*)_mem0->GetMap(MEMI_BASE), MEMI_BASE);
@@ -151,7 +151,7 @@ void ProcessingTile::Reset(){
 	_sig_burst_size->Write(0);
 	_sig_weight_mem_addr->Write(0);
 	_sig_input_mem_addr->Write(0);
-	_sig_mac_out->Write(0);  
+	_sig_mac_out->Write(0.0f);  
 }
 
 THellfireProcessor* ProcessingTile::GetCpu(){

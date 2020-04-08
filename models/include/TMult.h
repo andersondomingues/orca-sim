@@ -41,44 +41,52 @@
  * TODO: does it work with signed values ?!?!
  */
 class TimedFPMultiplier : public TimedModel{
+	/*
 	union DataMult {
 	   uint32_t i;
 	   float f;
 	} ; 
-
+*/
 	private:
 		//#ifdef MULT_ENABLE_COUNTERS
 		//	USignal<uint32_t>* _counter_active;
 		//#endif
 
-		union DataMult _op1;
-		union DataMult _op2;  
+		//union DataMult _op1;
+		//union DataMult _op2;  
+		float _op1;
+		float _op2;  
 		// TODO if we use USignal here, it might be possible to access the memory pointers and improve the performance
 
 	public:	
 		TimedFPMultiplier(std::string name): TimedModel(name) {
-			_op1.i=0; 
-			_op2.i=0;
+//			_op1.i=0; 
+//			_op2.i=0;
+			_op1=0; 
+			_op2=0;
 		};
 		~TimedFPMultiplier(){};
 
 		// getters
-		uint32_t GetResult();
-		uint32_t GetOp1() {	return _op1.i; };
-		uint32_t GetOp2() {	return _op2.i; };
+		float GetResult();
+//		uint32_t GetOp1() {	return _op1.i; };
+//		uint32_t GetOp2() {	return _op2.i; };
+		float GetOp1() {	return _op1; };
+		float GetOp2() {	return _op2; };
 
 		// setters
-		void SetOp1(uint32_t op1) {
+		void SetOp1(float op1) {
 			//printf("setting op1 %d\n", op1);
-			_op1.f = (float)op1;
+			_op1 = op1;
 		};
 
-		void SetOp2(uint32_t op2) {	
+		void SetOp2(float op2) {	
 			//printf("setting op2 %d\n", op2);
-			_op2.i = op2; 
+			_op2 = op2; 
 		};
 
-		void Reset(){_op1.i=0; _op2.i=0; };
+		//void Reset(){_op1.i=0; _op2.i=0; };
+		void Reset(){_op1=0; _op2=0; };
 		
 		/** Implementation of the Process' interface
 		  * @return time taken for perming next cycle */

@@ -77,13 +77,13 @@ private:
 	///@{
     /// data read by the processor after the interruption.
 	/// OUT: register with the final result from the MAC, to be read by the processor.
-	USignal<uint32_t>* _sig_mac_out;      
+	USignal<float>* _sig_mac_out;      
 	///@}
 
 	///@{
     /// internal registers between the pipeline stages.
-	uint32_t  _reg_mul;  ///< data 'register' between the 2nd and the 3rd pipeline stages. The result of the multiplication.
-	uint32_t  _reg_mac;  ///< data 'register' with the output of the MAC.
+	float  _reg_mul;  ///< data 'register' between the 2nd and the 3rd pipeline stages. The result of the multiplication.
+	float  _reg_mac;  ///< data 'register' with the output of the MAC.
 	///@}
 
 	///@{
@@ -144,7 +144,7 @@ public:
 	 * @param mac: pointer to the MAC module.
 	 * */
     TDmaMult(string name, USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, 
-		USignal<uint32_t>* weight_mem_addr, USignal<uint32_t>* input_mem_addr, USignal<uint32_t>* mac_out,
+		USignal<uint32_t>* weight_mem_addr, USignal<uint32_t>* input_mem_addr, USignal<float>* mac_out,
 		uint32_t memW, uint32_t memI, uint32_t mem_height, UMemory* main_mem, TimedFPMultiplier* mac);
 		
 	/** dtor

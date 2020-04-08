@@ -36,7 +36,7 @@
 TDmaMult::TDmaMult(std::string name,  
 	//signals
 	USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, USignal<uint32_t>* weight_mem_addr, 
-	USignal<uint32_t>* input_mem_addr, USignal<uint32_t>* mac_out,
+	USignal<uint32_t>* input_mem_addr, USignal<float>* mac_out,
 	uint32_t memW, uint32_t memI, uint32_t mem_height, UMemory* main_mem, TimedFPMultiplier* mac
 	) : TimedModel(name) {
       
@@ -77,7 +77,7 @@ TDmaMult::~TDmaMult(){
 void TDmaMult::Reset(){
     // all relevant data go to their initial value at this state
 	_dma_state = DmaState::WAIT_CONFIG_STALL;
-	_sig_mac_out->Write(0x0);
+	_sig_mac_out->Write(0.0f);
 }
 
 DmaState TDmaMult::GetDmaState(){
@@ -108,24 +108,82 @@ SimulationTime TDmaMult::Run(){
 }
 
 // 3rd pipeline stage - accumulate previous value with current mult result
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
 void TDmaMult::DoAcc(){
 	switch(_dma_state){	
-		case DmaState::WAIT_CONFIG_STALL:
+		case DmaState::WAIT_CONFIG_STALL:{
 			_reg_mac = 0;
-			//_sig_mac_out->Write(0x0);
-			break;
-		case DmaState::COPY_FROM_MEM:
+			}break;
+		case DmaState::COPY_FROM_MEM:{
 			if (_mul_ready == 0x1){
 				_reg_mac += _reg_mul;
-			} break;
-		case DmaState::COPY_TO_CPU:
+			} 
+			}break;
+		case DmaState::COPY_TO_CPU:{
+/*			
+			union {
+				float f;
+				uint32_t u;
+				uint8_t b[4];
+			} f2u ;
+			int8_t *ptr;
+			//float *fptr;
+
+			ptr = _mem0->GetMap(0x4041200C);
+			//fptr = (float *)ptr;
+
+			f2u.b[0] = *ptr;
+			f2u.b[1] = *(ptr+1);
+			f2u.b[2] = *(ptr+2);
+			f2u.b[3] = *(ptr+3);
+
+			printf ("MAC0 : %f - 0x%0x\n", f2u.f, f2u.u);
+			printf("MAC0 char : ");
+			for(uint8_t i=0;i<4;i++){
+				printf(" %02hhx,", *ptr++);
+			}
+			printf("\n");
+*/
+			uint32_t * ptr = (uint32_t *)&_reg_mac;
 			_sig_mac_out->Write(_reg_mac);  // send the final result back to the processor
-			printf("MAC  %f\n", (float)_reg_mac);
-			break;
+			printf ("MAC : %f - 0x%0x\n", _reg_mac, *ptr);
+			//*fptr = _reg_mac;
+			//printf("MAC  %f\n", _reg_mac);
+/*
+			f2u.f = _reg_mac;
+
+			printf ("MAC : %f\n   : 0x%0x\n", _reg_mac, f2u.u);
+			char *pt = (char *)&_reg_mac;
+			printf("MAC char : ");
+			for(uint8_t i=0;i<sizeof(_reg_mac);i++){
+				printf(" %02hhx,", *pt++);
+			}
+			printf("\n");
+
+
+			ptr = _mem0->GetMap(0x4041200C);
+
+			f2u.b[0] = *ptr;
+			f2u.b[1] = *(ptr+1);
+			f2u.b[2] = *(ptr+2);
+			f2u.b[3] = *(ptr+3);
+
+			printf ("MAC2 : %f - 0x%0x\n", f2u.f, f2u.u);
+			printf("MAC2 char : ");
+			for(uint8_t i=0;i<4;i++){
+				printf(" %02hhx,", *ptr++);
+			}
+			printf("\n");
+
+*/
+			//printf("\nMAC int : %x\n", *(unsigned int*)&_reg_mac);
+			}break;
 		case DmaState::FLUSH:
 			break;
 	}
 }
+#pragma GCC diagnostic pop
 
 // 2rd pipeline stage - do the mult
 void TDmaMult::DoMult(){
@@ -136,7 +194,7 @@ void TDmaMult::DoMult(){
 	else {
 		if (_mul_loaded == 0x1){
 			_reg_mul = _mult->GetResult();
-			printf("MULT  %f\n", (float)_reg_mul);
+			printf("MULT  %f\n", _reg_mul);
 			_mul_ready = 1;
 		}else{
 			_mul_ready = 0;
@@ -144,8 +202,11 @@ void TDmaMult::DoMult(){
 	}
 }
 
+
 // 1st pipeline stage - read the memories and load the mult operands
 void TDmaMult::ReadData(){
+
+
 
 	//send state machine
 	switch(_dma_state){
@@ -193,7 +254,7 @@ void TDmaMult::ReadData(){
 				// there are not registers, but simple wires connecting the mem to the mult
 				uint32_t input_wire;
 				int8_t * w_ptr, * i_ptr;
-				float weight_wire;
+				float weight_wire, input_wire_f;
 				
 				// #ifdef NETIF_READ_ADDRESS_CHECKING
 				// uint32_t addr = _send_address + _sig_prog_addr->Read();
@@ -213,6 +274,7 @@ void TDmaMult::ReadData(){
 				weight_wire = *(float*)w_ptr;
 				i_ptr = _mem0->GetMap(_i_mem_idx);
 				input_wire  = *(uint32_t*)i_ptr;
+				input_wire_f = (float)input_wire;
 
 				// #ifdef NETIF_WRITE_ADDRESS_CHECKING
 				// if(_send_address < _mem2->GetBase() || _send_address > _mem2->GetLastAddr()){
@@ -223,12 +285,12 @@ void TDmaMult::ReadData(){
 				// }
 				// #endif 
 
-				printf("READING W (0x%X - %p): %f\n", _w_mem_idx, w_ptr, weight_wire);
-				printf("READING I (0x%X - %p): %d\n", _i_mem_idx, i_ptr, input_wire);
+				//printf("READING W (0x%X - %p): %f\n", _w_mem_idx, w_ptr, weight_wire);
+				//printf("READING I (0x%X - %p): %f\n", _i_mem_idx, i_ptr, input_wire_f);
 				
 				//write auxiliary flit to auxiliary memory
 				_mult->SetOp1(weight_wire);
-				_mult->SetOp2(input_wire);
+				_mult->SetOp2(input_wire_f);
 				_mul_loaded = 1; 
 				
 				_remaining--; //one less packet to send
@@ -249,20 +311,31 @@ void TDmaMult::ReadData(){
 
 		} break;	
 
-		case DmaState::COPY_TO_CPU:
+		case DmaState::COPY_TO_CPU:{
 			// result is written back to the output MMIO register
 			_dma_state = DmaState::FLUSH;
-			break;
+			}break;
 
 		// just waits few clock cycles. currently, only one cycle
 		case DmaState::FLUSH:
 			float res;
-			uint32_t res_i;
+			uint32_t iptr;
+			int8_t * bptr;
+			// reading from DMA_MAC_OUT addr
+			// convert int8 pointer to float pointer, then get the data
+			res = *((float*)_mem0->GetMap(0x4041200C));
+			iptr = *((uint32_t*)_mem0->GetMap(0x4041200C));
+			bptr = _mem0->GetMap(0x4041200C);
+
+			// print the host addr, the data in float, in hex, and bytes
+			printf ("MAC3 (%p): %f - 0x%0x\n", bptr, res, iptr);
+			printf("MAC3 char : ");
+			for(uint8_t i=0;i<4;i++){
+				printf(" %02hhx,", *bptr++);
+			}
+			printf("\n");
+
 			_dma_state = DmaState::WAIT_CONFIG_STALL;
-			printf("FLUSH0\n");
-			_mem0->Read(0x4041200C,(int8_t*)&res_i,4);
-			res = (float) res_i;
-			printf("FLUSH2 (%p) %d - %d - %f\n",_mem0->GetMap(0x4041200C),*(uint32_t*)_mem0->GetMap(0x4041200C), res_i, res);
 			_sig_dma_prog->Write(0x0);     //lower the start signal
 			_sig_stall->Write(0x0);        //lowering stall and giving the control back to the processor
 			break;
