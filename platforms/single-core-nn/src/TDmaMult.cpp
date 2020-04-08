@@ -145,11 +145,14 @@ void TDmaMult::DoAcc(){
 			}
 			printf("\n");
 */
-			uint32_t * ptr = (uint32_t *)&_reg_mac;
 			_sig_mac_out->Write(_reg_mac);  // send the final result back to the processor
-			printf ("MAC : %f - 0x%0x\n", _reg_mac, *ptr);
-			//*fptr = _reg_mac;
-			//printf("MAC  %f\n", _reg_mac);
+			//uint32_t * ptr = (uint32_t *)&_reg_mac;
+			//printf ("MAC : %f - 0x%0x\n", _reg_mac, *ptr);
+
+			float res = *((float*)_mem0->GetMap(0x4041200C));
+			// print the host addr, the data in float, in hex, and bytes
+			printf ("MAC: %f\n", res);
+
 /*
 			f2u.f = _reg_mac;
 
@@ -194,7 +197,7 @@ void TDmaMult::DoMult(){
 	else {
 		if (_mul_loaded == 0x1){
 			_reg_mul = _mult->GetResult();
-			printf("MULT  %f\n", _reg_mul);
+			printf("MULT: %f * %f = %f\n", _mult->GetOp1(), _mult->GetOp2(), _reg_mul);
 			_mul_ready = 1;
 		}else{
 			_mul_ready = 0;
@@ -336,7 +339,8 @@ void TDmaMult::ReadData(){
 			printf("\n");
 
 			_dma_state = DmaState::WAIT_CONFIG_STALL;
-			_sig_dma_prog->Write(0x0);     //lower the start signal
+			// TODO multiple drivers to signal _sig_dma_prog !!! implement a handshare protocol between proc and dma 
+			_sig_dma_prog->Write(0x0);     //lower the start signal . 
 			_sig_stall->Write(0x0);        //lowering stall and giving the control back to the processor
 			break;
 	}
