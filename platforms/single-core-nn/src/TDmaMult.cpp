@@ -149,9 +149,9 @@ void TDmaMult::DoAcc(){
 			//uint32_t * ptr = (uint32_t *)&_reg_mac;
 			//printf ("MAC : %f - 0x%0x\n", _reg_mac, *ptr);
 
-			float res = *((float*)_mem0->GetMap(0x4041200C));
+			//float res = *((float*)_mem0->GetMap(0x4041200C));
 			// print the host addr, the data in float, in hex, and bytes
-			printf ("MAC: %f\n", res);
+			//printf ("MAC: %f\n", res);
 
 /*
 			f2u.f = _reg_mac;
@@ -197,7 +197,7 @@ void TDmaMult::DoMult(){
 	else {
 		if (_mul_loaded == 0x1){
 			_reg_mul = _mult->GetResult();
-			printf("MULT: %f * %f = %f\n", _mult->GetOp1(), _mult->GetOp2(), _reg_mul);
+			//printf("MULT: %f * %f = %f\n", _mult->GetOp1(), _mult->GetOp2(), _reg_mul);
 			_mul_ready = 1;
 		}else{
 			_mul_ready = 0;
@@ -233,10 +233,12 @@ void TDmaMult::ReadData(){
 					s << this->GetName() << ": burst size exedded the NN memory capacity.";
 					throw std::runtime_error(s.str());
 				} 
-				//_weight_mem_addr = _sig_weight_mem_addr->Read();
-				//_input_mem_addr = _sig_input_mem_addr->Read();
-				_w_mem_idx = _memW;
-				_i_mem_idx = _memI;
+				//_weight_mem_addr = 
+				//_input_mem_addr = 
+				_w_mem_idx = _sig_weight_mem_addr->Read();
+				_i_mem_idx = _sig_input_mem_addr->Read();
+				//_w_mem_idx = _memW;
+				//_i_mem_idx = _memI;
 				_remaining = _burst_size;
 				// TODO one alternative is to receive only the burst size from the processor and have the base addr fixed
 				//_weight_mem_addr = _memW->GetAddress();
