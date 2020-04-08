@@ -257,9 +257,9 @@ void TDmaMult::ReadData(){
 			
 			if(_remaining > 0){
 				// there are not registers, but simple wires connecting the mem to the mult
-				uint32_t input_wire;
+				//uint32_t input_wire;
 				int8_t * w_ptr, * i_ptr;
-				float weight_wire, input_wire_f;
+				float weight_wire, input_wire;
 				
 				// #ifdef NETIF_READ_ADDRESS_CHECKING
 				// uint32_t addr = _send_address + _sig_prog_addr->Read();
@@ -278,8 +278,8 @@ void TDmaMult::ReadData(){
 				w_ptr = _mem0->GetMap(_w_mem_idx);
 				weight_wire = *(float*)w_ptr;
 				i_ptr = _mem0->GetMap(_i_mem_idx);
-				input_wire  = *(uint32_t*)i_ptr;
-				input_wire_f = (float)input_wire;
+				input_wire  = *(float*)i_ptr;
+				//input_wire_f = (float)input_wire;
 
 				// #ifdef NETIF_WRITE_ADDRESS_CHECKING
 				// if(_send_address < _mem2->GetBase() || _send_address > _mem2->GetLastAddr()){
@@ -295,7 +295,7 @@ void TDmaMult::ReadData(){
 				
 				//write auxiliary flit to auxiliary memory
 				_mult->SetOp1(weight_wire);
-				_mult->SetOp2(input_wire_f);
+				_mult->SetOp2(input_wire);
 				_mul_loaded = 1; 
 				
 				_remaining--; //one less packet to send
