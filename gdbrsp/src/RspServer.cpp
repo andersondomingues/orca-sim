@@ -1,5 +1,7 @@
 #include <RspServer.h>
 
+#define RSP_DEBUG 1
+
 RspServer::RspServer(std::string ipaddr, uint32_t udpport){
     
     _udpport = udpport;
@@ -35,42 +37,89 @@ uint8_t RspServer::Checksum(char* buffer, int length)
 int RspServer::Respond(std::string data){
     
 
+    //packet response should be "$data#checksum"
+    //copy the $ charater to the output
+    _output_buffer[0] = '$';
+
     //copy data into output buffer
-    memcpy(_output_buffer, data.c_str(), data.length());
+    memcpy(&_output_buffer[1], data.c_str(), data.length());
+
+    //add separator to the ourput
+    _output_buffer[data.length() + 2] = '#';
 
     //calculate checksum
     uint8_t checksum = this->Checksum(_output_buffer, data.length());
+    sprintf((char*)&_output_buffer[data.length() +3], "%02X", checksum);
 
     //append checksum to the data
-    memcpy(&_output_buffer[data.length()], &checksum, sizeof(char));
+    memcpy(&_output_buffer[data.length() + 3], &checksum, sizeof(char));
 
-    //add string termination charater
-    _output_buffer[data.length() + 2] = '\0';
-
-    //send via udp
-    return _server->Send(_output_buffer, data.length() + 3);
+    //send via udp (length = '$' + data + '#' + 'XX')
+    #ifdef RSP_DEBUG 
+    std::cout << "send >> " << _output_buffer << std::endl;
+    #endif 
+    return _server->Send(_output_buffer, data.length() + 4);
 }
 
 int RspServer::Receive(char* buffer){
 
     //check whether the udp server could receive another packet
-    if(_server->Receive(buffer) > 0){
+    int recv_bytes = _server->Receive(buffer);
+    if(recv_bytes > 0){
+
+        //check whether the packet is valid
+        //TODO: parse checksum
+        if(buffer[0] == '$'){
+
+            #ifdef RSP_DEBUG
+            buffer[recv_bytes / 2 + 2] = '\0';
+            std::cout << "recved << "  << buffer << std::endl;
+            #endif
+
+            //acknowledge the receive packet to gdb
+            strcpy(_output_buffer, buffer);
+            _output_buffer[0] = '+';
+            _server->Send(_output_buffer, recv_bytes);
+            #ifdef RESP_DEBUG
+            std::cout << "ack >> " << buffer << std::endl;
+            #endif
 
 
-        std::cout << buffer << std::endl;
 
-        //thread message accordingly
-        //message handler depends on the first character
-        switch(buffer[0]){
+            //thread message accordingly
+            //message handler depends on the first character
+            switch(buffer[0]){
 
-            //gdb is informing supported extensions
-            case '$':
-                this->Respond(std::string("$swbreak"));
+                case 'v':
+                    std::cout << "recd v" << std::endl;
+		            break;
 
-            //halt packet
-            case '?': 
-                //_pcore->Rsv_Question(_buffer[1]); break;
-                break;
+                //gdb is informing supported extensions
+                //case 'v':
+                //    this->Respond(std::string(""));
+                //    break;
+
+                //commands not implemented by the server
+                //must respond with the empty response "$#00".
+                default:
+                    strcpy(_output_buffer, RSP_EMPTY_RESPONSE);
+                    #ifdef RSP_DEBUG
+                    std::cout << RSP_EMPTY_RESPONSE << std::endl;
+                    #endif
+                    return _server->Send(_output_buffer, 5);
+                    break;
+            }
+
+        }else{
+            #ifdef RSP_DEBUG
+            std::cout << "ignored << "  << buffer << std::endl;
+            #endif
+        }
+    }
+
+    return -1; //TODO: enum for statuses (could not recv a pkt)
+
+
 /*
         //continue (unlocks execution until next breakpoin is reached) 
         case 'c': _pcore->Rsv_C(_buffer[1]); break;
@@ -97,13 +146,6 @@ int RspServer::Receive(char* buffer){
         //the z command removed a breakpoint from given address.
         case 'z': _pcore->Rsv_Z(_buffer[1]); break;
 */
-            default:
-                //reply WTF
-                break;
-        }
-    }
-
-    return 1;
 
 }
 

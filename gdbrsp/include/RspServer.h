@@ -7,7 +7,7 @@
 using namespace std;
 
 #define RSP_BUFFER_SIZE 1000
-
+#define RSP_EMPTY_RESPONSE "$#00\0" 
 
 class RspServer{
 
