@@ -25,7 +25,7 @@
 #include <UMemory.h>
 #include <USignal.h>
 #include <UMult.h>
-#include <TMult.h>
+//#include <TMult.h>
 
 #define EXIT_TRAP		0xe0000000
 #define IRQ_VECTOR		0xf0000000
@@ -46,7 +46,7 @@
 // see UMult.h and TMult.h to check the addresses related to these modules
 
 // # of 4 bytes inst executesd in paralel in the SIMD ULA 
-#define SIMD_SIZE           1
+//#define SIMD_SIZE           1
 
 #define ntohs(A) ( ((A)>>8) | (((A)&0xff)<<8) )
 #define htons(A) ntohs(A)
@@ -80,8 +80,8 @@ private:
 	UntimedFPMultiplier*  _FPmult;
 	UntimedIntMultiplier* _Intmult;
 
-	vector<UntimedFPMultiplier*>  _FPmultV;
-	vector<TimedFPMultiplier*>  _FPSeqMultV;
+	//vector<UntimedFPMultiplier*>  _FPmultV;
+	//vector<TimedFPMultiplier*>  _FPSeqMultV;
 
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	USignal<uint32_t>* _counter_iarith;
@@ -145,7 +145,7 @@ public:
 	void SetMem0(UMemory*);
 	
 	//setter for sequential multiplier
-	void SetSeqMultVet(TimedFPMultiplier*);
+	//void SetSeqMultVet(TimedFPMultiplier*);
 
 	SimulationTime Run();
 	

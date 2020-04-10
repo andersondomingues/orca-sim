@@ -29,7 +29,13 @@
 #include <TimedModel.h>
 #include <UMemory.h>
 #include <USignal.h>
-#include <TMult.h>
+
+//NN memory configuration. TOTAL_NN_MEM_SIZE and SIMD_SIZE can be changed in design time
+#define TOTAL_NN_MEM_SIZE   	4 * 1024 * 1024 					///< this is the maximum memory address space to be used for operands of the MACs 
+#define SIMD_SIZE     			32   								///< max number of parallel MAC operations
+#define NN_MEM_SIZE_PER_CHANNEL (TOTAL_NN_MEM_SIZE / 2)  /  SIMD_SIZE ///< the max amount of data per channel 
+#define MEMW_BASE 				0x40500000     						///< the base address to store the weights
+#define MEMI_BASE 				MEMW_BASE + (TOTAL_NN_MEM_SIZE/2)	///< the base address to store the inputs
 
 enum class DmaState{
 	WAIT_CONFIG_STALL, ///< wait cpt to configure and raise _sig_send, stall.
@@ -49,15 +55,14 @@ enum class DmaState{
 class TDmaMult: public TimedModel{
 
 private:
-
 	/// pointer to the main memory
 	UMemory* _mem0;
-	/// base address of the weight memory.
-	uint32_t _memW;
-	/// base address of the input memory .
-	uint32_t _memI;
-	/// Pointer to the MAC.
-	TimedFPMultiplier* _mult;
+	/// base address of the weight memory channel. Once set, it does not change in runtime. it can only be changed in design time.
+	uint32_t _memW[SIMD_SIZE];
+	/// base address of the input memory channel. Once set, it does not change in runtime. it can only be changed in design time.
+	uint32_t _memI[SIMD_SIZE];
+	/// base address to the array with the results from the MAC units. Supposed to be constant. it can only be changed in design time.
+	uint32_t _base_mac_out_addr;
 	/// States for DMA process.
     DmaState _dma_state;
     
@@ -69,21 +74,22 @@ private:
 
 	///@{
     /// data sent from the processor to program the DMA.
-	USignal<uint32_t>* _sig_burst_size;       ///< IN: total number of multiplications.
-	USignal<uint32_t>* _sig_weight_mem_addr;  ///< IN: initial address of the weight memory.
-	USignal<uint32_t>* _sig_input_mem_addr;   ///< IN: initial address of the input memory.
+	USignal<uint32_t>* _sig_burst_size; ///< IN: number of MACs ops to be executed in burst mode.
+	USignal<uint32_t>* _sig_nn_size;  	///< IN: amount of memory configured for each channel. 1 means NN_MEM_SIZE_PER_CHANNEL bytes, 2 means 2*NN_MEM_SIZE_PER_CHANNEL bytes, ...
+	USignal<uint32_t>* _sig_out_size;   ///< IN: number of expected output data. 
 	///@}
 
 	///@{
     /// data read by the processor after the interruption.
 	/// OUT: register with the final result from the MAC, to be read by the processor.
-	USignal<float>* _sig_mac_out;      
+	//USignal<float>* _mac_out_addr;      
 	///@}
 
 	///@{
     /// internal registers between the pipeline stages.
-	float  _reg_mul;  ///< data 'register' between the 2nd and the 3rd pipeline stages. The result of the multiplication.
-	float  _reg_mac;  ///< data 'register' with the output of the MAC.
+	float  _op1[SIMD_SIZE], _op2[SIMD_SIZE];  ///< operands of the MAC units
+	float  _reg_mul[SIMD_SIZE];  ///< data 'register' between the 2nd and the 3rd pipeline stages. The result of the multiplication.
+	float  _reg_mac[SIMD_SIZE];  ///< data 'register' with the output of the MAC.
 	///@}
 
 	///@{
@@ -95,15 +101,18 @@ private:
 	///@{
 	/// internal data register. Data sent from the processor to program the DMA.
 	uint32_t _burst_size;       ///< total number of multiplications.
-	uint32_t _weight_mem_addr;  ///< initial address of the weight memory.
-	uint32_t _input_mem_addr;   ///< initial address of the input memory.	
-	uint32_t _mem_height;       ///< max # of words in the NN memory.
+	/* size of the NN bank in bytes. 1 means 1*NN_BANK_SIZE. 2 means 2*NN_BANK_SIZE. max is 32. 
+	This parameter is also related to the number of MACs executed in parallel. 
+	If nn_size == 1, then 32 MACs are running in parallel. If nn_size == 32, then a single MAC is running, addressing the entire NN memory map.
+	*/
+	uint32_t nn_size;
+	uint32_t out_size;   		///< number of expected output data.
+	//uint32_t _mem_height;       ///< max # of words in the NN memory.
 	//others 
 	uint32_t _remaining;        ///< count number of data to be read.
-	/// base address of the weight memory.
-	uint32_t _w_mem_idx;
-	/// base address of the input memory .
-	uint32_t _i_mem_idx;	
+	/// memory idx used to access both the input and weight memories.
+	uint32_t _mem_idx;
+
 	///@}
 
 	///@{
@@ -116,17 +125,7 @@ public:
     
     //getters
 	DmaState GetDmaState();
-    
-    //getters
-	/*
-    USignal<uint8_t>*  GetSignalStall();
-	USignal<uint8_t>*  GetSignalDmaProg();
 
-	USignal<uint32_t>* GetSignalBurstSize();
-	USignal<uint32_t>* GetSignalWeightMemAddr();
-	USignal<uint32_t>* GetSignalInputMemAddr();
-	USignal<uint32_t>* GetSignalMacOut();
-*/
     //other 
     SimulationTime Run();
     void Reset();
@@ -135,8 +134,8 @@ public:
      * @param name: name of the module.
 	 * @param stall: signal to stall the processor while the DMA is going on.
      * @param burst_size: MMIO with the total number of multiplications.
-     * @param weight_mem_addr: MMIO with the initial address of the weight memory.
-	 * @param input_mem_addr: MMIO with the initial address of the input memory.
+     * @param nn_size: MMIO with the initial address of the weight memory.
+	 * @param out_size: MMIO with the initial address of the input memory.
 	 * @param mac_out: MMIO with the register with the final result from the MAC, to be read by the processor.
 	 * @param memW: pointer to the base address of the weight memory bank.
 	 * @param memI: pointer to the base address of the input memory bank.
@@ -144,8 +143,7 @@ public:
 	 * @param mac: pointer to the MAC module.
 	 * */
     TDmaMult(string name, USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, 
-		USignal<uint32_t>* weight_mem_addr, USignal<uint32_t>* input_mem_addr, USignal<float>* mac_out,
-		uint32_t memW, uint32_t memI, uint32_t mem_height, UMemory* main_mem, TimedFPMultiplier* mac);
+		USignal<uint32_t>* nn_size, USignal<uint32_t>* out_size, uint32_t base_mac_out_addr, UMemory* main_mem);
 		
 	/** dtor
 	 * */

@@ -29,7 +29,7 @@
 #include <THellfireProcessor.h>
 #include <UMemory.h>
 #include <USignal.h>
-#include <TMult.h>
+//#include <TMult.h>
 #include <TDmaMult.h>
 
 /* MEMORY LAYOUT
@@ -94,12 +94,6 @@ where, for instance:
 //main memory mapping
 #define MEM0_SIZE 0x008FFFFF 
 #define MEM0_BASE 0x40000000
-//NN memory
-#define NN_MEM_TOTAL_HEIGHT 1024 // 1024 positions of 32bits words
-#define NN_MEM_BANK_HEIGHT   NN_MEM_TOTAL_HEIGHT/SIMD_SIZE
-//#define BASE_NN_MEM_ADDR 0x40500000
-#define MEMW_BASE 0x40500000
-#define MEMI_BASE 0x40580000
 
 //->>>> first available address for memory mapping 0x40410000
 // DMA MMIO registers
@@ -109,11 +103,15 @@ where, for instance:
 #define SIGNAL_DMA_PROG     0x40410002
 
 // jumping to 0x404120xx, otherwise it wont fit before the memory counters
-#define DMA_BURST_SIZE       0x40412000  // 32 bits 
-#define DMA_WEIGHT_MEM_ADDR  0x40412004
-#define DMA_INPUT_MEM_ADDR   0x40412008  
-#define DMA_MAC_OUT          0x4041200C
-
+#define DMA_BURST_SIZE	  0x40412000  // 32 bits 
+#define DMA_NN_SIZE  	  0x40412004
+#define DMA_OUT_SIZE  	  0x40412008
+#define DMA_MAC_OUT_ARRAY 0x4041200C
+// DMA_MAC_OUT_ARRAY0 		0x4041200C
+// DMA_MAC_OUT_ARRAY1 		0x40412010
+// DMA_MAC_OUT_ARRAY2 		0x40412014
+//...  
+//DMA_MAC_OUT_ARRAY31		0x4041200C + (0x20 * 4) -1 
 
 //0x40411xxx => memory mapped counters
 #ifdef MEMORY_ENABLE_COUNTERS
@@ -158,12 +156,6 @@ private:
 
 	//main memory
 	UMemory* _mem0;
-	// NN memories
-	//USignal<uint32_t>* _memW;
-	//USignal<uint32_t>* _memI;
-	
-	//Sequential multiplier
-	vector<TimedFPMultiplier*> _seqMultVet;
 
 	// DMA unit reponsible to transfer weight and input data from the main memory 
 	// directly to the vector multipliers
@@ -174,17 +166,15 @@ private:
 	USignal<uint32_t>* _signal_hosttime;
 	
 	//control signals
-	USignal<uint8_t>*  _sig_stall;          // stalls cpu while copying from the memories
-	USignal<uint8_t>*  _sig_dma_prog;       // flag to start the DMA
-	USignal<uint8_t>*  _sig_intr;			// dummy signal required by the CPU. not really used since we dont have interrupts in this design
+	USignal<uint8_t>*  _sig_stall;          ///< stalls cpu while copying from the memories
+	USignal<uint8_t>*  _sig_dma_prog;       ///< flag to start the DMA
+	USignal<uint8_t>*  _sig_intr;			///< dummy signal required by the CPU. not really used since we dont have interrupts in this design
 	
 	//data signals 
 	//data sent from the processor to program the DMA
-	USignal<uint32_t>* _sig_burst_size;       // total number of multiplications
-	USignal<uint32_t>* _sig_weight_mem_addr;  // initial address of the weight memory
-	USignal<uint32_t>* _sig_input_mem_addr;   // initial address of the input memory
-	//data read by the processor after the interruption
-	USignal<float>* _sig_mac_out;          // register with the final result from the MAC, to be read by the processor	
+	USignal<uint32_t>* _sig_burst_size;		///< number of MACs ops to be executed in burst mode.
+	USignal<uint32_t>* _sig_nn_size;  		///< IN: amount of memory configured for each channel. 1 means NN_MEM_SIZE_PER_CHANNEL bytes, 2 means 2*NN_MEM_SIZE_PER_CHANNEL bytes, ...
+	USignal<uint32_t>* _sig_out_size;   	///< number of expected output data. 
 public: 
 
 	ProcessingTile();
@@ -206,11 +196,11 @@ public:
 	USignal<uint32_t>* GetMemI();
 	// getters for the scheduler
 	THellfireProcessor* GetCpu();
-	TimedFPMultiplier* GetSeqMultVet(int idx);
+	//TimedFPMultiplier* GetSeqMultVet(int idx);
 	TDmaMult* GetDma();
 	
 	//getter for sequential multiplier
-	void SetSeqMultVet(TimedFPMultiplier*);
+	//void SetSeqMultVet(TimedFPMultiplier*);
 	
 	USignal<uint32_t>* GetSignalHostTime();
 	

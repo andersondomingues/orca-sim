@@ -196,11 +196,6 @@ int main(int __attribute__((unused)) argc, char** argv){
 	//schedule dma
 	s->Schedule(Event(2, tile->GetDma()));
 
-	//schedule vetorial sequential multiplier
-	for(int i=0;i<SIMD_SIZE;i++) { 
-		s->Schedule(Event(1, tile->GetSeqMultVet(i)));
-	}
-
 	std::cout << "Epoch set to " << ORCA_EPOCH_LENGTH << " cycles." << std::endl;
 	std::cout << "Please wait..." << std::endl;
 

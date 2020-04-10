@@ -35,25 +35,35 @@
 
 TDmaMult::TDmaMult(std::string name,  
 	//signals
-	USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, USignal<uint32_t>* weight_mem_addr, 
-	USignal<uint32_t>* input_mem_addr, USignal<float>* mac_out,
-	uint32_t memW, uint32_t memI, uint32_t mem_height, UMemory* main_mem, TimedFPMultiplier* mac
-	) : TimedModel(name) {
-      
+	USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, USignal<uint32_t>* nn_size, 
+	USignal<uint32_t>* out_size, uint32_t base_mac_out_addr, UMemory* main_mem) : TimedModel(name) {
+    
+	int i;
+
 	// control signal sent to the proc
 	_sig_stall = stall;
 	_sig_dma_prog = dma_start;
 
 	// data signals sent by the proc
 	_sig_burst_size = burst_size;
-	_sig_weight_mem_addr = weight_mem_addr;
-	_sig_input_mem_addr = input_mem_addr;
-	// data signals sent to the proc
-	_sig_mac_out = mac_out;
+	_sig_nn_size = nn_size;
+	_sig_out_size = out_size;
+	// data signals sent to the proc.
+	_base_mac_out_addr = base_mac_out_addr;
 	// constants
-	_mem_height = mem_height;
-	_memW = memW;
-	_memI = memI;
+	//_mem_height = mem_height;
+
+
+	// set the base mamory address to each channel
+	_memW[0] = MEMW_BASE;
+	_memI[0] = MEMI_BASE;
+	for ( i = 1; i < SIMD_SIZE; i++)
+	{
+		_memW[i] = _memW[i-1] + NN_MEM_SIZE_PER_CHANNEL;
+		_memI[i] = _memI[i-1] + NN_MEM_SIZE_PER_CHANNEL;
+	}
+	
+	
 
 	_mem0 = main_mem;
 	
@@ -62,11 +72,11 @@ TDmaMult::TDmaMult(std::string name,
 	_mul_ready   = 0;
 
 	// internal data 'registers' between the pipeline stages
-	_reg_mul = 0;
-	_reg_mac = 0;
+	//_reg_mul = 0;
+	//_reg_mac = 0;
 
 	// binding the modules
-    _mult = mac;
+    //_mult = mac;
 
 	this->Reset();
 }
@@ -75,9 +85,16 @@ TDmaMult::~TDmaMult(){
 }
 
 void TDmaMult::Reset(){
+	int i;
     // all relevant data go to their initial value at this state
 	_dma_state = DmaState::WAIT_CONFIG_STALL;
-	_sig_mac_out->Write(0.0f);
+
+	// get the pointer to the base memory position where the MACs store their final values 
+	float *ptr = (float *)_mem0->GetMap(_base_mac_out_addr);
+	for (i=0;i<SIMD_SIZE;i++){
+		*ptr = 0;
+		ptr++;
+	}
 }
 
 DmaState TDmaMult::GetDmaState(){
@@ -111,13 +128,18 @@ SimulationTime TDmaMult::Run(){
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wswitch"
 void TDmaMult::DoAcc(){
+	int i;
 	switch(_dma_state){	
 		case DmaState::WAIT_CONFIG_STALL:{
-			_reg_mac = 0;
+			for (i=0;i<SIMD_SIZE;i++){
+				_reg_mac[i] = 0;
+			}
 			}break;
 		case DmaState::COPY_FROM_MEM:{
 			if (_mul_ready == 0x1){
-				_reg_mac += _reg_mul;
+				for (i=0;i<SIMD_SIZE;i++){
+					_reg_mac[i] += _reg_mul[i];
+				}
 			} 
 			}break;
 		case DmaState::COPY_TO_CPU:{
@@ -145,7 +167,12 @@ void TDmaMult::DoAcc(){
 			}
 			printf("\n");
 */
-			_sig_mac_out->Write(_reg_mac);  // send the final result back to the processor
+			float *ptr = (float *)_mem0->GetMap(_base_mac_out_addr);
+			for (i=0;i<SIMD_SIZE;i++){
+				*ptr = _reg_mac[i];  // send the final result back to the processor
+				ptr++;
+			}
+			
 			//uint32_t * ptr = (uint32_t *)&_reg_mac;
 			//printf ("MAC : %f - 0x%0x\n", _reg_mac, *ptr);
 
@@ -190,14 +217,18 @@ void TDmaMult::DoAcc(){
 
 // 2rd pipeline stage - do the mult
 void TDmaMult::DoMult(){
+	int i;
 	if (_dma_state == DmaState::WAIT_CONFIG_STALL){
-		_reg_mul = 0; // restart register 
+		for (i=0;i<SIMD_SIZE;i++){
+			_reg_mul[i] = 0; // restart register 
+		}		
 		_mul_ready = 0;
 	}
 	else {
 		if (_mul_loaded == 0x1){
-			_reg_mul = _mult->GetResult();
-			//printf("MULT: %f * %f = %f\n", _mult->GetOp1(), _mult->GetOp2(), _reg_mul);
+			for (i=0;i<SIMD_SIZE;i++){
+				_reg_mul[i] = _op1[i] * _op2[i]; // mult
+			}				
 			_mul_ready = 1;
 		}else{
 			_mul_ready = 0;
@@ -205,20 +236,15 @@ void TDmaMult::DoMult(){
 	}
 }
 
-
 // 1st pipeline stage - read the memories and load the mult operands
 void TDmaMult::ReadData(){
-
-
+	int i;
 
 	//send state machine
 	switch(_dma_state){
-
 		//wait the cpu to configure the ni
 		case DmaState::WAIT_CONFIG_STALL:{
-			
 			if(_sig_dma_prog->Read() == 0x1){
-				
 				_sig_stall->Write(0x1);        //raise stall
 				_mul_loaded = 0;   // raised when the mul can be executed
 				
@@ -228,15 +254,16 @@ void TDmaMult::ReadData(){
 				//    - the inital address of the input memory, 
 				// output: _sig_size + 2 cycles latter, the register _reg_mac has the result
 				_burst_size = _sig_burst_size->Read();
-				if (_burst_size >_mem_height){
+				if (_burst_size > NN_MEM_SIZE_PER_CHANNEL){
 					stringstream s;
 					s << this->GetName() << ": burst size exedded the NN memory capacity.";
 					throw std::runtime_error(s.str());
 				} 
 				//_weight_mem_addr = 
 				//_input_mem_addr = 
-				_w_mem_idx = _sig_weight_mem_addr->Read();
-				_i_mem_idx = _sig_input_mem_addr->Read();
+//				_w_mem_idx = _sig_weight_mem_addr->Read();
+//				_i_mem_idx = _sig_input_mem_addr->Read();
+				_mem_idx = 0;
 				//_w_mem_idx = _memW;
 				//_i_mem_idx = _memI;
 				_remaining = _burst_size;
@@ -256,10 +283,7 @@ void TDmaMult::ReadData(){
 		case DmaState::COPY_FROM_MEM:{
 			
 			if(_remaining > 0){
-				// there are not registers, but simple wires connecting the mem to the mult
-				//uint32_t input_wire;
 				int8_t * w_ptr, * i_ptr;
-				float weight_wire, input_wire;
 				
 				// #ifdef NETIF_READ_ADDRESS_CHECKING
 				// uint32_t addr = _send_address + _sig_prog_addr->Read();
@@ -275,10 +299,13 @@ void TDmaMult::ReadData(){
 //				_memW->Read(_weight_mem_addr , (int8_t*)&weight_wire, sizeof(uint32_t));
 //				_memI->Read(_input_mem_addr , (int8_t*)&input_wire, sizeof(uint32_t));
 				
-				w_ptr = _mem0->GetMap(_w_mem_idx);
-				weight_wire = *(float*)w_ptr;
-				i_ptr = _mem0->GetMap(_i_mem_idx);
-				input_wire  = *(float*)i_ptr;
+				for (i=0;i<SIMD_SIZE;i++){
+					w_ptr = _mem0->GetMap(_memW[i]+_mem_idx);
+					_op1[i] = *(float*)w_ptr;
+					i_ptr = _mem0->GetMap(_memI[i]+_mem_idx);
+					_op2[i]  = *(float*)i_ptr;
+				}
+
 				//input_wire_f = (float)input_wire;
 
 				// #ifdef NETIF_WRITE_ADDRESS_CHECKING
@@ -293,27 +320,19 @@ void TDmaMult::ReadData(){
 				//printf("READING W (0x%X - %p): %f\n", _w_mem_idx, w_ptr, weight_wire);
 				//printf("READING I (0x%X - %p): %f\n", _i_mem_idx, i_ptr, input_wire_f);
 				
-				//write auxiliary flit to auxiliary memory
-				_mult->SetOp1(weight_wire);
-				_mult->SetOp2(input_wire);
+				//signal to the next pipiline stage
 				_mul_loaded = 1; 
 				
 				_remaining--; //one less packet to send
-				_w_mem_idx +=4;
-				_i_mem_idx +=4;
-				//_weight_mem_addr++;
-				//_input_mem_addr++;
+				_mem_idx +=4;
 				
 				// std::cout << "send copied 0x" << std::fixed << setfill('0') << setw(4) << std::hex << _send_reg << std::endl;
 
 			//all flits copied to the aux memory, switch to noc-mode
 			}else{
-				
-				// std::cout << "send stalled" << std::endl;
 				_mul_loaded = 0; 
 				_dma_state = DmaState::COPY_TO_CPU;
 			}
-
 		} break;	
 
 		case DmaState::COPY_TO_CPU:{
@@ -323,6 +342,7 @@ void TDmaMult::ReadData(){
 
 		// just waits few clock cycles. currently, only one cycle
 		case DmaState::FLUSH:
+			/*
 			float res;
 			uint32_t iptr;
 			int8_t * bptr;
@@ -339,6 +359,7 @@ void TDmaMult::ReadData(){
 				printf(" %02hhx,", *bptr++);
 			}
 			printf("\n");
+			*/
 
 			_dma_state = DmaState::WAIT_CONFIG_STALL;
 			// TODO multiple drivers to signal _sig_dma_prog !!! implement a handshare protocol between proc and dma 
