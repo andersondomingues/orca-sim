@@ -105,8 +105,6 @@ ProcessingTile::ProcessingTile() {
 ProcessingTile::~ProcessingTile(){
 	delete(_cpu);
 	delete(_mem0);
-	//delete(_memW);
-	//delete(_memI);
 	delete(_dma);
 
 	//delete signals 
@@ -116,11 +114,9 @@ ProcessingTile::~ProcessingTile(){
 	delete(_sig_burst_size);
 	delete(_sig_nn_size);
 	delete(_sig_out_size);
-	//delete(_sig_mac_out);
 }
 
 void ProcessingTile::Reset(){
-
 	//reset control wires
 	_sig_stall->Write(0);
 	_sig_dma_prog ->Write(0);
@@ -130,7 +126,6 @@ void ProcessingTile::Reset(){
 	_sig_burst_size->Write(0);
 	_sig_nn_size->Write(0);
 	_sig_out_size->Write(0);
-	//_sig_mac_out->Write(0.0f);  
 }
 
 THellfireProcessor* ProcessingTile::GetCpu(){
@@ -145,30 +140,19 @@ USignal<uint8_t>*  ProcessingTile::GetSignalStall(){ return _sig_stall; }
 USignal<uint8_t>*  ProcessingTile::GetSignalDmaProg(){ return _sig_dma_prog; }
 USignal<uint8_t>*  ProcessingTile::GetSignalIntr(){ return _sig_intr; }
 
-/**
- * @brief Get current signal for systime signal
- * @return A pointer to the instance of signal
- */
+
 USignal<uint32_t>* ProcessingTile::GetSignalHostTime(){
 	return _signal_hosttime;
 }
 
 UMemory* ProcessingTile::GetMem0(){	return _mem0;}
-//USignal<uint32_t>* ProcessingTile::GetMemW(){	return _memW;}
-//USignal<uint32_t>* ProcessingTile::GetMemI(){	return _memI;}
-
-// TimedFPMultiplier* ProcessingTile::GetSeqMultVet(int idx){
-// 	return _seqMultVet[idx];
-// }
 
 std::string ProcessingTile::ToString(){
 	stringstream ss;
 	ss << this->GetName() << "={" << _cpu->GetName() <<"}";
-	
 	return ss.str();
 }
 
 std::string ProcessingTile::GetName(){
-	
 	return "core!";
 }

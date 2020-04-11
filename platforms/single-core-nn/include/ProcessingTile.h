@@ -29,7 +29,6 @@
 #include <THellfireProcessor.h>
 #include <UMemory.h>
 #include <USignal.h>
-//#include <TMult.h>
 #include <TDmaMult.h>
 
 /* MEMORY LAYOUT
@@ -56,14 +55,12 @@
 ------------------- 0x40500000 <<-- mmio NN MEM banks
 
     NN MEM banks
-     (NN_TOTAL_MEM_HEIGHT * 2 * 4 Bytes) // # of positions * # memories (weight and input) * size of the word
+     (TOTAL_NN_MEM_SIZE Bytes) // # TOTAL_NN_MEM_SIZE/2 Bytes  for weight and TOTAL_NN_MEM_SIZE/2 Bytes for inputs
 	 (4MBytes)
 
 ------------------- 0x408FFFFF <<-- mmio NN MEM banks 
 
 total memory space: 9MBytes
-max NN_TOTAL_MEM_HEIGHT = 512 * 1024. 
-It means that the max size for weight is 2MBytes. the same size for inputs.
 
 ------------------- 0x404120xx <<-- mmio NN DMA
 since there are up to 16 MACs, it is neceseray to reserve
@@ -74,6 +71,13 @@ since there are up to 16 MACs, it is neceseray to reserve
 	...
 	0x404120F0 DMA15
 ------------------- 0x40500000 <<-- mmio NN MEM banks
+
+
+max TOTAL_NN_MEM_SIZE = NN_MEM_SIZE_PER_CHANNEL * 2 * SIMD_SIZE. 
+It means that the max size for weight is 2MBytes. the same size for inputs.
+
+
+
 NN_TOTAL_MEM_HEIGHT determines the total number of words (32bits) of 
 the weight and the input memories. These two memories feed the MAC Units.
 Assuming NN_TOTAL_MEM_HEIGHT = 1024 (4KBytes), the memory map is:
@@ -97,21 +101,19 @@ where, for instance:
 
 //->>>> first available address for memory mapping 0x40410000
 // DMA MMIO registers
-//0x40410000 => memory mapped control wires
-#define SIGNAL_CPU_STALL    0x40410000  // 8 bits
-#define SIGNAL_CPU_INTR     0x40410001
-#define SIGNAL_DMA_PROG     0x40410002
-
 // jumping to 0x404120xx, otherwise it wont fit before the memory counters
-#define DMA_BURST_SIZE	  0x40412000  // 32 bits 
-#define DMA_NN_SIZE  	  0x40412004
-#define DMA_OUT_SIZE  	  0x40412008
-#define DMA_MAC_OUT_ARRAY 0x4041200C
-// DMA_MAC_OUT_ARRAY0 		0x4041200C
-// DMA_MAC_OUT_ARRAY1 		0x40412010
-// DMA_MAC_OUT_ARRAY2 		0x40412014
+#define SIGNAL_CPU_STALL    0x40412000  // 8 bits
+#define SIGNAL_CPU_INTR     0x40412001
+#define SIGNAL_DMA_PROG     0x40412002
+//							0x40410003  // not used
+#define DMA_BURST_SIZE	    0x40412004  // 32 bits 
+#define DMA_NN_SIZE  	    0x40412008
+#define DMA_OUT_SIZE  	    0x4041200C
+#define DMA_MAC_OUT_ARRAY   0x40412010
+// DMA_MAC_OUT_ARRAY0 		0x40412010
+// DMA_MAC_OUT_ARRAY1 		0x40412014
 //...  
-//DMA_MAC_OUT_ARRAY31		0x4041200C + (0x20 * 4) -1 
+//DMA_MAC_OUT_ARRAY31		0x40412010 + (0x20 * 4) -1 
 
 //0x40411xxx => memory mapped counters
 #ifdef MEMORY_ENABLE_COUNTERS
@@ -146,37 +148,40 @@ where, for instance:
  * @date 01/04/20
  * @file ProcessingTile.h
  * @brief This class models an entire processing element that contains
- * RAM memory, DMA for the vector unit, SIMD vector unit, HFRiscV core
+ * RAM memory, DMA for the SIMD vector unit,  HFRiscV core
  */
 class ProcessingTile{
 
 private:
 
-	THellfireProcessor* _cpu; //hfrisv-core
-
-	//main memory
+	///@{ Main components of the system.
+	/// the hfrisv-core.
+	THellfireProcessor* _cpu; 
+	/// the main memory.
 	UMemory* _mem0;
-
-	// DMA unit reponsible to transfer weight and input data from the main memory 
-	// directly to the vector multipliers
+	/// DMA unit reponsible to transfer weight and input data from the main memory directly to the vector multipliers
 	TDmaMult* _dma;
-	
+	///@}
+
 	//hosttime magic wire
 	uint32_t _shosttime;
 	USignal<uint32_t>* _signal_hosttime;
 	
-	//control signals
+	///@{
+	/// control signals.
 	USignal<uint8_t>*  _sig_stall;          ///< stalls cpu while copying from the memories
 	USignal<uint8_t>*  _sig_dma_prog;       ///< flag to start the DMA
 	USignal<uint8_t>*  _sig_intr;			///< dummy signal required by the CPU. not really used since we dont have interrupts in this design
+	///@}
 	
-	//data signals 
-	//data sent from the processor to program the DMA
+	///@{
+	/// data sent from the processor to program the DMA.
 	USignal<uint32_t>* _sig_burst_size;		///< number of MACs ops to be executed in burst mode.
-	USignal<uint32_t>* _sig_nn_size;  		///< IN: amount of memory configured for each channel. 1 means NN_MEM_SIZE_PER_CHANNEL bytes, 2 means 2*NN_MEM_SIZE_PER_CHANNEL bytes, ...
-	USignal<uint32_t>* _sig_out_size;   	///< number of expected output data. 
-public: 
+	USignal<uint32_t>* _sig_nn_size;  		///< (not used) amount of memory configured for each channel. 1 means NN_MEM_SIZE_PER_CHANNEL bytes, 2 means 2*NN_MEM_SIZE_PER_CHANNEL bytes, ...
+	USignal<uint32_t>* _sig_out_size;   	///< (not used) number of expected output data. 
+	///@}
 
+public: 
 	ProcessingTile();
 	~ProcessingTile();
 	
@@ -184,24 +189,17 @@ public:
     USignal<uint8_t>*  GetSignalStall();
 	USignal<uint8_t>*  GetSignalDmaProg();
 	USignal<uint8_t>*  GetSignalIntr();    ///> required only by the cpu and orca. not really usefull 
-
-	//setters
-	//TODO why do i need setters for the internal signals if they are used only internally ?!?!?
-	//void SetSignalStall(USignal<uint8_t>*);
-	//void SetSignalDmaProg(USignal<uint8_t>*);
 	
 	//getters
 	UMemory* GetMem0();
-	USignal<uint32_t>* GetMemW();
-	USignal<uint32_t>* GetMemI();
-	// getters for the scheduler
+	/// getters for the scheduler
 	THellfireProcessor* GetCpu();
-	//TimedFPMultiplier* GetSeqMultVet(int idx);
 	TDmaMult* GetDma();
 	
-	//getter for sequential multiplier
-	//void SetSeqMultVet(TimedFPMultiplier*);
-	
+	/**
+	 * @brief Get current signal for systime signal
+	 * @return A pointer to the instance of signal
+	 */
 	USignal<uint32_t>* GetSignalHostTime();
 	
 	std::string ToString();

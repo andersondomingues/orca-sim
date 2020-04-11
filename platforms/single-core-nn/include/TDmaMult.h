@@ -37,11 +37,18 @@
 #define MEMW_BASE 				0x40500000     						///< the base address to store the weights
 #define MEMI_BASE 				MEMW_BASE + (TOTAL_NN_MEM_SIZE/2)	///< the base address to store the inputs
 
+/*
+ The current approach is: the cpu copies data to the DMA memory, configure the DMA, stall the CPU, does MACs in parallel and in burst mode, 
+ copies the MAC results to MMIO, release the stall, and the CPU copies the results and cotinue the software.
+
+ An alternative approach, interesting if we have multiple tasks and OS, is not to halt the CPU, letting other tasks using the CPU while
+ the DMA is working. When the DMA finishes, and interrupt is asserted, and the results are copied back to the software layer.
+*/
 enum class DmaState{
-	WAIT_CONFIG_STALL, ///< wait cpt to configure and raise _sig_send, stall.
-	COPY_FROM_MEM,     ///< copy content from memory, release cpu.
-	COPY_TO_CPU,
-	FLUSH              ///< wait for the cpu to lower the send signal (ack).
+	WAIT_CONFIG_STALL, ///< wait cpu to configure the DMA, indicated by _sig_dma_prog.  Then, the DMA raises _sig_stall to stall the cpu while the DMA is working.
+	COPY_FROM_MEM,     ///< copy content from the NN memory to the MAC internal operand registers.
+	COPY_TO_CPU,       ///< just waste a cycle to copy the MAC results to the MMIO.
+	FLUSH              ///< deassert the _sig_stall, returning to the wait mode. The CPU returns to activity.
 };
 
 /**
@@ -49,8 +56,8 @@ enum class DmaState{
  * @author Alexandre Amory, based on Anderson's  TDMANetif
  * @date 01/04/20
  * @file TDmaMult.h
- * @brief DMA unit reponsible to transfer weight and input data from the main memory 
- *	 directly to the vector multipliers
+ * @brief DMA unit reponsible to transfer weight and input data from the NN memory 
+ *	 directly to the vector MACs
  */
 class TDmaMult: public TimedModel{
 
@@ -75,19 +82,13 @@ private:
 	///@{
     /// data sent from the processor to program the DMA.
 	USignal<uint32_t>* _sig_burst_size; ///< IN: number of MACs ops to be executed in burst mode.
-	USignal<uint32_t>* _sig_nn_size;  	///< IN: amount of memory configured for each channel. 1 means NN_MEM_SIZE_PER_CHANNEL bytes, 2 means 2*NN_MEM_SIZE_PER_CHANNEL bytes, ...
-	USignal<uint32_t>* _sig_out_size;   ///< IN: number of expected output data. 
-	///@}
-
-	///@{
-    /// data read by the processor after the interruption.
-	/// OUT: register with the final result from the MAC, to be read by the processor.
-	//USignal<float>* _mac_out_addr;      
+	USignal<uint32_t>* _sig_nn_size;  	///< IN: (not used) amount of memory configured for each channel. 1 means NN_MEM_SIZE_PER_CHANNEL bytes, 2 means 2*NN_MEM_SIZE_PER_CHANNEL bytes, ...
+	USignal<uint32_t>* _sig_out_size;   ///< IN: (not used) number of expected output data. 
 	///@}
 
 	///@{
     /// internal registers between the pipeline stages.
-	float  _op1[SIMD_SIZE], _op2[SIMD_SIZE];  ///< operands of the MAC units
+	float  _op1[SIMD_SIZE], _op2[SIMD_SIZE];  ///< data 'register' pf the 1st pipeline stage, i.e. the operands of the MAC units.
 	float  _reg_mul[SIMD_SIZE];  ///< data 'register' between the 2nd and the 3rd pipeline stages. The result of the multiplication.
 	float  _reg_mac[SIMD_SIZE];  ///< data 'register' with the output of the MAC.
 	///@}
@@ -101,13 +102,8 @@ private:
 	///@{
 	/// internal data register. Data sent from the processor to program the DMA.
 	uint32_t _burst_size;       ///< total number of multiplications.
-	/* size of the NN bank in bytes. 1 means 1*NN_BANK_SIZE. 2 means 2*NN_BANK_SIZE. max is 32. 
-	This parameter is also related to the number of MACs executed in parallel. 
-	If nn_size == 1, then 32 MACs are running in parallel. If nn_size == 32, then a single MAC is running, addressing the entire NN memory map.
-	*/
-	uint32_t nn_size;
-	uint32_t out_size;   		///< number of expected output data.
-	//uint32_t _mem_height;       ///< max # of words in the NN memory.
+	uint32_t nn_size;           ///< (not used) number of NN memory banks for a single MAC.
+	uint32_t out_size;   		///< (not used) number of expected output data.
 	//others 
 	uint32_t _remaining;        ///< count number of data to be read.
 	/// memory idx used to access both the input and weight memories.
@@ -134,12 +130,9 @@ public:
      * @param name: name of the module.
 	 * @param stall: signal to stall the processor while the DMA is going on.
      * @param burst_size: MMIO with the total number of multiplications.
-     * @param nn_size: MMIO with the initial address of the weight memory.
-	 * @param out_size: MMIO with the initial address of the input memory.
-	 * @param mac_out: MMIO with the register with the final result from the MAC, to be read by the processor.
-	 * @param memW: pointer to the base address of the weight memory bank.
-	 * @param memI: pointer to the base address of the input memory bank.
-	 * @param mem_bank_height: the height of each memory bank, in 32bit words
+     * @param nn_size: (not used) number of NN memory banks for a single MAC.
+	 * @param out_size: (not used) number of expected output data.
+	 * @param base_mac_out_addr: base address to the array with the output of the MACs.
 	 * @param mac: pointer to the MAC module.
 	 * */
     TDmaMult(string name, USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, 
