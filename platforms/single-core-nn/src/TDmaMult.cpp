@@ -46,8 +46,8 @@ TDmaMult::TDmaMult(std::string name,
 
 	// data signals sent by the proc
 	_sig_burst_size = burst_size;
-	_sig_nn_size = nn_size;
-	_sig_out_size = out_size;
+	_sig_nn_size = nn_size;   // TODO not used
+	_sig_out_size = out_size; // TODO not used
 	// data signals sent to the proc.
 	_base_mac_out_addr = base_mac_out_addr;
 	// constants
@@ -77,6 +77,15 @@ TDmaMult::TDmaMult(std::string name,
 
 	// binding the modules
     //_mult = mac;
+
+	printf("NN CONFIGURATION:\n\n");
+	printf("  TOTAL_NN_MEM_SIZE = 0x%x\n",TOTAL_NN_MEM_SIZE);
+	printf("  SIMD_SIZE = %d\n",SIMD_SIZE);
+	printf("  NN_MEM_SIZE_PER_CHANNEL = 0x%x\n",NN_MEM_SIZE_PER_CHANNEL);
+	printf("  MEMW_BASE = 0x%x\n",MEMW_BASE);
+	printf("  MEMI_BASE = 0x%x\n",MEMI_BASE);
+	printf("  DMA_MAC_OUT_ARRAY = 0x%x\n\n",base_mac_out_addr);
+
 
 	this->Reset();
 }
@@ -169,6 +178,8 @@ void TDmaMult::DoAcc(){
 */
 			float *ptr = (float *)_mem0->GetMap(_base_mac_out_addr);
 			for (i=0;i<SIMD_SIZE;i++){
+				if (_reg_mac[i] != 0.0f)
+					printf ("MAC[%d]: %f - 0x%p\n", i, _reg_mac[i], &(_reg_mac[i]));
 				*ptr = _reg_mac[i];  // send the final result back to the processor
 				ptr++;
 			}
@@ -294,16 +305,14 @@ void TDmaMult::ReadData(){
 				// 	throw std::runtime_error(ss.str());
 				// }
 				// #endif 
-								
-				//read from main memory
-//				_memW->Read(_weight_mem_addr , (int8_t*)&weight_wire, sizeof(uint32_t));
-//				_memI->Read(_input_mem_addr , (int8_t*)&input_wire, sizeof(uint32_t));
-				
+
 				for (i=0;i<SIMD_SIZE;i++){
 					w_ptr = _mem0->GetMap(_memW[i]+_mem_idx);
 					_op1[i] = *(float*)w_ptr;
 					i_ptr = _mem0->GetMap(_memI[i]+_mem_idx);
 					_op2[i]  = *(float*)i_ptr;
+					//if ( _op1[i] != 0.0f)
+					//	printf ("OPs[%d %d]: %f %f\n", _mem_idx, i, _op1[i], _op2[i]);
 				}
 
 				//input_wire_f = (float)input_wire;
@@ -337,7 +346,12 @@ void TDmaMult::ReadData(){
 
 		case DmaState::COPY_TO_CPU:{
 			// result is written back to the output MMIO register
-			_dma_state = DmaState::FLUSH;
+			// if (_copying2cpu>=SIMD_SIZE){
+				_dma_state = DmaState::FLUSH;
+			// }
+			// else{
+			//		_copying2cpu++;
+			// }
 			}break;
 
 		// just waits few clock cycles. currently, only one cycle

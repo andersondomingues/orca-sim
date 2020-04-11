@@ -78,13 +78,13 @@ NN_TOTAL_MEM_HEIGHT determines the total number of words (32bits) of
 the weight and the input memories. These two memories feed the MAC Units.
 Assuming NN_TOTAL_MEM_HEIGHT = 1024 (4KBytes), the memory map is:
 	0x40500000 - uint32_t weight[NN_TOTAL_MEM_HEIGHT]
-	0x40580000 - uint32_t input[NN_TOTAL_MEM_HEIGHT]
+	0x40700000 - uint32_t input[NN_TOTAL_MEM_HEIGHT]
 
 In fact, the weight and input is divided into individual banks such that 
 it is possible to load each MACs in parallel. Since SIMD_SIZE tells the 
 # of MACs running in parallel, then the actual memory map per bank is:
 	0x40500000 - uint32_t weight[SIMD_SIZE][NN_TOTAL_MEM_HEIGHT/SIMD_SIZE]
-	0x40580000 - uint32_t input[SIMD_SIZE][NN_TOTAL_MEM_HEIGHT/SIMD_SIZE]
+	0x40700000 - uint32_t input[SIMD_SIZE][NN_TOTAL_MEM_HEIGHT/SIMD_SIZE]
 
 where, for instance:
 	-  weight[0][0]  is the 1st address of the MAC0
