@@ -17,6 +17,7 @@ TARGET_DEPS := \
 
 all: $(OUTPUTDIR)/$(LIBNAME)
 	$(Q)g++ $(OUTPUTDIR)/*.o -o $(OUTPUTDIR)/a.out
+	./$(OUTPUTDIR)/a.out
 
 #compress all generated object files into a pack
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)

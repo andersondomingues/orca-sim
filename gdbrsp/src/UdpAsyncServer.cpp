@@ -29,14 +29,18 @@ UdpAsyncServer::UdpAsyncServer(int port){
     flags |= O_NONBLOCK;
     fcntl(socket_fd, F_SETFL, flags);
     
+    //file descriptor set to monitoring for reading
     FD_ZERO(&original_socket);
-    FD_ZERO(&original_stdin);
     FD_ZERO(&readfds);
+    
+    //file descriptor set to monitoring for writing
     FD_ZERO(&writefds);
     
-    FD_SET(socket_fd, &original_socket);//instead of 0 put socket_fd
+    //add the receiving socket to the receiving set 
+    FD_SET(socket_fd, &original_socket);
     FD_SET(socket_fd, &readfds);
-    FD_SET(0,&original_stdin);
+    
+    //add the empty set to the writing monitoring list
     FD_SET(0, &writefds);
     
     // since we got s2 second, it's the "greater", so we use that for
@@ -68,9 +72,10 @@ int UdpAsyncServer::Send(char* data, int length){
 
 int UdpAsyncServer::Receive(char* data){
    
+        //copy the receiving set to the working variable
         readfds = original_socket;
-        writefds = original_stdin;//problem
 
+        //chech whether the receving set has data
         int res = select(numfd, &readfds, &writefds, NULL, &tv);
 
         switch(res){
@@ -86,14 +91,13 @@ int UdpAsyncServer::Receive(char* data){
                     
                     FD_CLR(socket_fd, &readfds);
                     bytes_read = recvfrom(socket_fd, data, MAX_LENGTH, 0,
-                        (struct sockaddr *)&client_address, &address_length);
+                        (struct sockaddr *)&client_address, &address_length); 
                     return bytes_read;    
                 }
         }
         
         return 0;
 }
-
 
 UdpAsyncServer::~UdpAsyncServer(){
     close(socket_fd);
