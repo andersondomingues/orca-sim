@@ -15,17 +15,13 @@ TARGET_DEPS := \
 	$(OUTPUTDIR)/UdpAsyncServer.o \
 	$(OUTPUTDIR)/RspServer.o
 
-all: $(OUTPUTDIR)/$(LIBNAME)
-	$(Q)g++ $(OUTPUTDIR)/*.o -o $(OUTPUTDIR)/a.out
-	./$(OUTPUTDIR)/a.out
-
 #compress all generated object files into a pack
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
 	$(Q)ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes (.cpp) into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp  $(HEADERDIR)/%.h 
-	$(Q)g++ $(CPPFLAGS) $< -o $@ 
+	$(Q)$(CPP) $(CPPFLAGS) $< -o $@ 
 
 #remove any preoviosly generated file
 clean:
