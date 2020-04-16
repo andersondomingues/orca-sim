@@ -131,7 +131,7 @@ ORCA_MEMORY_SIZE := 1000000
 # mits of memory space when reading or writing. This option is 
 # useful for debugging memory access, but dramatically depletes
 # simulation performance. 
-ORCA_CHECK_MEMORY_SPACE := NO
+ORCA_CHECK_MEMORY_SPACE := YES
 
 #================================================================#
 # HF-RISCV CORE OPTIONS                                          #

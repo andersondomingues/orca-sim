@@ -66,6 +66,7 @@ USignal<T>::USignal(T* t_ptr, uint32_t addr, std::string name){
 
 template <typename T>
 USignal<T>::USignal(uint32_t addr, std::string name){
+    _t_ptr = &_t_storage;
     _t_addr = addr;
     _t_name = name;
 }
