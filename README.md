@@ -12,7 +12,7 @@ Software that can be used with in both RTL and ORCA-SIM simulations can be found
 ## Quick Start
 
 1) Clone this repository. Use ``git clone https://github.com/andersondomingues/orca-sim --recurse-submodules``.
-2) Go to the root folder and type ``$make`` in the terminal (requires GCC version >= 7.x and Make)
+2) Go to the root folder and type ``make`` in the terminal (requires GCC version >= 7.x and Make)
 3) Run the simulator as ``./bin/single-core.exe <software-image>``, where softwa-image is the binary compiled for the HF-RiscV architecture.
 
 ## Project organization
