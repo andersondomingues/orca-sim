@@ -5,13 +5,13 @@ ORCA-SIM is a simulation tool to simulate/emulate the ORCA-MPSoC many core. This
 - URSA: https://github.com/andersondomingues/ursa
 - ORCA-MPSOC: https://github.com/andersondomingues/orca-mpsoc
 
-Software that can be used with both in RTL and ORCA-SIM simulations can be found in the following repository.
+Software that can be used with in both RTL and ORCA-SIM simulations can be found in the following repository.
 
 - ORCA-SOFTWARE-TOOLS: https://github.com/andersondomingues/orca-software-tools
 
 ## Quick Start
 
-1) Clone this repository
+1) Clone this repository. Use ``git clone https://github.com/andersondomingues/orca-sim --recurse-submodules``.
 2) Go to the root folder and type ``$make`` in the terminal (requires GCC version >= 7.x and Make)
 3) Run the simulator as ``./bin/single-core.exe <software-image>``, where softwa-image is the binary compiled for the HF-RiscV architecture.
 
@@ -37,7 +37,7 @@ Things that we are likely to work on in the next months:
 - Provide hardware models as static libraries
 - Remote debugging using GDB and GDB-server
 - Remove eliminate pthreads from models by using asynchonous calls
-- A website containing technical and non-technical information on the project.
+- A website containing technical and non-technical information on the project.i
 - Benchmarks! Probably something based on PARSEC but for NORMA archs.
 - Replace multitail with some visualization tools (including, NoC, Task Schedule, memory and other inspections)
 - Deal with endianess (enables heterogeneous multicore)
