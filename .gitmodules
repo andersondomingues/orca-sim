@@ -1,0 +1,3 @@
+[submodule "ursa"]
+path = simulator
+url = https://github.com/andersondomingues/ursa
