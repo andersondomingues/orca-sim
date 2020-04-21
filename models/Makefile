@@ -18,12 +18,9 @@ TARGET_DEPS := \
 	$(OUTPUTDIR)/UBuffer.o \
 	$(OUTPUTDIR)/UMemory.o \
 	$(OUTPUTDIR)/TRouter.o \
-	$(OUTPUTDIR)/THellfireProcessor.o \
+	$(OUTPUTDIR)/TProcessorBase.o \
+	$(OUTPUTDIR)/THFRiscV.o \
 	$(OUTPUTDIR)/TDmaNetif.o
-
-
-#$(OUTPUTDIR)/TDmaNetif.o
-#$(OUTPUTDIR)/TArm7TDMI.o
 
 #compress all generated object files into a pack
 $(OUTPUTDIR)/$(LIBNAME): $(LIBSIM) $(TARGET_DEPS)

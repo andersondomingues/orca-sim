@@ -21,9 +21,9 @@ $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
 
 #compile all classes (.cpp) into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp  $(HEADERDIR)/%.h 
-	$(Q)$(CPP) $(CPPFLAGS) $< -o $@ 
+	$(Q)g++ $(CPPFLAGS) $< -o $@ 
 
 #remove any preoviosly generated file
 clean:
-	$(Q)rm -rf bin/*.a 	rm -rf bin/*.o
+	$(Q)rm -rf bin/*.a rm -rf bin/*.o
 

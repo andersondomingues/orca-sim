@@ -34,7 +34,7 @@
 #include <UMemory.h>
 
 //reusable models
-#include <THellfireProcessor.h>
+#include <THFRiscV.h>
 #include <TRouter.h>
 #include <TDmaNetif.h> 
 #include <TNetBridge.h>
@@ -246,7 +246,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 				continue;
 			
 			ProcessingTile* t = (ProcessingTile*)(tiles[x][y]);
-			THellfireProcessor* n = t->GetCpu();
+			THFRiscV* n = t->GetCpu();
 			std::cout 
 				<< n->GetName() 
 				<< ": INTR=" << (int)(n->GetSignalIntr()->Read()) 

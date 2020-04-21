@@ -23,7 +23,7 @@
 #include <sstream>
 
 //model API
-#include <THellfireProcessor.h>
+#include <THFRiscV.h>
 #include <TDmaNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
@@ -48,7 +48,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 
 	//create a cpu and memory in addition to current tile hardware
 	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu   = new THellfireProcessor(this->GetName() + ".cpu", _signal_intr, _signal_stall);
+	_cpu   = new THFRiscV(this->GetName() + ".cpu", _signal_intr, _signal_stall);
 	_netif  = new TDmaNetif (this->GetName() + ".netif");
 	
 	//binds cpu to the main memory
@@ -172,7 +172,7 @@ ProcessingTile::~ProcessingTile(){
 	delete(_signal_prog_size);	
 }
 
-THellfireProcessor* ProcessingTile::GetCpu(){
+THFRiscV* ProcessingTile::GetCpu(){
 	return _cpu;
 } 
 

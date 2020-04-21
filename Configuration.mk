@@ -10,15 +10,15 @@
 # -O3, -march=native, -mtune=native: optmizations
 # -lasan, -fsanitize=address: additional debugging support
 ORCA_GLOBAL_FLAGS := -Wall -Wextra -Werror -g -std=c++17 \
-	-O3 -march=native -mtune=native
+	-O3 -march=native -mtune=native 
 
 # Select the target platform. Different hardware architectures
 # are deployed to /platforms folder. We currently provide two
 # example architectures: (i) a single-core riscv processor core
 # based on the HF-RiscV processor and (ii) a NoC-based 
 # mesh-topologic manycore that uses the same processor core. 
-# PLATFORM := (orca-dma | single-core)
-ORCA_PLATFORM := orca-dma
+# PLATFORM := (orca-mpsoc | single-core)
+ORCA_PLATFORM := orca-mpsoc
 
 #================================================================#
 # SIMULATION OPTIONS                                             #
@@ -143,6 +143,16 @@ ORCA_CHECK_MEMORY_SPACE := YES
 # - INSTRUCTION: all instruction take exacly one cycle to finish 
 ORCA_HFRISCV_MODE := CYCLE
 
+# Enables support for GDB remote debugging for processing tiles.
+ORCA_ENABLE_GDBRSP := YES
+
+# When enabled, the GDBRSP service will instantiate a UDP server
+# for each processing tile. Each server will serve one UDP port,
+# with core #0 starting with ORCA_GDBRSP_PORT. All other cores 
+# will be increments on the base port (e.g., core number five will
+# serve at port = ORCA_GDBRSP_PORT + 5.
+ORCA_GDBRSP_PORT := 5000
+
 #================================================================#
 # HARDWARE COUNTERS                                              #
 #================================================================#
@@ -240,9 +250,16 @@ endif
 ifeq ($(ORCA_HWCOUNTERS_HFRISCV), YES)
 	COMPLINE := $(COMPLINE) -DHFRISCV_ENABLE_COUNTERS
 endif
+
 #router parameters
 ifeq ($(ORCA_HWCOUNTERS_ROUTERS), YES)
 	COMPLINE := $(COMPLINE) -DROUTER_ENABLE_COUNTERS
+endif
+
+#gdbrsp
+ifeq ($(ORCA_ENABLE_GDBRSP), YES)
+	COMPLINE := $(COMPLINE) -DORCA_ENABLE_GDBRSP \
+		-DORCA_GDBRSP_PORT=$(ORCA_GDBRSP_PORT)
 endif
 
 export COMPLINE

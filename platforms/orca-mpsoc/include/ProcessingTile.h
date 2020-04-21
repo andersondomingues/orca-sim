@@ -26,7 +26,7 @@
 #include <iostream>
 
 //model API
-#include <THellfireProcessor.h>
+#include <THFRiscV.h>
 #include <TDmaNetif.h>
 #include <TRouter.h>
 #include <UMemory.h>
@@ -69,7 +69,7 @@ class ProcessingTile : private Tile{
 private:
 
 	TDmaNetif* _netif;
-	THellfireProcessor* _cpu; //hfrisv-core
+	THFRiscV* _cpu; //hfrisv-core
 
 	//main memory
 	UMemory* _mem0;
@@ -124,7 +124,7 @@ public:
 	void SetSignalProgRecv(USignal<uint8_t>*);
 	
 	//getters
-	THellfireProcessor* GetCpu();
+	THFRiscV* GetCpu();
 	UMemory* GetMem0();
 	
 	//getters for mems

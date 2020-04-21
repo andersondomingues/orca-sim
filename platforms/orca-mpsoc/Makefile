@@ -1,7 +1,7 @@
 #This is the name of the platform. It is used only 
 #to name the generated executable file and to be
 #displayed during execution of this makefile
-PLATFORM_NAME:=orca-dma
+PLATFORM_NAME:=orca-mpsoc
 
 #Path to dependencies. This platform is similulated using
 #URSA, so libsim and libmod are required. 

@@ -27,14 +27,14 @@
 #include <sstream>
 #include <chrono>
 
-#include <THellfireProcessor.h>
+#include <THFRiscV.h>
 #include <USignal.h>
 
 #include "sys/time.h"
 
 #define RISCV_INVALID_OPCODE 0x0
 
-void THellfireProcessor::dumpregs(risc_v_state *s){
+void THFRiscV::dumpregs(risc_v_state *s){
 	int32_t i;
 	
 	for (i = 0; i < 32; i+=4){
@@ -46,7 +46,7 @@ void THellfireProcessor::dumpregs(risc_v_state *s){
 	printf("\n");
 }
 
-void THellfireProcessor::bp(risc_v_state *s, uint32_t ir){
+void THFRiscV::bp(risc_v_state *s, uint32_t ir){
 
 	printf("breakpoint reached!\n");
 	printf("pc: %08x, ir: %08x\n", s->pc, ir);
@@ -62,28 +62,8 @@ void THellfireProcessor::bp(risc_v_state *s, uint32_t ir){
 	}
 	
 	std::cout << std::endl;
-	//if(this->GetName() == "006.cpu" && address == 0x400001a8){
+
 	s->sram->SaveBin(ss.str(), s->sram->GetBase(), s->sram->GetSize());
-	
-	//getchar();
-}
-
-int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
-	
-	uint32_t data;
-	
-	//if(this->GetName() == "003.cpu"){
-	//if(this->GetName() == "006.cpu" && address == 0x400001a8){
-		//if(address == 0x40002c6c || address == 0x40002e48){
-	//if(address == 0x40002c5c){
-	// dispatcher if(this->GetName() == "006.cpu" && address == 0x4000513c){
-	//	this->bp(s, address);
-		//printf("pc: 0x%x\n", s->pc);
-	//}
-	
-	s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
-
-	return data;
 }
 
 /**
@@ -93,7 +73,7 @@ int32_t THellfireProcessor::mem_fetch(risc_v_state *s, uint32_t address){
  * @param address Starting address to read from
  * @return Data read
  */
-int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t address){
+int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 
 	uint32_t data;
 	
@@ -169,11 +149,11 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 	}
 }
 
-USignal<uint8_t>* THellfireProcessor::GetSignalStall(){
+USignal<uint8_t>* THFRiscV::GetSignalStall(){
 	return _signal_stall;
 }
 
-USignal<uint8_t>* THellfireProcessor::GetSignalIntr(){
+USignal<uint8_t>* THFRiscV::GetSignalIntr(){
 	return _signal_intr;
 }
 	
@@ -184,20 +164,7 @@ USignal<uint8_t>* THellfireProcessor::GetSignalIntr(){
  * @param address Starting address of data
  * @param value Value to be written to the address
  */
-void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
-
-	//if(this->GetName() == "006.cpu" && address < 0x40006984){ 
-	//address == 0x4000c1dc){
-
-	//if(this->GetName() == "006.cpu" && address < 0x40005e7c){
-	//	bp(s, address);
-	//}
-	
-	//if(address < s->sram->GetBase() || address > s->sram->GetLastAddr()){
-	//	std::cout << "pc: 0x" << std::hex << s->pc << std::dec << std::endl;
-		//dumpregs(s);
-	//}
-
+void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
 
 	//if the address belong to some memory range, write to it
 	if(address <= s->sram->GetLastAddr()){
@@ -289,33 +256,33 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 #ifdef HFRISCV_ENABLE_COUNTERS
 
 //Counters' getters
-USignal<uint32_t>* THellfireProcessor::GetSignalCounterArith(){
+USignal<uint32_t>* THFRiscV::GetSignalCounterArith(){
 	return this->_counter_iarith;
 }
-USignal<uint32_t>* THellfireProcessor::GetSignalCounterLogical(){
+USignal<uint32_t>* THFRiscV::GetSignalCounterLogical(){
 	return this->_counter_ilogical;
 }
-USignal<uint32_t>* THellfireProcessor::GetSignalCounterShift(){
+USignal<uint32_t>* THFRiscV::GetSignalCounterShift(){
 	return this->_counter_ishift;
 }
-USignal<uint32_t>* THellfireProcessor::GetSignalCounterBranches(){
+USignal<uint32_t>* THFRiscV::GetSignalCounterBranches(){
 	return this->_counter_ibranches;
 }
-USignal<uint32_t>* THellfireProcessor::GetSignalCounterJumps(){
+USignal<uint32_t>* THFRiscV::GetSignalCounterJumps(){
 	return this->_counter_ijumps;
 }
-USignal<uint32_t>* THellfireProcessor::GetSignalCounterLoadStore(){
+USignal<uint32_t>* THFRiscV::GetSignalCounterLoadStore(){
 	return this->_counter_iloadstore;
 }
 
 //cycles
-USignal<uint32_t>* THellfireProcessor::GetSignalCounterCyclesTotal(){
+USignal<uint32_t>* THFRiscV::GetSignalCounterCyclesTotal(){
 	return this->_counter_cycles_total;
 }
-USignal<uint32_t>* THellfireProcessor::GetSignalCounterCyclesStall(){
+USignal<uint32_t>* THFRiscV::GetSignalCounterCyclesStall(){
 	return this->_counter_cycles_stall;
 }
-USignal<uint32_t>* THellfireProcessor::GetSignalHostTime(){
+USignal<uint32_t>* THFRiscV::GetSignalHostTime(){
 	return this->_counter_hosttime;
 }
 
@@ -324,7 +291,7 @@ USignal<uint32_t>* THellfireProcessor::GetSignalHostTime(){
  * memory-mapped address of counters must be informed
  */
 
-void THellfireProcessor::InitCounters(
+void THFRiscV::InitCounters(
 		uint32_t arith_counter_addr, 
 		uint32_t logical_counter_addr,
 		uint32_t shift_counter_addr,
@@ -354,7 +321,7 @@ void THellfireProcessor::InitCounters(
  * is executed. Please note that NOP and MOVE instructions are
  * ignored as riscv32i does not generate them.
 */
-void THellfireProcessor::UpdateCounters(int opcode, int funct3){
+void THFRiscV::UpdateCounters(int opcode, int funct3){
 
 	switch(opcode){
 
@@ -392,30 +359,15 @@ void THellfireProcessor::UpdateCounters(int opcode, int funct3){
 					break;
 			}
 			break;
-		/*
-		case 0x33:
-			switch(funct3){
-				case 0x0: //add, sub
-					_counter_iarith->Inc(1);
-					break;
-				case 0x4: //xor
-				case 0x6: //or
-				case 0x7: //and
-					_counter_ilogical->Inc(1);
-					break;
-				default: //all shifts
-					_counter_ishift->Inc(1);
-			}
-			break;
-		*/
 		default:
+			std::cout << "wrn: opcode not accounted for energy estimation" << std::endl;
 			break;
 	}
 	
 }
 #endif /* HFRISCV_ENABLE_COUNTERS */
 
-SimulationTime THellfireProcessor::Run(){
+SimulationTime THFRiscV::Run(){
 
 	//update "external counters"
 	s->counter++;
@@ -472,7 +424,9 @@ SimulationTime THellfireProcessor::Run(){
 			s->status_dly[i] = 0;
 	}
 	
-	inst = mem_fetch(s, s->pc);
+	//FETCH STAGE
+	this->s->sram->Read(this->s->pc, (int8_t*)&inst, 4); //4 x sizeof(uint8_t)
+
 
 	opcode = inst & 0x7f;
 	
@@ -621,6 +575,7 @@ fail:
 	s->pc = s->pc_next;
 	s->pc_next = s->pc_next + 4;
 	s->status = s->status_dly[0];
+	
 	for (i = 0; i < 3; i++)
 		s->status_dly[i] = s->status_dly[i+1];
 
@@ -641,13 +596,14 @@ fail:
 
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	this->UpdateCounters(opcode, funct3);
-	#endif /*HFRISCV_ENABLE_COUNTERS*/
+	#endif
 	
-	//Takes three cycles per instruction, except for those of 
-	//memory I/O. In the later case. Since we simulate the pipeline
-	//by executing one instruction per cycle (starting from the 3th cycle),
-	//we add 1 cycle to simulate I/O delay.
-	
+	//When in cycle-accuracy mode, takes three cycles per instruction, 
+	//except for those of memory I/O. In the later case. Since we simulate 
+	//the pipeline by executing one instruction per cycle (starting from 
+	//the 3th cycle), adding 1 cycle to simulate I/O delay. We also calculate
+	//branch prediction.
+
 	#ifdef HFRISCV_CYCLE_ACCURACY
 	switch(opcode){
 		case 0x63:
@@ -666,18 +622,18 @@ fail:
 			break;
 	}
 	#else
+
+	//When in instruction mode, evey instruction takes exactly one cycle to
+	//leave the pipeline. This mode aims for performance.
 	return 1;
 	#endif
 }
 
-risc_v_state THellfireProcessor::GetState(){
-	return *s;
-}
 
 /**
  * @brief Configures main memory module.
  * @param m A pointer to a UMemory object*/
-void THellfireProcessor::SetMem0(UMemory* m){
+void THFRiscV::SetMem0(UMemory* m){
 	
 	s->pc = m->GetBase();
 	s->pc_next = s->pc + 4;
@@ -685,9 +641,10 @@ void THellfireProcessor::SetMem0(UMemory* m){
 	s->sram = m;
 }
 
-THellfireProcessor::THellfireProcessor(string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall) : TimedModel(name) {
+THFRiscV::THFRiscV(std::string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall)
+	: TProcessorBase(name, HFRISCV_PC_MEMBASE) {
 
-	s = &context;
+	s = new risc_v_state;
 	memset(s, 0, sizeof(risc_v_state));
 	
 	s->vector = 0;
@@ -713,7 +670,7 @@ THellfireProcessor::THellfireProcessor(string name, USignal<uint8_t>* intr, USig
 }
 
 //TODO: clear allocated memory if any
-THellfireProcessor::~THellfireProcessor(){
+THFRiscV::~THFRiscV(){
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	delete _counter_iarith;
@@ -731,7 +688,7 @@ THellfireProcessor::~THellfireProcessor(){
 	#endif
 }
 
-void THellfireProcessor::Reset(){
+void THFRiscV::Reset(){
     //TODO: to be implemented
     return;
 }

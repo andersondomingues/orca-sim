@@ -1,5 +1,5 @@
-#ifndef __THELLFIREPROCESSOR_H
-#define __THELLFIREPROCESSOR_H
+#ifndef __THFRiscV_H
+#define __THFRiscV_H
 
 /**
  * This is file is a modification of the following file
@@ -19,11 +19,13 @@
 #include <stdint.h>
 
 //simulator libs
-#include <TimedModel.h>
+#include <TProcessorBase.h>
 
 //models libs
 #include <UMemory.h>
 #include <USignal.h>
+
+#define HFRISCV_PC_MEMBASE 0x40000000
 
 #define EXIT_TRAP			0xe0000000
 #define IRQ_VECTOR		0xf0000000
@@ -41,10 +43,6 @@
 #define UART_READ			0xf00000e0
 #define UART_DIVISOR		0xf00000f0
 
-#define ntohs(A) ( ((A)>>8) | (((A)&0xff)<<8) )
-#define htons(A) ntohs(A)
-#define ntohl(A) ( ((A)>>24) | (((A)&0xff0000)>>8) | (((A)&0xff00)<<8) | ((A)<<24) )
-#define htonl(A) ntohl(A)
 
 typedef struct {
 	int32_t r[32];
@@ -56,7 +54,8 @@ typedef struct {
 	uint64_t cycles;
 } risc_v_state;
 
-class THellfireProcessor : public TimedModel{
+//inherits for a 32-bit processor
+class THFRiscV : public TProcessorBase<uint32_t>{
 
 private:
 	uint32_t _last_pc;
@@ -66,8 +65,8 @@ private:
 	USignal<uint8_t>* _signal_stall;
 	
 	//context
-	risc_v_state context;
-	risc_v_state *s;
+	risc_v_state* s;
+
 	int i;
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS
@@ -113,17 +112,16 @@ public:
 	void UpdateCounters(int opcode, int func3);
 	#endif
 
-    risc_v_state GetState();
+    //risc_v_state GetState();
     
 	void dumpregs(risc_v_state *s);
 	void bp(risc_v_state *s, uint32_t ir);
-	int32_t mem_fetch(risc_v_state *s, uint32_t address);
 	int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
 	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
 	//ctor./dtor.
-	THellfireProcessor(string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall);
-	~THellfireProcessor();
+	THFRiscV(string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall);
+	~THFRiscV();
 	
 	USignal<uint8_t>* GetSignalStall();
 	USignal<uint8_t>* GetSignalIntr();
