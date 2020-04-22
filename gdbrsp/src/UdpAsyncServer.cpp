@@ -13,6 +13,9 @@ void UdpAsyncServer::Error(UdpAsyncError err){
             break;
         case UdpAsyncError::SOCKET_BIND:
             message = message + "Could not bind socket (tips: +address_in_use).";
+	    	break;
+		default:
+			break;
     }
 
     std::cout << message << std::endl;
@@ -48,21 +51,21 @@ UdpAsyncServer::UdpAsyncServer(int port){
     numfd = socket_fd + 1;
     
     // wait until either socket has data ready to be recv()d (timeout 10.5 secs)
-    tv.tv_sec = 10;
+    tv.tv_sec = 1;
     tv.tv_usec = 500000;
     
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(SERVER_PORT);
+    server_address.sin_port = htons(port);
     server_address.sin_addr.s_addr = INADDR_ANY;
     bzero(&(server_address.sin_zero),8);
-    
-    if (bind(socket_fd,(struct sockaddr *)&server_address, sizeof(struct sockaddr)) == -1) {
-         this->Error(UdpAsyncError::SOCKET_BIND);
-    }
 
     address_length = sizeof(struct sockaddr);
-    std::cout << "GDBRSP up at UDP port " << port << std::endl;
- 
+    
+    if (bind(socket_fd,(struct sockaddr *)&server_address, sizeof(struct sockaddr)) == -1) {
+        this->Error(UdpAsyncError::SOCKET_BIND);
+    }else{
+    	std::cout << "GDBRSP up at UDP port " << port << std::endl;
+	} 
 }
 
 

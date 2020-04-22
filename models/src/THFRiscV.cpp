@@ -369,6 +369,10 @@ void THFRiscV::UpdateCounters(int opcode, int funct3){
 
 SimulationTime THFRiscV::Run(){
 
+	//call ancestor method which handles 
+	//generic tasks all processor models 
+	TProcessorBase::Run();
+
 	//update "external counters"
 	s->counter++;
 

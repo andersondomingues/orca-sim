@@ -8,7 +8,7 @@ LIBSIM_PATH:=../simulator
 LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
 
 #include flags (plus external flags)
-CPPFLAGS :=-I./include -I../simulator/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
+CPPFLAGS :=-I./include -I../simulator/include -I../gdbrsp/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
 
 #list of dependencies (source files)
 TARGET_DEPS := \

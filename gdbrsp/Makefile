@@ -2,7 +2,7 @@
 SOURCEDIR :=./src
 HEADERDIR :=./include
 OUTPUTDIR :=./bin
-LIBNAME :=librsv.a
+LIBNAME :=libgdbrsp.a
 
 LIBSIM_PATH:=../simulator
 LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a

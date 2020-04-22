@@ -185,6 +185,8 @@ int RspServer::Handle_v(char* buffer){
     } else {
         std::cout << "unhandled packet 'v'" << std::endl;
     }
+
+	return 1;
 }
 
 //query packets (upper case Q is for SET)
@@ -197,6 +199,8 @@ int RspServer::Handle_Q(char* buffer){
     }else{
         std::cout << "unhandled packet 'Q'"  << std::endl;
     }
+
+	return 0;
 }
 
 //query packets (lower case Q is for GET)
@@ -274,7 +278,7 @@ int RspServer::Handle_z(char*){
     return 0;
 }
 
-int main(){
+/*int main(){
 
     char buffer[5000];
     RspServer* srv = new RspServer("127.0.0.1", 5000);
@@ -284,4 +288,4 @@ int main(){
     }
 
 
-}
+}*/

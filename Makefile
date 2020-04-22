@@ -70,8 +70,7 @@ $(BINARY_DIR)/$(GDBRSP_LIB): $(GDBRSP_DIR)/src/*.cpp $(GDBRSP_DIR)/include/*.h
 	$(Q)cp $(GDBRSP_DIR)/bin/$(GDBRSP_LIB) $(BINARY_DIR)/$(GDBRSP_LIB)
 
 #Generate simulator executable binary (includes top-level hardware models).
-#TODO: add  $(BINARY_DIR)/$(GDBRSP_LIB) to the dependency list
-$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/include/*.h
+$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(BINARY_DIR)/$(GDBRSP_LIB)  $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/include/*.h
 	@echo "$'\033[7m==================================\033[0m"
 	@echo "$'\033[7m     Building the platform        \033[0m"
 	@echo "$'\033[7m==================================\033[0m"

@@ -3,26 +3,29 @@
 #displayed during execution of this makefile
 PLATFORM_NAME:=orca-mpsoc
 
-#Path to dependencies. This platform is similulated using
-#URSA, so libsim and libmod are required. 
-LIBSIM_PATH:=../../simulator
-LIBMOD_PATH:=../../models
+#Path to dependencies. 
+LIBSIM_PATH :=../../simulator
+LIBMOD_PATH :=../../models
+LIBRSP_PATH :=../../gdbrsp
+
 OUTPUTDIR :=./bin
 SOURCEDIR :=./src
 HEADERDIR :=./include
 
 LIBMOD:=$(LIBMOD_PATH)/bin/libmod.a
 LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
+LIBRSP:=$(LIBRSP_PATH)/bin/libgdbrsp.a
 
 #Flags to be used during compilation of the platform. Note 
 #that they may be different form flags used for compiling
 #dependencies.
 GCC_FLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
-    -Iinclude -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
+    -I$(LIBRSP_PATH)/include -Iinclude \
+    -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
 
 #added -Wl,--allow-multiple-definition for possible bug in binutils/ld
 #as recommended in https://sourceware.org/bugzilla/show_bug.cgi?id=12762
-LD_FLAGS   :=-L../../bin -lmod -lsim
+LD_FLAGS   :=-L../../bin -lmod -lsim -lgdbrsp
 #-Wl,--allow-multiple-definition
 
 #source files for the platform

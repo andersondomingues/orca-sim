@@ -144,7 +144,8 @@ ORCA_CHECK_MEMORY_SPACE := YES
 ORCA_HFRISCV_MODE := CYCLE
 
 # Enables support for GDB remote debugging for processing tiles.
-ORCA_ENABLE_GDBRSP := YES
+# Enabling GDB support dramatically reduce simulation speed.
+ORCA_ENABLE_GDBRSP := NO
 
 # When enabled, the GDBRSP service will instantiate a UDP server
 # for each processing tile. Each server will serve one UDP port,
@@ -259,7 +260,7 @@ endif
 #gdbrsp
 ifeq ($(ORCA_ENABLE_GDBRSP), YES)
 	COMPLINE := $(COMPLINE) -DORCA_ENABLE_GDBRSP \
-		-DORCA_GDBRSP_PORT=$(ORCA_GDBRSP_PORT)
+		 -DORCA_GDBRSP_PORT=$(ORCA_GDBRSP_PORT)
 endif
 
 export COMPLINE
