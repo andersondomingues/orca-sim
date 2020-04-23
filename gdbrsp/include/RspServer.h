@@ -1,15 +1,21 @@
 #ifndef _RSP_SERVER_H
 #define _RSP_SERVER_H
 
-#include <UdpAsyncServer.h>
+//base API includes
 #include <iostream>
+
+//in-package includes
+#include <UdpAsyncServer.h>
+
+//off-package includes
+#include <ProcessorState.h>
 
 using namespace std;
 
 #define RSP_BUFFER_SIZE 1000
-//#define RSP_EMPTY_RESPONSE "$#00\0" 
 #define RSP_EMPTY_RESPONSE ""
 
+template <typename T>
 class RspServer{
 
 private:
@@ -23,10 +29,8 @@ private:
     char _output_buffer[RSP_BUFFER_SIZE];
     char _input_buffer[RSP_BUFFER_SIZE];
 
-
     //protocol-specific flags
     char _rsp_noack_mode = 0; //starts with noack disabled
-
 
 public:
     /**
@@ -46,7 +50,7 @@ public:
     int Ack();
     int Nack();
 
-    int Receive(char* buffer);
+	int Receive(ProcessorState<T>* state);
 
     uint8_t Checksum(char* buffer, int size);
     int Respond(std::string data);
@@ -71,5 +75,16 @@ public:
     int Handle_Z(char*);
     int Handle_z(char*);
 };
+
+//template instantiation
+template class RspServer<uint8_t>;
+template class RspServer<uint16_t>;
+template class RspServer<uint32_t>;
+template class RspServer<uint64_t>;
+
+template class RspServer<int8_t>;
+template class RspServer<int16_t>;
+template class RspServer<int32_t>;
+template class RspServer<int64_t>;
 
 #endif /* _RSP_SERVER_H */

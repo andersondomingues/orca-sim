@@ -35,11 +35,13 @@ TARGET_DEPS := \
 	$(SOURCEDIR)/NetworkTile.cpp \
 	$(SOURCEDIR)/Orca.cpp
 
+DEP_LIBS := $(LIBRSP) $(LIBMOD) $(LIBSIM)
+
 # include headers in the dependecy check
 HEADER_FILES := $(wildcard $(HEADERDIR)/*.h)
 
 #compiler an instance of the simulator 
-$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(TARGET_DEPS) $(HEADER_FILES)
+$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(TARGET_DEPS) $(HEADER_FILES) $(DEP_LIBS)
 	$(Q)g++ $(TARGET_DEPS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe $(LD_FLAGS) $(GCC_FLAGS)
 
 #remove previously generated files

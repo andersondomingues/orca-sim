@@ -13,6 +13,7 @@ HEADERDIR :=./include
 
 LIBMOD:=$(LIBMOD_PATH)/bin/libmod.a
 LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
+LIBRSP:=$(LIBRSP_PATH)/bin/libgdbrsp.a
 
 #Flags to be used during compilation of the platform. Note 
 #that they may be different form flags used for compiling
@@ -33,8 +34,10 @@ TARGET_DEPS := \
 # include headers in the dependecy check
 HEADER_FILES := $(wildcard $(HEADERDIR)/*.h)
 
+DEP_LIBS := $(LIBRSP) $(LIBMOD) $(LIBSIM)
+
 #compiler an instance of the simulator 
-$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(LIBMOD) $(LIBSIM) $(TARGET_DEPS) $(HEADER_FILES)
+$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(TARGET_DEPS) $(HEADER_FILES) $(DEP_LIBS)
 	$(Q)g++ $(TARGET_DEPS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe $(LD_FLAGS) $(GCC_FLAGS)
 
 #remove previously generated files

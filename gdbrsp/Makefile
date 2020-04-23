@@ -7,8 +7,11 @@ LIBNAME :=libgdbrsp.a
 LIBSIM_PATH:=../simulator
 LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
 
+LIBMOD_PATH:=../models
+LIBMOD:=$(LIBMOD_PATH)/bin/libmod.a
+
 #include flags (plus external flags)
-CPPFLAGS :=-I./include -I../simulator/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
+CPPFLAGS :=-Iinclude -I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
 
 #list of dependencies (source files)
 TARGET_DEPS := \

@@ -2,7 +2,8 @@
 
 #define RSP_DEBUG 1
 
-RspServer::RspServer(std::string ipaddr, uint32_t udpport){
+template <typename T>
+RspServer<T>::RspServer(std::string ipaddr, uint32_t udpport){
     
     _udpport = udpport;
     _ipaddr  = ipaddr;
@@ -18,12 +19,14 @@ RspServer::RspServer(std::string ipaddr, uint32_t udpport){
 }
 
 //remove udp server instance
-RspServer::~RspServer(){
+template <typename T>
+RspServer<T>::~RspServer(){
     delete _server;
 }
 
 //checksum
-uint8_t RspServer::Checksum(char* buffer, int length)
+template <typename T>
+uint8_t RspServer<T>::Checksum(char* buffer, int length)
 {
     uint8_t checksum = 0;
 
@@ -33,7 +36,8 @@ uint8_t RspServer::Checksum(char* buffer, int length)
 	return checksum;
 }
 
-int RspServer::Respond(std::string data){
+template <typename T>
+int RspServer<T>::Respond(std::string data){
     
     //packet response should be "$data#checksum"
     //copy the $ charater to the output
@@ -60,7 +64,8 @@ int RspServer::Respond(std::string data){
     return _server->Send(_output_buffer, data.length() + 4);
 }
 
-int RspServer::Ack(){
+template <typename T>
+int RspServer<T>::Ack(){
 
     #ifdef RSP_DEBUG
     std::cout << "\033[0;36m<-- ack\033[0m" << std::endl;
@@ -70,39 +75,45 @@ int RspServer::Ack(){
     return _server->Send(_output_buffer, 1);
 }
 
-int RspServer::Nack(){
+template <typename T>
+int RspServer<T>::Nack(){
     _output_buffer[0] = '-';
     return _server->Send(_output_buffer, 1);
 }
 
-int RspServer::Receive(char* buffer){
+template <typename T>
+int RspServer<T>::Receive(ProcessorState<T>* state){
 
     //check whether the udp server could receive another packet
-    int recv_bytes = _server->Receive(buffer);
+    int recv_bytes = _server->Receive(_input_buffer);
+
+	//if(state->pc == 12345){
+		std::cout << "fraafd" << state->pc << std::endl;
+	//}
 
     //check whether some packet have been received 
     if(recv_bytes > 0){
 
         //add termination to received string
-        buffer[recv_bytes] = '\0';
+        _input_buffer[recv_bytes] = '\0';
 
         //supports non-ack mode only, ignoring acks
-        if(buffer[0] == '+'){
+        if(_input_buffer[0] == '+'){
             #ifdef RSP_DEBUG
-            std::cout << "\033[0;31m-->\033[0m"  << buffer << std::endl;
+            std::cout << "\033[0;31m-->\033[0m"  << _input_buffer << std::endl;
             #endif
 
         //supports nin-ack mode only, ignoring retransmit requests
-        }else if(buffer[0] == '-'){
+        }else if(_input_buffer[0] == '-'){
             #ifdef RSP_DEBUG
-            std::cout << "\033[0;31m-->\033[0m"  << buffer << std::endl;
+            std::cout << "\033[0;31m-->\033[0m"  << _input_buffer << std::endl;
             #endif
         //check whether the packet is valid
         //TODO: parse checksum
-        }else if(buffer[0] == '$'){
+        }else if(_input_buffer[0] == '$'){
 
             #ifdef RSP_DEBUG
-            std::cout << "\033[0;36m-->\033[0m"  << buffer << std::endl;
+            std::cout << "\033[0;36m-->\033[0m"  << _input_buffer << std::endl;
             #endif
 
             //acknowledge if noack mode is inactive
@@ -111,49 +122,49 @@ int RspServer::Receive(char* buffer){
 
             //thread message accordingly
             //message handler depends on the first character
-            switch(buffer[1]){
+            switch(_input_buffer[1]){
 
                 //query packages to ask the stub for env vars
                 //supports only qC, qSupported, qOffset, and qSymbol
-                case 'q': return this->Handle_q(buffer);
-                case 'Q': return this->Handle_Q(buffer);
+                case 'q': return this->Handle_q(_input_buffer);
+                case 'Q': return this->Handle_Q(_input_buffer);
 
                 //report why the target halted
-                case '?': return this->Handle_Question(buffer);
+                case '?': return this->Handle_Question(_input_buffer);
 
                 //continue and stop commands
-                case 'c': return this->Handle_c(buffer);
-                case 'C': return this->Handle_C(buffer);
-                case 's': return this->Handle_s(buffer);
-                case 'S': return this->Handle_S(buffer);
+                case 'c': return this->Handle_c(_input_buffer);
+                case 'C': return this->Handle_C(_input_buffer);
+                case 's': return this->Handle_s(_input_buffer);
+                case 'S': return this->Handle_S(_input_buffer);
 
                 //TODO: see qC
-                case 'H': return this->Handle_H(buffer);
+                case 'H': return this->Handle_H(_input_buffer);
 
                 //kill the target
-                case 'k': return this->Handle_k(buffer);
+                case 'k': return this->Handle_k(_input_buffer);
 
                 //memory writing and reading
-                case 'm': return this->Handle_m(buffer);
-                case 'M': return this->Handle_M(buffer);
+                case 'm': return this->Handle_m(_input_buffer);
+                case 'M': return this->Handle_M(_input_buffer);
 
                 //register writing and reading
-                case 'p': return this->Handle_p(buffer);
-                case 'P': return this->Handle_P(buffer);
+                case 'p': return this->Handle_p(_input_buffer);
+                case 'P': return this->Handle_P(_input_buffer);
 
                 //vCont, reply empty
-                case 'v': return this->Handle_v(buffer);
+                case 'v': return this->Handle_v(_input_buffer);
 
                 //set or clear breakpoints
-                case 'z': return this->Handle_z(buffer);
-                case 'Z': return this->Handle_Z(buffer);
+                case 'z': return this->Handle_z(_input_buffer);
+                case 'Z': return this->Handle_Z(_input_buffer);
 
                 //commands not implemented by the server
                 //must respond with the empty response "$#00".
                 default:
 
                     #ifdef RSP_DEBUG
-                    std::cout << "\033[0;31mwnr: unhandled message: \033[0m" << buffer << std::endl;
+                    std::cout << "\033[0;31mwnr: unhandled message: \033[0m" << _input_buffer << std::endl;
                     #endif
 
                     //return this->Respond(RSP_EMPTY_RESPONSE);
@@ -163,7 +174,7 @@ int RspServer::Receive(char* buffer){
 
         }else{
             #ifdef RSP_DEBUG
-            std::cout << "\033[0;31mwrn: dropped unknown packet:\033[0m"  << buffer << std::endl;
+            std::cout << "\033[0;31mwrn: dropped unknown packet:\033[0m"  << _input_buffer << std::endl;
             #endif
         }
     }
@@ -171,7 +182,8 @@ int RspServer::Receive(char* buffer){
     return -1; //TODO: enum for statuses (could not recv a pkt)
 }
 
-int RspServer::Handle_v(char* buffer){
+template <typename T>
+int RspServer<T>::Handle_v(char* buffer){
 
     //vCont, must reply empty
     if(strcmp(&buffer[1], "vCont") == 0){
@@ -190,7 +202,8 @@ int RspServer::Handle_v(char* buffer){
 }
 
 //query packets (upper case Q is for SET)
-int RspServer::Handle_Q(char* buffer){
+template <typename T>
+int RspServer<T>::Handle_Q(char* buffer){
 
     //QStartNoAckMode, disables aknowledgement messages (+)
     if(memcmp(buffer, "$QStartNoAckMode", 15) == 0){
@@ -204,7 +217,8 @@ int RspServer::Handle_Q(char* buffer){
 }
 
 //query packets (lower case Q is for GET)
-int RspServer::Handle_q(char* buffer){
+template <typename T>
+int RspServer<T>::Handle_q(char* buffer){
     
     //supports only qC, qSupported, qOffset, and qSymbol
     if(memcmp(buffer, "$qC", 3) == 0){
@@ -226,66 +240,68 @@ int RspServer::Handle_q(char* buffer){
     return -1;
 }
 
-int RspServer::Handle_Question(char*){
+template <typename T>
+int RspServer<T>::Handle_Question(char*){
     return 0;
 }
 
-int RspServer::Handle_C(char*){
+template <typename T>
+int RspServer<T>::Handle_C(char*){
     return 0;
 }
 
-int RspServer::Handle_c(char*){
+template <typename T>
+int RspServer<T>::Handle_c(char*){
     return 0;
 }
 
-int RspServer::Handle_s(char*){
+template <typename T>
+int RspServer<T>::Handle_s(char*){
     return 0;
 }
 
-int RspServer::Handle_S(char*){
+template <typename T>
+int RspServer<T>::Handle_S(char*){
     return 0;
 }
 
-int RspServer::Handle_H(char*){
+template <typename T>
+int RspServer<T>::Handle_H(char*){
     return this->Ack();
 }
 
-int RspServer::Handle_k(char*){
+template <typename T>
+int RspServer<T>::Handle_k(char*){
     return 0;
 }
 
-int RspServer::Handle_m(char*){
+template <typename T>
+int RspServer<T>::Handle_m(char*){
     return 0;
 }
 
-int RspServer::Handle_M(char*){
+template <typename T>
+int RspServer<T>::Handle_M(char*){
     return 0;
 }
 
-int RspServer::Handle_p(char*){
+template <typename T>
+int RspServer<T>::Handle_p(char*){
     return 0;
 }
 
-int RspServer::Handle_P(char*){
+template <typename T>
+int RspServer<T>::Handle_P(char*){
     return 0;
 }
 
-int RspServer::Handle_Z(char*){
+template <typename T>
+int RspServer<T>::Handle_Z(char*){
     return 0;
 }
 
-int RspServer::Handle_z(char*){
+template <typename T>
+int RspServer<T>::Handle_z(char*){
     return 0;
 }
 
-/*int main(){
-
-    char buffer[5000];
-    RspServer* srv = new RspServer("127.0.0.1", 5000);
-
-    while(1){
-        srv->Receive(buffer);
-    }
-
-
-}*/

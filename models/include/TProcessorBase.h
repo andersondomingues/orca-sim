@@ -31,18 +31,7 @@
 
 #include <TimedModel.h>
 #include <UMemory.h>
-
-#define NUMBER_OF_REGISTERS 32
-
-/** Defines a generic state model 
-  * for use within processor models. */
-template <typename T>
-struct ProcessorState{
-
-	T regs[NUMBER_OF_REGISTERS];
-	T pc;
-	T pc_next;
-};
+#include <ProcessorState.h>
 
 /** This class implements the base operation for 
  * generic processor implementations. This class
@@ -65,7 +54,7 @@ private:
 	UMemory* _memory;	
 
 	#ifdef ORCA_ENABLE_GDBRSP
-	RspServer* _gdbserver;
+	RspServer<T>* _gdbserver;
 	static uint32_t GDBSERVER_PORT;
 	char _buffer[2000];
 	#endif
@@ -95,15 +84,15 @@ public:
 };
 
 //Some of the most used instances. More can be added later.
-template struct ProcessorState<uint8_t>;
-template struct ProcessorState<uint16_t>;
-template struct ProcessorState<uint32_t>;
-template struct ProcessorState<uint64_t>;
-
-//Some of the most used instances. More can be added later.
 template class TProcessorBase<uint8_t>;
 template class TProcessorBase<uint16_t>;
 template class TProcessorBase<uint32_t>;
 template class TProcessorBase<uint64_t>;
+
+//Some of the most used instances. More can be added later.
+template class TProcessorBase<int8_t>;
+template class TProcessorBase<int16_t>;
+template class TProcessorBase<int32_t>;
+template class TProcessorBase<int64_t>;
 
 #endif /* __TPROCESSOR_BASE_H*/

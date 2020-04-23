@@ -18,7 +18,7 @@ TProcessorBase<T>::TProcessorBase(std::string name, MemoryAddr initial_pc) : Tim
 	_state.pc_next = _state.pc + sizeof(T);
 
 	#ifdef ORCA_ENABLE_GDBRSP
-	_gdbserver = new RspServer("127.0.0.1", GDBSERVER_PORT++);
+	_gdbserver = new RspServer<T>("127.0.0.1", GDBSERVER_PORT++);
 	#endif
 }
 
@@ -48,11 +48,8 @@ template <typename T>
 SimulationTime TProcessorBase<T>::Run(){
 
 	#ifdef ORCA_ENABLE_GDBRSP
-	if(_gdbserver->Receive(_buffer) > 0){
-		std::cout << "hello world gdbrsp" << std::endl;
-	}
+	return _gdbserver->Receive(&_state);
+	#else
+	return 0;
 	#endif
-
-	return 1;
-
 }
