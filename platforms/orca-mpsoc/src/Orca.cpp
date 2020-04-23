@@ -80,7 +80,7 @@ void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
 	//std::cout << "router_signal: " << r1->GetName() << " ----[" 
 	//		  << p1 << "/" << p2 << "]---- " << r2->GetName() << std::endl;
 
-	std::cout << "router-comm: " << r1->GetInputBuffer(p1)->GetName()
+	std::cout << r1->GetInputBuffer(p1)->GetName()
 			  << " <---> " << r2->GetInputBuffer(p2)->GetName() << std::endl;
 }
 
@@ -98,17 +98,32 @@ int main(int __attribute__((unused)) argc, char** argv){
 	signal(SIGINT, sig_handler);
 
 	std::cout << "URSA/ORCA Platform " << std::endl;
-	std::cout << "==============[ TILE COMPOSITION ]" << std::endl;
+	std::cout << "==============[ TILE IDENTIFICATION ]" << std::endl;
 	
+	//populate tiles
+	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
+		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
+			if(x == 0 && y == 0)
+				std::cout << "[C]";
+			else
+				std::cout << "[P]";
+		}
+		std::cout << std::endl;
+	}
+
+	#ifdef ORCA_ENABLE_GDBRSP
+	std::cout << "==============[ GDBRSP SERVERS ]" << std::endl;
+	#endif
+	
+
 	//populate tiles
 	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
 		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 			
 			if(x == 0 && y ==0){
-				std::cout << "[N]";
-				tiles[x][y] = (Tile*)new NetworkTile(x, y);				
+				tiles[x][y] = (Tile*)new NetworkTile(x, y);
+				std::cout << "[----]";				
 			}else{
-				std::cout << "[P]";
 				tiles[x][y] = (Tile*)new ProcessingTile(x, y);
 			}
 		}

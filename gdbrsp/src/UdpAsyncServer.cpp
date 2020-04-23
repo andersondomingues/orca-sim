@@ -63,9 +63,7 @@ UdpAsyncServer::UdpAsyncServer(int port){
     
     if (bind(socket_fd,(struct sockaddr *)&server_address, sizeof(struct sockaddr)) == -1) {
         this->Error(UdpAsyncError::SOCKET_BIND);
-    }else{
-    	std::cout << "GDBRSP up at UDP port " << port << std::endl;
-	} 
+    } 
 }
 
 

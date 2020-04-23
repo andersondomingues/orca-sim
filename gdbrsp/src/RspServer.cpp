@@ -10,12 +10,7 @@ RspServer<T>::RspServer(std::string ipaddr, uint32_t udpport){
 
     //create udp server
     _server = new UdpAsyncServer(udpport);
-    
-    //create a new udp socket with the informed parameters
-
-    //register OnReceive as the listener
-
-    //start listening
+    std::cout << "[" << udpport << "]";
 }
 
 //remove udp server instance
@@ -87,9 +82,9 @@ int RspServer<T>::Receive(ProcessorState<T>* state){
     //check whether the udp server could receive another packet
     int recv_bytes = _server->Receive(_input_buffer);
 
-	//if(state->pc == 12345){
+	if(state->pc == 12345){
 		std::cout << "fraafd" << state->pc << std::endl;
-	//}
+	}
 
     //check whether some packet have been received 
     if(recv_bytes > 0){
