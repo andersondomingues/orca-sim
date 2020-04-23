@@ -74,8 +74,9 @@ SimulationTime Simulator::NextEpoch(){
 
 	//get the number of elements scheduled
 	uint32_t queue_size = _queue.size();
+
 	
-	std::cout << "event queue has scheduled " << queue_size << " elements:" << std::endl;
+	//std::cout << "event queue has scheduled " << queue_size << " elements:" << std::endl;
 
 	//time discount -> all events will be send back in
 	//time that amount of time 
@@ -93,7 +94,7 @@ SimulationTime Simulator::NextEpoch(){
 		tmp_queue[i] = _queue.top();
 		
 		tmp_queue[i].time -= discount;
-		std::cout << "## " << tmp_queue[i].timedModel->GetName() << "\t\t " << tmp_queue[i].time << std::endl;
+		//std::cout << "## " << tmp_queue[i].timedModel->GetName() << "\t\t " << tmp_queue[i].time << std::endl;
 
 		_queue.pop();
 	}
