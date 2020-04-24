@@ -26,7 +26,11 @@ private:
     std::string _ipaddr;
     int _udpport;
 
-    char _output_buffer[RSP_BUFFER_SIZE];
+	//state of the target processor
+	ProcessorState<T>* _state;
+	
+	//output and input buffers    
+	char _output_buffer[RSP_BUFFER_SIZE];
     char _input_buffer[RSP_BUFFER_SIZE];
 
     //protocol-specific flags
@@ -36,7 +40,7 @@ public:
     /**
      * Ctor.
      */
-    RspServer(std::string ipaddr, uint32_t udpport);   
+    RspServer(ProcessorState<T>* state, std::string ipaddr, uint32_t udpport);   
     
     /**
      * Dtor.
@@ -50,7 +54,7 @@ public:
     int Ack();
     int Nack();
 
-	int Receive(ProcessorState<T>* state);
+	int Receive();
 
     uint8_t Checksum(char* buffer, int size);
     int Respond(std::string data);
@@ -61,6 +65,7 @@ public:
     int Handle_v(char*);
     int Handle_q(char*);
     int Handle_Q(char*);
+    int Handle_g(char*);
     int Handle_Question(char*);
     int Handle_c(char*);
     int Handle_C(char*);

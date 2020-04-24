@@ -3,10 +3,13 @@
 #define RSP_DEBUG 1
 
 template <typename T>
-RspServer<T>::RspServer(std::string ipaddr, uint32_t udpport){
+RspServer<T>::RspServer(ProcessorState<T>* state, std::string ipaddr, uint32_t udpport){
     
     _udpport = udpport;
     _ipaddr  = ipaddr;
+
+	//store external state reference
+	_state = state;
 
     //create udp server
     _server = new UdpAsyncServer(udpport);
@@ -77,14 +80,10 @@ int RspServer<T>::Nack(){
 }
 
 template <typename T>
-int RspServer<T>::Receive(ProcessorState<T>* state){
+int RspServer<T>::Receive(){
 
     //check whether the udp server could receive another packet
     int recv_bytes = _server->Receive(_input_buffer);
-
-	if(state->pc == 12345){
-		std::cout << "fraafd" << state->pc << std::endl;
-	}
 
     //check whether some packet have been received 
     if(recv_bytes > 0){
@@ -122,6 +121,9 @@ int RspServer<T>::Receive(ProcessorState<T>* state){
                 //qC, qSupported, qOffset, and qSymbol must be supported
                 case 'q': return this->Handle_q(_input_buffer);
 
+				//report general registers
+				case 'g': return this->Handle_g(_input_buffer);
+				
                 //case 'Q': return this->Handle_Q(_input_buffer);
 
                 //report why the target halted
@@ -144,8 +146,8 @@ int RspServer<T>::Receive(ProcessorState<T>* state){
                 //case 'M': return this->Handle_M(_input_buffer);
 
                 //register writing and reading
-                //case 'p': return this->Handle_p(_input_buffer);
-                //case 'P': return this->Handle_P(_input_buffer);
+                case 'p': return this->Handle_p(_input_buffer);
+                case 'P': return this->Handle_P(_input_buffer);
 
                 //vCont, reply empty
                 case 'v': return this->Handle_v(_input_buffer);
@@ -177,12 +179,44 @@ int RspServer<T>::Receive(ProcessorState<T>* state){
     return -1; //TODO: enum for statuses (could not recv a pkt)
 }
 
+
+
+template <typename T>
+int RspServer<T>::Handle_g(char* buffer){
+
+	//there is only one 'g' message, just report registers
+	if(memcmp(buffer, "$g", 2) == 0){
+
+		//prints as [0x]00000000, number of regs * size of reg * size of char
+		char reg_data[NUMBER_OF_REGISTERS * sizeof(T) * 2];
+
+		//add data for all registers
+		//TODO: format print according to register size
+		for(int i = 0; i < NUMBER_OF_REGISTERS; i++)
+			sprintf(&reg_data[i * sizeof(T) * 2], "%08X", (unsigned int)_state->regs[i]);
+
+		//send regs info
+		//return this->Respond(reg_data);
+		return this->Respond(reg_data);
+
+	}else{
+		std::cout << "unhandled packet 'g'" << std::endl;
+	}
+	
+	return -1;
+}
+
 template <typename T>
 int RspServer<T>::Handle_v(char* buffer){
 
-    //vCont, must reply empty
-    if(strcmp(&buffer[1], "vCont") == 0){
-        this->Respond(RSP_EMPTY_RESPONSE);
+    //vCont, must reply empty (not supported)
+    if(memcmp(buffer, "$vCont", 5) == 0){
+        return this->Respond(RSP_EMPTY_RESPONSE);
+    
+	//vKill, gdb ask to stop debugging
+	//TODO: set state to "not running"
+    }else if(memcmp(buffer, "$vKill", 5) == 0){
+        return this->Respond("OK");
     
     //vMustReplyEmpty, must reply empty
     } else if(memcmp(buffer, "$vMustReplyEmpty", 16) == 0){
@@ -217,7 +251,7 @@ int RspServer<T>::Handle_q(char* buffer){
     
     //qC is not supported
     if(memcmp(buffer, "$qC", 3) == 0){
-        return this->Respond(RSP_EMPTY_RESPONSE);
+        return this->Respond("QC1");
 	
 	//is always attached
 	}else if(memcmp(buffer, "$qAttached", 7) == 0){
@@ -226,13 +260,15 @@ int RspServer<T>::Handle_q(char* buffer){
 
 	//target doesn't move the offsets, reply all zero
     }else if(memcmp(buffer, "$qOffsets", 6) == 0){
-		return this->Respond("Text=00000000;Data=00000000;Bss=00000000");
+		return this->Respond("Text=0;Data=0;Bss=0");
 	
-    //}else if(strcmp(buffer, "$qSymbol") == 0){
+	//notify target that client can provide symbols
+    }else if(memcmp(buffer, "$qSymbol", 6) == 0){
+		return this->Respond("OK");
 
     //report supported packet size and request to diable ack mode
     }else if(memcmp(buffer, "$qSupported", 11) == 0){
-		return this->Respond("PacketSize=512;vContSupported"); //QStartNoAckMode+
+		return this->Respond("PacketSize=512"); //QStartNoAckMode+
 
 	//currently running threads (one only)
 	}else if(memcmp(buffer, "$qfThreadInfo", 11) == 0){
@@ -258,7 +294,7 @@ int RspServer<T>::Handle_q(char* buffer){
 //why did the program stop?
 template <typename T>
 int RspServer<T>::Handle_Question(char*){
-    return this->Respond("S 00"); // <- exited ok
+    return this->Respond("S00"); // <- exited ok
 }
 
 template <typename T>
@@ -302,9 +338,39 @@ int RspServer<T>::Handle_M(char*){
     return 0;
 }
 
+//read registers
 template <typename T>
-int RspServer<T>::Handle_p(char*){
-    return 0;
+int RspServer<T>::Handle_p(char* buffer){
+
+	//only one 'p' type packet
+	if(memcmp(buffer, "$p", 2) == 0){
+		
+		//parse register id 
+		char digit[4] = "\0\0\0";
+
+		//get the two digits with hexa-code reg id
+		if(buffer[2] >= 48 && buffer[2] <= 57) digit[0] = buffer[2];
+		if(buffer[3] >= 48 && buffer[3] <= 57) digit[1] = buffer[3];
+
+		//convert ascii hexa to integer, so we can access the array
+		unsigned int reg = (int)strtol(digit, NULL, 16);
+		
+		//allocate space for the ascii hexa containing the value
+		char reg_data[sizeof(T) * 2 + 1]; //we add 1 because sprintf adds \0 to the end
+
+		//print the value as hexa string into the allocated space
+		sprintf(reg_data, "%0X", (unsigned int)_state->regs[reg]);
+
+		std::string red_data_without_last_character = std::string(reg_data);
+		printf("%d", (int)red_data_without_last_character.length());
+
+		this->Respond(red_data_without_last_character);
+
+	}else{
+		std::cout << "unhandled 'p' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+    return -1;
 }
 
 template <typename T>

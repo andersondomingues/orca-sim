@@ -8,6 +8,10 @@
 template <typename T>
 struct ProcessorState{
 
+	//please note that register to from 0 to NUM_REGS, and
+	//the next reg (which would overflow the array size)
+	//falls in the PC instead. For example, for an arch with
+	//32 register, the register number 33 is PC.
 	T regs[NUMBER_OF_REGISTERS];
 	T pc;
 	T pc_next;
