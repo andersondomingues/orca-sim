@@ -4,6 +4,8 @@
 
 #simulation logs
 *.log
+bin/output-debug.sh
+bin/output-uart.sh
 
 #executable code and application binaries 
 *.bin
