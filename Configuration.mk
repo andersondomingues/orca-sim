@@ -58,18 +58,18 @@ URSA_QUEUE_SIZE_CHECKING := NO
 # ===============================================================[ MEMORY ]
 # Check whether address are mapped to some memory range before writing
 # to memory. Set to YES to force checking (depletes performance).
-MEMORY_WRITE_ADDRESS_CHECKING := NO
+MEMORY_WRITE_ADDRESS_CHECKING := YES
 
 # Check whether address are mapped to some memory range before reading from
 # memory. Set to YES to force checking (depletes performance).
-MEMORY_READ_ADDRESS_CHECKING := NO
+MEMORY_READ_ADDRESS_CHECKING := YES
 
 # Check whether address are mapped to some memory range before wipeing
 # memory ranges. Set to YES to force checking (depletes performance).
 MEMORY_WIPE_ADDRESS_CHECKING := NO
 
 # Enable counter for read and write operations (depletes performance).
-MEMORY_ENABLE_COUNTERS := NO
+MEMORY_ENABLE_COUNTERS := YES
 
 # ==============================================================[ HFRISCV ]
 # Check whether address are mapped to some memory range before writing
