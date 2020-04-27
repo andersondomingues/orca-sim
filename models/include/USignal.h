@@ -91,6 +91,13 @@ public:
      */
     T Read();
 	 
+	/**
+	 * @brief Read the value stored into the bus
+	 * @param displacement index of an contiguous array of MMIOs
+	 * @return the value
+	 */
+	T Read(uint32_t displacement);
+
 	 /**
 	  * @brief Maps current Signal to the internal storage
 	  */
@@ -109,6 +116,7 @@ public:
      * @param val Value to be writen to the bus
      */
     void Write(T val);
+	// TODO, include operator =
     
 	/**
 	 * @brief Increments the value of the bus by the given value.
@@ -141,6 +149,7 @@ template class USignal<bool>;  //wire
 template class USignal<uint8_t>;  //mem word
 template class USignal<uint16_t>; //dmni/noc word
 template class USignal<uint32_t>; //proc word
+template class USignal<float>;    // float cooprocessor output
 template class USignal<uint64_t>; //double word
 template class USignal<int8_t>;  //mem word
 template class USignal<int16_t>; //dmni/noc word

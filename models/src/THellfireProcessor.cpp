@@ -29,6 +29,9 @@
 
 #include <THellfireProcessor.h>
 #include <USignal.h>
+#include <UMult.h>
+#include <TMult.h>
+
 
 #include "sys/time.h"
 
@@ -146,7 +149,7 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 		return data;
 		
 	}else{
-		
+		//int simd_idx=0;
 		//Address does not belong to any bank, check for special addresses
 		switch(address){
 			case IRQ_VECTOR:	return s->vector;
@@ -159,6 +162,48 @@ int32_t THellfireProcessor::mem_read(risc_v_state *s, int32_t size, uint32_t add
 			case COMPARE2:		return s->compare2;
 			case UART_READ:		return getchar();
 			case UART_DIVISOR:	return 0;
+			// floating point multiplier
+			case MULT_RESULT:      return _FPmult->GetResult();
+			case MULT_OP1:         return _FPmult->GetOp1();
+			case MULT_OP2:         return _FPmult->GetOp2();
+			// int multiplier
+			case INT_MULT_RESULT:  return _Intmult->GetResult();
+			case INT_MULT_OP1:     return _Intmult->GetOp1();
+			case INT_MULT_OP2:     return _Intmult->GetOp2();
+			/*
+			// SIMD floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers
+			case VET_MULT_RESULT ... (VET_MULT_RESULT+(SIMD_SIZE*4)-1): 
+				simd_idx= (address-VET_MULT_RESULT)/sizeof(float); 
+				//cout << "rIDX(res): " << simd_idx << endl; 
+				return _FPmultV[simd_idx]->GetResult();
+			case VET_MULT_OP1 ... (VET_MULT_OP1+(SIMD_SIZE*4)-1):       
+				simd_idx= (address-VET_MULT_OP1)/sizeof(float);    
+				//cout << "rIDX(op1): " << simd_idx << endl; 
+				return _FPmultV[simd_idx]->GetOp1(); 
+			case VET_MULT_OP2 ... (VET_MULT_OP2+(SIMD_SIZE*4)-1):       
+				simd_idx= (address-VET_MULT_OP2)/sizeof(float);    
+				//cout << "rIDX(op2): " << simd_idx << endl; 
+				return _FPmultV[simd_idx]->GetOp2();
+			// SIMD sequential floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers 
+			case VET_SEQ_MULT_RESULT ... (VET_SEQ_MULT_RESULT+(SIMD_SIZE*4)-1): 
+				simd_idx= (address-VET_SEQ_MULT_RESULT)/sizeof(float); 
+				//cout << "Timed rIDX(res): " << simd_idx << endl; 
+				return _FPSeqMultV[simd_idx]->GetResult();
+			case VET_SEQ_MULT_OP1 ... (VET_SEQ_MULT_OP1+(SIMD_SIZE*4)-1):       
+				simd_idx= (address-VET_SEQ_MULT_OP1)/sizeof(float);    
+				//cout << "Timed rIDX(op1): " << simd_idx << endl; 
+				return _FPSeqMultV[simd_idx]->GetOp1(); 
+			case VET_SEQ_MULT_OP2 ... (VET_SEQ_MULT_OP2+(SIMD_SIZE*4)-1): 
+				simd_idx= (address-VET_SEQ_MULT_OP2)/sizeof(float);
+				cout << "Timed rIDX(op2): " << simd_idx << endl; 
+				return _FPSeqMultV[simd_idx]->GetOp2();
+				*/
+/*
+			// SIMD sequential floating point multiplier - with DMA
+			case DMA_MAC_OUT ... (DMA_MAC_OUT+(SIMD_SIZE*4)-1): 
+				simd_idx= (address-DMA_MAC_OUT)/sizeof(float);
+				return (volatile uint32_t)DMA_MAC_OUT[simd_idx];
+*/
 		}
 			
 		//may the requested address fall in unmapped range, halt the simulation
@@ -241,7 +286,7 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		
 		return; //succefully written		
 	}
-		
+	//int simd_idx=0;
 	//may the request memory space be out of the mapped memory range, we assume
 	//the code is pointing to some of the special addresses		
 	switch(address){
@@ -257,16 +302,66 @@ void THellfireProcessor::mem_write(risc_v_state *s, int32_t size, uint32_t addre
 		}
 		
 		case IRQ_VECTOR:	s->vector = value; return;
-		case IRQ_CAUSE:	s->cause = value; return;
+		case IRQ_CAUSE:		s->cause = value; return;
 		case IRQ_MASK:		s->mask = value; return;
 		case IRQ_EPC:		s->epc = value; return;
-		case COUNTER:		s->counter = value; return;
-		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
+		case COUNTER:		s->counter = value; return;		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
 		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
 
-		case DEBUG_ADDR: output_debug << (int8_t)(value & 0xff) << std::flush; return;
-		case UART_WRITE: output_uart << (int8_t)(value & 0xff) << std::flush; return;
-		case UART_DIVISOR: return;
+		case DEBUG_ADDR:	output_debug << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_WRITE:	output_uart << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_DIVISOR:	return;
+		// floating point multiplier
+		case MULT_RESULT:	return; // do nothing
+		case MULT_OP1:		_FPmult->SetOp1(value); return; 
+		case MULT_OP2:		_FPmult->SetOp2(value); return; 
+		// int multiplier
+		case INT_MULT_RESULT:	return; // do nothing
+		case INT_MULT_OP1:	_Intmult->SetOp1(value); return; 
+		case INT_MULT_OP2:	_Intmult->SetOp2(value); return; 
+		/*
+		// SIMD floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers
+		case VET_MULT_RESULT ... (VET_MULT_RESULT+(SIMD_SIZE*4)-1):   return; // do nothing
+		case VET_MULT_OP1 ... (VET_MULT_OP1+(SIMD_SIZE*4)-1):     
+			simd_idx= (address-VET_MULT_OP1)/sizeof(float);  
+			//cout << "wIDX(op1): " << simd_idx << endl; 
+			_FPmultV[simd_idx]->SetOp1(value); 
+			return; 
+		case VET_MULT_OP2 ... (VET_MULT_OP2+(SIMD_SIZE*4)-1):     
+			simd_idx= (address-VET_MULT_OP2)/sizeof(float);  
+			//cout << "wIDX(op2): " << simd_idx << endl; 
+			_FPmultV[simd_idx]->SetOp2(value); 
+			return; 
+
+		// SIMD sequential floating point multiplier - a very innefficient memory transfer between the main memory and the SIMD registers 
+		case VET_SEQ_MULT_RESULT ... (VET_SEQ_MULT_RESULT+(SIMD_SIZE*4)-1):   return; // do nothing
+		case VET_SEQ_MULT_OP1 ... (VET_SEQ_MULT_OP1+(SIMD_SIZE*4)-1):     
+			simd_idx= (address-VET_SEQ_MULT_OP1)/sizeof(float);  
+			//cout << "Timed wIDX(op1): " << simd_idx << endl; 
+			_FPSeqMultV[simd_idx]->SetOp1(value); 
+			return; 
+		case VET_SEQ_MULT_OP2 ... (VET_SEQ_MULT_OP2+(SIMD_SIZE*4)-1):     
+			simd_idx= (address-VET_SEQ_MULT_OP2)/sizeof(float);  
+			//cout << "Timed wIDX(op2): " << simd_idx << endl; 
+			_FPSeqMultV[simd_idx]->SetOp2(value); 
+			return; 
+*/
+		// SIMD sequential floating point multiplier - with DMA 
+		// TODO these MMIO assignments
+		/*
+		case DMA_BURST_SIZE ... (DMA_BURST_SIZE+(SIMD_SIZE*4)-1):
+			simd_idx= (address-DMA_BURST_SIZE)/sizeof(float);    
+			(volatile uint32_t*)(DMA_BURST_SIZE[simd_idx]) = value;
+			return; 
+		case DMA_WEIGHT_MEM_ADDR ... (DMA_WEIGHT_MEM_ADDR+(SIMD_SIZE*4)-1):
+			simd_idx= (address-DMA_WEIGHT_MEM_ADDR)/sizeof(float);    
+			(volatile uint32_t*)DMA_WEIGHT_MEM_ADDR[simd_idx] = value; 
+			return; 
+		case DMA_INPUT_MEM_ADDR ... (DMA_INPUT_MEM_ADDR+(SIMD_SIZE*4)-1):
+			simd_idx= (address-DMA_INPUT_MEM_ADDR)/sizeof(float);    
+			(volatile uint32_t*)DMA_INPUT_MEM_ADDR[simd_idx] = value; 
+			return; 
+*/
 
 		case EXIT_TRAP:
 			std::cout << this->GetName() << ": exit trap triggered! " << std::endl;
@@ -496,6 +591,22 @@ SimulationTime THellfireProcessor::Run(){
 	ptr_s = r[rs1] + (int32_t)imm_s;
 	r[0] = 0;
 
+/*
+	if (s->pc >= 0x4000651c && s->pc <= 0x400065d8){
+		// if it is a store
+		if (opcode == 0x23){
+			printf("store addr: 0x%X\n",ptr_s);
+		}
+		if (s->pc == 0x40006568){
+			printf("FLUSH4 (%p) %d; opcode = 0x%X; pc = 0x%X \n",s->sram->GetMap(0x4041200C),*(uint32_t*)s->sram->GetMap(0x4041200C), opcode, s->pc);
+		}else
+		{
+			printf("FLUSH3 (%p) %d; opcode = 0x%X; pc = 0x%X \n",s->sram->GetMap(0x4041200C),*(uint32_t*)s->sram->GetMap(0x4041200C), opcode, s->pc);
+		}
+	}
+
+*/
+
 	switch(opcode){
 		case 0x37: r[rd] = imm_u; break;										/* LUI */
 		case 0x17: r[rd] = s->pc + imm_u; break;									/* AUIPC */
@@ -604,6 +715,56 @@ SimulationTime THellfireProcessor::Run(){
 				break;
 			}
 			break;
+/*
+		// instruction custom0. see https://github.com/riscv/riscv-opcodes/blob/master/opcodes-custom
+		case 0x02:
+			//@custom0            rd rs1 imm12 14..12=0 6..2=0x02 1..0=3
+			//@custom0.rs1        rd rs1 imm12 14..12=2 6..2=0x02 1..0=3
+			//@custom0.rs1.rs2    rd rs1 imm12 14..12=3 6..2=0x02 1..0=3
+			//@custom0.rd         rd rs1 imm12 14..12=4 6..2=0x02 1..0=3
+			//@custom0.rd.rs1     rd rs1 imm12 14..12=6 6..2=0x02 1..0=3
+			//@custom0.rd.rs1.rs2 rd rs1 imm12 14..12=7 6..2=0x02 1..0=3
+			switch(funct3){
+					case 0x0: custom0.Run(); break;
+					case 0x2: custom0.Run(rs1); break;
+					case 0x3: custom0.Run(rs1,rs2); break;
+					case 0x4: custom0.Run(0,0,&(r[rd])); break;
+					case 0x5: custom0.Run(rs1,0,&(r[rd])); break;
+					case 0x7: custom0.Run(rs1,rs2,&(r[rd])); break;
+					default: goto fail;
+			}
+			break;
+		// instruction custom1. see https://github.com/riscv/riscv-opcodes/blob/master/opcodes-custom
+		case 0x0A:
+			//@custom1            rd rs1 imm12 14..12=0 6..2=0x0A 1..0=3
+			//@custom1.rs1        rd rs1 imm12 14..12=2 6..2=0x0A 1..0=3
+			//@custom1.rs1.rs2    rd rs1 imm12 14..12=3 6..2=0x0A 1..0=3
+			//@custom1.rd         rd rs1 imm12 14..12=4 6..2=0x0A 1..0=3
+			//@custom1.rd.rs1     rd rs1 imm12 14..12=6 6..2=0x0A 1..0=3
+			//@custom1.rd.rs1.rs2 rd rs1 imm12 14..12=7 6..2=0x0A 1..0=3
+			switch(funct3){
+					case 0x0: custom1.Run(); break;
+					case 0x2: custom1.Run(rs1); break;
+					case 0x3: custom1.Run(rs1,rs2); break;
+					case 0x4: custom1.Run(0,0,&(r[rd])); break;
+					case 0x5: custom1.Run(rs1,0,&(r[rd])); break;
+					case 0x7: custom1.Run(rs1,rs2,&(r[rd])); break;
+					default: goto fail;
+			}
+			break;
+		// instructions custom2 and custom3 are reserved. Thus, it is not recommended to use them
+		case 0x16:
+		case 0x1E:
+			stringstream ss;
+			ss << this->GetName() << ":this custom instruction is reserved (pc=0x" << std::hex << s->pc;
+			ss << " opcode=0x" << std::hex << inst << ")";
+
+			dumpregs(s);
+			bp(s, RISCV_INVALID_OPCODE);
+			
+			throw std::runtime_error(ss.str());
+			break;
+*/
 		default:
 fail:
 			stringstream ss;
@@ -661,6 +822,9 @@ fail:
 		case 0x3:
 			return 2;
 			break;
+		// custom0. get the number of cycles spent to execute the custom0 instruction
+		case 0x2:
+			return custom0.GetCycles();
 		default:
 			return 1;
 			break;
@@ -685,11 +849,26 @@ void THellfireProcessor::SetMem0(UMemory* m){
 	s->sram = m;
 }
 
+// void THellfireProcessor::SetSeqMultVet(TimedFPMultiplier* mult){
+// 	_FPSeqMultV.push_back(mult);
+// }
+
 THellfireProcessor::THellfireProcessor(string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall) : TimedModel(name) {
+
+	//UntimedFPMultiplier * auxFPMult;
 
 	s = &context;
 	memset(s, 0, sizeof(risc_v_state));
-	
+
+	// create the multipliers
+	_FPmult = new UntimedFPMultiplier("FPmult");
+	_Intmult = new UntimedIntMultiplier("Intmult");
+	/*
+	for(int i=0;i<SIMD_SIZE;i++){
+		auxFPMult = new UntimedFPMultiplier("FPmult["+std::to_string(i)+"]");
+		_FPmultV.push_back(auxFPMult);
+	}
+	*/
 	s->vector = 0;
 	s->cause = 0;
 	s->mask = 0;
@@ -729,9 +908,31 @@ THellfireProcessor::~THellfireProcessor(){
 	delete _counter_hosttime;
 
 	#endif
+
+	delete _FPmult;
+	delete _Intmult;
+	/*
+	for(int i=0;i<SIMD_SIZE;i++) {
+		delete _FPmultV[i];
+		delete	_FPSeqMultV[i];
+	}
+	_FPmultV.clear();
+	_FPSeqMultV.clear();
+	*/
 }
 
 void THellfireProcessor::Reset(){
     //TODO: to be implemented
+
+	_FPmult->Reset();
+	_Intmult->Reset();
+	/*
+	for(int i=0;i<SIMD_SIZE;i++) {
+		_FPmultV[i]->Reset();
+		_FPSeqMultV[i]->Reset();
+	
+	}
+	*/
+
     return;
 }

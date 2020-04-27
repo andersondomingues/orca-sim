@@ -46,6 +46,8 @@
 // encapsulate it inside a class. Thus, memory manipu-   
 // lation is done through the static methods of the
 // MemoryHelper class.
+
+// TODO use template to define MemoryType
 class UMemory: public UntimedModel
 {
 
