@@ -15,12 +15,12 @@ TARGET_DEPS := \
 
 #pack file into a static library to be used later
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
-	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
+	$(Q)ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes into %.o files
-$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp 
-	g++ $(CPPFLAGS) $< -o $@ 
+$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp $(HEADERDIR)/%.h 
+	$(Q)g++ $(CPPFLAGS) $< -o $@ 
 	
 #remove previously generated files
 clean:
-	rm -rf $(OUTPUTDIR)/*.o $(OUTPUTDIR)/*.a
+	$(Q)rm -rf $(OUTPUTDIR)/*.o $(OUTPUTDIR)/*.a

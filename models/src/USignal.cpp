@@ -127,7 +127,17 @@ template <typename T>
 T USignal<T>::Read(){
 	return *_t_ptr;
 }
-    
+
+/**
+ * @brief Read the value stored into the bus
+ * @param displacement index of an contiguous array of MMIOs
+ * @return the value
+ */
+template <typename T>
+T USignal<T>::Read(uint32_t displacement){
+	return _t_ptr[displacement];
+}
+
 /**
  * @brief Set the value of the bus
  * @param val the value

@@ -94,7 +94,7 @@ void check_params(){
 	std::cout << "ORCA_NOC_HEIGHT set to " << ORCA_NOC_HEIGHT << std::endl;
 	#endif
 	
-	#ifndef ORCA_NOC_HEIGHT
+	#ifndef ORCA_NOC_WIDTH
 	std::runtime_error("ORCA_NOC_WIDTH must be defined in Configuration.mk\n");
 	#else
 	std::cout << "ORCA_NOC_WIDTH set to " << ORCA_NOC_WIDTH << std::endl;

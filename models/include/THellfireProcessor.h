@@ -24,22 +24,29 @@
 //models libs
 #include <UMemory.h>
 #include <USignal.h>
+#include <UMult.h>
+//#include <TMult.h>
 
-#define EXIT_TRAP			0xe0000000
+#define EXIT_TRAP		0xe0000000
 #define IRQ_VECTOR		0xf0000000
-#define IRQ_CAUSE			0xf0000010
-#define IRQ_MASK			0xf0000020
+#define IRQ_CAUSE		0xf0000010
+#define IRQ_MASK		0xf0000020
 #define IRQ_STATUS		0xf0000030
 #define IRQ_EPC			0xf0000040
 #define COUNTER			0xf0000050
 #define COMPARE			0xf0000060
-#define COMPARE2			0xf0000070
-#define EXTIO_IN			0xf0000080
-#define EXTIO_OUT			0xf0000090
+#define COMPARE2		0xf0000070
+#define EXTIO_IN		0xf0000080
+#define EXTIO_OUT		0xf0000090
 #define DEBUG_ADDR		0xf00000d0
 #define UART_WRITE		0xf00000e0
-#define UART_READ			0xf00000e0
-#define UART_DIVISOR		0xf00000f0
+#define UART_READ		0xf00000e0
+#define UART_DIVISOR	0xf00000f0
+// floating point multiplier
+// see UMult.h and TMult.h to check the addresses related to these modules
+
+// # of 4 bytes inst executesd in paralel in the SIMD ULA 
+//#define SIMD_SIZE           1
 
 #define ntohs(A) ( ((A)>>8) | (((A)&0xff)<<8) )
 #define htons(A) ntohs(A)
@@ -69,7 +76,13 @@ private:
 	risc_v_state context;
 	risc_v_state *s;
 	int i;
-	
+
+	UntimedFPMultiplier*  _FPmult;
+	UntimedIntMultiplier* _Intmult;
+
+	//vector<UntimedFPMultiplier*>  _FPmultV;
+	//vector<TimedFPMultiplier*>  _FPSeqMultV;
+
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	USignal<uint32_t>* _counter_iarith;
 	USignal<uint32_t>* _counter_ilogical;
@@ -131,6 +144,9 @@ public:
 	//setters for memories
 	void SetMem0(UMemory*);
 	
+	//setter for sequential multiplier
+	//void SetSeqMultVet(TimedFPMultiplier*);
+
 	SimulationTime Run();
 	
 	//file output

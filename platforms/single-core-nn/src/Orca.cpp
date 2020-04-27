@@ -92,7 +92,7 @@ void check_params(){
 	#else
 	std::cout << "URSA_QUEUE_SIZE_CHECKING set to " << URSA_QUEUE_SIZE_CHECKING << std::endl;
 	#endif
-
+	
 	//memory
 	#ifndef MEMORY_WRITE_ADDRESS_CHECKING
 	std::cout << "MEMORY_WRITE_ADDRESS_CHECKING disabled" << std::endl;
@@ -156,15 +156,34 @@ int main(int __attribute__((unused)) argc, char** argv){
 		return 1;
 	}
 	
-	std::cout << "==============[ TILE COMPOSITION ]" << std::endl;
+	std::cout << "==============[ TILE COMPOSITION ]" << std::endl; 
 	
 	//create new tile (single)
 	tile = new ProcessingTile();
 	
 	//load bin into memory
 	tile->GetMem0()->LoadBin(std::string(argv[1]), MEM0_BASE, MEM0_SIZE);
-	
-	std::cout << "==============[ SIMULATION ]" << std::endl;
+
+/*
+	printf("MEM info: base %X - last %X - size %d\n",tile->GetMem0()->GetBase(), tile->GetMem0()->GetLastAddr(), tile->GetMem0()->GetSize());
+	long addr = 0x40500000;
+	int i, data;
+	float dataf;
+	int8_t * ptr;
+	for(i=0;i<10;i++){
+		ptr = tile->GetMem0()->GetMap(addr+i*4);
+		dataf = *(float*)ptr;
+		printf("WVET (%d - %p): %f\n",i, ptr, dataf);
+	}
+
+	addr = 0x40580000;
+	for(i=0;i<10;i++){
+		ptr = tile->GetMem0()->GetMap(addr+i*4);
+		data = *(uint32_t*)ptr;
+		printf("IVET (%d - %p): %d - %X\n",i, ptr, data, data);
+	}	
+*/	
+	std::cout << "==============[ SIMULATION ]" << std::endl;  
 	
 	//instantiate simulation
 	Simulator* s = new Simulator();
@@ -173,11 +192,9 @@ int main(int __attribute__((unused)) argc, char** argv){
 	
 	//schedule pcore
 	s->Schedule(Event(3, tile->GetCpu()));
-	
-	//schedule vetorial sequential multiplier
-	for(int i=0;i<SIMD_SIZE;i++) { 
-		s->Schedule(Event(1, tile->GetSeqMultVet(i)));
-	}
+
+	//schedule dma
+	s->Schedule(Event(2, tile->GetDma()));
 
 	std::cout << "Epoch set to " << ORCA_EPOCH_LENGTH << " cycles." << std::endl;
 	std::cout << "Please wait..." << std::endl;
