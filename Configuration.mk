@@ -131,7 +131,7 @@ ORCA_MEMORY_SIZE := 1000000
 # mits of memory space when reading or writing. This option is 
 # useful for debugging memory access, but dramatically depletes
 # simulation performance. 
-ORCA_CHECK_MEMORY_SPACE := YES
+ORCA_CHECK_MEMORY_SPACE := NO
 
 #================================================================#
 # HF-RISCV CORE OPTIONS                                          #
@@ -145,7 +145,7 @@ ORCA_HFRISCV_MODE := CYCLE
 
 # Enables support for GDB remote debugging for processing tiles.
 # Enabling GDB support dramatically reduce simulation speed.
-ORCA_ENABLE_GDBRSP := NO
+ORCA_ENABLE_GDBRSP := YES
 
 # When enabled, the GDBRSP service will instantiate a UDP server
 # for each processing tile. Each server will serve one UDP port,

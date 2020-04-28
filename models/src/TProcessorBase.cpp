@@ -7,7 +7,10 @@ uint32_t TProcessorBase<T>::GDBSERVER_PORT = ORCA_GDBRSP_PORT;
 #endif
 
 template <typename T> 
-TProcessorBase<T>::TProcessorBase(std::string name, MemoryAddr initial_pc) : TimedModel(name) {
+TProcessorBase<T>::TProcessorBase(std::string name, MemoryAddr initial_pc, UMemory* mem) : TimedModel(name) {
+
+	//set mem ptr
+	_memory = mem;
 
 	//reset registers
 	for(int i = 0; i < NUMBER_OF_REGISTERS; i++)
@@ -18,7 +21,7 @@ TProcessorBase<T>::TProcessorBase(std::string name, MemoryAddr initial_pc) : Tim
 	_state.pc_next = _state.pc + sizeof(T);
 
 	#ifdef ORCA_ENABLE_GDBRSP
-	_gdbserver = new RspServer<T>(&_state, "127.0.0.1", GDBSERVER_PORT++);
+	_gdbserver = new RspServer<T>(&_state, _memory, "127.0.0.1", GDBSERVER_PORT++);
 	#endif
 }
 
@@ -36,6 +39,11 @@ TProcessorBase<T>::~TProcessorBase(){
 template <typename T> 
 ProcessorState<T>* TProcessorBase<T>::GetState(){
 	return &_state;
+}
+
+template <typename T>
+UMemory* TProcessorBase<T>::GetMemory(){
+	return _memory;
 }
 
 /**

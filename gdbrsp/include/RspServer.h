@@ -9,6 +9,7 @@
 
 //off-package includes
 #include <ProcessorState.h>
+#include <UMemory.h>
 
 using namespace std;
 
@@ -26,21 +27,20 @@ private:
     std::string _ipaddr;
     int _udpport;
 
-	//state of the target processor
+	//state of the target processor and memory reference
 	ProcessorState<T>* _state;
+	UMemory* _memory;
 	
 	//output and input buffers    
 	char _output_buffer[RSP_BUFFER_SIZE];
     char _input_buffer[RSP_BUFFER_SIZE];
 
-    //protocol-specific flags
-    char _rsp_noack_mode = 0; //starts with noack disabled
 
 public:
     /**
      * Ctor.
      */
-    RspServer(ProcessorState<T>* state, std::string ipaddr, uint32_t udpport);   
+    RspServer(ProcessorState<T>* state, UMemory* mem, std::string ipaddr, uint32_t udpport);   
     
     /**
      * Dtor.
@@ -91,5 +91,10 @@ template class RspServer<int8_t>;
 template class RspServer<int16_t>;
 template class RspServer<int32_t>;
 template class RspServer<int64_t>;
+
+//foward declaration
+int strhti(char* buffer, int length);
+int strfind(char* buffer, char find, int limit);
+void hexstr(char* output, char* input, uint32_t characters);
 
 #endif /* _RSP_SERVER_H */

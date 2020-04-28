@@ -1,15 +1,18 @@
 #include <RspServer.h>
+#include <sstream>
+#include <iomanip>
 
 #define RSP_DEBUG 1
 
 template <typename T>
-RspServer<T>::RspServer(ProcessorState<T>* state, std::string ipaddr, uint32_t udpport){
+RspServer<T>::RspServer(ProcessorState<T>* state, UMemory* mem, std::string ipaddr, uint32_t udpport){
     
     _udpport = udpport;
     _ipaddr  = ipaddr;
 
-	//store external state reference
+	//store external state reference and memory
 	_state = state;
+	_memory = mem;
 
     //create udp server
     _server = new UdpAsyncServer(udpport);
@@ -142,7 +145,7 @@ int RspServer<T>::Receive(){
                 //case 'k': return this->Handle_k(_input_buffer);
 
                 //memory writing and reading
-                //case 'm': return this->Handle_m(_input_buffer);
+               	case 'm': return this->Handle_m(_input_buffer);
                 //case 'M': return this->Handle_M(_input_buffer);
 
                 //register writing and reading
@@ -236,7 +239,6 @@ int RspServer<T>::Handle_Q(char* buffer){
 
     //QStartNoAckMode, disables aknowledgement messages (+)
     if(memcmp(buffer, "$QStartNoAckMode", 15) == 0){
-        _rsp_noack_mode = 1;
         this->Respond("OK");
     }else{
         std::cout << "unhandled packet 'Q'"  << std::endl;
@@ -272,7 +274,8 @@ int RspServer<T>::Handle_q(char* buffer){
 
 	//currently running threads (one only)
 	}else if(memcmp(buffer, "$qfThreadInfo", 11) == 0){
-		return this->Respond("m 0"); //alternatively "m1"
+		//return this->Respond("m 0"); //alternatively "m1"
+		return this->Respond("m1"); //alternatively "m1"
 
 	//report the end of list (see qfThreadInfo)
 	}else if(memcmp(buffer, "$qsThreadInfo", 11) == 0){
@@ -317,9 +320,11 @@ int RspServer<T>::Handle_S(char*){
     return 0;
 }
 
-//
+//select thread for subsequent actions, thread-0
+//is always selected
 template <typename T>
 int RspServer<T>::Handle_H(char*){
+
     return this->Respond("OK");
 }
 
@@ -328,9 +333,61 @@ int RspServer<T>::Handle_k(char*){
     return 0;
 }
 
+//'m': read value from the main memory
+//format => "$mX,Y#CC", where X is the
+//address, Y is the size
 template <typename T>
-int RspServer<T>::Handle_m(char*){
-    return 0;
+int RspServer<T>::Handle_m(char* buffer){
+	
+	//only one packet type 'm'
+	if(memcmp(buffer, "$m", 2) == 0){
+
+		uint32_t addr = 0, size = 0;
+		int end = 0, comma = 0;
+
+		//can crash here if no "#" in the message
+		//TODO: make sure that at least one "#" is present
+		end = strfind(buffer, '#', 100);
+
+		//raddr starts after the 'm' character and
+		//goes until the ','
+		addr = strhti(&buffer[2], end - 2);
+
+		//find the ',' char
+		comma = strfind(buffer, ',', end); 
+
+		//find size. NOTE: size means "X 16-bit words"
+		size = strhti(&buffer[comma+1], end) * 2;
+
+		//@TODO: why does GBD ask for addr=0?
+		//@TODO: remove restriction on 8bit memory model (another T param?)
+		if(addr < _memory->GetBase() || addr > _memory->GetLastAddr()){
+			std::cout << "gdb client requested data from outside memory space, ignoring" << std::endl;			
+			return this->Respond(""); //return 8 bits char 
+		}
+
+		//read data from memory
+		MemoryType data[size * sizeof(MemoryType)];
+		_memory->Read(addr, data, size);
+
+		//assuming bytes is always even. add size of int to avoid out of bounds
+		MemoryType str_data[size * sizeof(MemoryType) + sizeof(int)];
+
+		//convert from byte to hexstring
+		hexstr((char*)str_data, (char*)data, size * sizeof(MemoryType));
+
+		//add string termination
+		*((char*)&str_data[size * sizeof(MemoryType)]) = '\0'; 
+
+		return this->Respond(std::string((char*)str_data));
+
+	}else{
+
+		std::cout << "unhandled 'm' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+	
+    return -1;
 }
 
 template <typename T>
@@ -386,5 +443,60 @@ int RspServer<T>::Handle_Z(char*){
 template <typename T>
 int RspServer<T>::Handle_z(char*){
     return 0;
+}
+
+//string hex to int
+int strhti(char* buffer, int length){
+	
+	char tmp[length];
+
+	for(int i = 0; i < length; i++)
+		tmp[i] = '\0';
+
+	for(int i =0; i < length; i++){
+		//is [0-9] digit
+		if(buffer[i] >= 48 && buffer[i] <= 57){
+			tmp[i] = buffer[i];
+		//is [a-f] digit
+		}else if(buffer[i] >= 97 && buffer[i] <= 122){
+			tmp[i] = buffer[i];
+		}else{
+			break;
+		}
+	}
+
+	return (int)strtol(tmp, NULL, 16);
+}
+
+//find first occurrence of a character, returns index
+int strfind(char* buffer, char find, int limit){
+
+	for(int i = 0; i < limit; i++)
+		if(buffer[i] == find) return i;
+
+	return -1;
+}
+
+//byte array to hexa
+void hexstr(char* output, char* input, uint32_t bytes){
+	
+	printf("hexstr:");
+
+	uint32_t k, l;
+	
+	//mask is necessary to correct a bug(?) 
+	//when printing negative values.
+	uint32_t mask = 0x000000FF; 
+	
+	for(k = 0; k < bytes; k += 16){
+		for(l = 0; l < 16; l++){
+			sprintf(&output[k + l], "%02x", input[k + l] & mask );
+			printf("%02x", input[k + l] & mask );
+		}
+	}
+
+	//@TODO:does gdb require endianess treatment?
+
+	printf("\n");
 }
 

@@ -51,7 +51,7 @@ private:
 	/** We assume that every processor is attached to a 
 	 * memory core. For now, the only core available is 
 	 * untimed. */
-	UMemory* _memory;	
+	UMemory* _memory;
 
 	#ifdef ORCA_ENABLE_GDBRSP
 	RspServer<T>* _gdbserver;
@@ -64,7 +64,7 @@ public:
 	 * @param name A short name or description of the instance
 	 * @param initial_pc Memory address to which the PC
 		register will point to at the startup. */
-	TProcessorBase(std::string name, MemoryAddr initial_pc);
+	TProcessorBase(std::string name, MemoryAddr initial_pc, UMemory* mem);
 
 	/** Destructor. */
 	~TProcessorBase();
@@ -81,6 +81,13 @@ public:
 	 * processor states at the end of simulation.
 	 * @returns a pointer to the processor state struct. **/
 	ProcessorState<T>* GetState();
+
+	/** This method returns a pointer to the object that models 
+	 * the memory core. It is made private to avoid being changed 
+	 * by the processor core implementation.
+	 * @returns a pointers to the memory model */
+	UMemory* GetMemory();
+
 };
 
 //Some of the most used instances. More can be added later.

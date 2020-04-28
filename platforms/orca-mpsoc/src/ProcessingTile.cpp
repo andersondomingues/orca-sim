@@ -48,15 +48,14 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 
 	//create a cpu and memory in addition to current tile hardware
 	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu   = new THFRiscV(this->GetName() + ".cpu", _signal_intr, _signal_stall);
+	_cpu   = new THFRiscV(this->GetName() + ".cpu", _signal_intr, _signal_stall, _mem0);
 	_netif  = new TDmaNetif (this->GetName() + ".netif");
-	
-	//binds cpu to the main memory
-	_cpu->SetMem0(_mem0);
+
+	//binds netif to mem
 	_netif->SetMem0(_mem0);
 	
 	//reset control wires
-    _signal_stall->Write(0);
+    	_signal_stall->Write(0);
 	_signal_intr->Write(0); 
 	
 	_signal_send_status->Write(0);

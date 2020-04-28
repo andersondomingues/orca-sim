@@ -47,8 +47,6 @@
 typedef struct {
 	int32_t r[32];
 	uint32_t pc, pc_next;
-
-	UMemory* sram;
 	
 	uint32_t vector, cause, mask, status, status_dly[4], epc, counter, compare, compare2;
 	uint64_t cycles;
@@ -120,15 +118,12 @@ public:
 	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);
 
 	//ctor./dtor.
-	THFRiscV(string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall);
+	THFRiscV(string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall, UMemory* mem);
 	~THFRiscV();
 	
 	USignal<uint8_t>* GetSignalStall();
 	USignal<uint8_t>* GetSignalIntr();
 
-	//setters for memories
-	void SetMem0(UMemory*);
-	
 	SimulationTime Run();
 	
 	//file output
