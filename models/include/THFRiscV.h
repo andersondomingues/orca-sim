@@ -123,7 +123,8 @@ public:
 
     //risc_v_state GetState();
     
-	void dumpregs(risc_v_state *s);
+	//void dumpregs(risc_v_state *s);
+	void dumpregs();
 	void bp(risc_v_state *s, uint32_t ir);
 	int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
 	void mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value);

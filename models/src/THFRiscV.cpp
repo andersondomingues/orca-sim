@@ -38,11 +38,12 @@
 #define PC_NEXT GetState()->pc_next
 #define R GetState()->regs
 
-void THFRiscV::dumpregs(risc_v_state *s){
+//void THFRiscV::dumpregs(risc_v_state *s){
+void THFRiscV::dumpregs(){
 
 	for (uint32_t i = 0; i < 32; i += 4){
 		printf("r%02d [%08x] r%02d [%08x] r%02d [%08x] r%02d [%08x]\n", \
-		i, s->r[i], i+1, s->r[i+1], i+2, s->r[i+2], i+3, s->r[i+3]);
+		i, R[i], i+1, R[i+1], i+2, R[i+2], i+3, R[i+3]);
 	}
 
 	printf("pc: %08x\n\n", PC);
@@ -53,7 +54,7 @@ void THFRiscV::bp(risc_v_state *s, uint32_t ir){
 	printf("breakpoint reached!\n");
 	printf("pc: %08x, ir: %08x\n", PC, ir);
 	printf("irq_status: %08x, irq_cause: %08x, irq_mask: %08x\n", s->status, s->cause, s->mask);
-	dumpregs(s);
+	dumpregs();
 
 	stringstream ss;
 	ss << "breakpoints/bp.0x" << std::hex << s->counter << std::dec << ".bin";
@@ -144,7 +145,7 @@ int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 		}
 			
 		//may the requested address fall in unmapped range, halt the simulation
-		dumpregs(s);
+		dumpregs();
 		stringstream ss;
 		ss << GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
 		throw std::runtime_error(ss.str());
@@ -201,7 +202,7 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 				break;
 			}
 			default:{
-				dumpregs(s);
+				dumpregs();
 				stringstream ss;
 				ss << GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
 				throw std::runtime_error(ss.str());
@@ -239,7 +240,7 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 
 		case EXIT_TRAP:
 			std::cout << GetName() << ": exit trap triggered! " << std::endl;
-			dumpregs(s);
+			dumpregs();
 			output_debug.close();
 			output_uart.close();
             abort();
@@ -248,7 +249,7 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 		
 	//if none of the special address has been reach, the requested
 	//address if unknown to the system and we should halt the simulation
-	dumpregs(s);
+	dumpregs();
 	stringstream ss;
 			
 	ss << GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
@@ -563,7 +564,7 @@ fail:
 			ss << GetName() << ":invalid opcode (pc=0x" << std::hex << PC;
 			ss << " opcode=0x" << std::hex << inst << ")";
 	
-			dumpregs(s);
+			dumpregs();
 			bp(s, RISCV_INVALID_OPCODE);
 			
 			throw std::runtime_error(ss.str());

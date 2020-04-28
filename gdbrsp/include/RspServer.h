@@ -120,5 +120,6 @@ template class RspServer<int64_t>;
 int strhti(char* buffer, int length);
 int strfind(char* buffer, char find, int limit);
 void hexstr(char* output, char* input, uint32_t characters);
+uint32_t endswap(uint32_t v);
 
 #endif /* _RSP_SERVER_H */

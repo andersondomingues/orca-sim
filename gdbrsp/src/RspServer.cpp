@@ -215,17 +215,14 @@ int RspServer<T>::Handle_g(char* buffer){
 	//there is only one 'g' message, just report registers
 	if(memcmp(buffer, "$g", 2) == 0){
 
-		//prints as [0x]00000000, number of regs * size of reg * size of char
-		char reg_data[NUMBER_OF_REGISTERS * sizeof(T) * 2];
+		//prints as [0x]00000000, (number of regs + pc) * size of reg * 2 char per byte + '\0'
+		char reg_data[(NUMBER_OF_REGISTERS + 1) * sizeof(T) * 2 + 1];
 
-		//add data for all registers
-		//TODO: format print according to register size
-		for(int i = 0; i < NUMBER_OF_REGISTERS; i++)
-			sprintf(&reg_data[i * sizeof(T) * 2], "%08X", (unsigned int)_state->regs[i]);
+		//convert whole array to hexstring
+		hexstr((char*)reg_data, (char*)_state->regs, NUMBER_OF_REGISTERS + 1);
 
-		//send regs info
-		//return this->Respond(reg_data);
-		return this->Respond(reg_data);
+		//do not add trailing character as hexstr adds it
+		return this->Respond(std::string(reg_data));
 
 	}else{
 		std::cout << "unhandled packet 'g'" << std::endl;
@@ -244,7 +241,8 @@ int RspServer<T>::Handle_v(char* buffer){
 	//vKill, gdb ask to stop debugging
 	//TODO: set state to "not running"
     }else if(memcmp(buffer, "$vKill", 5) == 0){
-        return this->Respond("OK");
+        this->Respond("OK");
+		exit(0); //TODO: verify whether this is necessary
     
     //vMustReplyEmpty, must reply empty
     } else if(memcmp(buffer, "$vMustReplyEmpty", 16) == 0){
@@ -382,7 +380,7 @@ int RspServer<T>::Handle_m(char* buffer){
 		comma = strfind(buffer, ',', end); 
 
 		//find size. NOTE: size means "X 16-bit words"
-		size = strhti(&buffer[comma+1], end) * 2;
+		size = strhti(&buffer[comma+1], end);// * 2;
 
 		//@TODO: why does GBD ask for addr=0?
 		//@TODO: remove restriction on 8bit memory model (another T param?)
@@ -391,18 +389,15 @@ int RspServer<T>::Handle_m(char* buffer){
 			return this->Respond(""); //return 8 bits char 
 		}
 
-		//read data from memory
-		MemoryType data[size * sizeof(MemoryType)];
+		//read data from memory, 0x00 for each byte
+		MemoryType data[size * sizeof(MemoryType) * 2];
 		_memory->Read(addr, data, size);
 
-		//assuming bytes is always even. add size of int to avoid out of bounds
-		MemoryType str_data[size * sizeof(MemoryType) + sizeof(int)];
+		//store hexstring, "00000000" per integer, "00" per byte + '\0'
+		char str_data[size * 2 + 8]; //add 8 for integer-alignment
 
-		//convert from byte to hexstring
-		hexstr((char*)str_data, (char*)data, size * sizeof(MemoryType));
-
-		//add string termination
-		*((char*)&str_data[size * sizeof(MemoryType)]) = '\0'; 
+		//convert from byte to hexstring. number of integers to convert is equals
+		hexstr((char*)str_data, (char*)data, size / 2); 
 
 		return this->Respond(std::string((char*)str_data));
 
@@ -443,10 +438,7 @@ int RspServer<T>::Handle_p(char* buffer){
 		//print the value as hexa string into the allocated space
 		sprintf(reg_data, "%0X", (unsigned int)_state->regs[reg]);
 
-		std::string red_data_without_last_character = std::string(reg_data);
-		printf("%d", (int)red_data_without_last_character.length());
-
-		this->Respond(red_data_without_last_character);
+		this->Respond(std::string(reg_data));
 
 	}else{
 		std::cout << "unhandled 'p' packet, sent empty response" << std::endl;
@@ -503,25 +495,28 @@ int strfind(char* buffer, char find, int limit){
 }
 
 //byte array to hexa
-void hexstr(char* output, char* input, uint32_t bytes){
-	
-	printf("hexstr:");
+void hexstr(char* output, char* input, uint32_t integers){
 
-	uint32_t k, l;
+	uint32_t mask = 0xFFFFFFFF; 
 	
-	//mask is necessary to correct a bug(?) 
-	//when printing negative values.
-	uint32_t mask = 0x000000FF; 
-	
-	for(k = 0; k < bytes; k += 16){
-		for(l = 0; l < 16; l++){
-			sprintf(&output[k + l], "%02x", input[k + l] & mask );
-			printf("%02x", input[k + l] & mask );
-		}
+	uint32_t* input_i = (uint32_t*)input;
+	uint32_t output_i = 0;
+
+	//converts integer by integer
+	for(uint32_t i =0; i < integers; i++){
+		sprintf(&output[output_i], "%08x", endswap(input_i[i] & mask));	
+		output_i += 8;
 	}
-
-	//@TODO:does gdb require endianess treatment?
-
-	printf("\n");
 }
+
+uint32_t endswap(uint32_t value) {
+	
+	uint32_t tmp;
+
+    tmp = ((value << 8) & 0xFF00FF00) | ((value >> 8) & 0xFF00FF);
+    value = (tmp << 16) | (tmp >> 16);
+
+	return value;
+}
+
 
