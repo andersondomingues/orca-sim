@@ -1,14 +1,13 @@
-/** 
- * This file is part of project URSA. More information on the project
- * can be found at 
+/******************************************************************************
+ * This file is part of project ORCA. More information on the project
+ * can be found at the following repositories at GitHub's website.
  *
- * URSA's repository at GitHub: http://https://github.com/andersondomingues/ursa
+ * http://https://github.com/andersondomingues/orca-sim
+ * http://https://github.com/andersondomingues/orca-software-tools
+ * http://https://github.com/andersondomingues/orca-mpsoc
  *
- * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
- * 
- * This file is adapted from HF-RISC SoC project, which can be found at johanns' 
- * reposiitory at GitHub: https://github.com/sjohann81/hf-risc
- *-------------------------------------------------------------------------------
+ * Copyright (C) 2018-2020 Anderson Domingues, <ti.andersondomingues@gmail.com>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -22,7 +21,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
- *---------------------------------------------------------------------------- */
+******************************************************************************/
 #include <cstdlib>
 #include <sstream>
 #include <chrono>
@@ -34,22 +33,25 @@
 
 #define RISCV_INVALID_OPCODE 0x0
 
+//api access shorthands (must be undef at the end of the file)
+#define PC GetState()->pc
+#define PC_NEXT GetState()->pc_next
+#define R GetState()->regs
+
 void THFRiscV::dumpregs(risc_v_state *s){
-	int32_t i;
-	
-	for (i = 0; i < 32; i+=4){
+
+	for (uint32_t i = 0; i < 32; i += 4){
 		printf("r%02d [%08x] r%02d [%08x] r%02d [%08x] r%02d [%08x]\n", \
 		i, s->r[i], i+1, s->r[i+1], i+2, s->r[i+2], i+3, s->r[i+3]);
 	}
 
-	printf("pc: %08x\n", s->pc);
-	printf("\n");
+	printf("pc: %08x\n\n", PC);
 }
 
 void THFRiscV::bp(risc_v_state *s, uint32_t ir){
 
 	printf("breakpoint reached!\n");
-	printf("pc: %08x, ir: %08x\n", s->pc, ir);
+	printf("pc: %08x, ir: %08x\n", PC, ir);
 	printf("irq_status: %08x, irq_cause: %08x, irq_mask: %08x\n", s->status, s->cause, s->mask);
 	dumpregs(s);
 
@@ -96,7 +98,7 @@ int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 		case 4:
 			if(address & 3){
 				std::string err_msg = GetName() + ": unaligned access (load word) pc=0x" 
-					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+					+ std::to_string(PC) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
 				GetMemory()->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
@@ -105,7 +107,7 @@ int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 		case 2:
 			if(address & 1){
 				std::string err_msg = GetName() + ": unaligned access (load halfword) pc=0x" 
-					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+					+ std::to_string(PC) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
 				int16_t value;
@@ -174,7 +176,7 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 				if(address & 3){
 					stringstream ss;
 					ss << GetName() << ": unaligned access (store word) pc=0x" 
-					   << std::hex << s->pc << " addr=0x" << std::hex << address;
+					   << std::hex << PC << " addr=0x" << std::hex << address;
 					throw std::runtime_error(ss.str());
 				}else{
 					GetMemory()->Write(address, (int8_t*)&value, size);
@@ -184,7 +186,7 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 				if(address & 1){
 					std::string err_msg = GetName() 
 						+ ": unaligned access (store halfword) pc=0x" 
-						+ std::to_string(s->pc) + " addr=0x" 
+						+ std::to_string(PC) + " addr=0x" 
 						+ std::to_string(address);
 					throw std::runtime_error(err_msg);
 				}else{
@@ -413,16 +415,16 @@ SimulationTime THFRiscV::Run(){
 	#endif
 	
 	if (s->status && (s->cause & s->mask)){
-		s->epc = s->pc_next;
-		s->pc = s->vector;
-		s->pc_next = s->vector + 4;
+		s->epc = PC_NEXT;
+		PC = s->vector;
+		PC_NEXT = s->vector + 4;
 		s->status = 0;
 		for (i = 0; i < 4; i++)
 			s->status_dly[i] = 0;
 	}
 
 	//FETCH STAGE
-	GetMemory()->Read(s->pc, (int8_t*)&inst, 4); //4 x sizeof(uint8_t)
+	GetMemory()->Read(PC, (int8_t*)&inst, 4); //4 x sizeof(uint8_t)
 
 	//DECODE
 	opcode = inst & 0x7f;
@@ -449,30 +451,30 @@ SimulationTime THFRiscV::Run(){
 
 	switch(opcode){
 		case 0x37: r[rd] = imm_u; break;										/* LUI */
-		case 0x17: r[rd] = s->pc + imm_u; break;									/* AUIPC */
+		case 0x17: r[rd] = PC + imm_u; break;									/* AUIPC */
 		
-		case 0x6f: r[rd] = s->pc_next; s->pc_next = s->pc + imm_uj; break;				  /* JAL */
-		case 0x67: r[rd] = s->pc_next; s->pc_next = (r[rs1] + imm_i) & 0xfffffffe; break; /* JALR */
+		case 0x6f: r[rd] = PC_NEXT; PC_NEXT = PC + imm_uj; break;				  /* JAL */
+		case 0x67: r[rd] = PC_NEXT; PC_NEXT = (r[rs1] + imm_i) & 0xfffffffe; break; /* JALR */
 		case 0x63:
 			/* Branch prediction may fail if jumping 0 positions.
 			TODO: check whether the architecture predict such jumps */
 			
 			#ifdef HFRISCV_CYCLE_ACCURACY
-			pc_next_prediction = s->pc_next;
+			pc_next_prediction = PC_NEXT;
 			#endif
 			
 			switch(funct3){
-				case 0x0: if (r[rs1] == r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BEQ */
-				case 0x1: if (r[rs1] != r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BNE */
-				case 0x4: if (r[rs1] < r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLT */
-				case 0x5: if (r[rs1] >= r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGE */
-				case 0x6: if (u[rs1] < u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLTU */
-				case 0x7: if (u[rs1] >= u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGEU */
+				case 0x0: if (r[rs1] == r[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BEQ */
+				case 0x1: if (r[rs1] != r[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BNE */
+				case 0x4: if (r[rs1] < r[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BLT */
+				case 0x5: if (r[rs1] >= r[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BGE */
+				case 0x6: if (u[rs1] < u[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BLTU */
+				case 0x7: if (u[rs1] >= u[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BGEU */
 				default: goto fail;
 			}
 			
 			#ifdef HFRISCV_CYCLE_ACCURACY
-			branch_taken = (pc_next_prediction != s->pc_next);
+			branch_taken = (pc_next_prediction != PC_NEXT);
 			#endif 
 			
 			break;
@@ -558,7 +560,7 @@ SimulationTime THFRiscV::Run(){
 		default:
 fail:
 			stringstream ss;
-			ss << GetName() << ":invalid opcode (pc=0x" << std::hex << s->pc;
+			ss << GetName() << ":invalid opcode (pc=0x" << std::hex << PC;
 			ss << " opcode=0x" << std::hex << inst << ")";
 	
 			dumpregs(s);
@@ -568,9 +570,9 @@ fail:
 			break;
 	}
 	
-	_last_pc = s->pc;
-	s->pc = s->pc_next;
-	s->pc_next = s->pc_next + 4;
+	_last_pc = PC;
+	PC = PC_NEXT;
+	PC_NEXT = PC_NEXT + 4;
 	s->status = s->status_dly[0];
 	
 	for (i = 0; i < 3; i++)
@@ -632,10 +634,9 @@ THFRiscV::THFRiscV(std::string name, USignal<uint8_t>* intr, USignal<uint8_t>* s
 	s = new risc_v_state;
 	memset(s, 0, sizeof(risc_v_state));
 	
-
-	s->pc = HFRISCV_PC_MEMBASE;
-	s->pc_next = HFRISCV_PC_MEMBASE + 4;
-
+	PC = HFRISCV_PC_MEMBASE;
+	PC_NEXT = PC + 4;
+	
 	s->vector = 0;
 	s->cause = 0;
 	s->mask = 0;
@@ -681,3 +682,8 @@ void THFRiscV::Reset(){
     //TODO: to be implemented
     return;
 }
+
+//api access shorthands (must be undef at the end of the file)
+#undef PC 
+#undef PC_NEXT 
+#undef R

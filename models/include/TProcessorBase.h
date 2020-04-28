@@ -1,4 +1,4 @@
-/** 
+/******************************************************************************
  * This file is part of project ORCA. More information on the project
  * can be found at the following repositories at GitHub's website.
  *
@@ -21,7 +21,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
-**/
+******************************************************************************/
 #ifndef __TPROCESSOR_BASE_H
 #define __TPROCESSOR_BASE_H
 
