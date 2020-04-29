@@ -87,6 +87,7 @@ public:
      * Message handlers
      */
     int Handle_v(char*);
+    int Handle_X(char*);
     int Handle_q(char*);
     int Handle_Q(char*);
     int Handle_g(char*);
@@ -117,6 +118,7 @@ template class RspServer<int32_t>;
 template class RspServer<int64_t>;
 
 //foward declaration
+//TODO:move these functions to somewhere else
 int strhti(char* buffer, int length);
 int strfind(char* buffer, char find, int limit);
 void hexstr(char* output, char* input, uint32_t characters);

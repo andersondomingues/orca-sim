@@ -38,7 +38,6 @@
 #define PC_NEXT GetState()->pc_next
 #define R GetState()->regs
 
-//void THFRiscV::dumpregs(risc_v_state *s){
 void THFRiscV::dumpregs(){
 
 	for (uint32_t i = 0; i < 32; i += 4){
@@ -375,6 +374,8 @@ SimulationTime THFRiscV::Run(){
 	//call ancestor method which handles 
 	//generic tasks all processor models 
 	TProcessorBase::Run();
+
+	//return 1; //TODO: REMOVETHSI!!!!!
 
 	//update "external counters"
 	s->counter++;

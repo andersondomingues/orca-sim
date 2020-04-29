@@ -144,52 +144,32 @@ int RspServer<T>::Receive(){
 
             //message handler depends on the first character
             switch(_input_buffer[1]){
-
-                //query packages to ask the stub for env vars
-                //qC, qSupported, qOffset, and qSymbol must be supported
-                case 'q': return this->Handle_q(_input_buffer);
-
-				//report general registers
-				case 'g': return this->Handle_g(_input_buffer);
-				
+                case 'q': return this->Handle_q(_input_buffer); //query packages
+				case 'g': return this->Handle_g(_input_buffer); //get registers
                 //case 'Q': return this->Handle_Q(_input_buffer);
-
-                //report why the target halted
-                case '?': return this->Handle_Question(_input_buffer);
-
-                //continue and stop commands
-                //case 'c': return this->Handle_c(_input_buffer);
-                //case 'C': return this->Handle_C(_input_buffer);
+                case '?': return this->Handle_Question(_input_buffer); //halt reason
+                case 'c': return this->Handle_c(_input_buffer); //continue
+				//case 'C': return this->Handle_C(_input_buffer);
                 //case 's': return this->Handle_s(_input_buffer);
                 //case 'S': return this->Handle_S(_input_buffer);
-
-                //TODO: see qC
-                case 'H': return this->Handle_H(_input_buffer);
-
-                //kill the target
-                //case 'k': return this->Handle_k(_input_buffer);
-
-                //memory writing and reading
-               	case 'm': return this->Handle_m(_input_buffer);
-                //case 'M': return this->Handle_M(_input_buffer);
-
-                //register writing and reading
-                case 'p': return this->Handle_p(_input_buffer);
-                case 'P': return this->Handle_P(_input_buffer);
-
-                //vCont, reply empty
-                case 'v': return this->Handle_v(_input_buffer);
-
-                //set or clear breakpoints
-                //case 'z': return this->Handle_z(_input_buffer);
-                //case 'Z': return this->Handle_Z(_input_buffer);
+                case 'H': return this->Handle_H(_input_buffer); //Hc
+                //case 'k': return this->Handle_k(_input_buffer); //kill 
+               	case 'm': return this->Handle_m(_input_buffer); //mem reading
+                //case 'M': return this->Handle_M(_input_buffer); //mem writing
+                case 'p': return this->Handle_p(_input_buffer); //reg reading
+                case 'P': return this->Handle_P(_input_buffer); //reg writing
+                case 'v': return this->Handle_v(_input_buffer); //vCont, reply empty
+				case 'X': return this->Handle_X(_input_buffer); //binary mem writing
+                //case 'z': return this->Handle_z(_input_buffer); //set bp
+                //case 'Z': return this->Handle_Z(_input_buffer); //clear bp
 
                 //commands not implemented by the server
                 //must respond with the empty response "$#00".
                 default:
 
                     #ifdef RSP_DEBUG
-                    std::cout << "\033[0;31mwnr: packet unhandled: \033[0m" << _input_buffer << std::endl;
+                    std::cout << "\033[0;31mwnr: packet unhandled: \033[0m" 
+						<< _input_buffer << std::endl;
                     #endif
 
                     //return this->Respond(RSP_EMPTY_RESPONSE);
@@ -199,7 +179,8 @@ int RspServer<T>::Receive(){
 
         }else{
             #ifdef RSP_DEBUG
-            std::cout << "\033[0;31mwrn: dropped packet with unknown prefix:\033[0m"  << _input_buffer << std::endl;
+            std::cout << "\033[0;31mwrn: dropped packet with unknown prefix:\033[0m"
+				<< _input_buffer << std::endl;
             #endif
         }
     }
@@ -207,7 +188,45 @@ int RspServer<T>::Receive(){
     return -1; //TODO: enum for statuses (could not recv a pkt)
 }
 
+template <typename T>
+int RspServer<T>::Handle_X(char* buffer){
 
+	if(memcmp(buffer, "$X", 2) == 0){
+		
+		//locate addr to start writing to
+		int addr = strhti(&buffer[2], 10);
+
+		//find number of bytes to write
+		int i = strfind(buffer, ',', 14);
+		int size = strhti(&buffer[i+1], 10);
+
+		//respond ok if test message
+		if(size == 0){
+			return this->Respond("OK");
+
+		//otherwise, write to memory
+		}else{
+			
+			//find the beggining of the stream
+			i = strfind(buffer, ':', 20);
+			int* raw = (int*)&buffer[i+1];
+
+			//note: binary data comes from GDB
+			//client with bytes in the correct
+			//order, so no endianess treatment is 
+			//necessary.
+
+			//write the whole chunk to the memory of the device
+			_memory->Write(addr, (MemoryType*)raw, size);
+			return this->Respond("OK");
+		}
+
+	}else{
+		std::cout << "unhandled packet 'X'" << std::endl;
+	}
+	
+	return -1;
+}
 
 template <typename T>
 int RspServer<T>::Handle_g(char* buffer){
@@ -293,7 +312,7 @@ int RspServer<T>::Handle_q(char* buffer){
 
     //report supported packet size and request to diable ack mode
     }else if(memcmp(buffer, "$qSupported", 11) == 0){
-		return this->Respond("PacketSize=512"); //QStartNoAckMode+
+		return this->Respond("PacketSize=ff"); //QStartNoAckMode+
 
 	//currently running threads (one only)
 	}else if(memcmp(buffer, "$qfThreadInfo", 11) == 0){
@@ -323,9 +342,10 @@ int RspServer<T>::Handle_Question(char*){
     return this->Respond("S00"); // <- exited ok
 }
 
+//continue at the current address 
 template <typename T>
 int RspServer<T>::Handle_C(char*){
-    return 0;
+	return this->Respond("OK");
 }
 
 template <typename T>
@@ -347,7 +367,6 @@ int RspServer<T>::Handle_S(char*){
 //is always selected
 template <typename T>
 int RspServer<T>::Handle_H(char*){
-
     return this->Respond("OK");
 }
 
@@ -447,9 +466,32 @@ int RspServer<T>::Handle_p(char* buffer){
     return -1;
 }
 
+//write register
 template <typename T>
-int RspServer<T>::Handle_P(char*){
-    return 0;
+int RspServer<T>::Handle_P(char* buffer){
+
+	if(memcmp(buffer, "$P", 2) == 0){
+		
+		//locate register address
+		int addr = strhti(&buffer[2], 3);
+
+		//locate the '=' symbol
+		int eqsymb = strfind(buffer, '=', 10);
+
+		//get the register value
+		int value = strhti(&buffer[eqsymb+1], 10);
+		value = endswap(value);
+
+		//set register
+		_state->regs[addr] = value;
+		return this->Respond("OK");
+
+	}else{
+		std::cout << "unhandled 'P' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+
+    return -1;
 }
 
 template <typename T>
@@ -518,5 +560,3 @@ uint32_t endswap(uint32_t value) {
 
 	return value;
 }
-
-
