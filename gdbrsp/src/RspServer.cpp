@@ -209,15 +209,29 @@ int RspServer<T>::Handle_X(char* buffer){
 			
 			//find the beggining of the stream
 			i = strfind(buffer, ':', 20);
-			int* raw = (int*)&buffer[i+1];
+			uint8_t* raw = (uint8_t*)&buffer[i+1];
 
-			//note: binary data comes from GDB
-			//client with bytes in the correct
-			//order, so no endianess treatment is 
-			//necessary.
+
+			// note: binary data comes from GDB
+			// client with bytes in the correct
+			// order, so no endianess treatment is 
+			// necessary.
+
+			//copy chars to tmp array
+			for(int j = 0, i = 0; i < size; i++){
+				if(raw[j] == 0x7d){
+					raw[i] = (uint8_t)(raw[++j] ^ 0x20);
+					j++;
+				}else{
+					raw[i] = raw[j++];
+				}
+			}
+
 
 			//write the whole chunk to the memory of the device
 			_memory->Write(addr, (MemoryType*)raw, size);
+			_memory->SaveBin("snapshot.bin", _memory->GetBase(), _memory->GetSize());
+
 			return this->Respond("OK");
 		}
 
@@ -312,7 +326,7 @@ int RspServer<T>::Handle_q(char* buffer){
 
     //report supported packet size and request to diable ack mode
     }else if(memcmp(buffer, "$qSupported", 11) == 0){
-		return this->Respond("PacketSize=ff"); //QStartNoAckMode+
+		return this->Respond("PacketSize=FFF"); //QStartNoAckMode+
 
 	//currently running threads (one only)
 	}else if(memcmp(buffer, "$qfThreadInfo", 11) == 0){

@@ -37,7 +37,7 @@
 
 using namespace std;
 
-#define RSP_BUFFER_SIZE 1000
+#define RSP_BUFFER_SIZE 5000
 #define RSP_EMPTY_RESPONSE ""
 
 template <typename T>
