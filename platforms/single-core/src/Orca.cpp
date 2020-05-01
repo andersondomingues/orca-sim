@@ -34,7 +34,7 @@
 #include <UMemory.h>
 
 //reusable models
-#include <THellfireProcessor.h>
+#include <THFRiscV.h>
 
 //orca-specific hardware
 #include <ProcessingTile.h>
@@ -173,11 +173,6 @@ int main(int __attribute__((unused)) argc, char** argv){
 	
 	//schedule pcore
 	s->Schedule(Event(3, tile->GetCpu()));
-	
-	//schedule vetorial sequential multiplier
-	for(int i=0;i<SIMD_SIZE;i++) { 
-		s->Schedule(Event(1, tile->GetSeqMultVet(i)));
-	}
 
 	std::cout << "Epoch set to " << ORCA_EPOCH_LENGTH << " cycles." << std::endl;
 	std::cout << "Please wait..." << std::endl;

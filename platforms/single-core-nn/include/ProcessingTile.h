@@ -26,7 +26,7 @@
 #include <iostream>
 
 //model API
-#include <THellfireProcessor.h>
+#include <THFRiscV.h>
 #include <UMemory.h>
 #include <USignal.h>
 #include <TDmaMult.h>
@@ -156,7 +156,7 @@ private:
 
 	///@{ Main components of the system.
 	/// the hfrisv-core.
-	THellfireProcessor* _cpu; 
+	THFRiscV* _cpu; 
 	/// the main memory.
 	UMemory* _mem0;
 	/// DMA unit reponsible to transfer weight and input data from the main memory directly to the vector multipliers
@@ -193,7 +193,7 @@ public:
 	//getters
 	UMemory* GetMem0();
 	/// getters for the scheduler
-	THellfireProcessor* GetCpu();
+	THFRiscV* GetCpu();
 	TDmaMult* GetDma();
 	
 	/**

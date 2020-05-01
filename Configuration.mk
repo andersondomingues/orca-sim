@@ -12,21 +12,10 @@ GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=
 # Select the target platform. Different hardware architectures
 # are deployed to /platforms folder. We currently provide two
 # example architectures: (i) a single-core riscv processor core
-# based on the HF-RiscV processor and (ii) a NoC-based 
-# mesh-topologic manycore that uses the same processor core. 
-# PLATFORM := (orca-dma | single-core)
-PLATFORM      := single-core-nn
-
-# Apps to be compiled within kernel image. For multiple applications, 
-# use spacebar to separate names. Applications defined here will not 
-# be included in compilation unless you edit the file 
-#          extensions/orca-core/src/orca-core.cpp,
-# where you should set the spawn of tasks in each of the cores. 
-# ORCA_APPLICATIONS := producer-consumer-pubsub producer-consumer app-spawner app-bloater deadline-monitor
-ORCA_APPLICATIONS := mnist-ext-vet-seq-mult
-
-# Software extensions (experimental)
-ORCA_EXTENSIONS := orca-core orca-pubsub orca-monitoring
+# based on the HF-RiscV processor and (ii) a NoC-based  
+# mesh-topologic manycore that uses the same processor core . 
+# PLATFORM := (orca-mpsoc | single-core | single-core-nn)
+ORCA_PLATFORM  := single-core
 
 # ==================================================================[ ORCA ]
 
@@ -70,7 +59,7 @@ MEMORY_READ_ADDRESS_CHECKING := YES
 MEMORY_WIPE_ADDRESS_CHECKING := NO
 
 # Enable counter for read and write operations (depletes performance).
-MEMORY_ENABLE_COUNTERS := YES
+MEMORY_ENABLE_COUNTERS := NO
 
 # ==============================================================[ HFRISCV ]
 # Check whether address are mapped to some memory range before writing
@@ -152,10 +141,5 @@ ifeq ($(HFRISCV_MODE), CYCLE)
 endif
 
 
-
 export COMPLINE
 export GLOBAL_SETTINGS
-#export ORCA_NOC_HEIGHT
-#export ORCA_NOC_WIDTH
-export ORCA_APPLICATIONS
-export ORCA_EXTENSIONS

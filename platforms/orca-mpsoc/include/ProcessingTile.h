@@ -27,8 +27,13 @@
 
 //model API
 #include <THFRiscV.h>
+#include <TDmaNetif.h>
+#include <TRouter.h>
 #include <UMemory.h>
 #include <USignal.h>
+
+//arch specifc
+#include <Tile.h>
 
 /* MEMORY LAYOUT
 ------------------- 0x40000000 <<-- code begin
@@ -51,54 +56,6 @@
 #define MEM0_SIZE 0x0041FFFF /* main memory */
 #define MEM0_BASE 0x40000000
 
-
-//->>>> first available address for memory mapping 0x40410000
-
-//0x40410000 => memory mapped control wires
-#define SIGNAL_CPU_STALL    0x40410000  /* 8 bits */
-#define SIGNAL_CPU_INTR     0x40410001
-#define SIGNAL_SEND_STATUS  0x40410002
-//0x40410003
-#define SIGNAL_RECV_STATUS  0x40410004
-//0x40410005
-//0x40410006
-//0x40410007
-#define SIGNAL_PROG_SEND    0x40410008
-#define SIGNAL_PROG_RECV    0x40410009
-//0x4041000A
-//0x4041000B
-#define SIGNAL_PROG_ADDR    0x4041000C  /* 32 bits */
-#define SIGNAL_PROG_SIZE    0x40410010
-
-#define MAGIC_TILE_ID       0x40411000  
-
-//0x403F1xxx => memory mapped counters
-#ifdef MEMORY_ENABLE_COUNTERS
-#define M0_COUNTER_STORE_ADDR (0x40411010)
-#define M0_COUNTER_LOAD_ADDR  (0x40411014)
-#define M1_COUNTER_STORE_ADDR (0x40411018)
-#define M1_COUNTER_LOAD_ADDR  (0x4041101C)
-#define M2_COUNTER_STORE_ADDR (0x40411020)
-#define M2_COUNTER_LOAD_ADDR  (0x40411024)
-#endif
-
-#ifdef HFRISCV_ENABLE_COUNTERS
-#define CPU_COUNTER_ARITH_ADDR     (0x40411128)
-#define CPU_COUNTER_LOGICAL_ADDR   (0x4041112C)
-#define CPU_COUNTER_SHIFT_ADDR     (0x40411130)
-#define CPU_COUNTER_BRANCHES_ADDR  (0x40411134)
-#define CPU_COUNTER_JUMPS_ADDR     (0x40411138)
-#define CPU_COUNTER_LOADSTORE_ADDR (0x4041113C)
-#define CPU_COUNTER_HOSTTIME_ADDR  (0x40411140)
-#define CPU_COUNTER_CYCLES_TOTAL_ADDR (0x40411144)
-#define CPU_COUNTER_CYCLES_STALL_ADDR (0x40411148)
-#endif
-
-//0x403F15xx => router wires
-#ifdef ROUTER_ENABLE_COUNTERS
-#define ROUTER_COUNTER_ACTIVE_ADDR (0x40411500)
-#endif
-
 /**
  * @class ProcessingTile
  * @author Anderson Domingues
@@ -107,14 +64,17 @@
  * @brief This class models an entire processing element that contains
  * RAM memory (3x), DMA, NoC Router, HFRiscV core
  */
-class ProcessingTile{
+class ProcessingTile : private Tile{
 
 private:
 
+	TDmaNetif* _netif;
 	THFRiscV* _cpu; //hfrisv-core
 
 	//main memory
 	UMemory* _mem0;
+	UMemory* _mem1;
+	UMemory* _mem2;
 	
 	//NOTE: other hardware is defined in Tile.h as 
 	//we use inheritance to derive multiple tiles 
@@ -126,31 +86,53 @@ private:
 	
 	USignal<uint8_t>*  _signal_stall;
 	USignal<uint8_t>*  _signal_intr;
+	USignal<uint8_t>*  _signal_send_status;
+	USignal<uint32_t>* _signal_recv_status;
+	USignal<uint32_t>* _signal_prog_addr;
+	USignal<uint32_t>* _signal_prog_size;
+	USignal<uint8_t>*  _signal_prog_send;
+	USignal<uint8_t>*  _signal_prog_recv;
 	
 public: 
 
-	ProcessingTile();
+	ProcessingTile(uint32_t x, uint32_t y);
 	~ProcessingTile();
 	
+	TDmaNetif* GetDmaNetif();
+
+	UMemory* GetMem1();
+	UMemory* GetMem2();
+	
 	//getters
-    	USignal<uint8_t>*  GetSignalStall();
+    USignal<uint8_t>*  GetSignalStall();
 	USignal<uint8_t>*  GetSignalIntr();
+	USignal<uint8_t>*  GetSignalSendStatus();
+	USignal<uint32_t>* GetSignalRecvStatus();
+	USignal<uint32_t>* GetSignalProgAddr();
+	USignal<uint32_t>* GetSignalProgSize();
+	USignal<uint8_t>*  GetSignalProgSend();
+	USignal<uint8_t>*  GetSignalProgRecv();
 
 	//setters
-	void SetSignalStall(USignal<uint8_t>*);
+    void SetSignalStall(USignal<uint8_t>*);
 	void SetSignalIntr(USignal<uint8_t>*);
+	void SetSignalSendStatus(USignal<uint8_t>*);
+	void SetSignalRecvStatus(USignal<uint32_t>*);
+	void SetSignalProgAddr(USignal<uint32_t>*);
+	void SetSignalProgSize(USignal<uint32_t>*);
+	void SetSignalProgSend(USignal<uint8_t>*);
+	void SetSignalProgRecv(USignal<uint8_t>*);
 	
 	//getters
 	THFRiscV* GetCpu();
 	UMemory* GetMem0();
-
+	
 	//getters for mems
 	void SetMem0(UMemory*);
 	
 	USignal<uint32_t>* GetSignalHostTime();
 	
 	std::string ToString();
-	std::string GetName();
 };
 
 

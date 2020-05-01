@@ -34,7 +34,7 @@
 #include <UMemory.h>
 
 //reusable models
-#include <THellfireProcessor.h>
+#include <THFRiscV.h>
 
 //orca-specific hardware
 #include <ProcessingTile.h>

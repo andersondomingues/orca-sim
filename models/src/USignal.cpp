@@ -40,14 +40,16 @@ std::vector<ISignal*> ISignal::signals = std::vector<ISignal*>();
  * @param addr A memory base to be used within memory mapping
  */
 template <typename T>
-USignal<T>::USignal(uint32_t addr, std::string name){
+USignal<T>::USignal(std::string name){
 	_t_ptr  = &_t_storage;
-	_t_addr = addr;
 	_t_name = name;
 	
 	//register this instance with the global observer
 	ISignal::signals.push_back(this);
 };
+
+//@TODO: rework class to inherit from UntimedModel
+//@TODO: turn multiple construction into a single on using optional parameters
 
 /**
  * @brief Instiate a new bus with external storage (can be changed later via "MapTo()")
@@ -61,6 +63,13 @@ USignal<T>::USignal(T* t_ptr, uint32_t addr, std::string name){
 	_t_addr = addr;
 	_t_name = name;
 };
+
+template <typename T>
+USignal<T>::USignal(uint32_t addr, std::string name){
+    _t_ptr = &_t_storage;
+    _t_addr = addr;
+    _t_name = name;
+}
 
 /**
 * @brief Maps current Signal to the internal storage
@@ -84,18 +93,19 @@ void USignal<T>::MapTo(bool keep_val){
 
 /**
 * @brief Maps current Signal to an external storage and updates internal reference.
-* @param addr
-* @param m
+* @param memptr Location to shadown the access in
+* @param address to be used if mapping to memory
+* @param keep_val set to true to keep current signal value
 */
 template <typename T>
-void USignal<T>::MapTo(T* addr, uint32_t p, bool keep_val){
+void USignal<T>::MapTo(MemoryType* memptr, MemoryAddr address, bool keep_val){
 
 	//copies current value before changing pointers
 	if(keep_val) 
-		*addr = this->Read();
+		*((MemoryType*)memptr) = this->Read();
 
-	_t_ptr = addr;
-	_t_addr = p;
+	_t_ptr = (T*)memptr;
+	_t_addr = address;
 }
 
 /**
@@ -127,17 +137,7 @@ template <typename T>
 T USignal<T>::Read(){
 	return *_t_ptr;
 }
-
-/**
- * @brief Read the value stored into the bus
- * @param displacement index of an contiguous array of MMIOs
- * @return the value
- */
-template <typename T>
-T USignal<T>::Read(uint32_t displacement){
-	return _t_ptr[displacement];
-}
-
+    
 /**
  * @brief Set the value of the bus
  * @param val the value
@@ -162,7 +162,7 @@ void USignal<T>::Inc(T val){
  */
 template <typename T>
 void USignal<T>::Dec(T val){
-	*_t_ptr = (*_t_ptr) + val;
+	*_t_ptr = (*_t_ptr) - val;
 }
 
 /**
@@ -181,4 +181,12 @@ uint32_t USignal<T>::GetAddress(){
 template <typename T>
 std::string USignal<T>::GetName(){
 	return _t_name;
+}
+
+/**
+ * @brief Set an address for the signal
+ */
+template <typename T>
+void USignal<T>::SetAddress(MemoryAddr addr){
+    _t_addr = addr;
 }

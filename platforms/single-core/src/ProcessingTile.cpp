@@ -23,12 +23,7 @@
 #include <sstream>
 
 //model API
-#include <THellfireProcessor.h>
-#include <UMemory.h>
-
 #include <ProcessingTile.h>
-
-#include <TMult.h>
 
 /** 
  * Default constructor.
@@ -37,27 +32,15 @@
 ProcessingTile::ProcessingTile() {
 
 	//ni sig wires
-	_signal_stall       = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
-	_signal_intr        = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
+	_signal_stall = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
+	_signal_intr  = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
 	
 	//create a cpu and memory in addition to current tile hardware
 	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu   = new THellfireProcessor(this->GetName() + ".cpu", _signal_intr, _signal_stall);
+	_cpu   = new THFRiscV(this->GetName() + ".cpu", _signal_intr, _signal_stall);
 	
-	//Timed multiplier
-	//_seqMult = new TimedFPMultiplier(this->GetName() + ".seq_mult");
-
 	//binds cpu to the main memory
 	_cpu->SetMem0(_mem0);
-	
-
-	//binds cpu to vetorial sequential multipliers	
-	TimedFPMultiplier* auxMult;
-	for(int i=0;i<SIMD_SIZE;i++){
-		auxMult = new TimedFPMultiplier(this->GetName() + ".seq_mult_vet["+std::to_string(i)+"]");
-		_seqMultVet.push_back(auxMult);
-		_cpu->SetSeqMultVet(_seqMultVet[i]);
-	}
 
 	//reset control wires
 	_signal_stall->Write(0);
@@ -65,16 +48,14 @@ ProcessingTile::ProcessingTile() {
 	
 
 	//bind control signals to hardware (cpu side)
-	this->GetSignalStall()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
-	this->GetSignalIntr()->MapTo((uint8_t*)_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
+	this->GetSignalStall()->MapTo(_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
+	this->GetSignalIntr()->MapTo(_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
 	
 	#ifdef MEMORY_ENABLE_COUNTERS
 	//map main memory counter
 	_mem0->InitCounters(M0_COUNTER_STORE_ADDR, M0_COUNTER_LOAD_ADDR);
-	_mem0->GetSignalCounterStore()->MapTo(
-		(uint32_t*)(_mem0->GetMap(M0_COUNTER_STORE_ADDR)), M0_COUNTER_STORE_ADDR);
-	_mem0->GetSignalCounterLoad()->MapTo(
-		(uint32_t*)(_mem0->GetMap(M0_COUNTER_LOAD_ADDR)), M0_COUNTER_LOAD_ADDR);
+	_mem0->GetSignalCounterStore()->MapTo(_mem0->GetMap(M0_COUNTER_STORE_ADDR), M0_COUNTER_STORE_ADDR);
+	_mem0->GetSignalCounterLoad()->MapTo(_mem0->GetMap(M0_COUNTER_LOAD_ADDR), M0_COUNTER_LOAD_ADDR);
 	#endif
 
 	//----------------- initialize counters for the cpu
@@ -87,24 +68,15 @@ ProcessingTile::ProcessingTile() {
 	);
 
 	//memory mapping
-	_cpu->GetSignalCounterArith()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_ARITH_ADDR)), CPU_COUNTER_ARITH_ADDR);
-	_cpu->GetSignalCounterLogical()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_LOGICAL_ADDR)), CPU_COUNTER_LOGICAL_ADDR);
-	_cpu->GetSignalCounterShift()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_SHIFT_ADDR)), CPU_COUNTER_SHIFT_ADDR);
-	_cpu->GetSignalCounterBranches()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_BRANCHES_ADDR)), CPU_COUNTER_BRANCHES_ADDR);
-	_cpu->GetSignalCounterJumps()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_JUMPS_ADDR)), CPU_COUNTER_JUMPS_ADDR);
-	_cpu->GetSignalCounterLoadStore()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_LOADSTORE_ADDR)), CPU_COUNTER_LOADSTORE_ADDR);
-	_cpu->GetSignalCounterCyclesTotal()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_CYCLES_TOTAL_ADDR)), CPU_COUNTER_CYCLES_TOTAL_ADDR);
-	_cpu->GetSignalCounterCyclesStall()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_CYCLES_STALL_ADDR)), CPU_COUNTER_CYCLES_STALL_ADDR);
-	_cpu->GetSignalHostTime()->MapTo(
-		(uint32_t*)(_mem0->GetMap(CPU_COUNTER_HOSTTIME_ADDR)), CPU_COUNTER_HOSTTIME_ADDR);
+	_cpu->GetSignalCounterArith()->MapTo(_mem0->GetMap(CPU_COUNTER_ARITH_ADDR), CPU_COUNTER_ARITH_ADDR);
+	_cpu->GetSignalCounterLogical()->MapTo(_mem0->GetMap(CPU_COUNTER_LOGICAL_ADDR), CPU_COUNTER_LOGICAL_ADDR);
+	_cpu->GetSignalCounterShift()->MapTo(_mem0->GetMap(CPU_COUNTER_SHIFT_ADDR), CPU_COUNTER_SHIFT_ADDR);
+	_cpu->GetSignalCounterBranches()->MapTo(_mem0->GetMap(CPU_COUNTER_BRANCHES_ADDR), CPU_COUNTER_BRANCHES_ADDR);
+	_cpu->GetSignalCounterJumps()->MapTo(_mem0->GetMap(CPU_COUNTER_JUMPS_ADDR), CPU_COUNTER_JUMPS_ADDR);
+	_cpu->GetSignalCounterLoadStore()->MapTo(_mem0->GetMap(CPU_COUNTER_LOADSTORE_ADDR), CPU_COUNTER_LOADSTORE_ADDR);
+	_cpu->GetSignalCounterCyclesTotal()->MapTo(_mem0->GetMap(CPU_COUNTER_CYCLES_TOTAL_ADDR), CPU_COUNTER_CYCLES_TOTAL_ADDR);
+	_cpu->GetSignalCounterCyclesStall()->MapTo(_mem0->GetMap(CPU_COUNTER_CYCLES_STALL_ADDR), CPU_COUNTER_CYCLES_STALL_ADDR);
+	_cpu->GetSignalHostTime()->MapTo(_mem0->GetMap(CPU_COUNTER_HOSTTIME_ADDR), CPU_COUNTER_HOSTTIME_ADDR);
 	#endif
 }
 
@@ -118,7 +90,7 @@ ProcessingTile::~ProcessingTile(){
 	delete(_signal_intr);
 }
 
-THellfireProcessor* ProcessingTile::GetCpu(){
+THFRiscV* ProcessingTile::GetCpu(){
 	return _cpu;
 } 
 
@@ -137,10 +109,6 @@ USignal<uint32_t>* ProcessingTile::GetSignalHostTime(){
 
 UMemory* ProcessingTile::GetMem0(){
 	return _mem0;
-}
-
-TimedFPMultiplier* ProcessingTile::GetSeqMultVet(int idx){
-	return _seqMultVet[idx];
 }
 
 std::string ProcessingTile::ToString(){

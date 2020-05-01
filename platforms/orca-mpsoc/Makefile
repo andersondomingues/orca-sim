@@ -1,59 +1,68 @@
 #This is the name of the platform. It is used only 
 #to name the generated executable file and to be
 #displayed during execution of this makefile
-PLATFORM_NAME:=single-core-nn
+PLATFORM_NAME:=orca-mpsoc
 
-#Path to dependencies. This platform is similulated using
-#URSA, so libsim and libmod are required. 
-LIBSIM_PATH:=../../simulator
-LIBMOD_PATH:=../../models
-LIBRSP_PATH:=../../gdbrsp/
+#Path to dependencies. 
+LIBSIM_PATH :=../../simulator
+LIBMOD_PATH :=../../models
+LIBRSP_PATH :=../../gdbrsp
+
 OUTPUTDIR :=./bin
 SOURCEDIR :=./src
 HEADERDIR :=./include
 
-LIBSIM:=../../bin/libsim.a
-LIBRSP:=../../bin/libgdbrsp.a
+LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
+LIBRSP:=$(LIBRSP_PATH)/bin/libgdbrsp.a
 
+include ./Configuration.mk
 
 #Flags to be used during compilation of the platform. Note 
 #that they may be different form flags used for compiling
 #dependencies.
-CXXFLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
-    -I$(LIBRSP_PATH)/include -Iinclude -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
+CXXFLAGS  +=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
+    -I$(LIBRSP_PATH)/include -Iinclude \
+    -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
 
 #added -Wl,--allow-multiple-definition for possible bug in binutils/ld
 #as recommended in https://sourceware.org/bugzilla/show_bug.cgi?id=12762
-LD_FLAGS   :=-L../../bin -lsim -lgdbrsp
+LD_FLAGS   :=-L../../bin -lsim
 #-Wl,--allow-multiple-definition
 
 #source files for the platform
 TARGET_DEPS := \
+	$(SOURCEDIR)/Tile.cpp \
 	$(SOURCEDIR)/ProcessingTile.cpp \
-	$(SOURCEDIR)/TDmaMult.cpp \
+	$(SOURCEDIR)/NetworkTile.cpp \
 	$(SOURCEDIR)/Orca.cpp \
 	$(LIBMOD_PATH)/src/TProcessorBase.cpp \
 	$(LIBMOD_PATH)/src/THFRiscV.cpp \
-	$(LIBMOD_PATH)/src/UBuffer.cpp \
 	$(LIBMOD_PATH)/src/UMemory.cpp \
-	$(LIBMOD_PATH)/src/USignal.cpp
+	$(LIBMOD_PATH)/src/USignal.cpp \
+	$(LIBMOD_PATH)/src/UBuffer.cpp \
+	$(LIBMOD_PATH)/src/TNetBridge.cpp \
+	$(LIBMOD_PATH)/src/TRouter.cpp \
+	$(LIBMOD_PATH)/src/TDmaNetif.cpp
 
-#TODO why in hell i do need to include $(LIBMOD_PATH)/src/UBuffer.cpp if it it not used in this platform ??!?!
+DEP_LIBS := $(LIBRSP) $(LIBSIM)
 
 # include headers in the dependecy check
 HEADER_FILES := $(wildcard $(HEADERDIR)/*.h)
 HEADER_FILES += $(LIBMOD_PATH)/include/THFRiscV.h \
 	$(LIBMOD_PATH)/include/TProcessorBase.h \
 	$(LIBMOD_PATH)/include/UMemory.h \
+	$(LIBMOD_PATH)/include/USignal.h \
 	$(LIBMOD_PATH)/include/UBuffer.h \
-	$(LIBMOD_PATH)/include/USignal.h
-
+	$(LIBMOD_PATH)/include/TNetBridge.h \
+	$(LIBMOD_PATH)/include/TRouter.h \
+	$(LIBMOD_PATH)/include/TDmaNetif.h
 
 #compiler an instance of the simulator 
-$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(LIBRSP) $(LIBSIM) $(TARGET_DEPS) $(HEADER_FILES)
-	$(Q)g++ $(CXXFLAGS) $(TARGET_DEPS) $(LD_FLAGS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe 
+$(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(TARGET_DEPS) $(HEADER_FILES) $(DEP_LIBS)
+	$(Q)g++ $(TARGET_DEPS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe $(LD_FLAGS) $(CXXFLAGS)
 
 #remove previously generated files
 clean:
 	$(Q)rm -rf $(OUTPUTDIR)/$(PLATFORM_NAME).exe
-
+	
+	
