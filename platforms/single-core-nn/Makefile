@@ -34,18 +34,14 @@ TARGET_DEPS := \
 	$(SOURCEDIR)/Orca.cpp \
 	$(LIBMOD_PATH)/src/TProcessorBase.cpp \
 	$(LIBMOD_PATH)/src/THFRiscV.cpp \
-	$(LIBMOD_PATH)/src/UBuffer.cpp \
 	$(LIBMOD_PATH)/src/UMemory.cpp \
 	$(LIBMOD_PATH)/src/USignal.cpp
-
-#TODO why in hell i do need to include $(LIBMOD_PATH)/src/UBuffer.cpp if it it not used in this platform ??!?!
 
 # include headers in the dependecy check
 HEADER_FILES := $(wildcard $(HEADERDIR)/*.h)
 HEADER_FILES += $(LIBMOD_PATH)/include/THFRiscV.h \
 	$(LIBMOD_PATH)/include/TProcessorBase.h \
 	$(LIBMOD_PATH)/include/UMemory.h \
-	$(LIBMOD_PATH)/include/UBuffer.h \
 	$(LIBMOD_PATH)/include/USignal.h
 
 

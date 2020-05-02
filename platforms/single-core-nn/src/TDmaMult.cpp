@@ -27,7 +27,6 @@
 
 //simulator API
 #include <TimedModel.h>
-#include <UBuffer.h>
 #include <TDmaMult.h>
 
 TDmaMult::TDmaMult(std::string name,  
