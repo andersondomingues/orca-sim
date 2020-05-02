@@ -25,6 +25,20 @@ ORCA_CHECK_BUFFER_OVERFLOW := NO
 # sizes when pulling data. (depletes simulation performance). 
 ORCA_CHECK_BUFFER_UNDERFLOW := NO
 
+#================================================================#
+# HARDWARE COUNTERS                                              #
+#================================================================#
+
+# Enable hardware counter for several hardware components. These 
+# counter can be used to estimate the energy consumption of the 
+# platform. Enabling counters depletes performance.
+
+# Counts the number of readings and writings.
+ORCA_HWCOUNTERS_MEMORY := NO
+
+# Counts the number of instructions per instruction class.
+ORCA_HWCOUNTERS_HFRISCV := NO
+
 # Enable hardware counter for several hardware components. These 
 # counter can be used to estimate the energy consumption of the 
 # platform. Enabling counters depletes performance.
@@ -104,6 +118,14 @@ COMPLINE := $(COMPLINE) -DBUFFER_CAPACITY=$(ORCA_BUFFER_CAPACITY)
 #router
 ifeq ($(ORCA_GROUNDED_PORTS_CHECKING), YES)
 	COMPLINE := $(COMPLINE) -DROUTER_PORT_CONNECTED_CHECKING
+endif
+
+#counters
+ifeq ($(ORCA_HWCOUNTERS_MEMORY), YES)
+	COMPLINE := $(COMPLINE) -DMEMORY_ENABLE_COUNTERS
+endif
+ifeq ($(ORCA_HWCOUNTERS_HFRISCV), YES)
+	COMPLINE := $(COMPLINE) -DHFRISCV_ENABLE_COUNTERS
 endif
 ifeq ($(ORCA_HWCOUNTERS_ROUTERS), YES)
 	COMPLINE := $(COMPLINE) -DROUTER_ENABLE_COUNTERS

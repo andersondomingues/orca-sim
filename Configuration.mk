@@ -15,7 +15,7 @@ GLOBAL_SETTINGS := -Wall -Wextra -Werror -g -std=c++17 -O3 -march=native -mtune=
 # based on the HF-RiscV processor and (ii) a NoC-based  
 # mesh-topologic manycore that uses the same processor core . 
 # PLATFORM := (orca-mpsoc | single-core | single-core-nn)
-ORCA_PLATFORM  := orca-mpsoc
+ORCA_PLATFORM  := single-core
 
 #================================================================#
 # SIMULATION OPTIONS                                             #
@@ -77,20 +77,6 @@ ORCA_ENABLE_GDBRSP := NO
 # serve at port = ORCA_GDBRSP_PORT + 5.
 ORCA_GDBRSP_PORT := 5000
 
-#================================================================#
-# HARDWARE COUNTERS                                              #
-#================================================================#
-
-# Enable hardware counter for several hardware components. These 
-# counter can be used to estimate the energy consumption of the 
-# platform. Enabling counters depletes performance.
-
-# Counts the number of readings and writings.
-ORCA_HWCOUNTERS_MEMORY := NO
-
-# Counts the number of instructions per instruction class.
-ORCA_HWCOUNTERS_HFRISCV := NO
-
 
 #================================================================#
 # GENERATION OF COMPILATION PARAMETERS STARTS HERE.              #
@@ -126,15 +112,6 @@ endif
 #riscv
 ifeq ($(ORCA_HFRISCV_MODE), CYCLE)
 	COMPLINE := $(COMPLINE) -DHFRISCV_CYCLE_ACCURACY 
-endif
-
-#counters
-ifeq ($(ORCA_HWCOUNTERS_MEMORY), YES)
-	COMPLINE := $(COMPLINE) -DMEMORY_ENABLE_COUNTERS
-endif
-
-ifeq ($(ORCA_HWCOUNTERS_HFRISCV), YES)
-	COMPLINE := $(COMPLINE) -DHFRISCV_ENABLE_COUNTERS
 endif
 
 #gdbrsp
