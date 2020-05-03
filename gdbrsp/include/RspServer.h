@@ -79,6 +79,7 @@ public:
     int Nack();
 
 	int Receive();
+    int UpdateCpuState();
 
     uint8_t Checksum(char* buffer, int size);
     int Respond(std::string data);

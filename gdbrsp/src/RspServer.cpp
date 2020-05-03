@@ -108,6 +108,34 @@ int RspServer<T>::Nack(){
 }
 
 template <typename T>
+int RspServer<T>::UpdateCpuState(){
+
+	//if CPU reached a breakpoin
+	if (_state->bp == 1){
+		_state->bp = 0;    //clear breakpoint
+		_state->pause = 1; //pause cpu 
+		_state->steps = 0; //reset steps counter (bp has priority over s)
+		this->Respond("T05:");
+
+	//if CPU no pause with no bp
+	} else if (_state->pause == 0){
+		
+		if(_state->steps > 0){
+			
+			_state->steps -= 1;
+
+			//limit of steps reach, pausing	
+			if (_state->steps == 0){
+				_state->pause = 1;
+				this->Respond("S05"); // 05 = TRAP
+			}
+		}
+	}
+
+	return 1;
+}
+
+template <typename T>
 int RspServer<T>::Receive(){
 
     //check whether the udp server could receive another packet
@@ -146,14 +174,11 @@ int RspServer<T>::Receive(){
             switch(_input_buffer[1]){
                 case 'q': return this->Handle_q(_input_buffer); //query packages
 				case 'g': return this->Handle_g(_input_buffer); //get registers
-                //case 'Q': return this->Handle_Q(_input_buffer);
                 case '?': return this->Handle_Question(_input_buffer); //halt reason
                 case 'c': return this->Handle_c(_input_buffer); //continue
-				//case 'C': return this->Handle_C(_input_buffer);
-                //case 's': return this->Handle_s(_input_buffer);
-                //case 'S': return this->Handle_S(_input_buffer);
+				case 'C': return this->Handle_C(_input_buffer); //continue (same)
+				case 's': return this->Handle_s(_input_buffer); //continue
                 case 'H': return this->Handle_H(_input_buffer); //Hc
-                //case 'k': return this->Handle_k(_input_buffer); //kill 
                	case 'm': return this->Handle_m(_input_buffer); //mem reading
                 //case 'M': return this->Handle_M(_input_buffer); //mem writing
                 case 'p': return this->Handle_p(_input_buffer); //reg reading
@@ -162,19 +187,19 @@ int RspServer<T>::Receive(){
 				case 'X': return this->Handle_X(_input_buffer); //binary mem writing
                 //case 'z': return this->Handle_z(_input_buffer); //set bp
                 //case 'Z': return this->Handle_Z(_input_buffer); //clear bp
-
+				//case 'Q': return this->Handle_Q(_input_buffer);
+                
                 //commands not implemented by the server
-                //must respond with the empty response "$#00".
+                //must responded with the empty response "$#00".
                 default:
 
                     #ifdef RSP_DEBUG
-                    std::cout << "\033[0;31mwnr: packet unhandled: \033[0m" 
+                    std::cout << "\033[0;31mwnr: unknown packet type, packet unhandled: \033[0m" 
 						<< _input_buffer << std::endl;
                     #endif
 
                     //return this->Respond(RSP_EMPTY_RESPONSE);
-                    _output_buffer[0] = '\0';
-                    return _server->Send(_output_buffer, 0);
+                    return this->Respond("");
             }
 
         }else{
@@ -211,13 +236,12 @@ int RspServer<T>::Handle_X(char* buffer){
 			i = strfind(buffer, ':', 20);
 			uint8_t* raw = (uint8_t*)&buffer[i+1];
 
-
 			// note: binary data comes from GDB
 			// client with bytes in the correct
 			// order, so no endianess treatment is 
 			// necessary.
 
-			//copy chars to tmp array
+			// remove escape chars (0x7d = '}')
 			for(int j = 0, i = 0; i < size; i++){
 				if(raw[j] == 0x7d){
 					raw[i] = (uint8_t)(raw[++j] ^ 0x20);
@@ -227,11 +251,8 @@ int RspServer<T>::Handle_X(char* buffer){
 				}
 			}
 
-
 			//write the whole chunk to the memory of the device
 			_memory->Write(addr, (MemoryType*)raw, size);
-			_memory->SaveBin("snapshot.bin", _memory->GetBase(), _memory->GetSize());
-
 			return this->Respond("OK");
 		}
 
@@ -358,22 +379,61 @@ int RspServer<T>::Handle_Question(char*){
 
 //continue at the current address 
 template <typename T>
-int RspServer<T>::Handle_C(char*){
-	return this->Respond("OK");
+int RspServer<T>::Handle_C(char* buffer){
+
+	if(memcmp(buffer, "$C", 2) == 0){
+
+		//disable pause mode and continue 
+		//in the same address as it is 
+		_state->pause = 0x0;
+		return this->Respond("OK");
+	}else{
+		std::cout << "unhandled 'c' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+	
+	return -1;
 }
 
+//continue at the current address
 template <typename T>
-int RspServer<T>::Handle_c(char*){
-    return 0;
+int RspServer<T>::Handle_c(char* buffer){
+    //@TODO: implement "continue at addr"
+	if(memcmp(buffer, "$c", 2) == 0){
+
+		//disable pause mode and continue 
+		//in the same address as it is 
+		_state->pause = 0x0;
+		return this->Respond("OK");
+	}else{
+		std::cout << "unhandled 'c' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+
+	return -1;
 }
 
+//step X instructions 
 template <typename T>
-int RspServer<T>::Handle_s(char*){
-    return 0;
-}
+int RspServer<T>::Handle_s(char* buffer){
 
-template <typename T>
-int RspServer<T>::Handle_S(char*){
+	if(memcmp(buffer, "$s", 2) == 0){
+
+		//single step
+		if(buffer[2] == '#'){
+			_state->steps = 1;    //set to stop cpu in next cycle
+			_state->pause = 0x0; //remove pause until then
+			this->Respond("OK");
+		}else{
+			
+			std::cout << "multiple step not implemented, sent empty response" << std::endl;
+			this->Respond("");
+		}
+
+	}else{
+		std::cout << "unhandled 's' packet, sent empty response" << std::endl;
+		this->Respond("");
+	}
     return 0;
 }
 

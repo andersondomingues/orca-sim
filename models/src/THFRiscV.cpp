@@ -50,22 +50,11 @@ void THFRiscV::dumpregs(){
 
 void THFRiscV::bp(risc_v_state *s, uint32_t ir){
 
-	printf("breakpoint reached!\n");
-	printf("pc: %08x, ir: %08x\n", PC, ir);
-	printf("irq_status: %08x, irq_cause: %08x, irq_mask: %08x\n", s->status, s->cause, s->mask);
+	printf("Breakpoint reached at 0x%x (ir: %08x)", PC, ir);
+	printf("irq_status: %08x, irq_cause: %08x, irq_mask: %08x\n", s->status, 
+		s->cause, s->mask);
 	dumpregs();
-
-	stringstream ss;
-	ss << "breakpoints/bp.0x" << std::hex << s->counter << std::dec << ".bin";
-	
-	switch(ir){
-		case 0x0: std::cout << "RISCV_INVALID_OPCODE"; break;
-		default:  std::cout << "UNKNOWN"; break;
-	}
-	
-	std::cout << std::endl;
-
-	GetMemory()->SaveBin(ss.str(), GetMemory()->GetBase(), GetMemory()->GetSize());
+	GetState()->bp = 0x1;
 }
 
 /**
@@ -375,7 +364,16 @@ SimulationTime THFRiscV::Run(){
 	//generic tasks all processor models 
 	TProcessorBase::Run();
 
-	//return 1; //TODO: REMOVETHSI!!!!!
+	#ifdef ORCA_ENABLE_GDBRSP
+	//When operating with GDB support, the pause flags indicates 
+	//the processor core must skip the current cycle without mo-
+	//fiying any of their registers. This flags acts as a second
+	//stall line. Since this line is used only by the gbdrsp imp-
+	//lementation, we do not set this flag as a wire, as it does
+	//not exist in the real design (yet).
+	if(GetState()->pause == 0x1)
+		return 1;
+	#endif
 
 	//update "external counters"
 	s->counter++;
@@ -580,39 +578,19 @@ fail:
 	for (i = 0; i < 3; i++)
 		s->status_dly[i] = s->status_dly[i+1];
 
-	//MOVI DAQUI
-	
-	//s->counter++;
-			
-	//if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;      /*IRQ_COMPARE2*/
-	//if (s->compare == s->counter) s->cause |= 0x10;                                 /*IRQ_COMPARE*/
-	
-	//if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;      /*IRQ_COUNTER2_NOT*/
-	//if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;         /*IRQ_COUNTER2*/
-	//if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;      /*IRQ_COUNTER_NOT*/
-	//if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;         /*IRQ_COUNTER*/
-	
-	//if (_signal_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff;/*IRQ_NOC*/
-	
-
 	#ifdef HFRISCV_ENABLE_COUNTERS
 	UpdateCounters(opcode, funct3);
 	#endif
 	
+	#ifdef HFRISCV_CYCLE_ACCURACY
 	//When in cycle-accuracy mode, takes three cycles per instruction, 
 	//except for those of memory I/O. In the later case. Since we simulate 
 	//the pipeline by executing one instruction per cycle (starting from 
 	//the 3th cycle), adding 1 cycle to simulate I/O delay. We also calculate
 	//branch prediction.
-
-	#ifdef HFRISCV_CYCLE_ACCURACY
 	switch(opcode){
 		case 0x63:
-			if(branch_taken){
-				return 1;
-			}else{
-				return 2;
-			}
+			return (branch_taken) ? 1 : 2;
 			break;
 		case 0x23:
 		case 0x3:

@@ -1,5 +1,5 @@
 set debug remote 1
 file ../../orca-software-tools/bin/image.elf
 target remote udp:127.0.0.1:5000
-load
-quit
+#load
+#quit

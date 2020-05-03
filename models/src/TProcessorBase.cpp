@@ -41,10 +41,16 @@ TProcessorBase<T>::TProcessorBase(std::string name, MemoryAddr initial_pc, UMemo
 		_state.regs[i] = 0;
 
 	//reset PC
+	_state.pc_prev = initial_pc;
 	_state.pc = initial_pc;
 	_state.pc_next = _state.pc + sizeof(T);
 
+	//reset flags
+	_state.bp = 0; //no breakpoint reached yet
+
 	#ifdef ORCA_ENABLE_GDBRSP
+	_state.pause = 1; //starts paused in gdb mode
+	_state.steps = 0; //no steps to be performed, wait for gdb 
 	_gdbserver = new RspServer<T>(&_state, _memory, "127.0.0.1", GDBSERVER_PORT++);
 	#endif
 }
@@ -80,7 +86,17 @@ template <typename T>
 SimulationTime TProcessorBase<T>::Run(){
 
 	#ifdef ORCA_ENABLE_GDBRSP
-	return _gdbserver->Receive();
+	//Check whether the CPU has reach some breakpoint
+	//or desired number of steps, or a trap. Update
+	//the state of the cpu accordingly (number of 
+	//cycles to skip, pause flag)
+	_gdbserver->UpdateCpuState();
+
+	//check whether the gdb client has sent any packet.
+	//if so, treat the packet.
+	_gdbserver->Receive();
+	return 1;
+
 	#else
 	return 0;
 	#endif

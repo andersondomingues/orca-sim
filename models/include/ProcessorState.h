@@ -12,9 +12,16 @@ struct ProcessorState{
 	//the next reg (which would overflow the array size)
 	//falls in the PC instead. For example, for an arch with
 	//32 register, the register number 33 is PC.
-	T regs[NUMBER_OF_REGISTERS];
-	T pc;
-	T pc_next;
+	T regs[NUMBER_OF_REGISTERS]; //general purpose registers
+	T pc_prev;  //value of pc in the last cycle (zero if 1st)
+	T pc;       //the value of pc in the current cycle
+	T pc_next;  //value of pc in the next cycle
+	T bp;       //flag's risen if breakpoint has being reached
+
+	//#ifdef ORCA_ENABLE_GDBRSP
+	T pause;
+	T steps;
+	//#endif
 };
 
 //Some of the most used instances. More can be added later.

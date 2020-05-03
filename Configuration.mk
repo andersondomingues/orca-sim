@@ -145,7 +145,7 @@ ORCA_HFRISCV_MODE := CYCLE
 
 # Enables support for GDB remote debugging for processing tiles.
 # Enabling GDB support dramatically reduce simulation speed.
-ORCA_ENABLE_GDBRSP := YES
+ORCA_ENABLE_GDBRSP := NO
 
 # When enabled, the GDBRSP service will instantiate a UDP server
 # for each processing tile. Each server will serve one UDP port,
