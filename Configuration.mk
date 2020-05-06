@@ -17,7 +17,7 @@ ORCA_GLOBAL_FLAGS := -Wall -Wextra -Werror -g -std=c++17 \
 # example architectures: (i) a single-core riscv processor core
 # based on the HF-RiscV processor and (ii) a NoC-based 
 # mesh-topologic manycore that uses the same processor core. 
-# PLATFORM := (orca-mpsoc | single-core)
+# PLATFORM := (orca-mpsoc | single-core | single-core-nn)
 ORCA_PLATFORM := orca-mpsoc
 
 #================================================================#
@@ -166,7 +166,7 @@ ORCA_GDBRSP_PORT := 5000
 ORCA_HWCOUNTERS_ROUTERS := NO
 
 # Counts the number of readings and writings.
-ORCA_HWCOUNTERS_MEMORY := NO
+ORCA_HWCOUNTERS_MEMORY := YES
 
 # Counts the number of instructions per instruction class.
 ORCA_HWCOUNTERS_HFRISCV := NO

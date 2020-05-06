@@ -33,6 +33,7 @@
 
 //off-package includes
 #include <ProcessorState.h>
+#include <MemoryType.h>
 #include <UMemory.h>
 
 using namespace std;

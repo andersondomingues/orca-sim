@@ -50,10 +50,6 @@ Tile::Tile(uint32_t x, uint32_t y){
 	
 	//peripherals	
 	_router = new TRouter(this->GetName() + ".router", x, y);
-	
-	#ifdef ROUTER_ENABLE_COUNTERS
-	_router->InitCounters(ROUTER_COUNTER_ACTIVE_ADDR);
-	#endif
 }
 
 /**

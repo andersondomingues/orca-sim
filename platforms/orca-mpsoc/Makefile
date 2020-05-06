@@ -47,5 +47,4 @@ $(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(TARGET_DEPS) $(HEADER_FILES) $(DEP_LIBS)
 #remove previously generated files
 clean:
 	$(Q)rm -rf $(OUTPUTDIR)/$(PLATFORM_NAME).exe
-	
-	
+

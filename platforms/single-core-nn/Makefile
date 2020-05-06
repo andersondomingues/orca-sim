@@ -1,7 +1,7 @@
 #This is the name of the platform. It is used only 
 #to name the generated executable file and to be
 #displayed during execution of this makefile
-PLATFORM_NAME:=single-core
+PLATFORM_NAME:=single-core-nn
 
 #Path to dependencies. 
 LIBSIM_PATH :=../../simulator
@@ -26,11 +26,11 @@ GCC_FLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
 #added -Wl,--allow-multiple-definition for possible bug in binutils/ld
 #as recommended in https://sourceware.org/bugzilla/show_bug.cgi?id=12762
 LD_FLAGS   :=-L../../bin -lmod -lsim -lgdbrsp
-#-Wl,--allow-multiple-definition
 
 #source files for the platform
 TARGET_DEPS := \
 	$(SOURCEDIR)/ProcessingTile.cpp \
+	$(SOURCEDIR)/TDmaMult.cpp \
 	$(SOURCEDIR)/Orca.cpp
 
 DEP_LIBS := $(LIBRSP) $(LIBMOD) $(LIBSIM)

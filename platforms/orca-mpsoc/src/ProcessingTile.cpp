@@ -55,7 +55,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_netif->SetMem0(_mem0);
 	
 	//reset control wires
-    	_signal_stall->Write(0);
+   	_signal_stall->Write(0);
 	_signal_intr->Write(0); 
 	
 	_signal_send_status->Write(0);
@@ -97,48 +97,35 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetMem2()->SetName(this->GetName() + ".mem2");
 
 	//bind control signals to hardware (cpu side)
-	this->GetSignalStall()->MapTo(_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
-	this->GetSignalIntr()->MapTo(_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
-	this->GetSignalSendStatus()->MapTo(_mem0->GetMap(SIGNAL_SEND_STATUS), SIGNAL_SEND_STATUS);
-	this->GetSignalRecvStatus()->MapTo(_mem0->GetMap(SIGNAL_RECV_STATUS), SIGNAL_RECV_STATUS);
+	this->GetSignalStall()->MapTo(_mem0->GetMap(SIGNAL_CPU_STALL));
+	this->GetSignalIntr()->MapTo(_mem0->GetMap(SIGNAL_CPU_INTR));
+	this->GetSignalSendStatus()->MapTo(_mem0->GetMap(SIGNAL_SEND_STATUS));
+	this->GetSignalRecvStatus()->MapTo(_mem0->GetMap(SIGNAL_RECV_STATUS));
 
-	this->GetSignalProgSend()->MapTo(_mem0->GetMap(SIGNAL_PROG_SEND), SIGNAL_PROG_SEND);
-	this->GetSignalProgRecv()->MapTo(_mem0->GetMap(SIGNAL_PROG_RECV), SIGNAL_PROG_RECV);
+	this->GetSignalProgSend()->MapTo(_mem0->GetMap(SIGNAL_PROG_SEND));
+	this->GetSignalProgRecv()->MapTo(_mem0->GetMap(SIGNAL_PROG_RECV));
 	
-	this->GetSignalProgAddr()->MapTo(_mem0->GetMap(SIGNAL_PROG_ADDR), SIGNAL_PROG_ADDR);
-	this->GetSignalProgSize()->MapTo(_mem0->GetMap(SIGNAL_PROG_SIZE), SIGNAL_PROG_SIZE);
+	this->GetSignalProgAddr()->MapTo(_mem0->GetMap(SIGNAL_PROG_ADDR));
+	this->GetSignalProgSize()->MapTo(_mem0->GetMap(SIGNAL_PROG_SIZE));
 
 	#ifdef MEMORY_ENABLE_COUNTERS
 	//map main memory counter
-	_mem0->InitCounters(M0_COUNTER_STORE_ADDR, M0_COUNTER_LOAD_ADDR);
 	_mem0->GetSignalCounterStore()->MapTo(_mem0->GetMap(M0_COUNTER_STORE_ADDR), M0_COUNTER_STORE_ADDR);
 	_mem0->GetSignalCounterLoad()->MapTo(_mem0->GetMap(M0_COUNTER_LOAD_ADDR), M0_COUNTER_LOAD_ADDR);
 
 	//map secondary memory counters
-	_mem1->InitCounters(M1_COUNTER_STORE_ADDR, M1_COUNTER_LOAD_ADDR);
 	_mem1->GetSignalCounterStore()->MapTo(_mem0->GetMap(M1_COUNTER_STORE_ADDR), M1_COUNTER_STORE_ADDR);
 	_mem1->GetSignalCounterLoad()->MapTo(_mem0->GetMap(M1_COUNTER_LOAD_ADDR), M1_COUNTER_LOAD_ADDR);
-
-	_mem2->InitCounters(M2_COUNTER_STORE_ADDR, M2_COUNTER_LOAD_ADDR);
 	_mem2->GetSignalCounterStore()->MapTo(_mem0->GetMap(M2_COUNTER_STORE_ADDR), M2_COUNTER_STORE_ADDR);
 	_mem2->GetSignalCounterLoad()->MapTo(_mem0->GetMap(M2_COUNTER_LOAD_ADDR), M2_COUNTER_LOAD_ADDR);
 	#endif
 
 	#ifdef ROUTER_ENABLE_COUNTERS
-	//counters have been initialized by syperclass, only mapping is required
 	this->GetRouter()->GetSignalCounterActive()->MapTo(_mem0->GetMap(ROUTER_COUNTER_ACTIVE_ADDR), ROUTER_COUNTER_ACTIVE_ADDR, 0);
 	#endif
 
 	//----------------- initialize counters for the cpu
 	#ifdef HFRISCV_ENABLE_COUNTERS
-	_cpu->InitCounters(
-		CPU_COUNTER_ARITH_ADDR, CPU_COUNTER_LOGICAL_ADDR, CPU_COUNTER_SHIFT_ADDR, 
-		CPU_COUNTER_BRANCHES_ADDR, CPU_COUNTER_JUMPS_ADDR, CPU_COUNTER_LOADSTORE_ADDR,
-		CPU_COUNTER_CYCLES_TOTAL_ADDR, CPU_COUNTER_CYCLES_STALL_ADDR,
-		CPU_COUNTER_HOSTTIME_ADDR
-	);
-
-	//memory mapping
 	_cpu->GetSignalCounterArith()->MapTo(_mem0->GetMap(CPU_COUNTER_ARITH_ADDR), CPU_COUNTER_ARITH_ADDR);
 	_cpu->GetSignalCounterLogical()->MapTo(_mem0->GetMap(CPU_COUNTER_LOGICAL_ADDR), CPU_COUNTER_LOGICAL_ADDR);
 	_cpu->GetSignalCounterShift()->MapTo(_mem0->GetMap(CPU_COUNTER_SHIFT_ADDR), CPU_COUNTER_SHIFT_ADDR);

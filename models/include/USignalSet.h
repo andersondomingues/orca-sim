@@ -30,7 +30,7 @@
 
 //api includes
 #include <UntimedModel.h>
-#include <UMemory.h>
+#include <MemoryType.h>
 
 /**
  * The USignalSet class models a generic set of busses of type T.

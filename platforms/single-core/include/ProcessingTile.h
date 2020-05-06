@@ -26,7 +26,7 @@
 #include <iostream>
 
 //model API
-#include <THellfireProcessor.h>
+#include <THFRiscV.h>
 #include <UMemory.h>
 #include <USignal.h>
 
@@ -111,7 +111,7 @@ class ProcessingTile{
 
 private:
 
-	THellfireProcessor* _cpu; //hfrisv-core
+	THFRiscV* _cpu; //hfrisv-core
 
 	//main memory
 	UMemory* _mem0;
@@ -141,7 +141,7 @@ public:
 	void SetSignalIntr(USignal<uint8_t>*);
 	
 	//getters
-	THellfireProcessor* GetCpu();
+	THFRiscV* GetCpu();
 	UMemory* GetMem0();
 	
 	//getters for mems

@@ -67,18 +67,6 @@ static void sig_handler(int _){
 
 void check_params(){
 
-	//orca params 
-	#ifndef ORCA_NOC_HEIGHT
-	std::runtime_error("ORCA_NOC_HEIGHT must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_NOC_HEIGHT set to " << ORCA_NOC_HEIGHT << std::endl;
-	#endif
-	
-	#ifndef ORCA_NOC_HEIGHT
-	std::runtime_error("ORCA_NOC_WIDTH must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_NOC_WIDTH set to " << ORCA_NOC_WIDTH << std::endl;
-	#endif
 
 	#ifndef ORCA_EPOCH_LENGTH
 	std::runtime_error("ORCA_EPOCH_LENGTH must be defined in Configuration.mk\n");
@@ -103,48 +91,6 @@ void check_params(){
 	std::cout << "URSA_QUEUE_SIZE_CHECKING disabled" << std::endl;
 	#else
 	std::cout << "URSA_QUEUE_SIZE_CHECKING set to " << URSA_QUEUE_SIZE_CHECKING << std::endl;
-	#endif
-	
-	//netsocket logs
-	#ifndef NETSOCKET_LOG_OUTGOING_PACKETS
-	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS disabled" << std::endl;
-	#else
-	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS enabled" << std::endl;
-	#endif
-
-	#ifndef NETSOCKET_LOG_INCOMING_PACKETS
-	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS disabled" << std::endl;
-	#else
-	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS enabled" << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_CLIENT_ADDRESS
-	std::cout << "NETSOCKET_CLIENT_ADDRESS is " << NETSOCKET_CLIENT_ADDRESS << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_CLIENT_PORT
-	std::cout << "NETSOCKET_CLIENT_PORT is " << NETSOCKET_CLIENT_PORT << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_SERVER_ADDRESS
-	std::cout << "NETSOCKET_SERVER_ADDRESS is " << NETSOCKET_SERVER_ADDRESS << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_SERVER_PORT
-	std::cout << "NETSOCKET_SERVER_PORT is " << NETSOCKET_SERVER_PORT << std::endl;
-	#endif
-	
-	//buffers
-	#ifndef BUFFER_OVERFLOW_CHECKING
-	std::cout << "BUFFER_OVERFLOW_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "BUFFER_OVERFLOW_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef BUFFER_UNDERFLOW_CHECKING
-	std::cout << "BUFFER_UNDERFLOW_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "BUFFER_UNDERFLOW_CHECKING enabled" << std::endl;
 	#endif
 	
 	//memory
@@ -191,19 +137,6 @@ void check_params(){
 	std::cout << "HFRISCV_ENABLE_COUNTERS enabled" << std::endl;
 	#endif
 	
-	//router	
-	#ifndef ROUTER_ENABLE_COUNTERS
-	std::cout << "ROUTER_ENABLE_COUNTERS disabled" << std::endl;
-	#else
-	std::cout << "ROUTER_ENABLE_COUNTERS enabled" << std::endl;
-	#endif
-	
-	#ifndef ROUTER_PORT_CONNECTED_CHECKING
-	std::cout << "ROUTER_PORT_CONNECTED_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "ROUTER_PORT_CONNECTED_CHECKING enabled" << std::endl;
-	#endif
-	
 }
 
 int main(int __attribute__((unused)) argc, char** argv){
@@ -223,15 +156,34 @@ int main(int __attribute__((unused)) argc, char** argv){
 		return 1;
 	}
 	
-	std::cout << "==============[ TILE COMPOSITION ]" << std::endl;
+	std::cout << "==============[ TILE COMPOSITION ]" << std::endl; 
 	
 	//create new tile (single)
 	tile = new ProcessingTile();
 	
 	//load bin into memory
 	tile->GetMem0()->LoadBin(std::string(argv[1]), MEM0_BASE, MEM0_SIZE);
-	
-	std::cout << "==============[ SIMULATION ]" << std::endl;
+
+/*
+	printf("MEM info: base %X - last %X - size %d\n",tile->GetMem0()->GetBase(), tile->GetMem0()->GetLastAddr(), tile->GetMem0()->GetSize());
+	long addr = 0x40500000;
+	int i, data;
+	float dataf;
+	int8_t * ptr;
+	for(i=0;i<10;i++){
+		ptr = tile->GetMem0()->GetMap(addr+i*4);
+		dataf = *(float*)ptr;
+		printf("WVET (%d - %p): %f\n",i, ptr, dataf);
+	}
+
+	addr = 0x40580000;
+	for(i=0;i<10;i++){
+		ptr = tile->GetMem0()->GetMap(addr+i*4);
+		data = *(uint32_t*)ptr;
+		printf("IVET (%d - %p): %d - %X\n",i, ptr, data, data);
+	}	
+*/	
+	std::cout << "==============[ SIMULATION ]" << std::endl;  
 	
 	//instantiate simulation
 	Simulator* s = new Simulator();
@@ -240,6 +192,9 @@ int main(int __attribute__((unused)) argc, char** argv){
 	
 	//schedule pcore
 	s->Schedule(Event(3, tile->GetCpu()));
+
+	//schedule dma
+	s->Schedule(Event(2, tile->GetDma()));
 
 	std::cout << "Epoch set to " << ORCA_EPOCH_LENGTH << " cycles." << std::endl;
 	std::cout << "Please wait..." << std::endl;
