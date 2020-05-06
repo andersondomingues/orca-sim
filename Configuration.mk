@@ -163,13 +163,13 @@ ORCA_GDBRSP_PORT := 5000
 # platform. Enabling counters depletes performance.
 
 # Counts the number cycle in which the router tranfers flits.
-ORCA_HWCOUNTERS_ROUTERS := NO
+ORCA_HWCOUNTERS_ROUTERS := YES
 
 # Counts the number of readings and writings.
 ORCA_HWCOUNTERS_MEMORY := YES
 
 # Counts the number of instructions per instruction class.
-ORCA_HWCOUNTERS_HFRISCV := NO
+ORCA_HWCOUNTERS_HFRISCV := YES
 
 #================================================================#
 # GENERATION OF COMPILATION PARAMETERS STARTS HERE.              #
@@ -252,7 +252,6 @@ ifeq ($(ORCA_HWCOUNTERS_HFRISCV), YES)
 	COMPLINE := $(COMPLINE) -DHFRISCV_ENABLE_COUNTERS
 endif
 
-#router parameters
 ifeq ($(ORCA_HWCOUNTERS_ROUTERS), YES)
 	COMPLINE := $(COMPLINE) -DROUTER_ENABLE_COUNTERS
 endif

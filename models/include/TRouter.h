@@ -74,7 +74,6 @@ public:
 		
 		#ifdef ROUTER_ENABLE_COUNTERS
 		USignal<uint32_t>* GetSignalCounterActive();
-		void InitCounters(uint32_t active_counter_addr);
 		#endif
 		
 		uint32_t GetRR();

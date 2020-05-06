@@ -37,14 +37,14 @@
 ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 
 	//ni sig wires
-	_signal_stall       = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
-	_signal_intr        = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
-	_signal_send_status = new USignal<uint8_t>(SIGNAL_SEND_STATUS, this->GetName() + ".send_status");
-	_signal_recv_status = new USignal<uint32_t>(SIGNAL_RECV_STATUS, this->GetName() + ".recv_status");
-	_signal_prog_send   = new USignal<uint8_t>(SIGNAL_PROG_SEND, this->GetName() + ".progr_send");
-	_signal_prog_recv   = new USignal<uint8_t>(SIGNAL_PROG_RECV, this->GetName() + ".progr_recv");
-	_signal_prog_addr   = new USignal<uint32_t>(SIGNAL_PROG_ADDR, this->GetName() + ".progr_addr");
-	_signal_prog_size   = new USignal<uint32_t>(SIGNAL_PROG_SIZE, this->GetName() + ".progr_size");
+	_signal_stall       = new USignal<uint8_t>(this->GetName() + ".stall");
+	_signal_intr        = new USignal<uint8_t>(this->GetName() + ".intr");
+	_signal_send_status = new USignal<uint8_t>(this->GetName() + ".send_status");
+	_signal_recv_status = new USignal<uint32_t>(this->GetName() + ".recv_status");
+	_signal_prog_send   = new USignal<uint8_t>(this->GetName() + ".progr_send");
+	_signal_prog_recv   = new USignal<uint8_t>(this->GetName() + ".progr_recv");
+	_signal_prog_addr   = new USignal<uint32_t>(this->GetName() + ".progr_addr");
+	_signal_prog_size   = new USignal<uint32_t>(this->GetName() + ".progr_size");
 
 	//create a cpu and memory in addition to current tile hardware
 	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
@@ -54,17 +54,6 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	//binds netif to mem
 	_netif->SetMem0(_mem0);
 	
-	//reset control wires
-   	_signal_stall->Write(0);
-	_signal_intr->Write(0); 
-	
-	_signal_send_status->Write(0);
-	_signal_recv_status->Write(0);
-	_signal_prog_send->Write(0);
-	_signal_prog_recv->Write(0);
-	_signal_prog_addr->Write(0);
-	_signal_prog_size->Write(0);
-		
 	//bind control signals to hardware (netif side)
 	_netif->SetSignalStall(_signal_stall);
 	_netif->SetSignalIntr(_signal_intr);
@@ -97,16 +86,27 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	this->GetMem2()->SetName(this->GetName() + ".mem2");
 
 	//bind control signals to hardware (cpu side)
-	this->GetSignalStall()->MapTo(_mem0->GetMap(SIGNAL_CPU_STALL));
-	this->GetSignalIntr()->MapTo(_mem0->GetMap(SIGNAL_CPU_INTR));
-	this->GetSignalSendStatus()->MapTo(_mem0->GetMap(SIGNAL_SEND_STATUS));
-	this->GetSignalRecvStatus()->MapTo(_mem0->GetMap(SIGNAL_RECV_STATUS));
+	this->GetSignalStall()->MapTo(_mem0->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
+	this->GetSignalIntr()->MapTo(_mem0->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
+	this->GetSignalSendStatus()->MapTo(_mem0->GetMap(SIGNAL_SEND_STATUS), SIGNAL_SEND_STATUS);
+	this->GetSignalRecvStatus()->MapTo(_mem0->GetMap(SIGNAL_RECV_STATUS), SIGNAL_RECV_STATUS);
 
-	this->GetSignalProgSend()->MapTo(_mem0->GetMap(SIGNAL_PROG_SEND));
-	this->GetSignalProgRecv()->MapTo(_mem0->GetMap(SIGNAL_PROG_RECV));
+	this->GetSignalProgSend()->MapTo(_mem0->GetMap(SIGNAL_PROG_SEND), SIGNAL_PROG_SEND);
+	this->GetSignalProgRecv()->MapTo(_mem0->GetMap(SIGNAL_PROG_RECV), SIGNAL_PROG_RECV);
 	
-	this->GetSignalProgAddr()->MapTo(_mem0->GetMap(SIGNAL_PROG_ADDR));
-	this->GetSignalProgSize()->MapTo(_mem0->GetMap(SIGNAL_PROG_SIZE));
+	this->GetSignalProgAddr()->MapTo(_mem0->GetMap(SIGNAL_PROG_ADDR), SIGNAL_PROG_ADDR);
+	this->GetSignalProgSize()->MapTo(_mem0->GetMap(SIGNAL_PROG_SIZE), SIGNAL_PROG_SIZE);
+
+	//reset control wires
+   	_signal_stall->Write(0);
+	_signal_intr->Write(0); 
+	
+	_signal_send_status->Write(0);
+	_signal_recv_status->Write(0);
+	_signal_prog_send->Write(0);
+	_signal_prog_recv->Write(0);
+	_signal_prog_addr->Write(0);
+	_signal_prog_size->Write(0);
 
 	#ifdef MEMORY_ENABLE_COUNTERS
 	//map main memory counter
@@ -121,7 +121,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	#endif
 
 	#ifdef ROUTER_ENABLE_COUNTERS
-	this->GetRouter()->GetSignalCounterActive()->MapTo(_mem0->GetMap(ROUTER_COUNTER_ACTIVE_ADDR), ROUTER_COUNTER_ACTIVE_ADDR, 0);
+	GetRouter()->GetSignalCounterActive()->MapTo(_mem0->GetMap(ROUTER_COUNTER_ACTIVE_ADDR), ROUTER_COUNTER_ACTIVE_ADDR);
 	#endif
 
 	//----------------- initialize counters for the cpu

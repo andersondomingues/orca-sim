@@ -79,6 +79,9 @@ private:
 	int i;
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS
+	void UpdateCounters(int opcode, int funct3);
+	
+	
 	USignal<uint32_t>* _counter_iarith;
 	USignal<uint32_t>* _counter_ilogical;
 	USignal<uint32_t>* _counter_ishift;
@@ -106,24 +109,8 @@ public:
 	USignal<uint32_t>* GetSignalCounterCyclesStall();
 	
 	USignal<uint32_t>* GetSignalHostTime();
-	
-	void InitCounters(
-		uint32_t arith_counter_addr, 
-		uint32_t logical_counter_addr,
-		uint32_t shift_counter_addr,
-		uint32_t branches_counter_addr,
-		uint32_t jumps_counter_addr, 
-		uint32_t loadstore_counter_addr,
-		uint32_t cycles_total_counter_addr, 
-		uint32_t cycles_stall_counter_addr,
-		uint32_t hosttime_addr);
-	
-	void UpdateCounters(int opcode, int func3);
 	#endif
 
-    //risc_v_state GetState();
-    
-	//void dumpregs(risc_v_state *s);
 	void dumpregs();
 	void bp(risc_v_state *s, uint32_t ir);
 	int32_t mem_read(risc_v_state *s, int32_t size, uint32_t address);
@@ -142,7 +129,7 @@ public:
 	ofstream output_debug;
 	ofstream output_uart;
 	
-   void Reset();	
+	void Reset();	
 };
 
 #endif /* __RISC_V_H */

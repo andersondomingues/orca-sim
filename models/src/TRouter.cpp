@@ -60,6 +60,12 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos) : TimedModel(
         _ib[i] = new UBuffer<FlitType>(bname, BUFFER_CAPACITY);
     }
     
+    #ifdef ROUTER_ENABLE_COUNTERS
+	//if counters are enabled, initiate the respective signals 
+	//please note that these signals are not mapped to anywhere yet
+	_counter_active = new USignal<uint32_t>(GetName() + ".counters.active");
+	#endif
+    
     this->Reset();
 }
 
@@ -201,10 +207,6 @@ SimulationTime TRouter::Run(){
 }
 
 #ifdef ROUTER_ENABLE_COUNTERS
-void TRouter::InitCounters(uint32_t couter_active_addr){
-	_counter_active = new USignal<uint32_t>(couter_active_addr, GetName() + ".counters.active");
-}
-
 USignal<uint32_t>* TRouter::GetSignalCounterActive(){
 	return this->_counter_active;
 }

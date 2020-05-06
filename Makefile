@@ -109,4 +109,5 @@ clean:
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec \
 		$(BINARY_DIR)/*.txt $(BINARY_DIR)/*.sh
 	$(Q)rm -rf docs/doxygen/
-	$(Q)rm -rf logs/*.log
+	#$(Q)rm -rf logs/*.log
+	

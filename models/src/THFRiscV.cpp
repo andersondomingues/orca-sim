@@ -72,7 +72,7 @@ int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 	if(address <= GetMemory()->GetLastAddr() && address > GetMemory()->GetBase()){
 		
 		#ifdef HFRISCV_ENABLE_COUNTERS
-		//update clock only when requested
+		//get information on host's clock (real clock, in hours, not hardware cycles)
 		if(address == _counter_hosttime->GetAddress()){
 
 			std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
@@ -275,35 +275,6 @@ USignal<uint32_t>* THFRiscV::GetSignalCounterCyclesStall(){
 }
 USignal<uint32_t>* THFRiscV::GetSignalHostTime(){
 	return _counter_hosttime;
-}
-
-/**
- * Initialize Counters
- * memory-mapped address of counters must be informed
- */
-
-void THFRiscV::InitCounters(
-		uint32_t arith_counter_addr, 
-		uint32_t logical_counter_addr,
-		uint32_t shift_counter_addr,
-		uint32_t branches_counter_addr,
-		uint32_t jumps_counter_addr, 
-		uint32_t loadstore_counter_addr,
-		uint32_t cycles_total_counter_addr, 
-		uint32_t cycles_stall_counter_addr,
-		uint32_t hosttime_addr){
-
-	_counter_iarith     = new USignal<uint32_t>(arith_counter_addr, GetName() + ".counters.iarith");
-	_counter_ilogical   = new USignal<uint32_t>(logical_counter_addr, GetName() + ".counters.ilogical");
-	_counter_ishift     = new USignal<uint32_t>(shift_counter_addr, GetName() + ".counters.ishift");
-	_counter_ibranches  = new USignal<uint32_t>(branches_counter_addr, GetName() + ".counters.ibranches");
-	_counter_ijumps     = new USignal<uint32_t>(jumps_counter_addr, GetName() + ".counters.ijumps");
-	_counter_iloadstore = new USignal<uint32_t>(loadstore_counter_addr, GetName() + ".counters.iloadstore");
-
-	_counter_cycles_total = new USignal<uint32_t>(cycles_total_counter_addr, GetName() + ".counters.cycles_total");
-	_counter_cycles_stall = new USignal<uint32_t>(cycles_stall_counter_addr, GetName() + ".counters.cycles_stall");
-	
-	_counter_hosttime = new USignal<uint32_t>(hosttime_addr, GetName() + ".counters.hosttime");
 }
 
 /**
@@ -637,9 +608,22 @@ THFRiscV::THFRiscV(std::string name, USignal<uint8_t>* intr, USignal<uint8_t>* s
 
 	output_debug.open("logs/" + GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
 	output_uart.open("logs/" + GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
+	
+	#ifdef HFRISCV_ENABLE_COUNTERS
+	_counter_iarith     = new USignal<uint32_t>(GetName() + ".counters.iarith");
+	_counter_ilogical   = new USignal<uint32_t>(GetName() + ".counters.ilogical");
+	_counter_ishift     = new USignal<uint32_t>(GetName() + ".counters.ishift");
+	_counter_ibranches  = new USignal<uint32_t>(GetName() + ".counters.ibranches");
+	_counter_ijumps     = new USignal<uint32_t>(GetName() + ".counters.ijumps");
+	_counter_iloadstore = new USignal<uint32_t>(GetName() + ".counters.iloadstore");
+	_counter_cycles_total = new USignal<uint32_t>(GetName() + ".counters.cycles_total");
+	_counter_cycles_stall = new USignal<uint32_t>(GetName() + ".counters.cycles_stall");
+	
+	_counter_hosttime = new USignal<uint32_t>(GetName() + ".counters.hosttime");
+	#endif
+	
 }
 
-//TODO: clear allocated memory if any
 THFRiscV::~THFRiscV(){
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS

@@ -52,6 +52,10 @@ UMemory::UMemory(std::string name, MemoryAddr size, MemoryAddr sram_base,
 	//please note that these signals are not mapped to anywhere yet
 	_counter_nstore = new USignal<uint32_t>(GetName() + ".counters.store");
 	_counter_nload = new USignal<uint32_t>(GetName() + ".counters.load");
+
+	//reset counters (must!)
+	_counter_nstore->Write(0);
+	_counter_nload->Write(0);
 	#endif
 }
 
