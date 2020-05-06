@@ -37,22 +37,34 @@
 #include <UMemory.h>
 #include <USignal.h>
 
+/**
+ * @brief flit
+ * 
+ */
 typedef uint16_t FlitType;
 
+/**
+ * @brief blabla
+ * 
+ */
 enum class DmaNetifRecvState{
-	WAIT_ADDR_FLIT,     //wait some flit to arrive at the local port
-	WAIT_SIZE_FLIT,     //read size flit to determine how many will come next
-	WAIT_PAYLOAD,       //wait for remaining flits to arrive, and interrupt
-	WAIT_CONFIG_STALL,  //wait for the cpu to configure the dma
-	COPY_RELEASE,       //stalls cpu, copy data, and release
-	FLUSH               //waits for the CPU to lower the recv signal (prevents in tandem recv)
+	WAIT_ADDR_FLIT,     ///> wait some flit to arrive at the local port
+	WAIT_SIZE_FLIT,     ///> read size flit to determine how many will come next
+	WAIT_PAYLOAD,       ///> wait for remaining flits to arrive, and interrupt
+	WAIT_CONFIG_STALL,  ///> wait for the cpu to configure the dma
+	COPY_RELEASE,       ///> stalls cpu, copy data, and release
+	FLUSH               ///> waits for the CPU to lower the recv signal (prevents in tandem recv)
 };
 
+/**
+ * @brief blabla
+ * 
+ */
 enum class DmaNetifSendState{
-	WAIT_CONFIG_STALL, //wait cpt to configure and raise _sig_send, stall
-	COPY_AND_RELEASE,  //copy content from memory, release cpu
-	SEND_DATA_TO_NOC,  //write data to the network, raise _send_status 
-	FLUSH              //wait for the cpu to lower the send signal (ack)
+	WAIT_CONFIG_STALL, ///> wait cpt to configure and raise _sig_send, stall
+	COPY_AND_RELEASE,  ///> copy content from memory, release cpu
+	SEND_DATA_TO_NOC,  ///> write data to the network, raise _send_status 
+	FLUSH              ///> wait for the cpu to lower the send signal (ack)
 };
 
 /**
@@ -81,14 +93,14 @@ private:
     FlitType _send_reg;
     
     //control signals 
-	USignal<uint8_t>*  _sig_stall;       //OUT: stalls cpu while copying from/to main memory
-	USignal<uint8_t>*  _sig_intr;        //OUT: request cpu interruption signal (same for both processes)
+	USignal<uint8_t>*  _sig_stall;       ///> OUT: stalls cpu while copying from/to main memory
+	USignal<uint8_t>*  _sig_intr;        ///> OUT: request cpu interruption signal (same for both processes)
 
-	USignal<uint8_t>*  _sig_send_status; //OUT: 0x0 when in ready state
-	USignal<uint32_t>* _sig_recv_status; //OUT: 0x0 when in ready state, updated but unused
+	USignal<uint8_t>*  _sig_send_status; ///> OUT: 0x0 when in ready state
+	USignal<uint32_t>* _sig_recv_status; ///> OUT: 0x0 when in ready state, updated but unused
 
-	USignal<uint8_t>*  _sig_prog_send;   //IN
-	USignal<uint8_t>*  _sig_prog_recv;   //IN
+	USignal<uint8_t>*  _sig_prog_send;   ///> IN
+	USignal<uint8_t>*  _sig_prog_recv;   ///> IN
 	
 	USignal<uint32_t>* _sig_prog_addr;   //IN
 	USignal<uint32_t>* _sig_prog_size;   //IN

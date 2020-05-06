@@ -1,7 +1,7 @@
 #This is the name of the platform. It is used only 
 #to name the generated executable file and to be
 #displayed during execution of this makefile
-PLATFORM_NAME:=single-core
+PLATFORM_NAME:=single-core-nn
 
 #Path to dependencies. This platform is similulated using
 #URSA, so libsim and libmod are required. 
@@ -15,13 +15,11 @@ HEADERDIR :=./include
 LIBSIM:=../../bin/libsim.a
 LIBRSP:=../../bin/libgdbrsp.a
 
-# single core does not have hw/sw configuration parameters
--include ./Configuration.mk
 
 #Flags to be used during compilation of the platform. Note 
-#that they may be different form flags used for compiling  
+#that they may be different form flags used for compiling
 #dependencies.
-CXXFLAGS  +=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
+CXXFLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
     -I$(LIBRSP_PATH)/include -Iinclude -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
 
 #added -Wl,--allow-multiple-definition for possible bug in binutils/ld
@@ -32,6 +30,7 @@ LD_FLAGS   :=-L../../bin -lsim -lgdbrsp
 #source files for the platform
 TARGET_DEPS := \
 	$(SOURCEDIR)/ProcessingTile.cpp \
+	$(SOURCEDIR)/TDmaMult.cpp \
 	$(SOURCEDIR)/Orca.cpp \
 	$(LIBMOD_PATH)/src/TProcessorBase.cpp \
 	$(LIBMOD_PATH)/src/THFRiscV.cpp \
@@ -44,6 +43,7 @@ HEADER_FILES += $(LIBMOD_PATH)/include/THFRiscV.h \
 	$(LIBMOD_PATH)/include/TProcessorBase.h \
 	$(LIBMOD_PATH)/include/UMemory.h \
 	$(LIBMOD_PATH)/include/USignal.h
+
 
 #compiler an instance of the simulator 
 $(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(LIBRSP) $(LIBSIM) $(TARGET_DEPS) $(HEADER_FILES)

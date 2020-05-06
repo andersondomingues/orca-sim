@@ -126,7 +126,6 @@ int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 		return data;
 		
 	}else{
-		
 		//Address does not belong to any bank, check for special addresses
 		switch(address){
 			case IRQ_VECTOR:	return s->vector;
@@ -224,17 +223,16 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 		}
 		
 		case IRQ_VECTOR:	s->vector = value; return;
-		case IRQ_CAUSE:	s->cause = value; return;
+		case IRQ_CAUSE:		s->cause = value; return;
 		case IRQ_MASK:		s->mask = value; return;
 		case IRQ_EPC:		s->epc = value; return;
-		case COUNTER:		s->counter = value; return;
-		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
+		case COUNTER:		s->counter = value; return;		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
 		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
 
-		case DEBUG_ADDR: output_debug << (int8_t)(value & 0xff) << std::flush; return;
-		case UART_WRITE: output_uart << (int8_t)(value & 0xff) << std::flush; return;
-		case UART_DIVISOR: return;
-
+		case DEBUG_ADDR:	output_debug << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_WRITE:	output_uart << (int8_t)(value & 0xff) << std::flush; return;
+		case UART_DIVISOR:	return;
+	
 		case EXIT_TRAP:
 			std::cout << this->GetName() << ": exit trap triggered! " << std::endl;
 			dumpregs(s);
