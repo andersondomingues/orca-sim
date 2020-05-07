@@ -17,11 +17,10 @@ LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
 LIBRSP:=$(LIBRSP_PATH)/bin/libgdbrsp.a
 
 #Flags to be used during compilation of the platform. Note 
-#that they may be different form flags used for compiling
+#that they may be different form flags used for compiling  
 #dependencies.
-GCC_FLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
-    -I$(LIBRSP_PATH)/include -Iinclude \
-    -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
+CXXFLAGS  +=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
+    -I$(LIBRSP_PATH)/include -Iinclude -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
 
 #added -Wl,--allow-multiple-definition for possible bug in binutils/ld
 #as recommended in https://sourceware.org/bugzilla/show_bug.cgi?id=12762

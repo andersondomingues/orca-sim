@@ -1,14 +1,19 @@
+include Configuration.mk
+
 #directory configuration
-SOURCEDIR :=./src
-HEADERDIR :=./include
-OUTPUTDIR :=./bin
+SOURCEDIR :=src
+HEADERDIR :=include
+OUTPUTDIR :=bin
+
+#libname
 LIBNAME :=libmod.a
 
+#requires libursa
 LIBSIM_PATH:=../simulator
-LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
+LIBSIM:=$(LIBSIM_PATH)/bin/libursa.a
 
 #include flags (plus external flags)
-CPPFLAGS :=-I./include -I../simulator/include -I../gdbrsp/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
+CPPFLAGS :=-I./include -I../simulator/include -I../gdbrsp/include -c $(MAIN_COMPLINE) $(MODELS_COMPLINE) $(PLAT_COMPLINE)
 
 #list of dependencies (source files)
 TARGET_DEPS := \

@@ -133,17 +133,17 @@ public:
 	~ProcessingTile();
 	
 	//getters
-    USignal<uint8_t>*  GetSignalStall();
+    	USignal<uint8_t>*  GetSignalStall();
 	USignal<uint8_t>*  GetSignalIntr();
 
 	//setters
-    void SetSignalStall(USignal<uint8_t>*);
+	void SetSignalStall(USignal<uint8_t>*);
 	void SetSignalIntr(USignal<uint8_t>*);
 	
 	//getters
 	THFRiscV* GetCpu();
 	UMemory* GetMem0();
-	
+
 	//getters for mems
 	void SetMem0(UMemory*);
 	

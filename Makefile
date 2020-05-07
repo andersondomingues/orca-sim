@@ -1,14 +1,19 @@
-# Includes parameters from the configuration file
-include ./Configuration.mk
-
-# Name of URSA library, compiled as a static library.
-URSA_LIB      := libsim.a
-
-# Name of the library containing the hardware models. 
+# Library names. URSA_LIB is the simulation library, MODELS_LIB
+# is the library containing the hardware models, and GDBRSP_LIB
+# is the library which implements GDB support.
+URSA_LIB      := libursa.a
 MODELS_LIB    := libmod.a
-
-# name of the library containg the GDB RSP implementation.
 GDBRSP_LIB    := libgdbrsp.a
+
+# Import parameters from other modules
+include ./Configuration.mk
+include ./models/Configuration.mk
+include ./platforms/$(ORCA_PLATFORM)/Configuration.mk
+
+# nullate gdblib when gdb support is absent
+ifneq ($(ORCA_ENABLE_GDBRSP),YES)
+	GDBRSP_LIB := keep.me
+endif
 
 # Additional parameters (do not modify them unless you know
 # what you are doing here).

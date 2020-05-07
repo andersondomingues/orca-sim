@@ -43,8 +43,8 @@ ProcessingTile::ProcessingTile() {
 	_cpu   = new THFRiscV(this->GetName() + ".cpu", _signal_intr, _signal_stall, _mem0);
 
 	//reset control wires
-    _signal_stall->Write(0);
-	_signal_intr->Write(0); 
+	_signal_stall->Write(0);
+	_signal_intr->Write(0);
 	
 
 	//bind control signals to hardware (cpu side)

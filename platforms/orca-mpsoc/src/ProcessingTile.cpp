@@ -109,7 +109,7 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_signal_prog_size->Write(0);
 
 	#ifdef MEMORY_ENABLE_COUNTERS
-	//map main memory counter
+	//map main memory counter	
 	_mem0->GetSignalCounterStore()->MapTo(_mem0->GetMap(M0_COUNTER_STORE_ADDR), M0_COUNTER_STORE_ADDR);
 	_mem0->GetSignalCounterLoad()->MapTo(_mem0->GetMap(M0_COUNTER_LOAD_ADDR), M0_COUNTER_LOAD_ADDR);
 
