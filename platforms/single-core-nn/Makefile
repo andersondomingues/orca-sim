@@ -23,6 +23,8 @@ include ./Configuration.mk
 #into the compilation when the support is disabled
 include ../../Configuration.mk
 
+include ../../models/Configuration.mk
+
 #Flags to be used during compilation of the platform. Note 
 #that they may be different form flags used for compiling
 #dependencies.
@@ -43,7 +45,8 @@ endif
 #source files for the platform
 TARGET_DEPS := \
 	$(SOURCEDIR)/ProcessingTile.cpp \
-	$(SOURCEDIR)/Orca.cpp
+	$(SOURCEDIR)/Orca.cpp \
+	$(SOURCEDIR)/TDmaMult.cpp
 
 DEP_LIBS := $(LIBRSP) $(LIBMOD) $(LIBSIM)
 
