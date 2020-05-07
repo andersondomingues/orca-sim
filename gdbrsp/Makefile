@@ -4,8 +4,8 @@ HEADERDIR :=./include
 OUTPUTDIR :=./bin
 LIBNAME :=libgdbrsp.a
 
-LIBSIM_PATH:=../simulator
-LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
+LIBSIM_PATH:=../ursa
+LIBSIM:=$(LIBSIM_PATH)/bin/libursa.a
 
 LIBMOD_PATH:=../models
 LIBMOD:=$(LIBMOD_PATH)/bin/libmod.a
