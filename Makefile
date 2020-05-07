@@ -27,7 +27,7 @@ MAKEFLAGS += --no-print-directory
 endif
 
 #directory configurations (paths)
-URSA_DIR      := $(CURDIR)/simulator
+URSA_DIR      := $(CURDIR)/ursa
 BINARY_DIR    := $(CURDIR)/bin
 PLATFORMS_DIR := $(CURDIR)/platforms
 MODELS_DIR    := $(CURDIR)/models

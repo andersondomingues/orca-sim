@@ -4,7 +4,7 @@
 PLATFORM_NAME :=orca-mpsoc
 
 #Path to dependencies. 
-LIBSIM_PATH :=../../simulator
+LIBSIM_PATH :=../../ursa
 LIBMOD_PATH :=../../models
 LIBRSP_PATH :=../../gdbrsp
 

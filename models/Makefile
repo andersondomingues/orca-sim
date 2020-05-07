@@ -9,11 +9,11 @@ OUTPUTDIR :=bin
 LIBNAME :=libmod.a
 
 #requires libursa
-LIBSIM_PATH:=../simulator
+LIBSIM_PATH:=../ursa
 LIBSIM:=$(LIBSIM_PATH)/bin/libursa.a
 
 #include flags (plus external flags)
-CPPFLAGS :=-I./include -I../simulator/include -I../gdbrsp/include -c $(MAIN_COMPLINE) $(MODELS_COMPLINE) $(PLAT_COMPLINE)
+CPPFLAGS :=-I./include -I../ursa/include -I../gdbrsp/include -c $(MAIN_COMPLINE) $(MODELS_COMPLINE) $(PLAT_COMPLINE)
 
 #list of dependencies (source files)
 TARGET_DEPS := \
