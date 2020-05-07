@@ -96,8 +96,11 @@ where, for instance:
 */
 
 //main memory mapping
-#define MEM0_SIZE 0x008FFFFF 
-#define MEM0_BASE 0x40000000
+//#define MEM0_SIZE 0x008FFFFF 
+//#define MEM0_BASE 0x40000000
+//
+#define MEM0_SIZE ORCA_MEMORY_SIZE
+#define MEM0_BASE ORCA_MEMORY_BASE
 
 //->>>> first available address for memory mapping 0x40410000
 // DMA MMIO registers

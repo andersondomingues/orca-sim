@@ -11,7 +11,7 @@ ORCA_MEMORY_BASE := 0x40000000
 # 1000000     -- nearly 1MB sized 
 # 0xFFFFF     -- exactly 1MB sized
 # pow(10,6)   -- same as 1000000 (~1MB)
-ORCA_MEMORY_SIZE := 1000000
+ORCA_MEMORY_SIZE := 0x0041FFFF
 
 #================================================================#
 # GENERATION OF COMPILATION PARAMETERS STARTS HERE.              #
