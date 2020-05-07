@@ -32,8 +32,11 @@
 #include <UMemory.h>
 #include <USignal.h>
 
-//arch specifc
+//arch specific
 #include <Tile.h>
+
+//include peripheral addresses
+#include <MemoryMap.h>
 
 /* MEMORY LAYOUT
 ------------------- 0x40000000 <<-- code begin

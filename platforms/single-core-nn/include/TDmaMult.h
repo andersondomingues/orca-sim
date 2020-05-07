@@ -30,12 +30,8 @@
 #include <UMemory.h>
 #include <USignal.h>
 
-//NN memory configuration. TOTAL_NN_MEM_SIZE and SIMD_SIZE can be changed in design time
-#define TOTAL_NN_MEM_SIZE   	4 * 1024 * 1024 					///< this is the maximum memory address space to be used for operands of the MACs 
-#define SIMD_SIZE     			32   								///< max number of parallel MAC operations
-#define NN_MEM_SIZE_PER_CHANNEL (TOTAL_NN_MEM_SIZE / 2)  /  SIMD_SIZE ///< the max amount of data per channel 
-#define MEMW_BASE 				0x40500000     						///< the base address to store the weights
-#define MEMI_BASE 				MEMW_BASE + (TOTAL_NN_MEM_SIZE/2)	///< the base address to store the inputs
+//include peripheral addresses
+#include <MemoryMap.h>
 
 /*
  The current approach is: the cpu copies data to the DMA memory, configure the DMA, stall the CPU, does MACs in parallel and in burst mode, 

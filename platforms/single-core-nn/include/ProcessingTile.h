@@ -102,48 +102,7 @@ where, for instance:
 #define MEM0_SIZE ORCA_MEMORY_SIZE
 #define MEM0_BASE ORCA_MEMORY_BASE
 
-//->>>> first available address for memory mapping 0x40410000
-// DMA MMIO registers
-// jumping to 0x404120xx, otherwise it wont fit before the memory counters
-#define SIGNAL_CPU_STALL    0x40412000  // 8 bits
-#define SIGNAL_CPU_INTR     0x40412001
-#define SIGNAL_DMA_PROG     0x40412002
-//							0x40410003  // not used
-#define DMA_BURST_SIZE	    0x40412004  // 32 bits 
-#define DMA_NN_SIZE  	    0x40412008
-#define DMA_OUT_SIZE  	    0x4041200C
-#define DMA_MAC_OUT_ARRAY   0x40412010
-// DMA_MAC_OUT_ARRAY0 		0x40412010
-// DMA_MAC_OUT_ARRAY1 		0x40412014
-//...  
-//DMA_MAC_OUT_ARRAY31		0x40412010 + (0x20 * 4) -1 
-
-//0x40411xxx => memory mapped counters
-#ifdef MEMORY_ENABLE_COUNTERS
-#define M0_COUNTER_STORE_ADDR (0x40411010)
-#define M0_COUNTER_LOAD_ADDR  (0x40411014)
-#define M1_COUNTER_STORE_ADDR (0x40411018)
-#define M1_COUNTER_LOAD_ADDR  (0x4041101C)
-#define M2_COUNTER_STORE_ADDR (0x40411020)
-#define M2_COUNTER_LOAD_ADDR  (0x40411024)
-#endif
-
-#ifdef HFRISCV_ENABLE_COUNTERS
-#define CPU_COUNTER_ARITH_ADDR     (0x40411128)
-#define CPU_COUNTER_LOGICAL_ADDR   (0x4041112C)
-#define CPU_COUNTER_SHIFT_ADDR     (0x40411130)
-#define CPU_COUNTER_BRANCHES_ADDR  (0x40411134)
-#define CPU_COUNTER_JUMPS_ADDR     (0x40411138)
-#define CPU_COUNTER_LOADSTORE_ADDR (0x4041113C)
-#define CPU_COUNTER_HOSTTIME_ADDR  (0x40411140)
-#define CPU_COUNTER_CYCLES_TOTAL_ADDR (0x40411144)
-#define CPU_COUNTER_CYCLES_STALL_ADDR (0x40411148)
-#endif
-
-//0x403F15xx => router wires
-#ifdef ROUTER_ENABLE_COUNTERS
-#define ROUTER_COUNTER_ACTIVE_ADDR (0x40411500)
-#endif
+#include <MemoryMap.h>
 
 /**
  * @class ProcessingTile
