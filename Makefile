@@ -1,10 +1,15 @@
-#dir config
-SOURCEDIR :=./src
-HEADERDIR :=./include
-OUTPUTDIR :=./bin
-LIBNAME := libsim.a 
+#include local config
+include Configuration.mk
 
-CPPFLAGS := -I$(HEADERDIR) -c $(COMPLINE) $(GLOBAL_SETTINGS)
+#dir config
+SOURCEDIR :=src
+HEADERDIR :=include
+OUTPUTDIR :=bin
+
+#libname
+LIBNAME := libursa.a 
+
+CXXFLAGS := -I$(HEADERDIR) -c $(MAIN_COMPLINE) $(URSA_COMPLINE) 
 
 TARGET_DEPS := \
 	$(OUTPUTDIR)/Event.o \
@@ -19,7 +24,7 @@ $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
 
 #compile all classes into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp $(HEADERDIR)/%.h 
-	$(Q)g++ $(CPPFLAGS) $< -o $@ 
+	$(Q)g++ $(CXXFLAGS) $< -o $@ 
 	
 #remove previously generated files
 clean:
