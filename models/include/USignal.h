@@ -59,13 +59,18 @@ public:
      * @param name (optional) An arbitrary name for the instance.
      * @param addre (optinal) Address to which the bus is mapped in memory.
      */
-	 USignal(T* t_ptr, uint32_t addr, std::string name);
-     USignal(uint32_t addr, std::string name);
-	
-	 /**
+     USignal(T* t_ptr, uint32_t addr, std::string name);
+
+     /**
      * @brief Constructor. Create new Signal using internal storage
      * @param name (optional) An arbitrary name for the instance.
-     * @param addre (optinal) Address to which the bus is mapped in memory.
+     * @param addr (optinal) Address to which the bus is mapped in memory.
+     */
+     USignal(uint32_t addr, std::string name);
+	
+     /**
+     * @brief Constructor. Create new Signal using internal storage
+     * @param name (optional) An arbitrary name for the instance.
      */
 	 USignal(std::string name);
     
@@ -139,6 +144,7 @@ template class USignal<bool>;  //wire
 template class USignal<uint8_t>;  //mem word
 template class USignal<uint16_t>; //dmni/noc word
 template class USignal<uint32_t>; //proc word
+template class USignal<float>;    // float cooprocessor output
 template class USignal<uint64_t>; //double word
 template class USignal<int8_t>;  //mem word
 template class USignal<int16_t>; //dmni/noc word

@@ -1,7 +1,7 @@
 #This is the name of the platform. It is used only 
 #to name the generated executable file and to be
 #displayed during execution of this makefile
-PLATFORM_NAME:=single-core-nn
+PLATFORM_NAME :=single-core-nn
 
 #Path to dependencies. 
 LIBSIM_PATH :=../../simulator
@@ -13,24 +13,36 @@ SOURCEDIR :=./src
 HEADERDIR :=./include
 
 LIBMOD:=$(LIBMOD_PATH)/bin/libmod.a
-LIBSIM:=$(LIBSIM_PATH)/bin/libsim.a
+LIBSIM:=$(LIBSIM_PATH)/bin/libursa.a
 LIBRSP:=$(LIBRSP_PATH)/bin/libgdbrsp.a
+
+#include local config
+include ./Configuration.mk
+
+#include global config, required to avoid including gdbrsp
+#into the compilation when the support is disabled
+include ../../Configuration.mk
 
 #Flags to be used during compilation of the platform. Note 
 #that they may be different form flags used for compiling
 #dependencies.
-GCC_FLAGS  :=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
+CXXFLAGS  +=-I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include \
     -I$(LIBRSP_PATH)/include -Iinclude \
-    -lpthread $(COMPLINE) $(GLOBAL_SETTINGS)
+    -lpthread $(MAIN_COMPLINE) $(PLAT_COMPLINE) $(MODELS_COMPLINE)
 
-#added -Wl,--allow-multiple-definition for possible bug in binutils/ld
-#as recommended in https://sourceware.org/bugzilla/show_bug.cgi?id=12762
-LD_FLAGS   :=-L../../bin -lmod -lsim -lgdbrsp
+#link with other libraries
+LD_FLAGS :=-L../../bin -lmod -lursa
+
+# nullate gdblib when gdb support is absent
+ifneq ($(ORCA_ENABLE_GDBRSP),YES)
+	LIBRSP := $(LIBRSP_PATH)/bin/keep.me
+else
+	LD_FLAGS := $(LD_FLAGS) -lgdbrsp
+endif
 
 #source files for the platform
 TARGET_DEPS := \
 	$(SOURCEDIR)/ProcessingTile.cpp \
-	$(SOURCEDIR)/TDmaMult.cpp \
 	$(SOURCEDIR)/Orca.cpp
 
 DEP_LIBS := $(LIBRSP) $(LIBMOD) $(LIBSIM)
@@ -40,7 +52,7 @@ HEADER_FILES := $(wildcard $(HEADERDIR)/*.h)
 
 #compiler an instance of the simulator 
 $(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(TARGET_DEPS) $(HEADER_FILES) $(DEP_LIBS)
-	$(Q)g++ $(TARGET_DEPS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe $(LD_FLAGS) $(GCC_FLAGS)
+	$(Q)g++ $(TARGET_DEPS) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe $(LD_FLAGS) $(CXXFLAGS)
 
 #remove previously generated files
 clean:
