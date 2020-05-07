@@ -17,43 +17,9 @@ ORCA_NOC_WIDTH  := 2
 # although not impacting in simulation performance.
 ORCA_BUFFER_CAPACITY := 8
 
-# Set it to YES to enforce the simulation to check for buffers'
-# sizes before pushing data (depletes simulation performance).
-ORCA_CHECK_BUFFER_OVERFLOW := NO
-
-# Set it to YES to enforce the simulation to check for buffers'
-# sizes when pulling data. (depletes simulation performance). 
-ORCA_CHECK_BUFFER_UNDERFLOW := NO
-
-#================================================================#
-# HARDWARE COUNTERS                                              #
-#================================================================#
-
-# Enable hardware counter for several hardware components. These 
-# counter can be used to estimate the energy consumption of the 
-# platform. Enabling counters depletes performance.
-
-# Counts the number of readings and writings.
-ORCA_HWCOUNTERS_MEMORY := NO
-
-# Counts the number of instructions per instruction class.
-ORCA_HWCOUNTERS_HFRISCV := NO
-
-# Enable hardware counter for several hardware components. These 
-# counter can be used to estimate the energy consumption of the 
-# platform. Enabling counters depletes performance.
-# Counts the number cycle in which the router tranfers flits.
-ORCA_HWCOUNTERS_ROUTERS := NO
-
 #================================================================#
 # OFF-CHIP COMMUNICATION OPTIONS                                 #
 #================================================================#
-
-# Check whether destination port is connected when tranfering
-# flits. Transfering flit to routers not mapped into the topology
-# results will crash the simulator if this option if set to NO. 
-# Setting it YES depletes performance. 
-ORCA_CHECK_ROUTER_PORTS := NO
 
 # These options control the log for packets passing through the 
 # off-chip communication interface. Set this option to NO to
@@ -96,60 +62,38 @@ ORCA_MEMORY_BASE := 0x40000000
 # pow(10,6)   -- same as 1000000 (~1MB)
 ORCA_MEMORY_SIZE := 1000000
 
+#================================================================#
+# GENERATION OF COMPILATION PARAMETERS STARTS HERE.              #
+# DO NOT MODIFY BELOW THIS LINE!                                 #
+#================================================================#
 
-# ========================================================================
-# GENERATION OF COMPILATION PARAMETERS STARTS HERE.
-# DO NOT MODIFY BELOW THIS LINE!
-# ========================================================================
-COMPLINE := $(COMPLINE) \
-	-DORCA_NOC_HEIGHT=$(ORCA_NOC_HEIGHT) \
+#NOC AND BUFFERS
+PLAT_COMPLINE := -DORCA_NOC_HEIGHT=$(ORCA_NOC_HEIGHT) \
 	-DORCA_NOC_WIDTH=$(ORCA_NOC_WIDTH) 
 
-#buffer parameters
-ifeq ($(ORCA_BUFFER_OVERFLOW_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DBUFFER_OVERFLOW_CHECKING
-endif
-ifeq ($(ORCA_BUFFER_UNDERFLOW_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DBUFFER_UNDERFLOW_CHECKING
-endif
+PLAT_COMPLINE := $(PLAT_COMPLINE) \
+	-DBUFFER_CAPACITY=$(ORCA_BUFFER_CAPACITY)
 
-COMPLINE := $(COMPLINE) -DBUFFER_CAPACITY=$(ORCA_BUFFER_CAPACITY)
-
-#router
-ifeq ($(ORCA_GROUNDED_PORTS_CHECKING), YES)
-	COMPLINE := $(COMPLINE) -DROUTER_PORT_CONNECTED_CHECKING
-endif
-
-#counters
-ifeq ($(ORCA_HWCOUNTERS_MEMORY), YES)
-	COMPLINE := $(COMPLINE) -DMEMORY_ENABLE_COUNTERS
-endif
-ifeq ($(ORCA_HWCOUNTERS_HFRISCV), YES)
-	COMPLINE := $(COMPLINE) -DHFRISCV_ENABLE_COUNTERS
-endif
-ifeq ($(ORCA_HWCOUNTERS_ROUTERS), YES)
-	COMPLINE := $(COMPLINE) -DROUTER_ENABLE_COUNTERS
-endif
-
-#off-chip
+#OFF-CHIP
 ifeq ($(ORCA_OFFCHIP_LOG_IN), YES)
-	COMPLINE := $(COMPLINE) -DNETBRIDGE_ENABLE_LOG_INPUT
+	PLAT_COMPLINE := $(PLAT_COMPLINE) -DNETBRIDGE_ENABLE_LOG_INPUT
 endif
 ifeq ($(ORCA_OFFCHIP_LOG_OUT) ), YES)
-	COMPLINE := $(COMPLINE) -DNETBRIDGE_ENABLE_LOG_OUTPUT
+	PLAT_COMPLINE := $(PLAT_COMPLINE) -DNETBRIDGE_ENABLE_LOG_OUTPUT
 endif
 
-COMPLINE := $(COMPLINE) \
+PLAT_COMPLINE := $(PLAT_COMPLINE) \
 	-DNETSOCKET_CLIENT_ADDRESS=$(ORCA_OFFCHIP_CLIENT_IP) \
 	-DNETSOCKET_CLIENT_PORT=$(ORCA_OFFCHIP_CLIENT_PORT) \
 	-DNETSOCKET_SERVER_ADDRESS=$(ORCA_OFFCHIP_SERVER_IP) \
 	-DNETSOCKET_SERVER_PORT=$(ORCA_OFFCHIP_SERVER_PORT)
 
-#memory
-COMPLINE := $(COMPLINE) \
+#MEMORY
+PLAT_COMPLINE := $(PLAT_COMPLINE) \
 	-DORCA_MEMORY_BASE=$(ORCA_MEMORY_BASE) \
 	-DORCA_MEMORY_SIZE=$(ORCA_MEMORY_SIZE)
 
-export COMPLINE
+#NOC dimensions must be exported separately
+export PLAT_COMPLINE
 export ORCA_NOC_HEIGHT
 export ORCA_NOC_WIDTH

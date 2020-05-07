@@ -1,15 +1,43 @@
+/******************************************************************************
+ * This file is part of project ORCA. More information on the project
+ * can be found at the following repositories at GitHub's website.
+ *
+ * http://https://github.com/andersondomingues/orca-sim
+ * http://https://github.com/andersondomingues/orca-software-tools
+ * http://https://github.com/andersondomingues/orca-mpsoc
+ *
+ * Copyright (C) 2018-2020 Anderson Domingues, <ti.andersondomingues@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
+******************************************************************************/
 #include <RspServer.h>
+#include <sstream>
+#include <iomanip>
 
 #define RSP_DEBUG 1
 
 template <typename T>
-RspServer<T>::RspServer(ProcessorState<T>* state, std::string ipaddr, uint32_t udpport){
+RspServer<T>::RspServer(ProcessorState<T>* state, UMemory* mem, 
+	std::string ipaddr, uint32_t udpport){
     
     _udpport = udpport;
     _ipaddr  = ipaddr;
 
-	//store external state reference
+	//store external state reference and memory
 	_state = state;
+	_memory = mem;
 
     //create udp server
     _server = new UdpAsyncServer(udpport);
@@ -80,6 +108,34 @@ int RspServer<T>::Nack(){
 }
 
 template <typename T>
+int RspServer<T>::UpdateCpuState(){
+
+	//if CPU reached a breakpoin
+	if (_state->bp == 1){
+		_state->bp = 0;    //clear breakpoint
+		_state->pause = 1; //pause cpu 
+		_state->steps = 0; //reset steps counter (bp has priority over s)
+		this->Respond("T05:");
+
+	//if CPU no pause with no bp
+	} else if (_state->pause == 0){
+		
+		if(_state->steps > 0){
+			
+			_state->steps -= 1;
+
+			//limit of steps reach, pausing	
+			if (_state->steps == 0){
+				_state->pause = 1;
+				this->Respond("S05"); // 05 = TRAP
+			}
+		}
+	}
+
+	return 1;
+}
+
+template <typename T>
 int RspServer<T>::Receive(){
 
     //check whether the udp server could receive another packet
@@ -116,62 +172,40 @@ int RspServer<T>::Receive(){
 
             //message handler depends on the first character
             switch(_input_buffer[1]){
-
-                //query packages to ask the stub for env vars
-                //qC, qSupported, qOffset, and qSymbol must be supported
-                case 'q': return this->Handle_q(_input_buffer);
-
-				//report general registers
-				case 'g': return this->Handle_g(_input_buffer);
-				
-                //case 'Q': return this->Handle_Q(_input_buffer);
-
-                //report why the target halted
-                case '?': return this->Handle_Question(_input_buffer);
-
-                //continue and stop commands
-                //case 'c': return this->Handle_c(_input_buffer);
-                //case 'C': return this->Handle_C(_input_buffer);
-                //case 's': return this->Handle_s(_input_buffer);
-                //case 'S': return this->Handle_S(_input_buffer);
-
-                //TODO: see qC
-                case 'H': return this->Handle_H(_input_buffer);
-
-                //kill the target
-                //case 'k': return this->Handle_k(_input_buffer);
-
-                //memory writing and reading
-                //case 'm': return this->Handle_m(_input_buffer);
-                //case 'M': return this->Handle_M(_input_buffer);
-
-                //register writing and reading
-                case 'p': return this->Handle_p(_input_buffer);
-                case 'P': return this->Handle_P(_input_buffer);
-
-                //vCont, reply empty
-                case 'v': return this->Handle_v(_input_buffer);
-
-                //set or clear breakpoints
-                //case 'z': return this->Handle_z(_input_buffer);
-                //case 'Z': return this->Handle_Z(_input_buffer);
-
+                case 'q': return this->Handle_q(_input_buffer); //query packages
+				case 'g': return this->Handle_g(_input_buffer); //get registers
+                case '?': return this->Handle_Question(_input_buffer); //halt reason
+                case 'c': return this->Handle_c(_input_buffer); //continue
+				case 'C': return this->Handle_C(_input_buffer); //continue (same)
+				case 's': return this->Handle_s(_input_buffer); //continue
+                case 'H': return this->Handle_H(_input_buffer); //Hc
+               	case 'm': return this->Handle_m(_input_buffer); //mem reading
+                //case 'M': return this->Handle_M(_input_buffer); //mem writing
+                case 'p': return this->Handle_p(_input_buffer); //reg reading
+                case 'P': return this->Handle_P(_input_buffer); //reg writing
+                case 'v': return this->Handle_v(_input_buffer); //vCont, reply empty
+				case 'X': return this->Handle_X(_input_buffer); //binary mem writing
+                //case 'z': return this->Handle_z(_input_buffer); //set bp
+                //case 'Z': return this->Handle_Z(_input_buffer); //clear bp
+				//case 'Q': return this->Handle_Q(_input_buffer);
+                
                 //commands not implemented by the server
-                //must respond with the empty response "$#00".
+                //must responded with the empty response "$#00".
                 default:
 
                     #ifdef RSP_DEBUG
-                    std::cout << "\033[0;31mwnr: packet unhandled: \033[0m" << _input_buffer << std::endl;
+                    std::cout << "\033[0;31mwnr: unknown packet type, packet unhandled: \033[0m" 
+						<< _input_buffer << std::endl;
                     #endif
 
                     //return this->Respond(RSP_EMPTY_RESPONSE);
-                    _output_buffer[0] = '\0';
-                    return _server->Send(_output_buffer, 0);
+                    return this->Respond("");
             }
 
         }else{
             #ifdef RSP_DEBUG
-            std::cout << "\033[0;31mwrn: dropped packet with unknown prefix:\033[0m"  << _input_buffer << std::endl;
+            std::cout << "\033[0;31mwrn: dropped packet with unknown prefix:\033[0m"
+				<< _input_buffer << std::endl;
             #endif
         }
     }
@@ -179,7 +213,55 @@ int RspServer<T>::Receive(){
     return -1; //TODO: enum for statuses (could not recv a pkt)
 }
 
+template <typename T>
+int RspServer<T>::Handle_X(char* buffer){
 
+	if(memcmp(buffer, "$X", 2) == 0){
+		
+		//locate addr to start writing to
+		int addr = strhti(&buffer[2], 10);
+
+		//find number of bytes to write
+		int i = strfind(buffer, ',', 14);
+		int size = strhti(&buffer[i+1], 10);
+
+		//respond ok if test message
+		if(size == 0){
+			return this->Respond("OK");
+
+		//otherwise, write to memory
+		}else{
+			
+			//find the beggining of the stream
+			i = strfind(buffer, ':', 20);
+			uint8_t* raw = (uint8_t*)&buffer[i+1];
+
+			// note: binary data comes from GDB
+			// client with bytes in the correct
+			// order, so no endianess treatment is 
+			// necessary.
+
+			// remove escape chars (0x7d = '}')
+			for(int j = 0, i = 0; i < size; i++){
+				if(raw[j] == 0x7d){
+					raw[i] = (uint8_t)(raw[++j] ^ 0x20);
+					j++;
+				}else{
+					raw[i] = raw[j++];
+				}
+			}
+
+			//write the whole chunk to the memory of the device
+			_memory->Write(addr, (MemoryType*)raw, size);
+			return this->Respond("OK");
+		}
+
+	}else{
+		std::cout << "unhandled packet 'X'" << std::endl;
+	}
+	
+	return -1;
+}
 
 template <typename T>
 int RspServer<T>::Handle_g(char* buffer){
@@ -187,17 +269,14 @@ int RspServer<T>::Handle_g(char* buffer){
 	//there is only one 'g' message, just report registers
 	if(memcmp(buffer, "$g", 2) == 0){
 
-		//prints as [0x]00000000, number of regs * size of reg * size of char
-		char reg_data[NUMBER_OF_REGISTERS * sizeof(T) * 2];
+		//prints as [0x]00000000, (number of regs + pc) * size of reg * 2 char per byte + '\0'
+		char reg_data[(NUMBER_OF_REGISTERS + 1) * sizeof(T) * 2 + 1];
 
-		//add data for all registers
-		//TODO: format print according to register size
-		for(int i = 0; i < NUMBER_OF_REGISTERS; i++)
-			sprintf(&reg_data[i * sizeof(T) * 2], "%08X", (unsigned int)_state->regs[i]);
+		//convert whole array to hexstring
+		hexstr((char*)reg_data, (char*)_state->regs, NUMBER_OF_REGISTERS + 1);
 
-		//send regs info
-		//return this->Respond(reg_data);
-		return this->Respond(reg_data);
+		//do not add trailing character as hexstr adds it
+		return this->Respond(std::string(reg_data));
 
 	}else{
 		std::cout << "unhandled packet 'g'" << std::endl;
@@ -216,7 +295,8 @@ int RspServer<T>::Handle_v(char* buffer){
 	//vKill, gdb ask to stop debugging
 	//TODO: set state to "not running"
     }else if(memcmp(buffer, "$vKill", 5) == 0){
-        return this->Respond("OK");
+        this->Respond("OK");
+		exit(0); //TODO: verify whether this is necessary
     
     //vMustReplyEmpty, must reply empty
     } else if(memcmp(buffer, "$vMustReplyEmpty", 16) == 0){
@@ -236,7 +316,6 @@ int RspServer<T>::Handle_Q(char* buffer){
 
     //QStartNoAckMode, disables aknowledgement messages (+)
     if(memcmp(buffer, "$QStartNoAckMode", 15) == 0){
-        _rsp_noack_mode = 1;
         this->Respond("OK");
     }else{
         std::cout << "unhandled packet 'Q'"  << std::endl;
@@ -268,11 +347,12 @@ int RspServer<T>::Handle_q(char* buffer){
 
     //report supported packet size and request to diable ack mode
     }else if(memcmp(buffer, "$qSupported", 11) == 0){
-		return this->Respond("PacketSize=512"); //QStartNoAckMode+
+		return this->Respond("PacketSize=FFF"); //QStartNoAckMode+
 
 	//currently running threads (one only)
 	}else if(memcmp(buffer, "$qfThreadInfo", 11) == 0){
-		return this->Respond("m 0"); //alternatively "m1"
+		//return this->Respond("m 0"); //alternatively "m1"
+		return this->Respond("m1"); //alternatively "m1"
 
 	//report the end of list (see qfThreadInfo)
 	}else if(memcmp(buffer, "$qsThreadInfo", 11) == 0){
@@ -297,27 +377,68 @@ int RspServer<T>::Handle_Question(char*){
     return this->Respond("S00"); // <- exited ok
 }
 
+//continue at the current address 
 template <typename T>
-int RspServer<T>::Handle_C(char*){
+int RspServer<T>::Handle_C(char* buffer){
+
+	if(memcmp(buffer, "$C", 2) == 0){
+
+		//disable pause mode and continue 
+		//in the same address as it is 
+		_state->pause = 0x0;
+		return this->Respond("OK");
+	}else{
+		std::cout << "unhandled 'c' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+	
+	return -1;
+}
+
+//continue at the current address
+template <typename T>
+int RspServer<T>::Handle_c(char* buffer){
+    //@TODO: implement "continue at addr"
+	if(memcmp(buffer, "$c", 2) == 0){
+
+		//disable pause mode and continue 
+		//in the same address as it is 
+		_state->pause = 0x0;
+		return this->Respond("OK");
+	}else{
+		std::cout << "unhandled 'c' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+
+	return -1;
+}
+
+//step X instructions 
+template <typename T>
+int RspServer<T>::Handle_s(char* buffer){
+
+	if(memcmp(buffer, "$s", 2) == 0){
+
+		//single step
+		if(buffer[2] == '#'){
+			_state->steps = 1;    //set to stop cpu in next cycle
+			_state->pause = 0x0; //remove pause until then
+			this->Respond("OK");
+		}else{
+			
+			std::cout << "multiple step not implemented, sent empty response" << std::endl;
+			this->Respond("");
+		}
+
+	}else{
+		std::cout << "unhandled 's' packet, sent empty response" << std::endl;
+		this->Respond("");
+	}
     return 0;
 }
 
-template <typename T>
-int RspServer<T>::Handle_c(char*){
-    return 0;
-}
-
-template <typename T>
-int RspServer<T>::Handle_s(char*){
-    return 0;
-}
-
-template <typename T>
-int RspServer<T>::Handle_S(char*){
-    return 0;
-}
-
-//
+//select thread for subsequent actions, thread-0
+//is always selected
 template <typename T>
 int RspServer<T>::Handle_H(char*){
     return this->Respond("OK");
@@ -328,9 +449,58 @@ int RspServer<T>::Handle_k(char*){
     return 0;
 }
 
+//'m': read value from the main memory
+//format => "$mX,Y#CC", where X is the
+//address, Y is the size
 template <typename T>
-int RspServer<T>::Handle_m(char*){
-    return 0;
+int RspServer<T>::Handle_m(char* buffer){
+	
+	//only one packet type 'm'
+	if(memcmp(buffer, "$m", 2) == 0){
+
+		uint32_t addr = 0, size = 0;
+		int end = 0, comma = 0;
+
+		//can crash here if no "#" in the message
+		//TODO: make sure that at least one "#" is present
+		end = strfind(buffer, '#', 100);
+
+		//raddr starts after the 'm' character and
+		//goes until the ','
+		addr = strhti(&buffer[2], end - 2);
+
+		//find the ',' char
+		comma = strfind(buffer, ',', end); 
+
+		//find size. NOTE: size means "X 16-bit words"
+		size = strhti(&buffer[comma+1], end);// * 2;
+
+		//@TODO: why does GBD ask for addr=0?
+		//@TODO: remove restriction on 8bit memory model (another T param?)
+		if(addr < _memory->GetBase() || addr > _memory->GetLastAddr()){
+			std::cout << "gdb client requested data from outside memory space, ignoring" << std::endl;			
+			return this->Respond(""); //return 8 bits char 
+		}
+
+		//read data from memory, 0x00 for each byte
+		MemoryType data[size * sizeof(MemoryType) * 2];
+		_memory->Read(addr, data, size);
+
+		//store hexstring, "00000000" per integer, "00" per byte + '\0'
+		char str_data[size * 2 + 8]; //add 8 for integer-alignment
+
+		//convert from byte to hexstring. number of integers to convert is equals
+		hexstr((char*)str_data, (char*)data, size / 2); 
+
+		return this->Respond(std::string((char*)str_data));
+
+	}else{
+
+		std::cout << "unhandled 'm' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+	
+    return -1;
 }
 
 template <typename T>
@@ -361,10 +531,7 @@ int RspServer<T>::Handle_p(char* buffer){
 		//print the value as hexa string into the allocated space
 		sprintf(reg_data, "%0X", (unsigned int)_state->regs[reg]);
 
-		std::string red_data_without_last_character = std::string(reg_data);
-		printf("%d", (int)red_data_without_last_character.length());
-
-		this->Respond(red_data_without_last_character);
+		this->Respond(std::string(reg_data));
 
 	}else{
 		std::cout << "unhandled 'p' packet, sent empty response" << std::endl;
@@ -373,9 +540,32 @@ int RspServer<T>::Handle_p(char* buffer){
     return -1;
 }
 
+//write register
 template <typename T>
-int RspServer<T>::Handle_P(char*){
-    return 0;
+int RspServer<T>::Handle_P(char* buffer){
+
+	if(memcmp(buffer, "$P", 2) == 0){
+		
+		//locate register address
+		int addr = strhti(&buffer[2], 3);
+
+		//locate the '=' symbol
+		int eqsymb = strfind(buffer, '=', 10);
+
+		//get the register value
+		int value = strhti(&buffer[eqsymb+1], 10);
+		value = endswap(value);
+
+		//set register
+		_state->regs[addr] = value;
+		return this->Respond("OK");
+
+	}else{
+		std::cout << "unhandled 'P' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+
+    return -1;
 }
 
 template <typename T>
@@ -388,3 +578,59 @@ int RspServer<T>::Handle_z(char*){
     return 0;
 }
 
+//string hex to int
+int strhti(char* buffer, int length){
+	
+	char tmp[length];
+
+	for(int i = 0; i < length; i++)
+		tmp[i] = '\0';
+
+	for(int i =0; i < length; i++){
+		//is [0-9] digit
+		if(buffer[i] >= 48 && buffer[i] <= 57){
+			tmp[i] = buffer[i];
+		//is [a-f] digit
+		}else if(buffer[i] >= 97 && buffer[i] <= 122){
+			tmp[i] = buffer[i];
+		}else{
+			break;
+		}
+	}
+
+	return (int)strtol(tmp, NULL, 16);
+}
+
+//find first occurrence of a character, returns index
+int strfind(char* buffer, char find, int limit){
+
+	for(int i = 0; i < limit; i++)
+		if(buffer[i] == find) return i;
+
+	return -1;
+}
+
+//byte array to hexa
+void hexstr(char* output, char* input, uint32_t integers){
+
+	uint32_t mask = 0xFFFFFFFF; 
+	
+	uint32_t* input_i = (uint32_t*)input;
+	uint32_t output_i = 0;
+
+	//converts integer by integer
+	for(uint32_t i =0; i < integers; i++){
+		sprintf(&output[output_i], "%08x", endswap(input_i[i] & mask));	
+		output_i += 8;
+	}
+}
+
+uint32_t endswap(uint32_t value) {
+	
+	uint32_t tmp;
+
+    tmp = ((value << 8) & 0xFF00FF00) | ((value >> 8) & 0xFF00FF);
+    value = (tmp << 16) | (tmp >> 16);
+
+	return value;
+}

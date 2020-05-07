@@ -1,11 +1,19 @@
-# Includes parameters from the configuration file
-include ./Configuration.mk
-
-# Name of URSA library, compiled as a static library.
-URSA_LIB      := libsim.a
-
-# name of the library containg the GDB RSP implementation.
+# Library names. URSA_LIB is the simulation library, MODELS_LIB
+# is the library containing the hardware models, and GDBRSP_LIB
+# is the library which implements GDB support.
+URSA_LIB      := libursa.a
+MODELS_LIB    := libmod.a
 GDBRSP_LIB    := libgdbrsp.a
+
+# Import parameters from other modules
+include ./Configuration.mk
+include ./models/Configuration.mk
+include ./platforms/$(ORCA_PLATFORM)/Configuration.mk
+
+# nullate gdblib when gdb support is absent
+ifneq ($(ORCA_ENABLE_GDBRSP),YES)
+	GDBRSP_LIB := keep.me
+endif
 
 # Additional parameters (do not modify them unless you know
 # what you are doing here).
@@ -22,7 +30,7 @@ endif
 URSA_DIR      := $(CURDIR)/simulator
 BINARY_DIR    := $(CURDIR)/bin
 PLATFORMS_DIR := $(CURDIR)/platforms
-#MODELS_DIR    := $(CURDIR)/models
+MODELS_DIR    := $(CURDIR)/models
 GDBRSP_DIR    := $(CURDIR)/gdbrsp
 
 #phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
@@ -30,28 +38,35 @@ GDBRSP_DIR    := $(CURDIR)/gdbrsp
 
 #compile everything if necessary and run
 #simulatotion requires the simulator and software 
-# - software has no dependencies
 # - simulator has no dependencies
 # - rsp server has no dependencies
-# - hardware models depends on the simulator
+# - hardware models depends on the simulator 
 #   hardware models may depend on rsp
-# - platform depends on simulator and hardware models
-# - visualization file for multitail has no dependency
+# - platform depends on simulato, hardware models, and rsp
+# - visualization file for multitail has no dependencies
 all: $(BINARY_DIR)/$(PLATFORM_BIN) vismtail
-	@echo "$'\e[7m====================================\e[0m"
-	@echo "$'\e[7m  All done!                         \e[0m"
-	@echo "$'\e[7m====================================\e[0m"
+	@echo "$'\033[7m====================================\033[0m"
+	@echo "$'\033[7m  All done!                         \033[0m"
+	@echo "$'\033[7m====================================\033[0m"
 	@echo " => $(PLATFORM_BIN) deployed to /bin folder."
 
 #Generate the simulation library (uses URSA distro)
 $(BINARY_DIR)/$(URSA_LIB): $(URSA_DIR)/src/*.cpp  $(URSA_DIR)/include/*.h 
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m     Building URSA's libsim       \e[0m"
-	@echo "$'\e[7m==================================\e[0m"
+	@echo "$'\033[7m==================================\033[0m"
+	@echo "$'\033[7m     Building URSA's libsim       \033[0m"
+	@echo "$'\033[7m==================================\033[0m"
 	$(Q)make -C $(URSA_DIR) -j 8
 	$(Q)cp $(URSA_DIR)/bin/$(URSA_LIB) $(BINARY_DIR)/$(URSA_LIB)
 
-#Generate the GDB remote protocol library (used in processor core models).  
+#Generate the library containing the hardware models (except for top-level hardware)
+$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(URSA_LIB) $(MODELS_DIR)/src/*.cpp $(MODELS_DIR)/include/*.h
+	@echo "$'\033[7m==================================\033[0m"
+	@echo "$'\033[7m     Building hardware models     \033[0m"
+	@echo "$'\033[7m==================================\033[0m"
+	$(Q)make -C $(MODELS_DIR) -j 8
+	$(Q)cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
+
+#Generate the GDB remote protocol library (used in processor core models). 
 $(BINARY_DIR)/$(GDBRSP_LIB): $(GDBRSP_DIR)/src/*.cpp $(GDBRSP_DIR)/include/*.h
 	@echo "$'\033[7m==================================\033[0m"
 	@echo "$'\033[7m   Building GDB RSV support lib.  \033[0m"
@@ -59,20 +74,20 @@ $(BINARY_DIR)/$(GDBRSP_LIB): $(GDBRSP_DIR)/src/*.cpp $(GDBRSP_DIR)/include/*.h
 	$(Q)make -C $(GDBRSP_DIR) -j 8
 	$(Q)cp $(GDBRSP_DIR)/bin/$(GDBRSP_LIB) $(BINARY_DIR)/$(GDBRSP_LIB)
 
-#platform executable
-$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(BINARY_DIR)/$(GDBRSP_LIB) $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/include/*.h
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m     Building the platform        \e[0m"
-	@echo "$'\e[7m==================================\e[0m"
+#Generate simulator executable binary (includes top-level hardware models).
+$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(BINARY_DIR)/$(GDBRSP_LIB)  $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/include/*.h
+	@echo "$'\033[7m==================================\033[0m"
+	@echo "$'\033[7m     Building the platform        \033[0m"
+	@echo "$'\033[7m==================================\033[0m"
 	$(Q)make -C $(PLATFORMS_DIR)/$(ORCA_PLATFORM) -j 8
 	$(Q)cp $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/bin/$(PLATFORM_BIN) $(BINARY_DIR)/$(PLATFORM_BIN)
 
 #Make documentation by invoking doxygen using the provided doxyfile.
 #Generated documentation will be deployed to /docs folder.
 documentation:
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m    Building API Documentation    \e[0m"
-	@echo "$'\e[7m==================================\e[0m"
+	@echo "$'\033[7m==================================\033[0m"
+	@echo "$'\033[7m    Building API Documentation    \033[0m"
+	@echo "$'\033[7m==================================\033[0m"
 	$(Q)doxygen
 
 #Generate scripts for log visualization. For each processing core, a two log files are writen
@@ -87,10 +102,11 @@ vismtail:
 		>> $(BINARY_DIR)/output-uart.sh
 
 clean:
-	@echo "$'\e[7m==================================\e[0m"
-	@echo "$'\e[7m          Cleaning up...          \e[0m"
-	@echo "$'\e[7m==================================\e[0m"
+	@echo "$'\033[7m==================================\033[0m"
+	@echo "$'\033[7m          Cleaning up...          \033[0m"
+	@echo "$'\033[7m==================================\033[0m"
 	$(Q)make -C $(URSA_DIR) clean
+	$(Q)make -C $(MODELS_DIR) clean
 	$(Q)make -C $(GDBRSP_DIR) clean
 	$(Q)make -C $(PLATFORMS_DIR)/$(ORCA_PLATFORM) clean
 	$(Q)rm -rf $(BINARY_DIR)/*.exe $(BINARY_DIR)/*.a $(BINARY_DIR)/*.o \
@@ -98,4 +114,5 @@ clean:
 		$(BINARY_DIR)/*.cnt $(BINARY_DIR)/*.lst $(BINARY_DIR)/*.sec \
 		$(BINARY_DIR)/*.txt $(BINARY_DIR)/*.sh
 	$(Q)rm -rf docs/doxygen/
-	$(Q)rm -rf $(BINARY_DIR)/logs/*.log
+	#$(Q)rm -rf logs/*.log
+	

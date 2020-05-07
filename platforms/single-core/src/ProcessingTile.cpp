@@ -23,6 +23,9 @@
 #include <sstream>
 
 //model API
+#include <THFRiscV.h>
+#include <UMemory.h>
+
 #include <ProcessingTile.h>
 
 /** 
@@ -37,10 +40,7 @@ ProcessingTile::ProcessingTile() {
 	
 	//create a cpu and memory in addition to current tile hardware
 	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu   = new THFRiscV(this->GetName() + ".cpu", _signal_intr, _signal_stall);
-	
-	//binds cpu to the main memory
-	_cpu->SetMem0(_mem0);
+	_cpu   = new THFRiscV(this->GetName() + ".cpu", _signal_intr, _signal_stall, _mem0);
 
 	//reset control wires
 	_signal_stall->Write(0);
@@ -53,20 +53,12 @@ ProcessingTile::ProcessingTile() {
 	
 	#ifdef MEMORY_ENABLE_COUNTERS
 	//map main memory counter
-	_mem0->InitCounters(M0_COUNTER_STORE_ADDR, M0_COUNTER_LOAD_ADDR);
 	_mem0->GetSignalCounterStore()->MapTo(_mem0->GetMap(M0_COUNTER_STORE_ADDR), M0_COUNTER_STORE_ADDR);
 	_mem0->GetSignalCounterLoad()->MapTo(_mem0->GetMap(M0_COUNTER_LOAD_ADDR), M0_COUNTER_LOAD_ADDR);
 	#endif
 
 	//----------------- initialize counters for the cpu
 	#ifdef HFRISCV_ENABLE_COUNTERS
-	_cpu->InitCounters(
-		CPU_COUNTER_ARITH_ADDR, CPU_COUNTER_LOGICAL_ADDR, CPU_COUNTER_SHIFT_ADDR, 
-		CPU_COUNTER_BRANCHES_ADDR, CPU_COUNTER_JUMPS_ADDR, CPU_COUNTER_LOADSTORE_ADDR,
-		CPU_COUNTER_CYCLES_TOTAL_ADDR, CPU_COUNTER_CYCLES_STALL_ADDR,
-		CPU_COUNTER_HOSTTIME_ADDR
-	);
-
 	//memory mapping
 	_cpu->GetSignalCounterArith()->MapTo(_mem0->GetMap(CPU_COUNTER_ARITH_ADDR), CPU_COUNTER_ARITH_ADDR);
 	_cpu->GetSignalCounterLogical()->MapTo(_mem0->GetMap(CPU_COUNTER_LOGICAL_ADDR), CPU_COUNTER_LOGICAL_ADDR);

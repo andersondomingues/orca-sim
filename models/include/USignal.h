@@ -30,24 +30,13 @@
 
 //api includes
 #include <UntimedModel.h>
-#include <UMemory.h>
-
-/**
- * This interface permit all Signals to share a same base type, thus being
- * able to be stored in a single container without forcing dynamic inheritance.
- */
-class ISignal{ /** dummy **/ 
-
-public:
-	static std::vector<ISignal*> signals;
-
-};
+#include <MemoryType.h>
 
 /**
  * The USignal class models a generic bus of width equals to the sizeof(T)
  */
 template <typename T>
-class USignal : public ISignal {
+class USignal{
 
 private:
 	/** pointer to the place where the bus data will be stored */
@@ -70,7 +59,7 @@ public:
      * @param name (optional) An arbitrary name for the instance.
      * @param addre (optinal) Address to which the bus is mapped in memory.
      */
-	 USignal(T* t_ptr, uint32_t addr, std::string name);
+     USignal(T* t_ptr, uint32_t addr, std::string name);
 
      /**
      * @brief Constructor. Create new Signal using internal storage

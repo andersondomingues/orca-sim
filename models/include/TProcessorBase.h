@@ -1,4 +1,4 @@
-/** 
+/******************************************************************************
  * This file is part of project ORCA. More information on the project
  * can be found at the following repositories at GitHub's website.
  *
@@ -21,7 +21,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
-**/
+******************************************************************************/
 #ifndef __TPROCESSOR_BASE_H
 #define __TPROCESSOR_BASE_H
 
@@ -51,7 +51,7 @@ private:
 	/** We assume that every processor is attached to a 
 	 * memory core. For now, the only core available is 
 	 * untimed. */
-	UMemory* _memory;	
+	UMemory* _memory;
 
 	#ifdef ORCA_ENABLE_GDBRSP
 	RspServer<T>* _gdbserver;
@@ -64,7 +64,7 @@ public:
 	 * @param name A short name or description of the instance
 	 * @param initial_pc Memory address to which the PC
 		register will point to at the startup. */
-	TProcessorBase(std::string name, MemoryAddr initial_pc);
+	TProcessorBase(std::string name, MemoryAddr initial_pc, UMemory* mem);
 
 	/** Destructor. */
 	~TProcessorBase();
@@ -81,6 +81,13 @@ public:
 	 * processor states at the end of simulation.
 	 * @returns a pointer to the processor state struct. **/
 	ProcessorState<T>* GetState();
+
+	/** This method returns a pointer to the object that models 
+	 * the memory core. It is made private to avoid being changed 
+	 * by the processor core implementation.
+	 * @returns a pointers to the memory model */
+	UMemory* GetMemory();
+
 };
 
 //Some of the most used instances. More can be added later.

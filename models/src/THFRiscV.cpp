@@ -1,14 +1,13 @@
-/** 
- * This file is part of project URSA. More information on the project
- * can be found at 
+/******************************************************************************
+ * This file is part of project ORCA. More information on the project
+ * can be found at the following repositories at GitHub's website.
  *
- * URSA's repository at GitHub: http://https://github.com/andersondomingues/ursa
+ * http://https://github.com/andersondomingues/orca-sim
+ * http://https://github.com/andersondomingues/orca-software-tools
+ * http://https://github.com/andersondomingues/orca-mpsoc
  *
- * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
- * 
- * This file is adapted from HF-RISC SoC project, which can be found at johanns' 
- * reposiitory at GitHub: https://github.com/sjohann81/hf-risc
- *-------------------------------------------------------------------------------
+ * Copyright (C) 2018-2020 Anderson Domingues, <ti.andersondomingues@gmail.com>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -22,7 +21,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
- *---------------------------------------------------------------------------- */
+******************************************************************************/
 #include <cstdlib>
 #include <sstream>
 #include <chrono>
@@ -34,36 +33,28 @@
 
 #define RISCV_INVALID_OPCODE 0x0
 
-void THFRiscV::dumpregs(risc_v_state *s){
-	int32_t i;
-	
-	for (i = 0; i < 32; i+=4){
+//api access shorthands (must be undef at the end of the file)
+#define PC GetState()->pc
+#define PC_NEXT GetState()->pc_next
+#define R GetState()->regs
+
+void THFRiscV::dumpregs(){
+
+	for (uint32_t i = 0; i < 32; i += 4){
 		printf("r%02d [%08x] r%02d [%08x] r%02d [%08x] r%02d [%08x]\n", \
-		i, s->r[i], i+1, s->r[i+1], i+2, s->r[i+2], i+3, s->r[i+3]);
+		i, R[i], i+1, R[i+1], i+2, R[i+2], i+3, R[i+3]);
 	}
 
-	printf("pc: %08x\n", s->pc);
-	printf("\n");
+	printf("pc: %08x\n\n", PC);
 }
 
 void THFRiscV::bp(risc_v_state *s, uint32_t ir){
 
-	printf("breakpoint reached!\n");
-	printf("pc: %08x, ir: %08x\n", s->pc, ir);
-	printf("irq_status: %08x, irq_cause: %08x, irq_mask: %08x\n", s->status, s->cause, s->mask);
-	dumpregs(s);
-
-	stringstream ss;
-	ss << "breakpoints/bp.0x" << std::hex << s->counter << std::dec << ".bin";
-	
-	switch(ir){
-		case 0x0: std::cout << "RISCV_INVALID_OPCODE"; break;
-		default:  std::cout << "UNKNOWN"; break;
-	}
-	
-	std::cout << std::endl;
-
-	s->sram->SaveBin(ss.str(), s->sram->GetBase(), s->sram->GetSize());
+	printf("Breakpoint reached at 0x%x (ir: %08x)", PC, ir);
+	printf("irq_status: %08x, irq_cause: %08x, irq_mask: %08x\n", s->status, 
+		s->cause, s->mask);
+	dumpregs();
+	GetState()->bp = 0x1;
 }
 
 /**
@@ -78,10 +69,10 @@ int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 	uint32_t data;
 	
 	//Check whether the address belongs to the main memory
-	if(address <= s->sram->GetLastAddr() && address > s->sram->GetBase()){
+	if(address <= GetMemory()->GetLastAddr() && address > GetMemory()->GetBase()){
 		
 		#ifdef HFRISCV_ENABLE_COUNTERS
-		//update clock only when requested
+		//get information on host's clock (real clock, in hours, not hardware cycles)
 		if(address == _counter_hosttime->GetAddress()){
 
 			std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
@@ -95,37 +86,38 @@ int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 		switch(size){
 		case 4:
 			if(address & 3){
-				std::string err_msg = this->GetName() + ": unaligned access (load word) pc=0x" 
-					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				std::string err_msg = GetName() + ": unaligned access (load word) pc=0x" 
+					+ std::to_string(PC) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
-				s->sram->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
+				GetMemory()->Read(address, (int8_t*)&data, 4); //4 x sizeof(uint8_t)
 			}
 			break;
 		case 2:
 			if(address & 1){
-				std::string err_msg = this->GetName() + ": unaligned access (load halfword) pc=0x" 
-					+ std::to_string(s->pc) + " addr=0x" + std::to_string(address);
+				std::string err_msg = GetName() + ": unaligned access (load halfword) pc=0x" 
+					+ std::to_string(PC) + " addr=0x" + std::to_string(address);
 				throw std::runtime_error(err_msg);
 			}else{
 				int16_t value;
-				s->sram->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
+				GetMemory()->Read(address, (int8_t*)&value, 2); //2 x sizeof(uint8_t)
 				data = value;
 			}
 			break;
 		case 1:
 			int8_t value;
-			s->sram->Read(address, &value, 1); //1 x sizeof(uint8_t)
+			GetMemory()->Read(address, &value, 1); //1 x sizeof(uint8_t)
 			data = value;
 			break;
 		default:
-			std::string err_msg = this->GetName() + ": could not read from memory, invalid data size requested";
+			std::string err_msg = GetName() + ": could not read from memory, invalid data size requested";
 			throw std::runtime_error(err_msg);
 		}
 		
 		return data;
 		
 	}else{
+		
 		//Address does not belong to any bank, check for special addresses
 		switch(address){
 			case IRQ_VECTOR:	return s->vector;
@@ -141,9 +133,9 @@ int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address){
 		}
 			
 		//may the requested address fall in unmapped range, halt the simulation
-		dumpregs(s);
+		dumpregs();
 		stringstream ss;
-		ss << this->GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
+		ss << GetName() << ": unable to read from unmapped memory space 0x" << std::hex << address << ".";
 		throw std::runtime_error(ss.str());
 	}
 }
@@ -166,41 +158,41 @@ USignal<uint8_t>* THFRiscV::GetSignalIntr(){
 void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32_t value){
 
 	//if the address belong to some memory range, write to it
-	if(address <= s->sram->GetLastAddr()){
+	if(address <= GetMemory()->GetLastAddr()){
 
 		switch(size){
 			case 4:
 				if(address & 3){
 					stringstream ss;
-					ss << this->GetName() << ": unaligned access (store word) pc=0x" 
-					   << std::hex << s->pc << " addr=0x" << std::hex << address;
+					ss << GetName() << ": unaligned access (store word) pc=0x" 
+					   << std::hex << PC << " addr=0x" << std::hex << address;
 					throw std::runtime_error(ss.str());
 				}else{
-					s->sram->Write(address, (int8_t*)&value, size);
+					GetMemory()->Write(address, (int8_t*)&value, size);
 				}
 				break;
 			case 2:
 				if(address & 1){
-					std::string err_msg = this->GetName() 
+					std::string err_msg = GetName() 
 						+ ": unaligned access (store halfword) pc=0x" 
-						+ std::to_string(s->pc) + " addr=0x" 
+						+ std::to_string(PC) + " addr=0x" 
 						+ std::to_string(address);
 					throw std::runtime_error(err_msg);
 				}else{
 					uint16_t data = (uint16_t)value;
-					s->sram->Write(address, (int8_t*)&data, size);
+					GetMemory()->Write(address, (int8_t*)&data, size);
 				}
 				break;
 			case 1:{
 				uint8_t data;
 				data = (uint8_t)value;
-				s->sram->Write(address, (int8_t*)&data, size);
+				GetMemory()->Write(address, (int8_t*)&data, size);
 				break;
 			}
 			default:{
-				dumpregs(s);
+				dumpregs();
 				stringstream ss;
-				ss << this->GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
+				ss << GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
 				throw std::runtime_error(ss.str());
 			}
 		}
@@ -226,7 +218,8 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 		case IRQ_CAUSE:		s->cause = value; return;
 		case IRQ_MASK:		s->mask = value; return;
 		case IRQ_EPC:		s->epc = value; return;
-		case COUNTER:		s->counter = value; return;		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
+		case COUNTER:		s->counter = value; return;
+		case COMPARE:		s->compare = value; s->cause &= 0xffef; return;
 		case COMPARE2:		s->compare2 = value; s->cause &= 0xffdf; return;
 
 		case DEBUG_ADDR:	output_debug << (int8_t)(value & 0xff) << std::flush; return;
@@ -234,8 +227,8 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 		case UART_DIVISOR:	return;
 	
 		case EXIT_TRAP:
-			std::cout << this->GetName() << ": exit trap triggered! " << std::endl;
-			dumpregs(s);
+			std::cout << GetName() << ": exit trap triggered! " << std::endl;
+			dumpregs();
 			output_debug.close();
 			output_uart.close();
             abort();
@@ -244,10 +237,10 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 		
 	//if none of the special address has been reach, the requested
 	//address if unknown to the system and we should halt the simulation
-	dumpregs(s);
+	dumpregs();
 	stringstream ss;
 			
-	ss << this->GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
+	ss << GetName() << ": unable to write to unmapped memory space 0x" << std::hex << address << ".";
 	throw std::runtime_error(ss.str());
 }
 
@@ -255,62 +248,33 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 
 //Counters' getters
 USignal<uint32_t>* THFRiscV::GetSignalCounterArith(){
-	return this->_counter_iarith;
+	return _counter_iarith;
 }
 USignal<uint32_t>* THFRiscV::GetSignalCounterLogical(){
-	return this->_counter_ilogical;
+	return _counter_ilogical;
 }
 USignal<uint32_t>* THFRiscV::GetSignalCounterShift(){
-	return this->_counter_ishift;
+	return _counter_ishift;
 }
 USignal<uint32_t>* THFRiscV::GetSignalCounterBranches(){
-	return this->_counter_ibranches;
+	return _counter_ibranches;
 }
 USignal<uint32_t>* THFRiscV::GetSignalCounterJumps(){
-	return this->_counter_ijumps;
+	return _counter_ijumps;
 }
 USignal<uint32_t>* THFRiscV::GetSignalCounterLoadStore(){
-	return this->_counter_iloadstore;
+	return _counter_iloadstore;
 }
 
 //cycles
 USignal<uint32_t>* THFRiscV::GetSignalCounterCyclesTotal(){
-	return this->_counter_cycles_total;
+	return _counter_cycles_total;
 }
 USignal<uint32_t>* THFRiscV::GetSignalCounterCyclesStall(){
-	return this->_counter_cycles_stall;
+	return _counter_cycles_stall;
 }
 USignal<uint32_t>* THFRiscV::GetSignalHostTime(){
-	return this->_counter_hosttime;
-}
-
-/**
- * Initialize Counters
- * memory-mapped address of counters must be informed
- */
-
-void THFRiscV::InitCounters(
-		uint32_t arith_counter_addr, 
-		uint32_t logical_counter_addr,
-		uint32_t shift_counter_addr,
-		uint32_t branches_counter_addr,
-		uint32_t jumps_counter_addr, 
-		uint32_t loadstore_counter_addr,
-		uint32_t cycles_total_counter_addr, 
-		uint32_t cycles_stall_counter_addr,
-		uint32_t hosttime_addr){
-
-	this->_counter_iarith     = new USignal<uint32_t>(arith_counter_addr, GetName() + ".counters.iarith");
-	this->_counter_ilogical   = new USignal<uint32_t>(logical_counter_addr, GetName() + ".counters.ilogical");
-	this->_counter_ishift     = new USignal<uint32_t>(shift_counter_addr, GetName() + ".counters.ishift");
-	this->_counter_ibranches  = new USignal<uint32_t>(branches_counter_addr, GetName() + ".counters.ibranches");
-	this->_counter_ijumps     = new USignal<uint32_t>(jumps_counter_addr, GetName() + ".counters.ijumps");
-	this->_counter_iloadstore = new USignal<uint32_t>(loadstore_counter_addr, GetName() + ".counters.iloadstore");
-
-	this->_counter_cycles_total = new USignal<uint32_t>(cycles_total_counter_addr, GetName() + ".counters.cycles_total");
-	this->_counter_cycles_stall = new USignal<uint32_t>(cycles_stall_counter_addr, GetName() + ".counters.cycles_stall");
-	
-	this->_counter_hosttime = new USignal<uint32_t>(hosttime_addr, GetName() + ".counters.hosttime");
+	return _counter_hosttime;
 }
 
 /**
@@ -371,6 +335,17 @@ SimulationTime THFRiscV::Run(){
 	//generic tasks all processor models 
 	TProcessorBase::Run();
 
+	#ifdef ORCA_ENABLE_GDBRSP
+	//When operating with GDB support, the pause flags indicates 
+	//the processor core must skip the current cycle without mo-
+	//fiying any of their registers. This flags acts as a second
+	//stall line. Since this line is used only by the gbdrsp imp-
+	//lementation, we do not set this flag as a wire, as it does
+	//not exist in the real design (yet).
+	if(GetState()->pause == 0x1)
+		return 1;
+	#endif
+
 	//update "external counters"
 	s->counter++;
 
@@ -396,13 +371,6 @@ SimulationTime THFRiscV::Run(){
 	_counter_cycles_total->Inc(1);
 	#endif
 
-	//if(this->GetName() == "004.cpu") std::cout << "pc: 0x" << std::hex << s->pc << std::dec << "" << std::endl;
-	
-	//if(this->GetName() == "004.cpu") std::cout << 
-	//	"pc: 0x" << std::hex << s->pc << " " <<
-	//	"irq: "<< std::dec << (int)_signal_intr->Read() << 
-	//	std::endl;
-
 	#ifdef HFRISCV_CYCLE_ACCURACY
 	uint32_t pc_next_prediction;
 	#endif
@@ -418,18 +386,18 @@ SimulationTime THFRiscV::Run(){
 	#endif
 	
 	if (s->status && (s->cause & s->mask)){
-		s->epc = s->pc_next;
-		s->pc = s->vector;
-		s->pc_next = s->vector + 4;
+		s->epc = PC_NEXT;
+		PC = s->vector;
+		PC_NEXT = s->vector + 4;
 		s->status = 0;
 		for (i = 0; i < 4; i++)
 			s->status_dly[i] = 0;
 	}
-	
+
 	//FETCH STAGE
-	this->s->sram->Read(this->s->pc, (int8_t*)&inst, 4); //4 x sizeof(uint8_t)
+	GetMemory()->Read(PC, (int8_t*)&inst, 4); //4 x sizeof(uint8_t)
 
-
+	//DECODE
 	opcode = inst & 0x7f;
 	
 	rd = (inst >> 7) & 0x1f;
@@ -454,30 +422,30 @@ SimulationTime THFRiscV::Run(){
 
 	switch(opcode){
 		case 0x37: r[rd] = imm_u; break;										/* LUI */
-		case 0x17: r[rd] = s->pc + imm_u; break;									/* AUIPC */
+		case 0x17: r[rd] = PC + imm_u; break;									/* AUIPC */
 		
-		case 0x6f: r[rd] = s->pc_next; s->pc_next = s->pc + imm_uj; break;				  /* JAL */
-		case 0x67: r[rd] = s->pc_next; s->pc_next = (r[rs1] + imm_i) & 0xfffffffe; break; /* JALR */
+		case 0x6f: r[rd] = PC_NEXT; PC_NEXT = PC + imm_uj; break;				  /* JAL */
+		case 0x67: r[rd] = PC_NEXT; PC_NEXT = (r[rs1] + imm_i) & 0xfffffffe; break; /* JALR */
 		case 0x63:
 			/* Branch prediction may fail if jumping 0 positions.
 			TODO: check whether the architecture predict such jumps */
 			
 			#ifdef HFRISCV_CYCLE_ACCURACY
-			pc_next_prediction = s->pc_next;
+			pc_next_prediction = PC_NEXT;
 			#endif
 			
 			switch(funct3){
-				case 0x0: if (r[rs1] == r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BEQ */
-				case 0x1: if (r[rs1] != r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BNE */
-				case 0x4: if (r[rs1] < r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLT */
-				case 0x5: if (r[rs1] >= r[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGE */
-				case 0x6: if (u[rs1] < u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BLTU */
-				case 0x7: if (u[rs1] >= u[rs2]){ s->pc_next = s->pc + imm_sb; } break;	/* BGEU */
+				case 0x0: if (r[rs1] == r[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BEQ */
+				case 0x1: if (r[rs1] != r[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BNE */
+				case 0x4: if (r[rs1] < r[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BLT */
+				case 0x5: if (r[rs1] >= r[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BGE */
+				case 0x6: if (u[rs1] < u[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BLTU */
+				case 0x7: if (u[rs1] >= u[rs2]){ PC_NEXT = PC + imm_sb; } break;	/* BGEU */
 				default: goto fail;
 			}
 			
 			#ifdef HFRISCV_CYCLE_ACCURACY
-			branch_taken = (pc_next_prediction != s->pc_next);
+			branch_taken = (pc_next_prediction != PC_NEXT);
 			#endif 
 			
 			break;
@@ -563,57 +531,37 @@ SimulationTime THFRiscV::Run(){
 		default:
 fail:
 			stringstream ss;
-			ss << this->GetName() << ":invalid opcode (pc=0x" << std::hex << s->pc;
+			ss << GetName() << ":invalid opcode (pc=0x" << std::hex << PC;
 			ss << " opcode=0x" << std::hex << inst << ")";
 	
-			dumpregs(s);
+			dumpregs();
 			bp(s, RISCV_INVALID_OPCODE);
 			
 			throw std::runtime_error(ss.str());
 			break;
 	}
 	
-	_last_pc = s->pc;
-	s->pc = s->pc_next;
-	s->pc_next = s->pc_next + 4;
+	_last_pc = PC;
+	PC = PC_NEXT;
+	PC_NEXT = PC_NEXT + 4;
 	s->status = s->status_dly[0];
 	
 	for (i = 0; i < 3; i++)
 		s->status_dly[i] = s->status_dly[i+1];
 
-	//MOVI DAQUI
-	
-	//s->counter++;
-			
-	//if ((s->compare2 & 0xffffff) == (s->counter & 0xffffff)) s->cause |= 0x20;      /*IRQ_COMPARE2*/
-	//if (s->compare == s->counter) s->cause |= 0x10;                                 /*IRQ_COMPARE*/
-	
-	//if (!(s->counter & 0x10000)) s->cause |= 0x8; else s->cause &= 0xfffffff7;      /*IRQ_COUNTER2_NOT*/
-	//if (s->counter & 0x10000) s->cause |= 0x4; else s->cause &= 0xfffffffb;         /*IRQ_COUNTER2*/
-	//if (!(s->counter & 0x40000)) s->cause |= 0x2; else s->cause &= 0xfffffffd;      /*IRQ_COUNTER_NOT*/
-	//if (s->counter & 0x40000) s->cause |= 0x1; else s->cause &= 0xfffffffe;         /*IRQ_COUNTER*/
-	
-	//if (_signal_intr->Read() == 0x1) s->cause |= 0x100; else s->cause &= 0xfffffeff;/*IRQ_NOC*/
-	
-
 	#ifdef HFRISCV_ENABLE_COUNTERS
-	this->UpdateCounters(opcode, funct3);
+	UpdateCounters(opcode, funct3);
 	#endif
 	
+	#ifdef HFRISCV_CYCLE_ACCURACY
 	//When in cycle-accuracy mode, takes three cycles per instruction, 
 	//except for those of memory I/O. In the later case. Since we simulate 
 	//the pipeline by executing one instruction per cycle (starting from 
 	//the 3th cycle), adding 1 cycle to simulate I/O delay. We also calculate
 	//branch prediction.
-
-	#ifdef HFRISCV_CYCLE_ACCURACY
 	switch(opcode){
 		case 0x63:
-			if(branch_taken){
-				return 1;
-			}else{
-				return 2;
-			}
+			return (branch_taken) ? 1 : 2;
 			break;
 		case 0x23:
 		case 0x3:
@@ -631,23 +579,14 @@ fail:
 	#endif
 }
 
-
-/**
- * @brief Configures main memory module.
- * @param m A pointer to a UMemory object*/
-void THFRiscV::SetMem0(UMemory* m){
-	
-	s->pc = m->GetBase();
-	s->pc_next = s->pc + 4;
-
-	s->sram = m;
-}
-
-THFRiscV::THFRiscV(std::string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall)
-	: TProcessorBase(name, HFRISCV_PC_MEMBASE) {
+THFRiscV::THFRiscV(std::string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall, UMemory* mainmem)
+	: TProcessorBase(name, HFRISCV_PC_MEMBASE, mainmem) {
 
 	s = new risc_v_state;
 	memset(s, 0, sizeof(risc_v_state));
+	
+	PC = HFRISCV_PC_MEMBASE;
+	PC_NEXT = PC + 4;
 	
 	s->vector = 0;
 	s->cause = 0;
@@ -667,11 +606,24 @@ THFRiscV::THFRiscV(std::string name, USignal<uint8_t>* intr, USignal<uint8_t>* s
 	_signal_intr = intr;
 	_signal_stall = stall;
 
-	output_debug.open("logs/" + this->GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
-	output_uart.open("logs/" + this->GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
+	output_debug.open("logs/" + GetName() + "_debug.log", std::ofstream::out | std::ofstream::trunc);
+	output_uart.open("logs/" + GetName() + "_uart.log", std::ofstream::out | std::ofstream::trunc);
+	
+	#ifdef HFRISCV_ENABLE_COUNTERS
+	_counter_iarith     = new USignal<uint32_t>(GetName() + ".counters.iarith");
+	_counter_ilogical   = new USignal<uint32_t>(GetName() + ".counters.ilogical");
+	_counter_ishift     = new USignal<uint32_t>(GetName() + ".counters.ishift");
+	_counter_ibranches  = new USignal<uint32_t>(GetName() + ".counters.ibranches");
+	_counter_ijumps     = new USignal<uint32_t>(GetName() + ".counters.ijumps");
+	_counter_iloadstore = new USignal<uint32_t>(GetName() + ".counters.iloadstore");
+	_counter_cycles_total = new USignal<uint32_t>(GetName() + ".counters.cycles_total");
+	_counter_cycles_stall = new USignal<uint32_t>(GetName() + ".counters.cycles_stall");
+	
+	_counter_hosttime = new USignal<uint32_t>(GetName() + ".counters.hosttime");
+	#endif
+	
 }
 
-//TODO: clear allocated memory if any
 THFRiscV::~THFRiscV(){
 	
 	#ifdef HFRISCV_ENABLE_COUNTERS
@@ -694,3 +646,8 @@ void THFRiscV::Reset(){
     //TODO: to be implemented
     return;
 }
+
+//api access shorthands (must be undef at the end of the file)
+#undef PC 
+#undef PC_NEXT 
+#undef R
