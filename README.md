@@ -32,7 +32,7 @@ ORCA-SIM is a framework capable of generating simulation tools. Generated tools 
 1) Clone this repository. Use ``git clone https://github.com/andersondomingues/orca-sim``
 2) Edit ``Configuration.mk`` and select the desired platform by changin the ``ORCA_PLATFORM`` variable
 2) Go to the root folder and type ``make`` in the terminal (requires GCC version >= 7.x and Make)
-3) Run the generated tool as ``./bin/single-core.exe <software-image>``, where *software-image* is the binary compiled for the target architecture. Both examples use the HF-RiscV processor (see [Third Part Work](#third-part-work)).
+3) Run the generated tool as ``./bin/single-core.exe <software-image>``, where *software-image* is the binary compiled for the target architecture. Both examples use the HF-RiscV processor (see [Third Part Work]).
 
 ## Project Organization
 - ``/bin`` : compiled binaries and compilation artifacts
