@@ -33,7 +33,7 @@ ORCA_CHECK_ROUTER_PORTS := NO
 # mits of memory space when reading or writing. This option is 
 # useful for debugging memory access, but dramatically depletes
 # simulation performance. 
-ORCA_CHECK_MEMORY_SPACE := YES
+ORCA_CHECK_MEMORY_SPACE := NO
 
 #================================================================#
 # HF-RISCV CORE OPTIONS                                          #
@@ -57,13 +57,13 @@ ORCA_HFRISCV_MODE := CYCLE
 ORCA_HWCOUNTERS_MEMORY := YES
 
 # Counts the number of instructions per instruction class.
-ORCA_HWCOUNTERS_HFRISCV := NO
+ORCA_HWCOUNTERS_HFRISCV := YES
 
 # Enable hardware counter for several hardware components. These 
 # counter can be used to estimate the energy consumption of the 
 # platform. Enabling counters depletes performance.
 # Counts the number cycle in which the router tranfers flits.
-ORCA_HWCOUNTERS_ROUTERS := NO
+ORCA_HWCOUNTERS_ROUTERS := YES
 
 #================================================================#
 # OFF-CHIP COMMUNICATION OPTIONS                                 #
