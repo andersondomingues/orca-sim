@@ -42,7 +42,7 @@ GDBRSP_DIR    := $(CURDIR)/gdbrsp
 # - rsp server has no dependencies
 # - hardware models depends on the simulator 
 #   hardware models may depend on rsp
-# - platform depends on simulato, hardware models, and rsp
+# - platform depends on simulation, hardware models, and rsp
 # - visualization file for multitail has no dependencies
 all: $(BINARY_DIR)/$(PLATFORM_BIN) vismtail
 	@echo "$'\033[7m====================================\033[0m"

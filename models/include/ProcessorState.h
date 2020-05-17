@@ -13,15 +13,15 @@ struct ProcessorState{
 	//falls in the PC instead. For example, for an arch with
 	//32 register, the register number 33 is PC.
 	T regs[NUMBER_OF_REGISTERS]; //general purpose registers
-	T pc_prev;  //value of pc in the last cycle (zero if 1st)
 	T pc;       //the value of pc in the current cycle
+	T pc_prev;  //value of pc in the last cycle (zero if 1st)
 	T pc_next;  //value of pc in the next cycle
-	T bp;       //flag's risen if breakpoint has being reached
 
-	//#ifdef ORCA_ENABLE_GDBRSP
-	T pause;
-	T steps;
-	//#endif
+	#ifdef ORCA_ENABLE_GDBRSP
+	T bp;       //flag's risen if breakpoint has being reached
+	T pause;    //indicates that CPU is paused (works as a second stall line)
+	T steps;    //number of remaining instructions until next pause
+	#endif
 };
 
 //Some of the most used instances. More can be added later.

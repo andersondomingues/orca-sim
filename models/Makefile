@@ -1,4 +1,8 @@
+#includes local configuration
 include Configuration.mk
+
+#include global config (required by gdbrsp support)
+include ../Configuration.mk
 
 #directory configuration
 SOURCEDIR :=src

@@ -54,7 +54,10 @@ void THFRiscV::bp(risc_v_state *s, uint32_t ir){
 	printf("irq_status: %08x, irq_cause: %08x, irq_mask: %08x\n", s->status, 
 		s->cause, s->mask);
 	dumpregs();
+	
+	#ifdef ORCA_ENABLE_GDBRSP
 	GetState()->bp = 0x1;
+	#endif
 }
 
 /**

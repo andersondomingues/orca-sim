@@ -46,9 +46,8 @@ TProcessorBase<T>::TProcessorBase(std::string name, MemoryAddr initial_pc, UMemo
 	_state.pc_next = _state.pc + sizeof(T);
 
 	//reset flags
-	_state.bp = 0; //no breakpoint reached yet
-
 	#ifdef ORCA_ENABLE_GDBRSP
+	_state.bp = 0; //no breakpoint reached yet
 	_state.pause = 1; //starts paused in gdb mode
 	_state.steps = 0; //no steps to be performed, wait for gdb 
 	_gdbserver = new RspServer<T>(&_state, _memory, "127.0.0.1", GDBSERVER_PORT++);
