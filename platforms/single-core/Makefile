@@ -41,9 +41,7 @@ else
 endif
 
 #source files for the platform
-TARGET_DEPS := \
-	$(SOURCEDIR)/ProcessingTile.cpp \
-	$(SOURCEDIR)/Orca.cpp
+TARGET_DEPS := $(SOURCEDIR)/Orca.cpp
 
 DEP_LIBS := $(LIBRSP) $(LIBMOD) $(LIBSIM)
 

@@ -22,6 +22,8 @@ struct ProcessorState{
 	T pause;    //indicates that CPU is paused (works as a second stall line)
 	T steps;    //number of remaining instructions until next pause
 	#endif
+
+	T terminated; //indicate whether the cpu has aborted (abnormaly or not)
 };
 
 //Some of the most used instances. More can be added later.

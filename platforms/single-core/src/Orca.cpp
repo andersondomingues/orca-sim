@@ -37,16 +37,20 @@
 #include <THFRiscV.h>
 
 //orca-specific hardware
-#include <ProcessingTile.h>
-
-//instantiates a mesh of MxN PE
-ProcessingTile* tile;
+#include <MemoryMap.h>
 
 //interrupt signal catcher
 static volatile sig_atomic_t interruption = 0;
 
-int _status = 0;
-
+/**
+ * @brief Signal handler. This handler captures
+ * interruption from the keyboard (CTRL+C) and
+ * flag the simulation to end in the current
+ * epoch. If pressed CTRL+C again, simulation will
+ * abort.
+ * @param _ This param is unused (must be here to
+ * comply with system's API)
+ */
 static void sig_handler(int _){
 	
 	(void)_;
@@ -59,187 +63,75 @@ static void sig_handler(int _){
 	case 1:
 		exit(0);
 		break;
-	case 2:
-		std::cout << std::endl << "Hold your horses!" << std::endl;
-		break;
 	}	
 }
 
-void check_params(){
-
-	//orca params 
-	#ifndef ORCA_NOC_HEIGHT
-	std::runtime_error("ORCA_NOC_HEIGHT must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_NOC_HEIGHT set to " << ORCA_NOC_HEIGHT << std::endl;
-	#endif
-	
-	#ifndef ORCA_NOC_HEIGHT
-	std::runtime_error("ORCA_NOC_WIDTH must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_NOC_WIDTH set to " << ORCA_NOC_WIDTH << std::endl;
-	#endif
-
-	#ifndef ORCA_EPOCH_LENGTH
-	std::runtime_error("ORCA_EPOCH_LENGTH must be defined in Configuration.mk\n");
-	#else
-	std::cout << "ORCA_EPOCH_LENGTH set to " << ORCA_EPOCH_LENGTH << std::endl;
-	#endif
-
-	#ifndef ORCA_EPOCHS_TO_SIM
-	std::cout << "ORCA_EPOCHS_TO_SIM set to INFINITE" << std::endl;
-	#else
-	std::cout << "ORCA_EPOCHS_TO_SIM set to " << ORCA_EPOCHS_TO_SIM << std::endl;
-	#endif
-	
-	//ursa params
-	#ifndef URSA_ZERO_TIME_CHECKING
-	std::cout << "URSA_ZERO_TIME_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "URSA_ZERO_TIME_CHECKING set to " << URSA_ZERO_TIME_CHECKING << std::endl;
-	#endif
-
-	#ifndef URSA_QUEUE_SIZE_CHECKING
-	std::cout << "URSA_QUEUE_SIZE_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "URSA_QUEUE_SIZE_CHECKING set to " << URSA_QUEUE_SIZE_CHECKING << std::endl;
-	#endif
-	
-	//netsocket logs
-	#ifndef NETSOCKET_LOG_OUTGOING_PACKETS
-	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS disabled" << std::endl;
-	#else
-	std::cout << "NETSOCKET_LOG_OUTGOING_PACKETS enabled" << std::endl;
-	#endif
-
-	#ifndef NETSOCKET_LOG_INCOMING_PACKETS
-	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS disabled" << std::endl;
-	#else
-	std::cout << "NETSOCKET_LOG_INCOMING_PACKETS enabled" << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_CLIENT_ADDRESS
-	std::cout << "NETSOCKET_CLIENT_ADDRESS is " << NETSOCKET_CLIENT_ADDRESS << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_CLIENT_PORT
-	std::cout << "NETSOCKET_CLIENT_PORT is " << NETSOCKET_CLIENT_PORT << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_SERVER_ADDRESS
-	std::cout << "NETSOCKET_SERVER_ADDRESS is " << NETSOCKET_SERVER_ADDRESS << std::endl;
-	#endif
-	
-	#ifdef NETSOCKET_SERVER_PORT
-	std::cout << "NETSOCKET_SERVER_PORT is " << NETSOCKET_SERVER_PORT << std::endl;
-	#endif
-	
-	//buffers
-	#ifndef BUFFER_OVERFLOW_CHECKING
-	std::cout << "BUFFER_OVERFLOW_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "BUFFER_OVERFLOW_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef BUFFER_UNDERFLOW_CHECKING
-	std::cout << "BUFFER_UNDERFLOW_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "BUFFER_UNDERFLOW_CHECKING enabled" << std::endl;
-	#endif
-	
-	//memory
-	#ifndef MEMORY_WRITE_ADDRESS_CHECKING
-	std::cout << "MEMORY_WRITE_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "MEMORY_WRITE_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef MEMORY_READ_ADDRESS_CHECKING
-	std::cout << "MEMORY_READ_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "MEMORY_READ_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef MEMORY_WIPE_ADDRESS_CHECKING
-	std::cout << "MEMORY_WIPE_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "MEMORY_WIPE_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef MEMORY_ENABLE_COUNTERS
-	std::cout << "MEMORY_ENABLE_COUNTERS disabled" << std::endl;
-	#else
-	std::cout << "MEMORY_ENABLE_COUNTERS enabled" << std::endl;
-	#endif
-	
-	//hfriscv
-	#ifndef HFRISCV_WRITE_ADDRESS_CHECKING
-	std::cout << "HFRISCV_WRITE_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "HFRISCV_WRITE_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef HFRISCV_READ_ADDRESS_CHECKING
-	std::cout << "HFRISCV_READ_ADDRESS_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "HFRISCV_READ_ADDRESS_CHECKING enabled" << std::endl;
-	#endif
-
-	#ifndef HFRISCV_ENABLE_COUNTERS
-	std::cout << "HFRISCV_ENABLE_COUNTERS disabled" << std::endl;
-	#else
-	std::cout << "HFRISCV_ENABLE_COUNTERS enabled" << std::endl;
-	#endif
-	
-	//router	
-	#ifndef ROUTER_ENABLE_COUNTERS
-	std::cout << "ROUTER_ENABLE_COUNTERS disabled" << std::endl;
-	#else
-	std::cout << "ROUTER_ENABLE_COUNTERS enabled" << std::endl;
-	#endif
-	
-	#ifndef ROUTER_PORT_CONNECTED_CHECKING
-	std::cout << "ROUTER_PORT_CONNECTED_CHECKING disabled" << std::endl;
-	#else
-	std::cout << "ROUTER_PORT_CONNECTED_CHECKING enabled" << std::endl;
-	#endif
-	
-}
-
+/**
+ * @brief Main routine. Instantiate simulator, hardware models, 
+ * connect these models, and start simulation.
+ * @param argc Should be always equals 2
+ * @param argv One-dimensional array containing the name of binary file 
+ * to load in the program
+ * @return int Simulation status (termination)
+ */
 int main(int __attribute__((unused)) argc, char** argv){
 
-    //argc = argc; //workaround to use -Wextra
+	//show usage and abort if an image file is not informed
+	if(argc != 2){
+		std::cout << "Usage: " << argv[0] << " <software-image>" << std::endl;
+		abort();
+	}
 
 	//register interruption handler
 	signal(SIGINT, sig_handler);
 
 	std::cout << "URSA/ORCA Platform " << std::endl;
 
-	std::cout << "==============[ PARAMETERS ]" << std::endl;	
-	try{
-		check_params();
-	}catch(std::runtime_error& e){
-		std::cout << e.what() << std::endl;
-		return 1;
-	}
+	//create new control signals
+	USignal<uint8_t> *signal_stall, *signal_intr;
+	signal_stall = new USignal<uint8_t>(SIGNAL_CPU_STALL, "cpu.stall");
+	signal_intr  = new USignal<uint8_t>(SIGNAL_CPU_INTR,  "cpu.intr");
 	
-	std::cout << "==============[ TILE COMPOSITION ]" << std::endl;
+	//create a cpu and memory 
+	UMemory* mem = new UMemory("main-memory", MEM_SIZE, MEM_BASE);
+	THFRiscV* cpu = new THFRiscV("cpu", signal_intr, signal_stall, mem);
+
+	//bind control signals to memory space
+	signal_stall->MapTo(mem->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
+	signal_intr->MapTo(mem->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
+
+	//reset control wires
+	signal_stall->Write(0);
+	signal_intr->Write(0);
+
+	//map counters to memory if hardware counters were enabled
+	#ifdef MEMORY_ENABLE_COUNTERS
+	//map main memory counter
+	mem->GetSignalCounterStore()->MapTo(mem->GetMap(M0_COUNTER_STORE_ADDR), M0_COUNTER_STORE_ADDR);
+	mem->GetSignalCounterLoad()->MapTo(mem->GetMap(M0_COUNTER_LOAD_ADDR), M0_COUNTER_LOAD_ADDR);
+	#endif
+
+	#ifdef HFRISCV_ENABLE_COUNTERS
+	//memory mapping
+	cpu->GetSignalCounterArith()->MapTo(mem->GetMap(CPU_COUNTER_ARITH_ADDR), CPU_COUNTER_ARITH_ADDR);
+	cpu->GetSignalCounterLogical()->MapTo(mem->GetMap(CPU_COUNTER_LOGICAL_ADDR), CPU_COUNTER_LOGICAL_ADDR);
+	cpu->GetSignalCounterShift()->MapTo(mem->GetMap(CPU_COUNTER_SHIFT_ADDR), CPU_COUNTER_SHIFT_ADDR);
+	cpu->GetSignalCounterBranches()->MapTo(mem->GetMap(CPU_COUNTER_BRANCHES_ADDR), CPU_COUNTER_BRANCHES_ADDR);
+	cpu->GetSignalCounterJumps()->MapTo(mem->GetMap(CPU_COUNTER_JUMPS_ADDR), CPU_COUNTER_JUMPS_ADDR);
+	cpu->GetSignalCounterLoadStore()->MapTo(mem->GetMap(CPU_COUNTER_LOADSTORE_ADDR), CPU_COUNTER_LOADSTORE_ADDR);
+	cpu->GetSignalCounterCyclesTotal()->MapTo(mem->GetMap(CPU_COUNTER_CYCLES_TOTAL_ADDR), CPU_COUNTER_CYCLES_TOTAL_ADDR);
+	cpu->GetSignalCounterCyclesStall()->MapTo(mem->GetMap(CPU_COUNTER_CYCLES_STALL_ADDR), CPU_COUNTER_CYCLES_STALL_ADDR);
+	cpu->GetSignalHostTime()->MapTo(mem->GetMap(CPU_COUNTER_HOSTTIME_ADDR), CPU_COUNTER_HOSTTIME_ADDR);
+	#endif
+
+	//load software image into memory
+	mem->LoadBin(std::string(argv[1]), MEM_BASE, MEM_SIZE);
 	
-	//create new tile (single)
-	tile = new ProcessingTile();
-	
-	//load bin into memory
-	tile->GetMem0()->LoadBin(std::string(argv[1]), MEM0_BASE, MEM0_SIZE);
-	
-	std::cout << "==============[ SIMULATION ]" << std::endl;
-	
-	//instantiate simulation
+	//instantiate a new simulation
 	Simulator* s = new Simulator();
 		
-	std::cout << "Scheduling..."	 << std::endl;
-	
-	//schedule pcore
-	s->Schedule(Event(3, tile->GetCpu()));
+	//schedule cpu
+	s->Schedule(Event(3, cpu));
 
 	std::cout << "Epoch set to " << ORCA_EPOCH_LENGTH << " cycles." << std::endl;
 	std::cout << "Please wait..." << std::endl;
@@ -248,7 +140,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 	
 		std::chrono::high_resolution_clock::time_point t1, t2;
 	
-		while(!interruption){
+		while(!interruption && !cpu->GetState()->terminated){
 			
 			t1 = std::chrono::high_resolution_clock::now();
 			s->Run(ORCA_EPOCH_LENGTH);
@@ -274,24 +166,45 @@ int main(int __attribute__((unused)) argc, char** argv){
 		
 	}catch(std::runtime_error& e){
 		std::cout << e.what() << std::endl;
-		_status = 1;
+		return -1; //abnormal termination, simulation failed
 	}
 
-	//CPU statuses
-	std::cout 
-				<< tile->GetName() 
-				<< ": INTR=" << (int)(tile->GetSignalIntr()->Read()) 
-				<< ", STALL=" << (int)(tile->GetSignalStall()->Read()) << std::endl;
+	//minimal reporting
+	std::cout << "cpu: INTR=" << (int)(signal_intr->Read()) 
+				<< ", STALL=" << (int)(signal_stall->Read()) << std::endl;
 
+	//if counters enabled, report them
+	#ifdef HFRISCV_ENABLE_COUNTERS
+	std::cout << "cpu"
+		"\tiarith\t\t" << (int)cpu->GetSignalCounterArith()->Read() << std::endl <<
+		"\tilogic\t\t" << (int)cpu->GetSignalCounterLogical()->Read() << std::endl <<
+		"\tishift\t\t" << (int)cpu->GetSignalCounterShift()->Read() << std::endl <<
+		"\tibranch\t\t" << (int)cpu->GetSignalCounterBranches()->Read() << std::endl <<
+		"\tijumps\t\t" << (int)cpu->GetSignalCounterJumps()->Read() << std::endl <<
+		"\timemop\t\t" << (int)cpu->GetSignalCounterLoadStore()->Read() << std::endl <<
+		"\ticycles\t\t" << (int)cpu->GetSignalCounterCyclesTotal()->Read() << std::endl <<
+		"\tistalls\t\t" << (int)cpu->GetSignalCounterCyclesStall()->Read() << std::endl <<
+		"\tihtime\t\t" << (int)cpu->GetSignalHostTime()->Read() << std::endl;
+
+	#endif
+
+	#ifdef MEMORY_ENABLE_COUNTERS
+	std::cout << "mem"
+		"\tloads\t\t" << (int)mem->GetSignalCounterStore()->Read() << std::endl <<
+		"\tstores\t\t" << (int)mem->GetSignalCounterLoad()->Read() << std::endl;
+	#endif
+
+	int exit_status = cpu->GetState()->terminated;
+
+	//free resources
 	delete(s);
-	delete(tile);
-			
-	if(_status)
-		std::cout << "Simulation failed!"	 << std::endl;
-	else 
-		std::cout << "Simulation ended without errors."	 << std::endl;
+	delete(cpu);
+	delete(mem);
+	delete(signal_intr);
+	delete(signal_stall);
 	
-	return _status;
+	//return existing code to upper system
+	return exit_status;
 }
 
 

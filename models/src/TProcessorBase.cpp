@@ -52,6 +52,9 @@ TProcessorBase<T>::TProcessorBase(std::string name, MemoryAddr initial_pc, UMemo
 	_state.steps = 0; //no steps to be performed, wait for gdb 
 	_gdbserver = new RspServer<T>(&_state, _memory, "127.0.0.1", GDBSERVER_PORT++);
 	#endif
+
+	//reset special flags 
+	_state.terminated = false;
 }
 
 template <typename T> 

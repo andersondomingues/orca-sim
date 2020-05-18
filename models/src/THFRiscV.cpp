@@ -230,11 +230,14 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address, uint32
 		case UART_DIVISOR:	return;
 	
 		case EXIT_TRAP:
-			std::cout << GetName() << ": exit trap triggered! " << std::endl;
-			dumpregs();
+
+			//write cause of aborting to special register
+			GetState()->terminated = value;
+			printf("%s: exit trap triggered with status 0x%x\n", GetName().c_str(), value);
+			//dumpregs();
 			output_debug.close();
 			output_uart.close();
-            abort();
+            //abort();
 			return;
 	}
 		
@@ -423,6 +426,7 @@ SimulationTime THFRiscV::Run(){
 	ptr_s = r[rs1] + (int32_t)imm_s;
 	r[0] = 0;
 
+	//EXECUTE
 	switch(opcode){
 		case 0x37: r[rd] = imm_u; break;										/* LUI */
 		case 0x17: r[rd] = PC + imm_u; break;									/* AUIPC */
@@ -534,7 +538,7 @@ SimulationTime THFRiscV::Run(){
 		default:
 fail:
 			stringstream ss;
-			ss << GetName() << ":invalid opcode (pc=0x" << std::hex << PC;
+			ss << GetName() << ":invalid opcode (at pc=0x" << std::hex << PC;
 			ss << " opcode=0x" << std::hex << inst << ")";
 	
 			dumpregs();
