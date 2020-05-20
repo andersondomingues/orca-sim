@@ -10,9 +10,8 @@ include ./Configuration.mk
 include ./models/Configuration.mk
 include ./platforms/$(ORCA_PLATFORM)/Configuration.mk
 
-# nullate gdblib when gdb support is absent
-ifneq ($(ORCA_ENABLE_GDBRSP),YES)
-	GDBRSP_LIB := keep.me
+ifeq ($(ORCA_ENABLE_GDBRSP),YES)
+	CONDGDBRSP = $(BINARY_DIR)/$(GDBRSP_LIB)  
 endif
 
 # Additional parameters (do not modify them unless you know
@@ -75,7 +74,7 @@ $(BINARY_DIR)/$(GDBRSP_LIB): $(GDBRSP_DIR)/src/*.cpp $(GDBRSP_DIR)/include/*.h
 	$(Q)cp $(GDBRSP_DIR)/bin/$(GDBRSP_LIB) $(BINARY_DIR)/$(GDBRSP_LIB)
 
 #Generate simulator executable binary (includes top-level hardware models).
-$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(BINARY_DIR)/$(GDBRSP_LIB)  $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/include/*.h
+$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(CONDGDBRSP) $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/include/*.h
 	@echo "$'\033[7m==================================\033[0m"
 	@echo "$'\033[7m     Building the platform        \033[0m"
 	@echo "$'\033[7m==================================\033[0m"

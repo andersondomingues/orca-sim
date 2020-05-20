@@ -18,7 +18,7 @@ ORCA_GLOBAL_FLAGS := -Wall -Wextra -Werror -g3 -std=c++17 \
 # based on the HF-RiscV processor and (ii) a NoC-based 
 # mesh-topologic manycore that uses the same processor core. 
 # PLATFORM := (orca-mpsoc | single-core | single-core-nn)
-ORCA_PLATFORM := single-core
+ORCA_PLATFORM := orca-mpsoc
 
 #================================================================#
 # SIMULATION OPTIONS                                             #

@@ -4,6 +4,9 @@ HEADERDIR :=./include
 OUTPUTDIR :=./bin
 LIBNAME :=libgdbrsp.a
 
+#include global configuration
+include ../Configuration.mk
+
 LIBSIM_PATH:=../ursa
 LIBSIM:=$(LIBSIM_PATH)/bin/libursa.a
 
@@ -11,7 +14,7 @@ LIBMOD_PATH:=../models
 LIBMOD:=$(LIBMOD_PATH)/bin/libmod.a
 
 #include flags (plus external flags)
-CPPFLAGS :=-Iinclude -I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include -c $(COMPLINE) $(GLOBAL_SETTINGS)
+CPPFLAGS :=-Iinclude -I$(LIBSIM_PATH)/include -I$(LIBMOD_PATH)/include -c $(MAIN_COMPLINE)
 
 #list of dependencies (source files)
 TARGET_DEPS := \

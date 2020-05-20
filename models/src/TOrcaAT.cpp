@@ -26,21 +26,21 @@
 #include <cstdlib>
 #include <sstream>
 		
-#include "TArm7TDMI.h"
+#include "TOrcaAT.h"
 		
 
-void TArm7TDMI::Reset(){
+void TOrcaAT::Reset(){
 	return;
 }
 
-TArm7TDMI::TArm7TDMI(string name) : TimedModel(name) {
+TOrcaAT::TOrcaAT(string name) : TimedModel(name) {
 }
 
-TArm7TDMI::~TArm7TDMI(){
+TOrcaAT::~TOrcaAT(){
 
 }
 
-long long unsigned int TArm7TDMI::Run(){
+long long unsigned int TOrcaAT::Run(){
 
 	//fetch 
 	uint32_t instruction = _mem->Read(PC, &instruction, sizeof(uint32_t);

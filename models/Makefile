@@ -41,4 +41,4 @@ $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp  $(HEADERDIR)/%.h
 
 #remove any preoviosly generated file
 clean:
-	$(Q)rm -rf bin/*.a 	rm -rf bin/*.o
+	$(Q)rm -rf bin/*.a bin/*.o
