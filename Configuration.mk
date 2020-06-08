@@ -13,12 +13,13 @@ ORCA_GLOBAL_FLAGS := -Wall -Wextra -Werror -g3 -std=c++17 \
 	-O3 -march=native -mtune=native 
 
 # Select the target platform. Different hardware architectures
-# are deployed to /platforms folder. We currently provide two
-# example architectures: (i) a single-core riscv processor core
-# based on the HF-RiscV processor and (ii) a NoC-based 
-# mesh-topologic manycore that uses the same processor core. 
-# PLATFORM := (orca-mpsoc | single-core | single-core-nn)
-ORCA_PLATFORM := orca-mpsoc
+# are deployed to /platforms folder. 
+# allowed values:
+# "orca-mpsoc", a NORMA-based manycore
+# "single-core", a single hfriscv processor core
+# "single-core-nn", same as above but with an nn accelerator
+# "hfriscv-with-extcomm", single-core with external comm. module
+ORCA_PLATFORM :=hfriscv-with-extcomm
 
 #================================================================#
 # SIMULATION OPTIONS                                             #
@@ -47,7 +48,7 @@ ORCA_EPOCHS_TO_SIM := INF
 # enabled, GDBRSP module will pause cpu execution at their first
 # cycle. To resume the cpu(s), connect to the corresponding. Ena-
 # bling GDB support dramatically reduce simulation speed.
-ORCA_ENABLE_GDBRSP := NO
+ORCA_ENABLE_GDBRSP := YES
 
 # When enabled, the GDBRSP service will instantiate a UDP server
 # for each processing tile. Each server will serve one UDP port,

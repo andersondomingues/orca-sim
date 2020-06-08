@@ -3,8 +3,9 @@
  * can be found at the following repositories at GitHub's website.
  *
  * http://https://github.com/andersondomingues/orca-sim
- * http://https://github.com/andersondomingues/orca-software-tools
+ * http://https://github.com/andersondomingues/orca-software
  * http://https://github.com/andersondomingues/orca-mpsoc
+ * http://https://github.com/andersondomingues/orca-tools
  *
  * Copyright (C) 2018-2020 Anderson Domingues, <ti.andersondomingues@gmail.com>
  *
@@ -185,8 +186,8 @@ int RspServer<T>::Receive(){
                 case 'P': return this->Handle_P(_input_buffer); //reg writing
                 case 'v': return this->Handle_v(_input_buffer); //vCont, reply empty
 				case 'X': return this->Handle_X(_input_buffer); //binary mem writing
-                //case 'z': return this->Handle_z(_input_buffer); //set bp
-                //case 'Z': return this->Handle_Z(_input_buffer); //clear bp
+                case 'z': return this->Handle_z(_input_buffer); //set bp
+                case 'Z': return this->Handle_Z(_input_buffer); //clear bp
 				//case 'Q': return this->Handle_Q(_input_buffer);
                 
                 //commands not implemented by the server
@@ -567,6 +568,7 @@ int RspServer<T>::Handle_P(char* buffer){
 
     return -1;
 }
+
 
 template <typename T>
 int RspServer<T>::Handle_Z(char*){
