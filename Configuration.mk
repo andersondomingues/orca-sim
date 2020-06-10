@@ -19,7 +19,8 @@ ORCA_GLOBAL_FLAGS := -Wall -Wextra -Werror -g3 -std=c++17 \
 # "single-core", a single hfriscv processor core
 # "single-core-nn", same as above but with an nn accelerator
 # "hfriscv-with-extcomm", single-core with external comm. module
-ORCA_PLATFORM :=hfriscv-with-extcomm
+ORCA_PLATFORM := hfriscv-with-extcomm
+#ORCA_PLATFORM := single-core
 
 #================================================================#
 # SIMULATION OPTIONS                                             #
@@ -48,7 +49,7 @@ ORCA_EPOCHS_TO_SIM := INF
 # enabled, GDBRSP module will pause cpu execution at their first
 # cycle. To resume the cpu(s), connect to the corresponding. Ena-
 # bling GDB support dramatically reduce simulation speed.
-ORCA_ENABLE_GDBRSP := YES
+ORCA_ENABLE_GDBRSP := NO
 
 # When enabled, the GDBRSP service will instantiate a UDP server
 # for each processing tile. Each server will serve one UDP port,

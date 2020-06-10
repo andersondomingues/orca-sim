@@ -56,6 +56,12 @@ ORCA_HFRISCV_MODE := CYCLE
 # Counts the number of readings and writings.
 ORCA_HWCOUNTERS_MEMORY := YES
 
+# Counts the number of readings and writings for the 
+# two auxiliary memory module included in the network
+# interface. Requires ORCA_HW_COUNTERS_MEMORY to be 
+# enabled.
+ORCA_HWCOUNTERS_NI := NO
+
 # Counts the number of instructions per instruction class.
 ORCA_HWCOUNTERS_HFRISCV := YES
 
@@ -63,7 +69,7 @@ ORCA_HWCOUNTERS_HFRISCV := YES
 # counter can be used to estimate the energy consumption of the 
 # platform. Enabling counters depletes performance.
 # Counts the number cycle in which the router tranfers flits.
-ORCA_HWCOUNTERS_ROUTERS := YES
+ORCA_HWCOUNTERS_ROUTERS := NO
 
 #================================================================#
 # OFF-CHIP COMMUNICATION OPTIONS                                 #
@@ -153,5 +159,10 @@ endif
 ifeq ($(ORCA_HWCOUNTERS_ROUTERS), YES)
 	MODELS_COMPLINE := $(MODELS_COMPLINE) -DROUTER_ENABLE_COUNTERS
 endif
+ifeq ($(ORCA_HWCOUNTERS_NI), YES)
+	MODELS_COMPLINE := $(MODELS_COMPLINE) -DNI_ENABLE_COUNTERS
+endif
+
+
 
 export MODELS_COMPLINE
