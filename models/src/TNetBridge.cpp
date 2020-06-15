@@ -206,7 +206,7 @@ void TNetBridge::udpToNocProcess(){
 				_out_reg = buf[0];
 				_ob->push(_out_reg);
 				
-				//std::cout << std::hex << _out_reg << std::dec << std::endl;
+				// std::cout << "(0)\t" << std::hex << _out_reg << std::dec << std::endl << std::flush;
 				
 				//proceed to the next state
 				_recv_state = TNetBridgeRecvState::READ_LEN;
@@ -250,8 +250,9 @@ void TNetBridge::udpToNocProcess(){
 				_flits_to_recv = _out_reg + 2; 
 				_flits_to_recv_count = 2;
 				
-				//std::cout << std::hex << _out_reg << std::dec << std::endl;
-				
+				// std::cout << "(1)\t" << std::hex << _out_reg << std::dec << std::endl << std::flush;
+				// _dgb_counter = 0;
+
 				//proceed to next state
 				_recv_state = TNetBridgeRecvState::RECV_PAYLOAD;
 			}
@@ -271,6 +272,8 @@ void TNetBridge::udpToNocProcess(){
 			}else if (!_ob->full()){
 				_out_reg = ((FlitType*)_recv_buffer)[_flits_to_recv_count++];
 				_ob->push(_out_reg);
+
+				// std::cout << "(" << _dgb_counter++ << ")\t" << std::hex << _out_reg << std::dec << std::endl << std::flush;
 				
 			}
 

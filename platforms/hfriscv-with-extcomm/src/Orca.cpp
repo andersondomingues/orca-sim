@@ -87,56 +87,83 @@ int main(int __attribute__((unused)) argc, char** argv){
 
 	std::cout << "URSA/ORCA Platform " << std::endl;
 
-	//create new control signals
-	USignal<uint8_t> *signal_stall, *signal_intr, *signal_send_status;
-	USignal<uint32_t> *signal_send, *signal_recv, 
-		*signal_addr, *signal_size, *signal_recv_status;
+	// create control wires 
+	USignal<uint8_t> *signal_stall, *signal_intr, *signal_send_status, 
+		*signal_send, *signal_recv;
+	USignal<uint32_t> *signal_addr, *signal_size, *signal_recv_status;
 
 	signal_stall = new USignal<uint8_t>(SIGNAL_CPU_STALL, "cpu.stall");
 	signal_intr  = new USignal<uint8_t>(SIGNAL_CPU_INTR,  "cpu.intr");
-	
-	signal_send = new USignal<uint32_t>(SIGNAL_PROG_SEND, "cpu.sig-send");
-	signal_recv = new USignal<uint32_t>(SIGNAL_PROG_RECV, "cpu.sig-recv");
+	signal_send = new USignal<uint8_t>(SIGNAL_PROG_SEND, "cpu.sig-send");
+	signal_recv = new USignal<uint8_t>(SIGNAL_PROG_RECV, "cpu.sig-recv");
 	signal_addr = new USignal<uint32_t>(SIGNAL_PROG_ADDR, "cou.sig-addr");
 	signal_size = new USignal<uint32_t>(SIGNAL_PROG_SIZE, "cou.sig-size");
-
 	signal_recv_status = new USignal<uint32_t>(SIGNAL_RECV_STATUS, "cpu.sig-recv-status");
 	signal_send_status = new USignal<uint8_t>(SIGNAL_SEND_STATUS, "cpu.sig-send-status");
 
-	//create a cpu and memory 
+	// create a cpu and memory  
 	UMemory* mem = new UMemory("main-memory", MEM_SIZE, MEM_BASE);
 	THFRiscV* cpu = new THFRiscV("cpu", signal_intr, signal_stall, mem);
 
-	//bind control signals to memory space
+	// bind control signals to memory space
 	signal_stall->MapTo(mem->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
 	signal_intr->MapTo(mem->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
-
 	signal_send->MapTo(mem->GetMap(SIGNAL_PROG_SEND), SIGNAL_PROG_SEND);
 	signal_recv->MapTo(mem->GetMap(SIGNAL_PROG_RECV), SIGNAL_PROG_RECV);
 	signal_addr->MapTo(mem->GetMap(SIGNAL_PROG_ADDR), SIGNAL_PROG_ADDR);
 	signal_size->MapTo(mem->GetMap(SIGNAL_PROG_SIZE), SIGNAL_PROG_SIZE);
-
 	signal_send_status->MapTo(mem->GetMap(SIGNAL_SEND_STATUS), SIGNAL_SEND_STATUS);
 	signal_recv_status->MapTo(mem->GetMap(SIGNAL_RECV_STATUS), SIGNAL_RECV_STATUS);
 
-	//reset control wires
+	// reset control wires
 	signal_stall->Write(0);
 	signal_intr->Write(0);
+	signal_send->Write(0);
+	signal_recv->Write(0);
+	signal_addr->Write(0);
+	signal_size->Write(0);
+	signal_send_status->Write(0);
+	signal_recv_status->Write(0);
 
-
-	//create a dma and off-chip comm modules
+	// create a dma and off-chip comm modules
 	TNetBridge* bridge = new TNetBridge("comm");
 	TDmaNetif* netif = new TDmaNetif("dma");
 
-	//connect the dma and netif to each other
+	// connect the dma and netif to each other (via buffers)
 	bridge->SetOutputBuffer(netif->GetInputBuffer());
 	netif->SetOutputBuffer(bridge->GetInputBuffer());
 	
-	//map counters to memory if hardware counters were enabled
+	// connect netif to control wires
+	netif->SetSignalIntr(signal_intr);
+	netif->SetSignalStall(signal_stall);
+	netif->SetSignalProgAddr(signal_addr);
+	netif->SetSignalProgSize(signal_size);
+	netif->SetSignalProgSend(signal_send);
+	netif->SetSignalProgRecv(signal_recv);
+	netif->SetSignalRecvStatus(signal_recv_status);
+	netif->SetSignalSendStatus(signal_send_status);
+
+	// create additional memory for send/recv processes
+	UMemory *mem1, *mem2;
+	mem1 = new UMemory("netif-mem-1", ORCA_MEMORY_SIZE_1, 0);
+	mem2 = new UMemory("netif-mem-2", ORCA_MEMORY_SIZE_2, 0);
+
+	// connect netif to memories
+	netif->SetMem0(mem);
+	netif->SetMem1(mem1);
+	netif->SetMem2(mem2);
+
+	// map counters to memory if hardware counters were enabled
 	#ifdef MEMORY_ENABLE_COUNTERS
 	//map main memory counter
 	mem->GetSignalCounterStore()->MapTo(mem->GetMap(M0_COUNTER_STORE_ADDR), M0_COUNTER_STORE_ADDR);
 	mem->GetSignalCounterLoad()->MapTo(mem->GetMap(M0_COUNTER_LOAD_ADDR), M0_COUNTER_LOAD_ADDR);
+	
+	mem1->GetSignalCounterStore()->MapTo(mem->GetMap(M1_COUNTER_STORE_ADDR), M1_COUNTER_STORE_ADDR);
+	mem1->GetSignalCounterLoad()->MapTo(mem->GetMap(M1_COUNTER_LOAD_ADDR), M1_COUNTER_LOAD_ADDR);
+	mem2->GetSignalCounterStore()->MapTo(mem->GetMap(M2_COUNTER_STORE_ADDR), M2_COUNTER_STORE_ADDR);
+	mem2->GetSignalCounterLoad()->MapTo(mem->GetMap(M2_COUNTER_LOAD_ADDR), M2_COUNTER_LOAD_ADDR);
+	
 	#endif
 
 	#ifdef HFRISCV_ENABLE_COUNTERS
@@ -157,9 +184,12 @@ int main(int __attribute__((unused)) argc, char** argv){
 	
 	//instantiate a new simulation
 	Simulator* s = new Simulator();
-		
+
 	//schedule cpu
-	s->Schedule(Event(3, cpu));
+	s->Schedule(Event(3, cpu)); //cpu starts at the 3rd cycle due to its the first
+								//having one instruction coming out of the pipeline
+	s->Schedule(Event(1, bridge));
+	s->Schedule(Event(1, netif));
 
 	std::cout << "Epoch set to " << ORCA_EPOCH_LENGTH << " cycles." << std::endl;
 	std::cout << "Please wait..." << std::endl;
@@ -231,6 +261,10 @@ int main(int __attribute__((unused)) argc, char** argv){
 	delete(signal_intr);
 	delete(signal_stall);
 	
+	delete(mem1);
+	delete(mem2);
+	delete(netif);
+
 	//return existing code to upper system
 	return exit_status;
 }

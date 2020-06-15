@@ -132,6 +132,7 @@ private:
 		
 	#ifdef NETBRIDGE_ENABLE_LOG_INPUT
 	uint32_t _trafficIn;
+	// int _dgb_counter = 0;
 	#endif
 
 	#ifdef NETBRIDGE_ENABLE_LOG_OUTPUT

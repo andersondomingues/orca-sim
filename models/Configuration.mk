@@ -80,8 +80,8 @@ ORCA_HWCOUNTERS_ROUTERS := NO
 # disable logging, MINIMAL to print short messages, or FULL to
 # display the content of every packet. Please note that this may
 # slow down the simulation.
-ORCA_OFFCHIP_LOG_IN  := NO
-ORCA_OFFCHIP_LOG_OUT := NO
+ORCA_OFFCHIP_LOG_IN  := YES
+ORCA_OFFCHIP_LOG_OUT := YES
 
 # Sets the IP address for the server that handles packets coming
 # from outside the chip. All tiles handling packets will share
@@ -107,18 +107,18 @@ ORCA_OFFCHIP_CLIENT_PORT := 9999
 #================================================================#
 
 #OFF-CHIP
-ifeq ($(ORCA_OFFCHIP_LOG_IN), YES)
-        MODELS_COMPLINE := $(PLAT_COMPLINE) -DNETBRIDGE_ENABLE_LOG_INPUT
-endif
-ifeq ($(ORCA_OFFCHIP_LOG_OUT) ), YES)
-        MODELS_COMPLINE := $(PLAT_COMPLINE) -DNETBRIDGE_ENABLE_LOG_OUTPUT
-endif
-
 MODELS_COMPLINE := $(MODELS_COMPLINE) \
         -DNETSOCKET_CLIENT_ADDRESS=$(ORCA_OFFCHIP_CLIENT_IP) \
         -DNETSOCKET_CLIENT_PORT=$(ORCA_OFFCHIP_CLIENT_PORT) \
         -DNETSOCKET_SERVER_ADDRESS=$(ORCA_OFFCHIP_SERVER_IP) \
         -DNETSOCKET_SERVER_PORT=$(ORCA_OFFCHIP_SERVER_PORT)
+
+ifeq ($(ORCA_OFFCHIP_LOG_IN), YES)
+        MODELS_COMPLINE := $(MODELS_COMPLINE) -DNETBRIDGE_ENABLE_LOG_INPUT
+endif
+ifeq ($(ORCA_OFFCHIP_LOG_OUT) ), YES)
+        MODELS_COMPLINE := $(MODELS_COMPLINE) -DNETBRIDGE_ENABLE_LOG_OUTPUT
+endif
 
 #BUFFERS
 ifeq ($(ORCA_BUFFER_OVERFLOW_CHECKING), YES)

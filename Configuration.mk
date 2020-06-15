@@ -9,8 +9,9 @@
 # -std=c++17: set C++ standard (required for old compilers)
 # -O3, -march=native, -mtune=native: optmizations
 # -lasan, -fsanitize=address: additional debugging support
-ORCA_GLOBAL_FLAGS := -Wall -Wextra -Werror -g3 -std=c++17 \
-	-O3 -march=native -mtune=native 
+ORCA_GLOBAL_FLAGS := -Wall -Wextra -Werror -g3 -std=c++17 
+#\
+#	-O3 -march=native -mtune=native 
 
 # Select the target platform. Different hardware architectures
 # are deployed to /platforms folder. 
