@@ -637,11 +637,8 @@ int RspServer<T>::Handle_z(char* buffer){
 		T addr = strhti(&buffer[comma + 1], 10);
 
 		//remove the address from the list (if there)
-		// for(T a : *_bp_list){
-			// if(addr == a)
 		_bp_list->remove(addr);
-		// }
-
+		
 		// !!ignoring breakpoint size, not supported by arch
 		// !!treating all bp as software bp, hw bp not supported
 		return this->Respond("OK");
