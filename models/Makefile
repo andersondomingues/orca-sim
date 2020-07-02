@@ -34,7 +34,7 @@ TARGET_DEPS := \
 #compress all generated object files into a pack
 $(OUTPUTDIR)/$(LIBNAME): $(LIBSIM) $(TARGET_DEPS)
 	$(Q)ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
-	ar t $(OUTPUTDIR)/$(LIBNAME)
+	$(Q)ar t $(OUTPUTDIR)/$(LIBNAME)
 
 #compile all classes (.cpp) into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp  $(HEADERDIR)/%.h 

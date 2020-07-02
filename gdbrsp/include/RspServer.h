@@ -27,6 +27,7 @@
 
 //base API includes
 #include <iostream>
+#include <list>
 
 //in-package includes
 #include <UdpAsyncServer.h>
@@ -60,6 +61,8 @@ private:
 	char _output_buffer[RSP_BUFFER_SIZE];
     char _input_buffer[RSP_BUFFER_SIZE];
 
+    //list of breakpoints
+    std::list<int>* _bp_list;
 
 public:
     /**

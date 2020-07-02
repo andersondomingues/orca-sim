@@ -43,6 +43,8 @@ RspServer<T>::RspServer(ProcessorState<T>* state, UMemory* mem,
     //create udp server
     _server = new UdpAsyncServer(udpport);
     std::cout << "[" << udpport << "]";
+
+	_bp_list = new std::list<int>();
 }
 
 //remove udp server instance
@@ -111,16 +113,29 @@ int RspServer<T>::Nack(){
 template <typename T>
 int RspServer<T>::UpdateCpuState(){
 
-	//if CPU reached a breakpoin
+	//check whether we reach a breakpoint
+	if(_state->bp == 0){
+		for(T a : *_bp_list){
+			if(_state->pc == a){
+				//breakpoint hit
+				//this->Respond("T05swbreak:");
+				this->Respond("S05");
+				_state->bp = 1;
+				break;
+			}
+		}
+	}
+	
+	//if CPU reached a breakpoint
 	if (_state->bp == 1){
-		_state->bp = 0;    //clear breakpoint
+		//_state->bp = 0;    //clear breakpoint
 		_state->pause = 1; //pause cpu 
 		_state->steps = 0; //reset steps counter (bp has priority over s)
-		this->Respond("T05:");
+		//this->Respond("T05:");
 
 	//if CPU no pause with no bp
 	} else if (_state->pause == 0){
-		
+
 		if(_state->steps > 0){
 			
 			_state->steps -= 1;
@@ -208,7 +223,7 @@ int RspServer<T>::Receive(){
             std::cout << "\033[0;31mwrn: dropped packet with unknown prefix:\033[0m"
 				<< _input_buffer << std::endl;
             #endif
-        }
+        }	
     }
 
     return -1; //TODO: enum for statuses (could not recv a pkt)
@@ -570,13 +585,72 @@ int RspServer<T>::Handle_P(char* buffer){
 }
 
 
+//adds a break point, only software supported
 template <typename T>
-int RspServer<T>::Handle_Z(char*){
-    return 0;
+int RspServer<T>::Handle_Z(char* buffer){
+
+	if(memcmp(buffer, "$Z", 2) == 0){
+		
+		//locate the comma char
+		int comma = strfind(buffer, ',', 10);
+
+		//parse address
+		int addr = strhti(&buffer[comma + 1], 10);
+
+		//check whether the address is in the list already
+		bool has_addr_already = false;
+		
+		for(int a : *_bp_list){
+			if(addr == a){
+				std::cout << "warn: there's a breakpoint in this address already" << std::endl;
+				has_addr_already = true;
+				break;
+			}
+		}
+
+		//add address to the list
+		if(!has_addr_already)
+			_bp_list->push_back(addr);
+		
+		// !!ignoring breakpoint size, not supported by arch
+		// !!treating all bp as software bp, hw bp not supported
+		return this->Respond("OK");
+
+	}else{
+		std::cout << "unhandled 'Z' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+
+    return -1;
 }
 
+//removes a breakpoint, only software supported
 template <typename T>
-int RspServer<T>::Handle_z(char*){
+int RspServer<T>::Handle_z(char* buffer){
+
+	if(memcmp(buffer, "$z", 2) == 0){
+
+		//locate the comma char
+		int comma = strfind(buffer, ',', 10);
+
+		//parse address
+		T addr = strhti(&buffer[comma + 1], 10);
+
+		//remove the address from the list (if there)
+		// for(T a : *_bp_list){
+			// if(addr == a)
+		_bp_list->remove(addr);
+		// }
+
+		// !!ignoring breakpoint size, not supported by arch
+		// !!treating all bp as software bp, hw bp not supported
+		return this->Respond("OK");
+
+	}else{
+		std::cout << "unhandled 'z' packet, sent empty response" << std::endl;
+		return this->Respond("");
+	}
+
     return 0;
 }
 
