@@ -2,7 +2,7 @@
 
 [![Documentation](https://codedocs.xyz/andersondomingues/orca-sim.svg)](https://codedocs.xyz/andersondomingues/orca-sim/) ![C/C++ CI](https://github.com/andersondomingues/orca-sim/workflows/C/C++%20CI/badge.svg)
 
-ORCA-SIM is a framework capable of generating simulation tools. Generated tools rely on a event-driven queue to organize and run hardware events, which could be either cycles (for a cycle-accurate simualtion) or instruction (for an instruction-accurate simulation). 
+ORCA-SIM is a framework capable of generating simulation tools. Generated simulators rely on event-driven queues to organize and run hardware events, which could be either cycles (for a cycle-accurate simualtion) or instruction (for an instruction-accurate simulation). 
 
 ## Features 
 - No external library or runtime required
@@ -79,7 +79,8 @@ This is free software! See ``LICENSE.MD`` for details.
 
 Feel free to contact me ([andersondomingues](https://github.com/andersondomingues)), the maintainer of this project: mailto:ti.andersondomingues@gmail.com.
 
-## Third-Party Work and Acknowledgement (#third-party-work)
+## Third-Party Work and Acknowledgement 
+
 - HF-RISCV. The hf-riscv core is maintained by Sergio Johann (sjohann81). More information on his work can be found at [his repository](https://github.com/sjohann81). I would like to thank Mr. Johann for the time spent explaining me the depths of the HF-RiscV architecture.
 
 - HERMES. The GAPH group maintains the HERMES network-on-chip. More information on their work can be found at [their website](http://www.inf.pucrs.br/hemps/getting_started.html). Provided network-on-chip router model is based on the RTL models available at [their repository](https://github.com/GaphGroup/hemps). I would like to thank the GAPH group for giving me so many insights on Hermes' architecture. 
