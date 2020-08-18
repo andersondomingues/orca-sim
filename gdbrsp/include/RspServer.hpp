@@ -3,8 +3,9 @@
  * can be found at the following repositories at GitHub's website.
  *
  * http://https://github.com/andersondomingues/orca-sim
- * http://https://github.com/andersondomingues/orca-software-tools
+ * http://https://github.com/andersondomingues/orca-software
  * http://https://github.com/andersondomingues/orca-mpsoc
+ * http://https://github.com/andersondomingues/orca-tools
  *
  * Copyright (C) 2018-2020 Anderson Domingues, <ti.andersondomingues@gmail.com>
  *
@@ -22,59 +23,58 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef _RSP_SERVER_H
-#define _RSP_SERVER_H
+#ifndef GDBRSP_INCLUDE_RSPSERVER_HPP_
+#define GDBRSP_INCLUDE_RSPSERVER_HPP_
 
-//base API includes
+// base API includes
 #include <iostream>
 #include <list>
+#include <string>
 
-//in-package includes
-#include <UdpAsyncServer.h>
+// in-package includes
+#include "UdpAsyncServer.h"
 
-//off-package includes
-#include <ProcessorState.h>
-#include <MemoryType.h>
-#include <UMemory.h>
-
-using namespace std;
+// off-package includes
+#include "ProcessorState.h"
+#include "MemoryType.hpp"
+#include "UMemory.h"
 
 #define RSP_BUFFER_SIZE 5000
 #define RSP_EMPTY_RESPONSE ""
 
 template <typename T>
 class RspServer{
-
-private:
-    //upd server instance, see UdpServe.h
+ private:
+    // upd server instance, see UdpServe.h
     UdpAsyncServer* _server;
 
-    //ip address and udp port for THIS processor
+    // ip address and udp port for THIS processor
     std::string _ipaddr;
     int _udpport;
 
-	//state of the target processor and memory reference
-	ProcessorState<T>* _state;
-	UMemory* _memory;
-	
-	//output and input buffers    
-	char _output_buffer[RSP_BUFFER_SIZE];
+    // state of the target processor and memory reference
+    ProcessorState<T>* _state;
+    UMemory* _memory;
+
+    // output and input buffers
+    char _output_buffer[RSP_BUFFER_SIZE];
     char _input_buffer[RSP_BUFFER_SIZE];
 
-    //list of breakpoints
+    // list of breakpoints
     std::list<int>* _bp_list;
 
-public:
+ public:
     /**
      * Ctor.
      */
-    RspServer(ProcessorState<T>* state, UMemory* mem, std::string ipaddr, uint32_t udpport);   
-    
+    RspServer(ProcessorState<T>* state, UMemory* mem, std::string ipaddr,
+        uint32_t udpport);
+
     /**
      * Dtor.
      */
     ~RspServer();
-   
+
     /**
      * Query for a message. 
      */
@@ -82,7 +82,7 @@ public:
     int Ack();
     int Nack();
 
-	int Receive();
+    int Receive();
     int UpdateCpuState();
 
     uint8_t Checksum(char* buffer, int size);
@@ -111,7 +111,7 @@ public:
     int Handle_z(char*);
 };
 
-//template instantiation
+// template instantiation
 template class RspServer<uint8_t>;
 template class RspServer<uint16_t>;
 template class RspServer<uint32_t>;
@@ -122,11 +122,4 @@ template class RspServer<int16_t>;
 template class RspServer<int32_t>;
 template class RspServer<int64_t>;
 
-//foward declaration
-//TODO:move these functions to somewhere else
-int strhti(char* buffer, int length);
-int strfind(char* buffer, char find, int limit);
-void hexstr(char* output, char* input, uint32_t characters);
-uint32_t endswap(uint32_t v);
-
-#endif /* _RSP_SERVER_H */
+#endif  // GDBRSP_INCLUDE_RSPSERVER_HPP_

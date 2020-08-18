@@ -1,6 +1,6 @@
-#include <UntimedModel.h>
+#include "UntimedModel.h"
 
-UntimedModel::UntimedModel(std::string name) : Model(name){
+UntimedModel::UntimedModel(const std::string name) : Model(name){
 	//nothing to do
 }
 

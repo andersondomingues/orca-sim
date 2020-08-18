@@ -1,5 +1,5 @@
-#ifndef __SIMULATOR_H
-#define __SIMULATOR_H
+#ifndef _simulator_h
+#define _simulator_h
 
 //lib dependencies
 #include <iostream>
@@ -8,8 +8,8 @@
 #include <string>
 
 //own api dependencies
-#include <Event.h>
-#include <SimulationTime.h>
+#include "Event.h"
+#include "SimulationTime.h"
 
 class Simulator{
 
@@ -21,10 +21,10 @@ private:
 	std::priority_queue<Event> _queue;
 
 	/** current simulated time */
-	unsigned long long _globalTime;
+	SimulationTime _globalTime;
 
 	/** max time the simulation can reach */
-	unsigned long long _timeout;
+	SimulationTime _timeout;
 		
 	/** execute event at top of event queue */
 	void executeNext();

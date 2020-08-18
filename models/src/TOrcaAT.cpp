@@ -43,7 +43,7 @@ TOrcaAT::~TOrcaAT(){
 long long unsigned int TOrcaAT::Run(){
 
 	//fetch 
-	uint32_t instruction = _mem->Read(PC, &instruction, sizeof(uint32_t);
+	uint32_t instruction = _mem->Read(PC, &instruction, sizeof(uint32_t));
 
 	if(thumb){
 	
@@ -51,8 +51,8 @@ long long unsigned int TOrcaAT::Run(){
 		//[31:28][0001][0010][1111][1111][1111][0001][03:00]
 		// cond                                        RN
 		case BX: //takes 2S + 1N
-			if(RN[0] == 1) //switch to thumb
-			else //switch to arm
+			//if(RN[0] == 1) //switch to thumb
+			//else //switch to arm
 			break;
 
 		//B - branch
@@ -61,7 +61,7 @@ long long unsigned int TOrcaAT::Run(){
 		// cond  link-bit               offset
 		case B:  //takes 2S + 1N
 		case BL: //takes 2S + 1N
-			if(L == 1) //bl
+			//if(L == 1) //bl
 			else //b
 			
 		//data processing 
@@ -69,9 +69,9 @@ long long unsigned int TOrcaAT::Run(){
 		// cond  imm  opcode set  RN     RD      operand2
 		case DP:
 		
-			if(I == 0) //operand 2 is a register
+			//if(I == 0) //operand 2 is a register
 				
-			else       //operand 2 is immediate
+			//else       //operand 2 is immediate
 				 
 		
 			switch(opcode){
@@ -90,7 +90,7 @@ long long unsigned int TOrcaAT::Run(){
 				case 0xC: RD = RN | OP2;  break; //ORR (OR)
 				case 0xD: RD = OP2;       break; //MOV
 				case 0xE: RD = RN & !OP2; break; //BIC
-				case 0xF: RD = !OP2       break; //MVN
+				case 0xF: RD = !OP2;      break; //MVN
 				default:
 					//unreachable 
 					break;

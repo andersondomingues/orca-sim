@@ -106,9 +106,6 @@ SimulationTime TRouter::Run(){
     
    	//std::cout << this->GetName() << std::endl;
     
-	#ifdef ROUTER_ENABLE_COUNTERS
-	bool is_active = false;
-	#endif
     
 	//CROSSBAR CONTROL: connect priority port to destination if it has any packet to 
 	//send but is waiting for the destination to free
@@ -182,7 +179,7 @@ SimulationTime TRouter::Run(){
 				}
 
 				#ifdef ROUTER_ENABLE_COUNTERS
-				is_active = true;
+				_is_active = true;
 				#endif
 
 				//free port
@@ -199,7 +196,7 @@ SimulationTime TRouter::Run(){
 	#ifdef ROUTER_ENABLE_COUNTERS
 	if(is_active){
 		_counter_active->Inc(1);
-		is_active = false;
+		_is_active = false;
 	}
 	#endif
     	    

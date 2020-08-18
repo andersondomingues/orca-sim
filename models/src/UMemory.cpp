@@ -117,7 +117,7 @@ void UMemory::Read(MemoryAddr addr, MemoryType* buffer, uint32_t length){
 		stringstream s;
 		s << this->GetName() << ": unable to read from addr (0x" << std::hex
 			<< addr << ") lower than sram base.";
-		abort();
+		//abort();
 		throw std::runtime_error(s.str());
 	}
 

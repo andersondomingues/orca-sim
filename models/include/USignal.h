@@ -59,20 +59,20 @@ public:
      * @param name (optional) An arbitrary name for the instance.
      * @param addre (optinal) Address to which the bus is mapped in memory.
      */
-     USignal(T* t_ptr, uint32_t addr, std::string name);
+    USignal(T* t_ptr, uint32_t addr, std::string name);
 
      /**
      * @brief Constructor. Create new Signal using internal storage
      * @param name (optional) An arbitrary name for the instance.
      * @param addr (optinal) Address to which the bus is mapped in memory.
      */
-     USignal(uint32_t addr, std::string name);
+    USignal(uint32_t addr, std::string name);
 	
      /**
      * @brief Constructor. Create new Signal using internal storage
      * @param name (optional) An arbitrary name for the instance.
      */
-	 USignal(std::string name);
+	explicit USignal(std::string name);
     
     /**
      * @brief Destructor. 

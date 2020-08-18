@@ -47,63 +47,67 @@ enum class RouterState{
 class TRouter: public TimedModel{
 
 private:
-		#ifdef ROUTER_ENABLE_COUNTERS
-		USignal<uint32_t>* _counter_active;		
-		#endif
+    #ifdef ROUTER_ENABLE_COUNTERS
+    USignal<uint32_t>* _counter_active;		
+    #endif
 
-		//stores info about actively sending ports. For intance, position zero representing 
-		//the status of LOCAL port. The value in the position indicate to which port the LOCAL
-		//port is sending to. Inactive ports have -1 written to their position.
-		int16_t _switch_control[5];
+    #ifdef ROUTER_ENABLE_COUNTERS
+    bool is_active = false;
+    #endif
 
-		//stores how many flits the must be forwarded to the destination port
-        int16_t _flits_to_send[5];
+    //stores info about actively sending ports. For intance, position zero representing 
+	//the status of LOCAL port. The value in the position indicate to which port the LOCAL
+    //port is sending to. Inactive ports have -1 written to their position.
+    int16_t _switch_control[5];
 
-		//stores which port has the priority acconding to the round robin policy
-        uint32_t _round_robin;
+    //stores how many flits the must be forwarded to the destination port
+    int16_t _flits_to_send[5];
 
-        //address of the router
-        uint32_t _x, _y;
-        
-        //output buffers
-        UBuffer<FlitType>* _ob[5];
-        
-        //input buffers
-        UBuffer<FlitType>* _ib[5];        
+    //stores which port has the priority acconding to the round robin policy
+    uint32_t _round_robin;
+
+    //address of the router
+    uint32_t _x, _y;
+
+    //output buffers
+    UBuffer<FlitType>* _ob[5];
+
+    //input buffers
+    UBuffer<FlitType>* _ib[5];        
 public: 
 		
-		#ifdef ROUTER_ENABLE_COUNTERS
-		USignal<uint32_t>* GetSignalCounterActive();
-		#endif
-		
-		uint32_t GetRR();
-		
-        UBuffer<FlitType>* GetOutputBuffer(uint32_t p);
-        UBuffer<FlitType>* GetInputBuffer(uint32_t p);
-        
-        void SetOutputBuffer(UBuffer<FlitType>* b, uint32_t port);
-        
-		/** Implementation of the Process' interface
-		  * @return time taken for perming next cycle */
-		SimulationTime Run();
-		
-        /** return this **/
-		uint32_t GetRouteXY(FlitType flit);
-        
-        /** Ctor. **/
-		TRouter(string name, uint32_t x_pos, uint32_t y_pos);
-	
-		/** Dtor. **/
-		~TRouter();
-		
-		/**
-		 * @brief Get the name of the port of id equals to <port>
-		 * @param port the id of the port
-		 * @return and instance of std::string containing port's name */
-		std::string GetPortName(int port);
+    #ifdef ROUTER_ENABLE_COUNTERS
+    USignal<uint32_t>* GetSignalCounterActive();
+    #endif
 
-		void Reset();
-		std::string ToString();
+    uint32_t GetRR();
+
+    UBuffer<FlitType>* GetOutputBuffer(uint32_t p);
+    UBuffer<FlitType>* GetInputBuffer(uint32_t p);
+
+    void SetOutputBuffer(UBuffer<FlitType>* b, uint32_t port);
+
+    /** Implementation of the Process' interface
+      * @return time taken for perming next cycle */
+    SimulationTime Run();
+
+    /** return this **/
+    uint32_t GetRouteXY(FlitType flit);
+
+    /** Ctor. **/
+    TRouter(string name, uint32_t x_pos, uint32_t y_pos);
+
+    /** Dtor. **/
+    ~TRouter();
+
+    /**
+     * @brief Get the name of the port of id equals to <port>
+     * @param port the id of the port
+     * @return and instance of std::string containing port's name */
+    std::string GetPortName(int port);
+
+    void Reset();
+    std::string ToString();
 };
 
 #endif /* TROUTER_H */

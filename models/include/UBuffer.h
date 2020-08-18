@@ -86,7 +86,7 @@ public:
 	
 	/**
 	 * @brief Empties the queue */
-	void Reset();
+	void Reset() override;
 };
 
 //Some of the most used instances. More can be added later.

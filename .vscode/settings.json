@@ -1,0 +1,20 @@
+{
+    "editor.rulers": [78, 80],
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.default.intelliSenseMode": "gcc-x64",
+    "C_Cpp.loggingLevel": "Debug",
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/ursa/include",
+        "${workspaceFolder}/models/include",
+        "${workspaceFolder}/gdbrsp/include"
+    ],
+    "C_Cpp.default.browse.path": [
+        "${workspaceFolder}/**"
+    ],
+    "editor.tabCompletion": "on",
+    "editor.tabSize": 4,
+    "editor.useTabStops": true,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false,
+    "cpplint.cpplintPath": "/home/adomingues/.local/bin/cpplint"
+}

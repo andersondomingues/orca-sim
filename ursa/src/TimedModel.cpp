@@ -1,7 +1,7 @@
-#include <TimedModel.h>
+#include "TimedModel.h"
 
 
-TimedModel::TimedModel(std::string name) : Model(name){
+TimedModel::TimedModel(const std::string name) : Model(name){
 	//nothing to do
 }
 

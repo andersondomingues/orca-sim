@@ -1,13 +1,12 @@
-#ifndef __WORDSIZE
-#define __WORDSIZE 32
-#warning "__WORDSIZE is undefined. Defaulting simtime_t to 64-bit word (uint64_t)."
-#endif
+#include <stdint.h>
+#ifdef __WORDSIZE
 
-#if __WORDSIZE == 32
-typedef uint32_t SimulationTime;
-#elif __WORDSIZE == 64
+#if __WORDSIZE == 64
 typedef uint64_t SimulationTime;
 #else
-#warning  __WORDSIZE is undefined. Defaulting simtime_t to 64-bit word (uint64_t).
-typedef uint64_t SimulationTime;
+typedef uint32_t SimulationTime;
+#endif
+
+#else
+typedef uint32_t SimulationTime;
 #endif

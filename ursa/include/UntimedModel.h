@@ -1,25 +1,19 @@
-#ifndef __UNTIMEDMODEL_H
-#define __UNTIMEDMODEL_H
+#ifndef _untimed_model_h
+#define _untimed_model_h
 
 #include <string>
-#include <Model.h>
-
-using namespace std;
+#include "Model.h"
 
 /**
- * @class Opaque
- * @author Anderson Domingues
- * @date 08/13/18
- * @file Opaque.h
- * @brief Opaque class models Entities in which the simulation time
- * doesn't case. For example, combinational parts of some circuit may
- * "instantly" operate without losing cycle precision. */
+ * Untimed models represent hardware models whose clock period is irrelevant for
+ * the simulation.
+ */
 class UntimedModel : public Model{
 
 public:
 
 	/** Default Ctor. */
-	UntimedModel(std::string name);
+	explicit UntimedModel(std::string name);
 	
 	/**
 	 * @brief Dtor. Must be implemented by subclasses. */
@@ -31,4 +25,4 @@ public:
 	virtual void Reset() = 0;
 };
 
-#endif /* UNTIMEDMODEL_H */
+#endif /* _untimed_model_h */

@@ -6,10 +6,6 @@
 
 using namespace std;
 
-//check whether signal commit is necessary		
-//if(_globalTime 	
-//_globalTime = e.time;
-
 /**
  * Defaul constructor
  */
@@ -46,7 +42,6 @@ SimulationTime Simulator::Run(SimulationTime time){
 		
 		//update global time 
 		_globalTime = e.time;
-		//std::cout << e.time << " | " ;
 
 		//schedule current event to be executed after a certain number 
 		//cycles, defined in the correspondent Run method
@@ -60,53 +55,36 @@ SimulationTime Simulator::Run(SimulationTime time){
 	return _globalTime;
 }
 
-//void Simulators::_commit_signals(){
-//	return;	
-//}
-
 /**
   * @brief Generate the next epoch for a simulation session.
   * @return ? */
 SimulationTime Simulator::NextEpoch(){
 
-	//commit all signals
-	//_commit_signal();
-
 	//get the number of elements scheduled
-	uint32_t queue_size = _queue.size();
+	int queue_size = static_cast<int>(_queue.size());
 
-	
-	//std::cout << "event queue has scheduled " << queue_size << " elements:" << std::endl;
-
-	//time discount -> all events will be send back in
 	//time that amount of time 
 	SimulationTime discount = _globalTime - 1;
-	
-	//std::cout << "discount: " << discount << std::endl;
 	
 	//create a new queue and reschedule events
 	Event tmp_queue[queue_size];
 	
 	//store events in an array so that we can update
 	//them without messing up with the priority queue	
-	for(uint32_t i = 0; i < queue_size; i++){
+	for(int i = 0; i < queue_size; i++){
 
-		tmp_queue[i] = _queue.top();
-		
+		tmp_queue[i] = _queue.top();	
 		tmp_queue[i].time -= discount;
-		//std::cout << "## " << tmp_queue[i].timedModel->GetName() << "\t\t " << tmp_queue[i].time << std::endl;
-
+		
 		_queue.pop();
 	}
 
 	//put update events back in simulator's queue
-	for(uint32_t i = 0; i < queue_size; i++)
+	for(int i = 0; i < queue_size; i++)
 		_queue.push(tmp_queue[i]);
 
 	//update epochs counters
 	_epochs++;
-
-	//std::cout << "_queue_size > " << _queue.size() << std::endl;
 
 	return _globalTime;
 }
@@ -122,7 +100,7 @@ SimulationTime Simulator::GetEpochs(){
 
 /**
  * @brief Schedule an event to run in a certain period of time
- * @param Event to run.*/
+ * @param e Event to run.*/
 void Simulator::Schedule(const Event& e){
 
 	#ifdef URSA_ZERO_TIME_CHECKING
