@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: C++ build
 
 on:
   push:
@@ -15,7 +15,3 @@ jobs:
     - uses: actions/checkout@v2
     - name: make
       run: make
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
-    - run: pip install cpplint
-    - run: cpplint --recursive .
