@@ -45,8 +45,8 @@ class UBuffer : public UntimedModel{
 private:
     std::string _name;
     std::queue<T>* _queue;
-	uint32_t _size;
-	uint32_t _capacity;
+    uint32_t _size;
+    uint32_t _capacity;
 
 public:
     /**
