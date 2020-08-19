@@ -16,5 +16,8 @@
     "editor.useTabStops": true,
     "editor.insertSpaces": true,
     "editor.detectIndentation": false,
-    "cpplint.cpplintPath": "/home/adomingues/.local/bin/cpplint"
+    "cpplint.cpplintPath": "/home/adomingues/.local/bin/cpplint",
+    "files.associations": {
+        "iostream": "cpp"
+    }
 }

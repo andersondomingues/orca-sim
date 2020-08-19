@@ -3,8 +3,9 @@
  * can be found at the following repositories at GitHub's website.
  *
  * http://https://github.com/andersondomingues/orca-sim
- * http://https://github.com/andersondomingues/orca-software-tools
+ * http://https://github.com/andersondomingues/orca-software
  * http://https://github.com/andersondomingues/orca-mpsoc
+ * http://https://github.com/andersondomingues/orca-tools
  *
  * Copyright (C) 2018-2020 Anderson Domingues, <ti.andersondomingues@gmail.com>
  *

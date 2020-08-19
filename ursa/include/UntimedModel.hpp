@@ -23,12 +23,30 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "UntimedModel.hpp"
+#ifndef URSA_INCLUDE_UNTIMEDMODEL_HPP_
+#define URSA_INCLUDE_UNTIMEDMODEL_HPP_
 
-UntimedModel::UntimedModel(const std::string name) : Model(name) {
-    // nothing to do
-}
+#include <string>
 
-UntimedModel::~UntimedModel() {
-    // nothing to do
-}
+#include "Model.hpp"
+
+/**
+ * Untimed models represent hardware models whose clock period is irrelevant for
+ * the simulation.
+ */
+class UntimedModel : public Model{
+ public:
+    /** Default Ctor. */
+    explicit UntimedModel(std::string name);
+
+    /**
+     * @brief Dtor. Must be implemented by subclasses. */
+    virtual ~UntimedModel() = 0;
+
+    /**
+     * @brief Resets the instance to its starting state. Must be implemented
+     * by subclasses */
+    virtual void Reset() = 0;
+};
+
+#endif  // URSA_INCLUDE_UNTIMEDMODEL_HPP_

@@ -23,12 +23,57 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "UntimedModel.hpp"
+#ifndef URSA_INCLUDE_SIMULATOR_HPP_
+#define URSA_INCLUDE_SIMULATOR_HPP_
 
-UntimedModel::UntimedModel(const std::string name) : Model(name) {
-    // nothing to do
-}
+// lib dependencies
+#include <iostream>
+#include <array>
+#include <queue>
+#include <string>
 
-UntimedModel::~UntimedModel() {
-    // nothing to do
-}
+// own api dependencies
+#include "Event.hpp"
+#include "SimulationTime.hpp"
+
+class Simulator{
+ private:
+    SimulationTime _epochs;
+
+    /** queue that stores all events */
+    std::priority_queue<Event> _queue;
+
+    /** current simulated time */
+    SimulationTime _globalTime;
+
+    /** max time the simulation can reach */
+    SimulationTime _timeout;
+
+    /** execute event at top of event queue */
+    void executeNext();
+
+ public:
+    /* ctor. */
+    Simulator();
+
+    /* run the simulation for <time> cycles. */
+    SimulationTime Run(SimulationTime time = 100000);
+
+    /* return current global time */
+    SimulationTime GetGlobalTime();
+
+    /* return total epochs */
+    SimulationTime GetEpochs();
+
+    /* reset time, increment epochs and realign events */
+    SimulationTime NextEpoch();
+
+    /** schedules a event */
+    void Schedule(const Event& e);
+
+    /** Dtor. */
+    ~Simulator();
+};
+
+
+#endif  // URSA_INCLUDE_SIMULATOR_HPP_

@@ -23,12 +23,34 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "UntimedModel.hpp"
+#ifndef URSA_INCLUDE_EVENT_HPP_
+#define URSA_INCLUDE_EVENT_HPP_
 
-UntimedModel::UntimedModel(const std::string name) : Model(name) {
-    // nothing to do
-}
+#include "TimedModel.hpp"
+#include "SimulationTime.hpp"
 
-UntimedModel::~UntimedModel() {
-    // nothing to do
-}
+class Event{
+ public:
+    /**
+     * Point in time when the event will trigger
+     * */
+    SimulationTime time;
+
+    /**
+     * Model whose activation function will be called 
+     * once the event triggers.
+     */
+    TimedModel* timedModel;
+
+    Event(SimulationTime, TimedModel*);
+    Event();  // necessary for arrays
+
+    /**
+     * Comparing operator. An event occurs first in time if its time 
+     * is less than the compared event (required by the priority queue, see
+     * <std::priority_queue>).
+     */
+    bool operator<(const Event& e) const;
+};
+
+#endif  // URSA_INCLUDE_EVENT_HPP_

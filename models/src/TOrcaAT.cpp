@@ -1,14 +1,14 @@
-/** 
- * This file is part of project URSA. More information on the project
- * can be found at 
+/******************************************************************************
+ * This file is part of project ORCA. More information on the project
+ * can be found at the following repositories at GitHub's website.
  *
- * URSA's repository at GitHub: http://https://github.com/andersondomingues/ursa
+ * http://https://github.com/andersondomingues/orca-sim
+ * http://https://github.com/andersondomingues/orca-software
+ * http://https://github.com/andersondomingues/orca-mpsoc
+ * http://https://github.com/andersondomingues/orca-tools
  *
- * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
- * 
- * This file is adapted from HF-RISC SoC project, which can be found at johanns' 
- * reposiitory at GitHub: https://github.com/sjohann81/hf-risc
- *-------------------------------------------------------------------------------
+ * Copyright (C) 2018-2020 Anderson Domingues, <ti.andersondomingues@gmail.com>
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -22,7 +22,7 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
- *---------------------------------------------------------------------------- */
+******************************************************************************/
 #include <cstdlib>
 #include <sstream>
 		

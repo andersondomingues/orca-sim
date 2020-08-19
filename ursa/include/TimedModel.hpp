@@ -23,12 +23,38 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "UntimedModel.hpp"
+#ifndef URSA_INCLUDE_TIMEDMODEL_HPP_
+#define URSA_INCLUDE_TIMEDMODEL_HPP_
 
-UntimedModel::UntimedModel(const std::string name) : Model(name) {
-    // nothing to do
-}
+#include <string>
 
-UntimedModel::~UntimedModel() {
-    // nothing to do
-}
+// own api includes
+#include "Model.hpp"
+#include "SimulationTime.hpp"
+
+/**
+ * This class models a TimedModel. In this project, a TimedModel
+ * is an abstraction which can execute an action in a given point
+ * in time. For example, hardware can be modeled as TimedModeles that 
+ * execute cycles given some period. */
+class TimedModel : public Model{
+ public:
+    /** Default Ctor. */
+    explicit TimedModel(std::string name);
+
+    /**
+     * Method which is called by the simulator when during the 
+     * execution of the TimedModel. Must be implemented by subclasses.*/
+    virtual SimulationTime Run() = 0;
+
+    /**
+     * Dtor. Must be implemented by subclasses. */
+    virtual ~TimedModel() = 0;
+
+    /**
+     * Resets the instance to its starting state. Must be implemented
+     * by subclasses */
+    virtual void Reset() = 0;
+};
+
+#endif  // URSA_INCLUDE_TIMEDMODEL_HPP_

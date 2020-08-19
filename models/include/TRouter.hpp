@@ -1,10 +1,13 @@
-/** 
- * This file is part of project URSA. More information on the project
- * can be found at 
+/******************************************************************************
+ * This file is part of project ORCA. More information on the project
+ * can be found at the following repositories at GitHub's website.
  *
- * URSA's repository at GitHub: http://https://github.com/andersondomingues/ursa
+ * http://https://github.com/andersondomingues/orca-sim
+ * http://https://github.com/andersondomingues/orca-software
+ * http://https://github.com/andersondomingues/orca-mpsoc
+ * http://https://github.com/andersondomingues/orca-tools
  *
- * Copyright (C) 2018 Anderson Domingues, <ti.andersondomingues@gmail.com>
+ * Copyright (C) 2018-2020 Anderson Domingues, <ti.andersondomingues@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +21,19 @@
  *
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. **/
-#ifndef __TROUTER_H
-#define __TROUTER_H
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
+******************************************************************************/
+#ifndef MODELS_INCLUDE_TROUTER_HPP_
+#define MODELS_INCLUDE_TROUTER_HPP_
 
-//std API
+// std API
 #include <iostream>
+#include <string>
 
-//simulator API
-#include <TimedModel.h>
-#include <UBuffer.h>
-#include <USignal.h>
+// simulator API
+#include "TimedModel.hpp"
+#include "UBuffer.hpp"
+#include "USignal.hpp"
 
 typedef uint16_t FlitType;
 
@@ -36,7 +41,7 @@ enum class RouterState{
     ROUNDROBIN, FORWARD1, PKTLEN, BURST
 };
 
-//routing ports
+// routing ports
 #define NORTH 0
 #define WEST  1
 #define SOUTH 2
@@ -45,37 +50,37 @@ enum class RouterState{
 #define LOCAL 4
 
 class TRouter: public TimedModel{
-
-private:
+ private:
     #ifdef ROUTER_ENABLE_COUNTERS
-    USignal<uint32_t>* _counter_active;		
+    USignal<uint32_t>* _counter_active;
     #endif
 
     #ifdef ROUTER_ENABLE_COUNTERS
     bool is_active = false;
     #endif
 
-    //stores info about actively sending ports. For intance, position zero representing 
-	//the status of LOCAL port. The value in the position indicate to which port the LOCAL
-    //port is sending to. Inactive ports have -1 written to their position.
+    // stores info about actively sending ports. For intance, position zero
+    // representing the status of LOCAL port. The value in the position indicate
+    // to which port the LOCAL port is sending to. Inactive ports have -1
+    // written to their position.
     int16_t _switch_control[5];
 
-    //stores how many flits the must be forwarded to the destination port
+    // stores how many flits the must be forwarded to the destination port
     int16_t _flits_to_send[5];
 
-    //stores which port has the priority acconding to the round robin policy
+    // stores which port has the priority acconding to the round robin policy
     uint32_t _round_robin;
 
-    //address of the router
+    // address of the router
     uint32_t _x, _y;
 
-    //output buffers
+    // output buffers
     UBuffer<FlitType>* _ob[5];
 
-    //input buffers
-    UBuffer<FlitType>* _ib[5];        
-public: 
-		
+    // input buffers
+    UBuffer<FlitType>* _ib[5];
+
+ public:
     #ifdef ROUTER_ENABLE_COUNTERS
     USignal<uint32_t>* GetSignalCounterActive();
     #endif
@@ -110,4 +115,4 @@ public:
     std::string ToString();
 };
 
-#endif /* TROUTER_H */
+#endif  // MODELS_INCLUDE_TROUTER_HPP_

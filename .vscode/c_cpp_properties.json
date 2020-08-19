@@ -4,6 +4,9 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/ursa/include",
+                "${workspaceFolder}/gdbrsp/include",
+                "${workspaceFolder}/models/include",
                 "${default}"
             ],
             "defines": [],

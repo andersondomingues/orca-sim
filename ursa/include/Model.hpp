@@ -23,9 +23,9 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef _model_h
-#define _model_h
-	 
+#ifndef URSA_INCLUDE_MODEL_HPP_
+#define URSA_INCLUDE_MODEL_HPP_
+
 #include <string>
 
 /**
@@ -36,34 +36,31 @@
  * simulation. See <TimedModel> and <UntimedModel>.
  */
 class Model{
+ private:
+    /**
+     * A name for the model. Users may name models without any restriction, 
+     * although we advise to give models meaningful names, as these names may
+     * come in hand when debugging or reporting simulation.
+     */
+    std::string _name;
 
-private:
-	
-	/**
-	 * A name for the model. Users may name models without any restriction, 
-	 * although we advise to give models meaningful names, as these names may
-	 * come in hand when debugging or reporting simulation.
-	 */
-	std::string _name;
+ public:
+    /**
+     * Default ctor. 
+     * @name a name that identifies the model, advisably not empty.
+     */
+    explicit Model(std::string name);
 
-public:
-	
-	/**
-	 * Default ctor. 
-	 * @name a name that identifies the model, advisably not empty.
-	 */
-	explicit Model(std::string name);
-	
-	/**
-	 * Getter method for the <_name> field.
-	 */
-	std::string GetName();
-	
-	/**
-	 * Setter method for the <_name> field.
-	 * @param s Value to be set
-	 */
-	void SetName(std::string s);
+    /**
+     * Getter method for the <_name> field.
+     */
+    std::string GetName();
+
+    /**
+     * Setter method for the <_name> field.
+     * @param s Value to be set
+     */
+    void SetName(std::string s);
 };
 
-#endif /* _model_h */
+#endif  // URSA_INCLUDE_MODEL_HPP_

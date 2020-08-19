@@ -1,4 +1,3 @@
-
 /******************************************************************************
  * This file is part of project ORCA. More information on the project
  * can be found at the following repositories at GitHub's website.
