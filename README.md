@@ -2,7 +2,7 @@
 
 [![Documentation](https://codedocs.xyz/andersondomingues/orca-sim.svg)](https://codedocs.xyz/andersondomingues/orca-sim/) ![C++ build](https://github.com/andersondomingues/orca-sim/workflows/C++%20build/badge.svg) ![cpplint](https://github.com/andersondomingues/orca-sim/workflows/cpplint/badge.svg)
 
-ORCA-SIM is a framework capable of generating simulation tools. Generated simulators rely on event-driven queues to organize and run hardware events, which could be either cycles (for a cycle-accurate simualtion) or instruction (for an instruction-accurate simulation). 
+ORCA-SIM is a framework for generating simulation tools. Generated simulators rely on event-driven queues to organize and run hardware events, which could be either cycles (for a cycle-accurate simualtion) or instruction (for an instruction-accurate simulation). 
 
 ## Features 
 - No external library or runtime required
