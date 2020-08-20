@@ -100,7 +100,7 @@ class TRouter: public TimedModel{
     uint32_t GetRouteXY(FlitType flit);
 
     /** Ctor. **/
-    TRouter(string name, uint32_t x_pos, uint32_t y_pos);
+    TRouter(std::string name, uint32_t x_pos, uint32_t y_pos);
 
     /** Dtor. **/
     ~TRouter();

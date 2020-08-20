@@ -23,16 +23,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include <UBuffer.h>
+#include "UBuffer.hpp"
 
 /**
  * @brief Instantiate a new buffer
  * @param name A unique name for the buffer (optional)
  */
 template <typename T>
-UBuffer<T>::UBuffer(std::string name, uint32_t capacity) : UntimedModel(name){
+UBuffer<T>::UBuffer(std::string name, uint32_t capacity) : UntimedModel(name) {
     _name = name;
-	_size = 0;
+    _size = 0;
     _queue = new std::queue<T>();
     _capacity = capacity;
 }
@@ -41,9 +41,9 @@ UBuffer<T>::UBuffer(std::string name, uint32_t capacity) : UntimedModel(name){
  * @brief Dtor.
  */
 template <typename T>
-UBuffer<T>::~UBuffer(){
-    //the underlying queue is the only object
-    //with dynamic allocation
+UBuffer<T>::~UBuffer() {
+    // the underlying queue is the only object
+    // with dynamic allocation
     delete(_queue);
 }
 
@@ -51,18 +51,17 @@ UBuffer<T>::~UBuffer(){
  * @brief Remove the element at the top of the buffer.
  */
 template <typename T>
-void UBuffer<T>::pop(){
-
-	//prevents underflow
-	#ifdef BUFFER_UNDERFLOW_CHECKING
-	if(_size == 0){
-		throw std::runtime_error(this->GetName() + ": unable to pop from an empty queue");
-	}
-	#endif
+void UBuffer<T>::pop() {
+    // prevents underflow
+    #ifdef BUFFER_UNDERFLOW_CHECKING
+    if (_size == 0) {
+        throw std::runtime_error(this->GetName() +
+            ": unable to pop from an empty queue");
+    }
+    #endif
 
     _size--;
-	_queue->pop();
-	
+    _queue->pop();
 }
 
 /**
@@ -70,15 +69,15 @@ void UBuffer<T>::pop(){
  * @param e
  */
 template <typename T>
-void UBuffer<T>::push(T e){
-	
-	#ifdef BUFFER_OVERFLOW_CHECKING
-	//prevents overflow
-	if(_size == _capacity)
-		throw std::runtime_error(this->GetName() + ": unable to push to a full queue.");
-	#endif
+void UBuffer<T>::push(T e) {
+    #ifdef BUFFER_OVERFLOW_CHECKING
+    // prevents overflow
+    if (_size == _capacity)
+        throw std::runtime_error(this->GetName() +
+            ": unable to push to a full queue.");
+    #endif
 
-	_size++;
+    _size++;
     _queue->push(e);
 }
 
@@ -87,7 +86,7 @@ void UBuffer<T>::push(T e){
  * @return the element
  */
 template <typename T>
-uint32_t UBuffer<T>::capacity(){
+uint32_t UBuffer<T>::capacity() {
     return _capacity;
 }
 
@@ -96,7 +95,7 @@ uint32_t UBuffer<T>::capacity(){
  * @return the element
  */
 template <typename T>
-T UBuffer<T>::top(){
+T UBuffer<T>::top() {
     return _queue->front();
 }
 
@@ -105,8 +104,8 @@ T UBuffer<T>::top(){
  * @return Number of elements
  */
 template <typename T>
-uint32_t UBuffer<T>::size(){
-	return _size;
+uint32_t UBuffer<T>::size() {
+    return _size;
 }
 
 /**
@@ -114,8 +113,8 @@ uint32_t UBuffer<T>::size(){
  * @return Number of elements
  */
 template <typename T>
-uint32_t UBuffer<T>::full(){
-	return _size == _capacity;
+uint32_t UBuffer<T>::full() {
+    return _size == _capacity;
 }
 
 //
@@ -124,7 +123,7 @@ uint32_t UBuffer<T>::full(){
  * elements
  */
 template <typename T>
-void UBuffer<T>::Reset(){
-	delete(_queue);
-	_queue = new std::queue<T>();
+void UBuffer<T>::Reset() {
+    delete(_queue);
+    _queue = new std::queue<T>();
 }

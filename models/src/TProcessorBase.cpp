@@ -23,60 +23,62 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include <TimedModel.h>
-#include <TProcessorBase.h>
+#include "TimedModel.hpp"
+#include "TProcessorBase.hpp"
 
 #ifdef ORCA_ENABLE_GDBRSP
-template <typename T> 
+template <typename T>
 uint32_t TProcessorBase<T>::GDBSERVER_PORT = ORCA_GDBRSP_PORT;
 #endif
 
-template <typename T> 
-TProcessorBase<T>::TProcessorBase(std::string name, MemoryAddr initial_pc, UMemory* mem) : TimedModel(name) {
+template <typename T>
+TProcessorBase<T>::TProcessorBase(std::string name,
+    MemoryAddr initial_pc, UMemory* mem) : TimedModel(name) {
 
-	//set mem ptr
-	_memory = mem;
+    // set mem ptr
+    _memory = mem;
 
-	//reset registers
-	for(int i = 0; i < NUMBER_OF_REGISTERS; i++)
-		_state.regs[i] = 0;
+    // reset registers
+    for (int i = 0; i < NUMBER_OF_REGISTERS; i++)
+        _state.regs[i] = 0;
 
-	//reset PC
-	_state.pc_prev = initial_pc;
-	_state.pc = initial_pc;
-	_state.pc_next = _state.pc + sizeof(T);
+    // reset PC
+    _state.pc_prev = initial_pc;
+    _state.pc = initial_pc;
+    _state.pc_next = _state.pc + sizeof(T);
 
-	//reset flags
-	#ifdef ORCA_ENABLE_GDBRSP
-	_state.bp = 0; //no breakpoint reached yet
-	_state.pause = 1; //starts paused in gdb mode
-	_state.steps = 0; //no steps to be performed, wait for gdb 
-	_gdbserver = new RspServer<T>(&_state, _memory, "127.0.0.1", GDBSERVER_PORT++);
-	#endif
+    // reset flags
+    #ifdef ORCA_ENABLE_GDBRSP
+    _state.bp = 0;  // no breakpoint reached yet
+    _state.pause = 1;  // starts paused in gdb mode
+    _state.steps = 0;  // no steps to be performed, wait for gdb
+    _gdbserver = new RspServer<T>(&_state,
+        _memory, "127.0.0.1", GDBSERVER_PORT++);
+    #endif
 
-	//reset special flags 
-	_state.terminated = false;
+    // reset special flags
+    _state.terminated = false;
 }
 
-template <typename T> 
-TProcessorBase<T>::~TProcessorBase(){
-	#ifdef ORCA_ENABLE_GDBRSP
-	delete _gdbserver;
-	#endif
+template <typename T>
+TProcessorBase<T>::~TProcessorBase() {
+    #ifdef ORCA_ENABLE_GDBRSP
+    delete _gdbserver;
+    #endif
 }
 
 /**
  * Access the current state of the processor.
  * @return A pointer to the state of the processor.
  */
-template <typename T> 
-inline ProcessorState<T>* TProcessorBase<T>::GetState(){
-	return &_state;
+template <typename T>
+inline ProcessorState<T>* TProcessorBase<T>::GetState() {
+    return &_state;
 }
 
 template <typename T>
-inline UMemory* TProcessorBase<T>::GetMemory(){
-	return _memory;
+inline UMemory* TProcessorBase<T>::GetMemory() {
+    return _memory;
 }
 
 /**
@@ -86,21 +88,19 @@ inline UMemory* TProcessorBase<T>::GetMemory(){
  * (ii) execute one cycle and return 1.
  */
 template <typename T>
-SimulationTime TProcessorBase<T>::Run(){
+SimulationTime TProcessorBase<T>::Run() {
+    #ifdef ORCA_ENABLE_GDBRSP
+    // Check whether the CPU has reach some breakpoint or desired number of
+    // steps, or a trap. Update the state of the cpu accordingly (number of
+    // cycles to skip, pause flag)
+    _gdbserver->UpdateCpuState();
 
-	#ifdef ORCA_ENABLE_GDBRSP
-	//Check whether the CPU has reach some breakpoint
-	//or desired number of steps, or a trap. Update
-	//the state of the cpu accordingly (number of 
-	//cycles to skip, pause flag)
-	_gdbserver->UpdateCpuState();
+    // check whether the gdb client has sent any packet.
+    // if so, treat the packet.
+    _gdbserver->Receive();
+    return 1;
 
-	//check whether the gdb client has sent any packet.
-	//if so, treat the packet.
-	_gdbserver->Receive();
-	return 1;
-
-	#else
-	return 0;
-	#endif
+    #else
+    return 0;
+    #endif
 }

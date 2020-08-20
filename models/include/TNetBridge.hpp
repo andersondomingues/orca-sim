@@ -39,6 +39,22 @@
 #include "UMemory.hpp"
 #include "USignal.hpp"
 
+#ifndef NETSOCKET_CLIENT_ADDRESS
+#define NETSOCKET_CLIENT_ADDRESS "127.0.0.1"
+#endif
+
+#ifndef NETSOCKET_CLIENT_PORT
+#define NETSOCKET_CLIENT_PORT 5000
+#endif
+
+#ifndef NETSOCKET_SERVER_ADDRESS
+#define NETSOCKET_SERVER_ADDRESS "127.0.0.1"
+#endif
+
+#ifndef NETSOCKET_SERVER_PORT
+#define NETSOCKET_SERVER_PORT 5001
+#endif
+
 class udp_client_server_runtime_error : public std::runtime_error{
  public:
     explicit udp_client_server_runtime_error(const char* w)

@@ -23,67 +23,64 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-//lib dependent includes
-#include <iostream>
-//#include <queue>
-#include <vector>
-#include <algorithm>
+
 #include <stdint.h>
 
-//api includes
-#include <UntimedModel.h>
-#include <USignal.h>
-#include <USignalSet.h>
-#include <UMemory.h> //includes MemoryAddr and MemoryType
+// lib dependent includes
+#include <iostream>
+#include <vector>
+#include <algorithm>
 
-//ctor. 
+
+// api includes
+#include "UntimedModel.hpp"
+#include "USignal.hpp"
+#include "USignalSet.hpp"
+#include "UMemory.hpp"
+
+// ctor.
 template <typename T>
-USignalSet<T>::USignalSet(std::string name, uint32_t nsig) : UntimedModel(name){
-	
-    //set internal variables
+USignalSet<T>::USignalSet(std::string name, uint32_t nsig): UntimedModel(name) {
+    // set internal variables
     _num_signals = nsig;
     _signals = new USignal<T>*[_num_signals];
 
-    //create a new vector of signals. Signals are no mapped yep, use MapTo.
-    for(uint32_t i = 0; i < _num_signals; i++)
+    // create a new vector of signals. Signals are no mapped yep, use MapTo.
+    for (uint32_t i = 0; i < _num_signals; i++)
         _signals[i] = new USignal<T>(this->GetName() + "." + to_string(i));
-
 }
 
-//dtor.
+// dtor.
 template <typename T>
-USignalSet<T>::~USignalSet(){
+USignalSet<T>::~USignalSet() {
     delete[] _signals;
 }
 
-
-//mapping function
+// mapping function
 template <typename T>
-void USignalSet<T>::MapTo(MemoryType* memptr, MemoryAddr addr){
-
+void USignalSet<T>::MapTo(MemoryType* memptr, MemoryAddr addr) {
     MemoryAddr address = addr;
     MemoryType* memtype = memptr;
 
-    //set the proper address to each signal and map
-    for(uint32_t i = 0; i < _num_signals; i++){
-
+    // set the proper address to each signal and map
+    for (uint32_t i = 0; i < _num_signals; i++) {
         _signals[i]->SetAddress(address);
         _signals[i]->MapTo(memtype, address, false);
 
         address += sizeof(T);
 
-        //caution, pointer arithmetic here
-        for(uint32_t j = 0; j < sizeof(T) / sizeof(MemoryType); j++)
+        // caution, pointer arithmetic here
+        for (uint32_t j = 0; j < sizeof(T) / sizeof(MemoryType); j++)
             memtype++;
     }
 }
 
-//getters
+// getters
 template <typename T>
-USignal<T>* USignalSet<T>::GetSignal(uint32_t index){
-
-    if(index > _num_signals - 1 || index < 0){
-        std::cout << "warn: requested signals is out of the bounds of the set" << std::endl;
+USignal<T>* USignalSet<T>::GetSignal(uint32_t index) {
+    if (index > _num_signals - 1 || index < 0) {
+        std::cout << "warn: requested signals is out of the bounds of the set"
+            << std::endl;
         return nullptr;
     }
 

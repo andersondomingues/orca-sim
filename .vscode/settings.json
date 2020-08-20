@@ -18,6 +18,7 @@
     "editor.detectIndentation": false,
     "cpplint.cpplintPath": "/home/adomingues/.local/bin/cpplint",
     "files.associations": {
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "ostream": "cpp"
     }
 }
