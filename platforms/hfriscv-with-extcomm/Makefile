@@ -46,7 +46,7 @@ TARGET_DEPS := $(SOURCEDIR)/Orca.cpp
 DEP_LIBS := $(LIBRSP) $(LIBMOD) $(LIBSIM)
 
 # include headers in the dependecy check
-HEADER_FILES := $(wildcard $(HEADERDIR)/*.h)
+HEADER_FILES := $(wildcard $(HEADERDIR)/*.hpp)
 
 #compiler an instance of the simulator 
 $(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(TARGET_DEPS) $(HEADER_FILES) $(DEP_LIBS)

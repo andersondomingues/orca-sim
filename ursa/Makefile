@@ -23,7 +23,7 @@ $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
 	$(Q)ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 
 #compile all classes into %.o files
-$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp $(HEADERDIR)/%.h 
+$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp $(HEADERDIR)/%.hpp 
 	$(Q)g++ $(CXXFLAGS) $< -o $@ 
 	
 #remove previously generated files

@@ -116,14 +116,3 @@ template <typename T>
 uint32_t UBuffer<T>::full() {
     return _size == _capacity;
 }
-
-//
-/**
- * @brief Delete the internal buffer and instantiate a new one with zero
- * elements
- */
-template <typename T>
-void UBuffer<T>::Reset() {
-    delete(_queue);
-    _queue = new std::queue<T>();
-}

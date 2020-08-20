@@ -93,10 +93,6 @@ class UBuffer : public UntimedModel{
      * @brief Counts elements from the buffer.
      * @return The number of elements. */
     uint32_t size();
-
-    /**
-     * @brief Empties the queue */
-    void Reset() override;
 };
 
 // Some of the most used instances. More can be added later.

@@ -32,7 +32,8 @@ PLATFORMS_DIR := $(CURDIR)/platforms
 MODELS_DIR    := $(CURDIR)/models
 GDBRSP_DIR    := $(CURDIR)/gdbrsp
 
-#phonies (see https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html)
+#phonies (see https://www.gnu.org/software/make/manual/html_node/
+#	Phony-Targets.html)
 .PHONY: clean documentation multitail tools
 
 #compile everything if necessary and run
@@ -50,7 +51,7 @@ all: $(BINARY_DIR)/$(PLATFORM_BIN) vismtail
 	@echo " => $(PLATFORM_BIN) deployed to /bin folder."
 
 #Generate the simulation library (uses URSA distro)
-$(BINARY_DIR)/$(URSA_LIB): $(URSA_DIR)/src/*.cpp  $(URSA_DIR)/include/*.h 
+$(BINARY_DIR)/$(URSA_LIB): $(URSA_DIR)/src/*.cpp $(URSA_DIR)/include/*.hpp
 	@echo "$'\033[7m==================================\033[0m"
 	@echo "$'\033[7m     Building URSA's libsim       \033[0m"
 	@echo "$'\033[7m==================================\033[0m"
@@ -58,7 +59,7 @@ $(BINARY_DIR)/$(URSA_LIB): $(URSA_DIR)/src/*.cpp  $(URSA_DIR)/include/*.h
 	$(Q)cp $(URSA_DIR)/bin/$(URSA_LIB) $(BINARY_DIR)/$(URSA_LIB)
 
 #Generate the library containing the hardware models (except for top-level hardware)
-$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(URSA_LIB) $(MODELS_DIR)/src/*.cpp $(MODELS_DIR)/include/*.h
+$(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(URSA_LIB) $(MODELS_DIR)/src/*.cpp $(MODELS_DIR)/include/*.hpp
 	@echo "$'\033[7m==================================\033[0m"
 	@echo "$'\033[7m     Building hardware models     \033[0m"
 	@echo "$'\033[7m==================================\033[0m"
@@ -66,7 +67,7 @@ $(BINARY_DIR)/$(MODELS_LIB): $(BINARY_DIR)/$(URSA_LIB) $(MODELS_DIR)/src/*.cpp $
 	$(Q)cp $(MODELS_DIR)/bin/$(MODELS_LIB) $(BINARY_DIR)/$(MODELS_LIB)
 
 #Generate the GDB remote protocol library (used in processor core models). 
-$(BINARY_DIR)/$(GDBRSP_LIB): $(GDBRSP_DIR)/src/*.cpp $(GDBRSP_DIR)/include/*.h
+$(BINARY_DIR)/$(GDBRSP_LIB): $(GDBRSP_DIR)/src/*.cpp $(GDBRSP_DIR)/include/*.hpp
 	@echo "$'\033[7m==================================\033[0m"
 	@echo "$'\033[7m   Building GDB RSV support lib.  \033[0m"
 	@echo "$'\033[7m==================================\033[0m"
@@ -74,7 +75,7 @@ $(BINARY_DIR)/$(GDBRSP_LIB): $(GDBRSP_DIR)/src/*.cpp $(GDBRSP_DIR)/include/*.h
 	$(Q)cp $(GDBRSP_DIR)/bin/$(GDBRSP_LIB) $(BINARY_DIR)/$(GDBRSP_LIB)
 
 #Generate simulator executable binary (includes top-level hardware models).
-$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(CONDGDBRSP) $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/include/*.h
+$(BINARY_DIR)/$(PLATFORM_BIN): $(BINARY_DIR)/$(URSA_LIB) $(CONDGDBRSP) $(BINARY_DIR)/$(MODELS_LIB) $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/src/*.cpp  $(PLATFORMS_DIR)/$(ORCA_PLATFORM)/include/*.hpp
 	@echo "$'\033[7m==================================\033[0m"
 	@echo "$'\033[7m     Building the platform        \033[0m"
 	@echo "$'\033[7m==================================\033[0m"

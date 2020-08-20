@@ -47,7 +47,7 @@ USignalSet<T>::USignalSet(std::string name, uint32_t nsig): UntimedModel(name) {
 
     // create a new vector of signals. Signals are no mapped yep, use MapTo.
     for (uint32_t i = 0; i < _num_signals; i++)
-        _signals[i] = new USignal<T>(this->GetName() + "." + to_string(i));
+        _signals[i] = new USignal<T>(this->GetName() + "." + std::to_string(i));
 }
 
 // dtor.

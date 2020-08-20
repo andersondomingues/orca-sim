@@ -41,7 +41,7 @@
 
 // counter-specific definitions
 #ifdef MEMORY_ENABLE_COUNTERS
-#include <USignal.h>
+#include "USignal.hpp"
 #endif
 
 /**
@@ -113,13 +113,6 @@ class UMemory: public UntimedModel {
      * @brief Destroy the UMemory object
      */
     ~UMemory();
-
-    /**
-     * @brief Resets the memory module to its initial state. Since
-     * the model is stateless, this method has no effect on the data.
-     * To erase the memory, see <Wipe> method.
-     */
-    void Reset() override;
 
     /**
      * @brief Writes data to the memory. 

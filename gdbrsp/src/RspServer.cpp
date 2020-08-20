@@ -45,7 +45,7 @@ RspServer<T>::RspServer(ProcessorState<T>* state, UMemory* mem,
     _server = new UdpAsyncServer(udpport);
     std::cout << "[" << udpport << "]";
 
-    _bp_list = new std::list<int>();
+    _bp_list = new std::list<T>();
 }
 
 // remove udp server instance
@@ -113,9 +113,9 @@ template <typename T>
 int RspServer<T>::UpdateCpuState() {
     // check whether we reach a breakpoint
     if (_state->bp == 0) {
-        for (list<int>::iterator i = _bp_list->begin();
+        for (typename std::list<T>::iterator i = _bp_list->begin();
             i != _bp_list->end(); ++i) {
-            if (_state->pc == i) {
+            if (_state->pc == *i) {
                 // breakpoint hit
                 // this->Respond("T05swbreak:");
                 this->Respond("S05");
@@ -278,7 +278,7 @@ int RspServer<T>::Handle_g(char* buffer) {
         char reg_data[(NUMBER_OF_REGISTERS + 1) * sizeof(T) * 2 + 1];
 
         // convert whole array to hexstring
-        hexstr((reinterpret_cast<char*>(reg_data),
+        hexstr(reinterpret_cast<char*>(reg_data),
             reinterpret_cast<char*>(_state->regs), NUMBER_OF_REGISTERS + 1);
 
         // do not add trailing character as hexstr adds it
@@ -489,7 +489,7 @@ int RspServer<T>::Handle_m(char* buffer) {
         hexstr(reinterpret_cast<char*>(str_data),
          reinterpret_cast<char*>(data), size / 2);
 
-        return this->Respond(std::string(reinterpret_cast<char*>(str_data));
+        return this->Respond(std::string(reinterpret_cast<char*>(str_data)));
     } else {
         std::cout << "unhandled 'm' packet, sent empty response" << std::endl;
         return this->Respond("");
@@ -569,14 +569,14 @@ int RspServer<T>::Handle_Z(char* buffer) {
         int comma = strfind(buffer, ',', 10);
 
         // parse address
-        int addr = strhti(&buffer[comma + 1], 10);
+        T addr = strhti(&buffer[comma + 1], 10);
 
         // check whether the address is in the list already
         bool has_addr_already = false;
 
-        for (std::list<int>::iterator i = _bp_list->begin();
+        for (typename std::list<T>::iterator i = _bp_list->begin();
             i != _bp_list->end(); ++i) {
-            if (addr == i) {
+            if (addr == *i) {
                 std::cout
                     << "warn: there's a breakpoint in this address already"
                     << std::endl;

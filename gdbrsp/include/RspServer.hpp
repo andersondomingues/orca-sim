@@ -32,12 +32,12 @@
 #include <string>
 
 // in-package includes
-#include "UdpAsyncServer.h"
+#include "UdpAsyncServer.hpp"
 
 // off-package includes
-#include "ProcessorState.h"
+#include "ProcessorState.hpp"
 #include "MemoryType.hpp"
-#include "UMemory.h"
+#include "UMemory.hpp"
 
 #define RSP_BUFFER_SIZE 5000
 #define RSP_EMPTY_RESPONSE ""
@@ -61,7 +61,7 @@ class RspServer{
     char _input_buffer[RSP_BUFFER_SIZE];
 
     // list of breakpoints
-    std::list<int>* _bp_list;
+    std::list<T>* _bp_list;
 
  public:
     /**

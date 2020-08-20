@@ -37,7 +37,7 @@ $(OUTPUTDIR)/$(LIBNAME): $(LIBSIM) $(TARGET_DEPS)
 	$(Q)ar t $(OUTPUTDIR)/$(LIBNAME)
 
 #compile all classes (.cpp) into %.o files
-$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp  $(HEADERDIR)/%.h 
+$(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp  $(HEADERDIR)/%.hpp 
 	$(Q)g++ $(CPPFLAGS) $< -o $@ 
 
 #remove any preoviosly generated file
