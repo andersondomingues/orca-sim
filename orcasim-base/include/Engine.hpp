@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef URSA_INCLUDE_ENGINE_HPP_
-#define URSA_INCLUDE_ENGINE_HPP_
+#ifndef ORCASIM_BASE_INCLUDE_ENGINE_HPP_
+#define ORCASIM_BASE_INCLUDE_ENGINE_HPP_
 
 // lib dependencies
 #include <iostream>
@@ -36,7 +36,7 @@
 #include "Event.hpp"
 #include "SimulationTime.hpp"
 
-namespace orcasim::ursa {
+namespace orcasim::base {
 
 /**
  * This class implements an event queue to schedule and 
@@ -106,5 +106,5 @@ class Engine{
     ~Engine();
 };
 
-}  // namespace orcasim::ursa
-#endif  // URSA_INCLUDE_ENGINE_HPP_
+}  // namespace orcasim::base
+#endif  // ORCASIM_BASE_INCLUDE_ENGINE_HPP_

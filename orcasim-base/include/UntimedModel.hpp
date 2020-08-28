@@ -23,34 +23,28 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "Event.hpp"
+#ifndef ORCASIM_BASE_INCLUDE_UNTIMEDMODEL_HPP_
+#define ORCASIM_BASE_INCLUDE_UNTIMEDMODEL_HPP_
 
-using orcasim::ursa::Event;
+#include <string>
 
-/**
- * Operator overload for '<'. Use by the internal queue for sorting events
- * by time.
- * @param e Event to be compared with the instance
- * @return true if the instance happens later in time than event <e>.
- */
-bool Event::operator<(const Event& e) const {
-    return (this->time > e.time);
-}
+#include "Model.hpp"
+
+namespace orcasim::base {
 
 /**
- * Default constructor. 
- * @param t point in time to execute the event
- * @param p a pointer to the associated hardware module
+ * Untimed models represent hardware models whose clock period is irrelevant for
+ * the simulation.
  */
-Event::Event(SimulationTime t, TimedModel* p) {
-    this->time = t;
-    this->timedModel = p;
-}
+class UntimedModel : public Model{
+ public:
+    /** Default Ctor. */
+    explicit UntimedModel(std::string name);
 
-/**
- * Alternative constructor, required for creating arrays of Event elements. Do 
- * not use this constructor.
- */
-Event::Event() {
-    // Fields are left unintialized intentionally.
-}
+    /**
+     * @brief Dtor. Must be implemented by subclasses. */
+    virtual ~UntimedModel() = 0;
+};
+
+}  // namespace orcasim::base
+#endif  // ORCASIM_BASE_INCLUDE_UNTIMEDMODEL_HPP_

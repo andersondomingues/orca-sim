@@ -23,13 +23,13 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef URSA_INCLUDE_EVENT_HPP_
-#define URSA_INCLUDE_EVENT_HPP_
+#ifndef ORCASIM_BASE_INCLUDE_EVENT_HPP_
+#define ORCASIM_BASE_INCLUDE_EVENT_HPP_
 
 #include "TimedModel.hpp"
 #include "SimulationTime.hpp"
 
-namespace orcasim::ursa {
+namespace orcasim::base {
 
 /**
  * This class models a discrete event. In orca-sim, events have a reference
@@ -60,5 +60,5 @@ class Event{
     bool operator<(const Event& e) const;
 };
 
-}  // namespace orcasim::ursa
-#endif  // URSA_INCLUDE_EVENT_HPP_
+}  // namespace orcasim::base
+#endif  // ORCASIM_BASE_INCLUDE_EVENT_HPP_

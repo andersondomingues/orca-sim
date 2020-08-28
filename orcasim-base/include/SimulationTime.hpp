@@ -23,14 +23,23 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "TimedModel.hpp"
+#ifndef ORCASIM_BASE_INCLUDE_SIMULATIONTIME_HPP_
+#define ORCASIM_BASE_INCLUDE_SIMULATIONTIME_HPP_
 
-using orcasim::ursa::TimedModel;
+namespace orcasim::base {
 
-TimedModel::TimedModel(const std::string name) : Model(name) {
-    // nothing to do
-}
+#include <stdint.h>
+#ifdef __WORDSIZE
 
-TimedModel::~TimedModel() {
-    // nothing to do
-}
+#if __WORDSIZE == 64
+typedef uint64_t SimulationTime;
+#else
+typedef uint32_t SimulationTime;
+#endif
+
+#else
+typedef uint32_t SimulationTime;
+#endif
+
+}  // namespace orcasim::base
+#endif  // ORCASIM_BASE_INCLUDE_SIMULATIONTIME_HPP_

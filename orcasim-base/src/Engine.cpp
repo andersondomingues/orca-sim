@@ -25,8 +25,8 @@
 ******************************************************************************/
 #include "Engine.hpp"
 
-using orcasim::ursa::Engine;
-using orcasim::ursa::SimulationTime;
+using orcasim::base::Engine;
+using orcasim::base::SimulationTime;
 
 /**
  * Defaul constructor

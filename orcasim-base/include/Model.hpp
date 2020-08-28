@@ -23,23 +23,47 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef URSA_INCLUDE_SIMULATIONTIME_HPP_
-#define URSA_INCLUDE_SIMULATIONTIME_HPP_
+#ifndef ORCASIM_BASE_INCLUDE_MODEL_HPP_
+#define ORCASIM_BASE_INCLUDE_MODEL_HPP_
 
-namespace orcasim::ursa {
+#include <string>
 
-#include <stdint.h>
-#ifdef __WORDSIZE
+namespace orcasim::base {
 
-#if __WORDSIZE == 64
-typedef uint64_t SimulationTime;
-#else
-typedef uint32_t SimulationTime;
-#endif
+/**
+ * Models a generic hardware model. Models usually correspond to modules, which
+ * can be include any kind of hardware. Since not all the hardware behaviour is 
+ * considered for simulation, we designed models to be either timed, when they 
+ * obey to some clock domain, or untimed, when their clock is irrelevant for the
+ * simulation. See <TimedModel> and <UntimedModel>.
+ */
+class Model {
+ private:
+    /**
+     * A name for the model. Users may name models without any restriction, 
+     * although we advise to give models meaningful names, as these names may
+     * come in hand when debugging or reporting simulation.
+     */
+    std::string _name;
 
-#else
-typedef uint32_t SimulationTime;
-#endif
+ public:
+    /**
+     * Default ctor. 
+     * @name a name that identifies the model, advisably not empty.
+     */
+    explicit Model(std::string name);
 
-}  // namespace orcasim::ursa
-#endif  // URSA_INCLUDE_SIMULATIONTIME_HPP_
+    /**
+     * Getter method for the <_name> field.
+     */
+    std::string GetName();
+
+    /**
+     * Setter method for the <_name> field.
+     * @param s Value to be set
+     */
+    void SetName(std::string s);
+};
+
+}  // namespace orcasim::base
+#endif  // ORCASIM_BASE_INCLUDE_MODEL_HPP_

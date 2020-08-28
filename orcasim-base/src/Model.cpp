@@ -23,14 +23,18 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "UntimedModel.hpp"
+#include "Model.hpp"
 
-using orcasim::ursa::UntimedModel;
+using orcasim::base::Model;
 
-UntimedModel::UntimedModel(const std::string name) : Model(name) {
-    // nothing to do
+Model::Model(const std::string name) {
+    _name = name;
 }
 
-UntimedModel::~UntimedModel() {
-    // nothing to do
+std::string Model::GetName() {
+    return _name;
+}
+
+void Model::SetName(const std::string name) {
+    _name = name;
 }

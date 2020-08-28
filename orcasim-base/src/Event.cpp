@@ -23,41 +23,34 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef URSA_INCLUDE_TIMEDMODEL_HPP_
-#define URSA_INCLUDE_TIMEDMODEL_HPP_
+#include "Event.hpp"
 
-#include <string>
-
-// own api includes
-#include "Model.hpp"
-#include "SimulationTime.hpp"
-
-namespace orcasim::ursa {
+using orcasim::base::Event;
 
 /**
- * This class models a TimedModel. In this project, a TimedModel
- * is an abstraction which can execute an action in a given point
- * in time. For example, hardware can be modeled as TimedModeles that 
- * execute cycles given some period. */
-class TimedModel : public Model{
- public:
-    /** Default Ctor. */
-    explicit TimedModel(std::string name);
+ * Operator overload for '<'. Use by the internal queue for sorting events
+ * by time.
+ * @param e Event to be compared with the instance
+ * @return true if the instance happens later in time than event <e>.
+ */
+bool Event::operator<(const Event& e) const {
+    return (this->time > e.time);
+}
 
-    /**
-     * Method which is called by the simulator when during the 
-     * execution of the TimedModel. Must be implemented by subclasses.*/
-    virtual SimulationTime Run() = 0;
+/**
+ * Default constructor. 
+ * @param t point in time to execute the event
+ * @param p a pointer to the associated hardware module
+ */
+Event::Event(SimulationTime t, TimedModel* p) {
+    this->time = t;
+    this->timedModel = p;
+}
 
-    /**
-     * Dtor. Must be implemented by subclasses. */
-    virtual ~TimedModel() = 0;
-
-    /**
-     * Resets the instance to its starting state. Must be implemented
-     * by subclasses */
-    virtual void Reset() = 0;
-};
-
-}  // namespace orcasim::ursa
-#endif  // URSA_INCLUDE_TIMEDMODEL_HPP_
+/**
+ * Alternative constructor, required for creating arrays of Event elements. Do 
+ * not use this constructor.
+ */
+Event::Event() {
+    // Fields are left unintialized intentionally.
+}

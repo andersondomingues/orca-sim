@@ -1,3 +1,7 @@
+#!!!! NOTE
+# this configuration file has no effect in this moment and has been kept here
+# for future reference in case new configurations take part in the project.
+
 # ===============================================================#
 # SAFETY AND DEBUGGING                                           #
 # ===============================================================#

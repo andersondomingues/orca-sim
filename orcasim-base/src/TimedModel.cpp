@@ -23,47 +23,14 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef URSA_INCLUDE_MODEL_HPP_
-#define URSA_INCLUDE_MODEL_HPP_
+#include "TimedModel.hpp"
 
-#include <string>
+using orcasim::base::TimedModel;
 
-namespace orcasim::ursa {
+TimedModel::TimedModel(const std::string name) : Model(name) {
+    // nothing to do
+}
 
-/**
- * Models a generic hardware model. Models usually correspond to modules, which
- * can be include any kind of hardware. Since not all the hardware behaviour is 
- * considered for simulation, we designed models to be either timed, when they 
- * obey to some clock domain, or untimed, when their clock is irrelevant for the
- * simulation. See <TimedModel> and <UntimedModel>.
- */
-class Model {
- private:
-    /**
-     * A name for the model. Users may name models without any restriction, 
-     * although we advise to give models meaningful names, as these names may
-     * come in hand when debugging or reporting simulation.
-     */
-    std::string _name;
-
- public:
-    /**
-     * Default ctor. 
-     * @name a name that identifies the model, advisably not empty.
-     */
-    explicit Model(std::string name);
-
-    /**
-     * Getter method for the <_name> field.
-     */
-    std::string GetName();
-
-    /**
-     * Setter method for the <_name> field.
-     * @param s Value to be set
-     */
-    void SetName(std::string s);
-};
-
-}  // namespace orcasim::ursa
-#endif  // URSA_INCLUDE_MODEL_HPP_
+TimedModel::~TimedModel() {
+    // nothing to do
+}
