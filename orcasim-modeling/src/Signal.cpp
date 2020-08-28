@@ -31,9 +31,9 @@
 
 // api includes
 #include "UntimedModel.hpp"
-#include "USignal.hpp"
+#include "Signal.hpp"
 
-using orcasim::modeling::USignal;
+using orcasim::modeling::Signal;
 
 /**
  * @brief Instiate a new bus with external storage (can be changed later via 
@@ -43,7 +43,7 @@ using orcasim::modeling::USignal;
  * @param addr A memory base to be used within memory mapping
  */
 template <typename T>
-USignal<T>::USignal(std::string name) {
+Signal<T>::Signal(std::string name) {
     _t_ptr  = &_t_storage;
     _t_name = name;
 }
@@ -58,14 +58,14 @@ USignal<T>::USignal(std::string name) {
  * @param name
  */
 template <typename T>
-USignal<T>::USignal(T* t_ptr, uint32_t addr, std::string name) {
+Signal<T>::Signal(T* t_ptr, uint32_t addr, std::string name) {
     _t_ptr  = t_ptr;
     _t_addr = addr;
     _t_name = name;
 }
 
 template <typename T>
-USignal<T>::USignal(uint32_t addr, std::string name) {
+Signal<T>::Signal(uint32_t addr, std::string name) {
     _t_ptr = &_t_storage;
     _t_addr = addr;
     _t_name = name;
@@ -76,7 +76,7 @@ USignal<T>::USignal(uint32_t addr, std::string name) {
 * @param keep_val Copies current value to internal storage
 */
 template <typename T>
-void USignal<T>::MapTo(bool keep_val) {
+void Signal<T>::MapTo(bool keep_val) {
     // copies current value before changing pointers
     if (keep_val) {
         T curr_val;
@@ -95,7 +95,7 @@ void USignal<T>::MapTo(bool keep_val) {
 * @param keep_val set to true to keep current signal value
 */
 template <typename T>
-void USignal<T>::MapTo(MemoryType* memptr, MemoryAddr address, bool keep_val) {
+void Signal<T>::MapTo(MemoryType* memptr, MemoryAddr address, bool keep_val) {
     // copies current value before changing pointers
     if (keep_val)
         *(reinterpret_cast<MemoryType*>(memptr)) = this->Read();
@@ -108,14 +108,14 @@ void USignal<T>::MapTo(MemoryType* memptr, MemoryAddr address, bool keep_val) {
  * @brief Dtor.
  */
 template <typename T>
-USignal<T>::~USignal() { }
+Signal<T>::~Signal() { }
 
 /**
  * @brief Read the value stored into the bus
  * @return the value
  */
 template <typename T>
-T USignal<T>::Read() {
+T Signal<T>::Read() {
     return *_t_ptr;
 }
 
@@ -124,7 +124,7 @@ T USignal<T>::Read() {
  * @param val the value
  */
 template <typename T>
-void USignal<T>::Write(T val) {
+void Signal<T>::Write(T val) {
     *_t_ptr = val;
 }
 
@@ -133,7 +133,7 @@ void USignal<T>::Write(T val) {
  * @param val the value
  */
 template <typename T>
-void USignal<T>::Inc(T val) {
+void Signal<T>::Inc(T val) {
     *_t_ptr = (*_t_ptr) + val;
 }
 
@@ -142,7 +142,7 @@ void USignal<T>::Inc(T val) {
  * @param val the value
  */
 template <typename T>
-void USignal<T>::Dec(T val) {
+void Signal<T>::Dec(T val) {
     *_t_ptr = (*_t_ptr) - val;
 }
 
@@ -151,7 +151,7 @@ void USignal<T>::Dec(T val) {
  * @return the address
  */
 template <typename T>
-uint32_t USignal<T>::GetAddress() {
+uint32_t Signal<T>::GetAddress() {
     return _t_addr;
 }
 
@@ -160,7 +160,7 @@ uint32_t USignal<T>::GetAddress() {
  * @return the name (empty string if empty)
  */
 template <typename T>
-std::string USignal<T>::GetName() {
+std::string Signal<T>::GetName() {
     return _t_name;
 }
 
@@ -168,6 +168,6 @@ std::string USignal<T>::GetName() {
  * @brief Set an address for the signal
  */
 template <typename T>
-void USignal<T>::SetAddress(MemoryAddr addr) {
+void Signal<T>::SetAddress(MemoryAddr addr) {
     _t_addr = addr;
 }

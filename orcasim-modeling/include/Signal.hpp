@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef ORCASIM_MODELING_INCLUDE_USIGNAL_HPP_
-#define ORCASIM_MODELING_INCLUDE_USIGNAL_HPP_
+#ifndef ORCASIM_MODELING_INCLUDE_SIGNAL_HPP_
+#define ORCASIM_MODELING_INCLUDE_SIGNAL_HPP_
 
 // lib dependent includes
 #include <stdint.h>
@@ -39,10 +39,10 @@
 namespace orcasim::modeling {
 
 /**
- * The USignal class models a generic bus of width equals to the sizeof(T)
+ * The Signal class models a generic bus of width equals to the sizeof(T)
  */
 template <typename T>
-class USignal{
+class Signal{
  private:
     /** pointer to the place where the bus data will be stored */
     volatile T* _t_ptr;
@@ -63,27 +63,27 @@ class USignal{
      * @param name (optional) An arbitrary name for the instance.
      * @param addre (optinal) Address to which the bus is mapped in memory.
      */
-    USignal(T* t_ptr, uint32_t addr, std::string name);
+    Signal(T* t_ptr, uint32_t addr, std::string name);
 
      /**
      * @brief Constructor. Create new Signal using internal storage
      * @param name (optional) An arbitrary name for the instance.
      * @param addr (optinal) Address to which the bus is mapped in memory.
      */
-    USignal(uint32_t addr, std::string name);
+    Signal(uint32_t addr, std::string name);
 
      /**
      * @brief Constructor. Create new Signal using internal storage
      * @param name (optional) An arbitrary name for the instance.
      */
-    explicit USignal(std::string name);
+    explicit Signal(std::string name);
 
     /**
      * @brief Destructor. 
      * @note DO NOT free _t_ptr by any means as this pointer must be 
      * freed by the class which allocated the space. 
      */
-    ~USignal();
+    ~Signal();
 
     /**
      * @brief Get the last value writen to the bus.
@@ -142,17 +142,17 @@ class USignal{
 };
 
 // Some of the most used instances. More can be added later.
-// for larger data size, consider using a UMemory instead.
-template class USignal<bool>;  // wire
-template class USignal<uint8_t>;   // mem word
-template class USignal<uint16_t>;  // dmni/noc word
-template class USignal<uint32_t>;  // proc word
-template class USignal<float>;    // float cooprocessor output
-template class USignal<uint64_t>;  // double word
-template class USignal<int8_t>;   // mem word
-template class USignal<int16_t>;  // dmni/noc word
-template class USignal<int32_t>;  // proc word
-template class USignal<int64_t>;  // double word
+// for larger data size, consider using a Memory instead.
+template class Signal<bool>;  // wire
+template class Signal<uint8_t>;   // mem word
+template class Signal<uint16_t>;  // dmni/noc word
+template class Signal<uint32_t>;  // proc word
+template class Signal<float>;    // float cooprocessor output
+template class Signal<uint64_t>;  // double word
+template class Signal<int8_t>;   // mem word
+template class Signal<int16_t>;  // dmni/noc word
+template class Signal<int32_t>;  // proc word
+template class Signal<int64_t>;  // double word
 
 }  // namespace orcasim::modeling
-#endif  // ORCASIM_MODELING_INCLUDE_USIGNAL_HPP_
+#endif  // ORCASIM_MODELING_INCLUDE_SIGNAL_HPP_

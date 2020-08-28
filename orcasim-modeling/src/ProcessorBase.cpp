@@ -24,22 +24,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
 #include "TimedModel.hpp"
-#include "TProcessorBase.hpp"
+#include "ProcessorBase.hpp"
 
 #ifdef ORCA_ENABLE_GDBRSP
 template <typename T>
 uint32_t TProcessorBase<T>::GDBSERVER_PORT = ORCA_GDBRSP_PORT;
 #endif
 
-using orcasim::modeling::TProcessorBase;
+using orcasim::modeling::ProcessorBase;
 using orcasim::modeling::ProcessorState;
-using orcasim::modeling::UMemory;
+using orcasim::modeling::Memory;
 using orcasim::base::SimulationTime;
 using orcasim::base::TimedModel;
 
 template <typename T>
-TProcessorBase<T>::TProcessorBase(std::string name,
-    MemoryAddr initial_pc, UMemory* mem) : TimedModel(name) {
+ProcessorBase<T>::ProcessorBase(std::string name,
+    MemoryAddr initial_pc, Memory* mem) : TimedModel(name) {
 
     // set mem ptr
     _memory = mem;
@@ -67,7 +67,7 @@ TProcessorBase<T>::TProcessorBase(std::string name,
 }
 
 template <typename T>
-TProcessorBase<T>::~TProcessorBase() {
+ProcessorBase<T>::~ProcessorBase() {
     #ifdef ORCA_ENABLE_GDBRSP
     delete _gdbserver;
     #endif
@@ -78,12 +78,12 @@ TProcessorBase<T>::~TProcessorBase() {
  * @return A pointer to the state of the processor.
  */
 template <typename T>
-inline ProcessorState<T>* TProcessorBase<T>::GetState() {
+inline ProcessorState<T>* ProcessorBase<T>::GetState() {
     return &_state;
 }
 
 template <typename T>
-inline UMemory* TProcessorBase<T>::GetMemory() {
+inline Memory* ProcessorBase<T>::GetMemory() {
     return _memory;
 }
 
@@ -94,7 +94,7 @@ inline UMemory* TProcessorBase<T>::GetMemory() {
  * (ii) execute one cycle and return 1.
  */
 template <typename T>
-SimulationTime TProcessorBase<T>::Run() {
+SimulationTime ProcessorBase<T>::Run() {
     #ifdef ORCA_ENABLE_GDBRSP
     // Check whether the CPU has reach some breakpoint or desired number of
     // steps, or a trap. Update the state of the cpu accordingly (number of

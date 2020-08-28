@@ -28,12 +28,12 @@
 #include <string>
 #include <sstream>
 
-#include "UMemory.hpp"
-#include "USignal.hpp"
+#include "Memory.hpp"
+#include "Signal.hpp"
 
-using orcasim::modeling::UMemory;
+using orcasim::modeling::Memory;
 
-UMemory::UMemory(std::string name, MemoryAddr size, MemoryAddr sram_base,
+Memory::Memory(std::string name, MemoryAddr size, MemoryAddr sram_base,
     bool wipe, std::string binname) : UntimedModel(name) {
     // creates a new array of MemoryType elements (must be disposed by dctor.)
     _mem = new MemoryType[size];
@@ -52,8 +52,8 @@ UMemory::UMemory(std::string name, MemoryAddr size, MemoryAddr sram_base,
     #ifdef MEMORY_ENABLE_COUNTERS
     // if counters are enabled, initiate the respective signals
     // please note that these signals are not mapped to anywhere yet
-    _counter_nstore = new USignal<uint32_t>(GetName() + ".counters.store");
-    _counter_nload = new USignal<uint32_t>(GetName() + ".counters.load");
+    _counter_nstore = new Signal<uint32_t>(GetName() + ".counters.store");
+    _counter_nload = new Signal<uint32_t>(GetName() + ".counters.load");
 
     // reset counters (must!)
     _counter_nstore->Write(0);
@@ -63,16 +63,16 @@ UMemory::UMemory(std::string name, MemoryAddr size, MemoryAddr sram_base,
 
 #ifdef MEMORY_ENABLE_COUNTERS
 // getters and setters for the counters' signals
-USignal<uint32_t>* UMemory::GetSignalCounterStore() {
+Signal<uint32_t>* Memory::GetSignalCounterStore() {
     return _counter_nstore;
 }
 
-USignal<uint32_t>* UMemory::GetSignalCounterLoad() {
+Signal<uint32_t>* Memory::GetSignalCounterLoad() {
     return _counter_nload;
 }
 #endif
 
-void UMemory::Write(MemoryAddr addr, MemoryType* data, uint32_t length) {
+void Memory::Write(MemoryAddr addr, MemoryType* data, uint32_t length) {
     #ifdef MEMORY_WRITE_ADDRESS_CHECKING
     // check whether we're trying to access an address
     // lower than the base address
@@ -108,7 +108,7 @@ void UMemory::Write(MemoryAddr addr, MemoryType* data, uint32_t length) {
     }
 }
 
-void UMemory::Read(MemoryAddr addr, MemoryType* buffer, uint32_t length) {
+void Memory::Read(MemoryAddr addr, MemoryType* buffer, uint32_t length) {
     #ifdef MEMORY_READ_ADDRESS_CHECKING
     // check whether we'are trying to read from an address
     // lower than the base address
@@ -141,7 +141,7 @@ void UMemory::Read(MemoryAddr addr, MemoryType* buffer, uint32_t length) {
     #endif
 }
 
-MemoryType* UMemory::GetMap(MemoryAddr addr) {
+MemoryType* Memory::GetMap(MemoryAddr addr) {
     #ifdef MEMORY_MAP_ADDRESS_CHECKING
     // check whether we're trying to get the pointer
     // to a cell whose address is lower than the base
@@ -170,27 +170,27 @@ MemoryType* UMemory::GetMap(MemoryAddr addr) {
 }
 
 // return the base address (getter)
-MemoryAddr UMemory::GetBase() {
+MemoryAddr Memory::GetBase() {
     return _base;
 }
 
 // return the memory size (getter)
-uint32_t UMemory::GetSize() {
+uint32_t Memory::GetSize() {
     return _length;
 }
 
 // return the address of the last addressable cell
-MemoryAddr UMemory::GetLastAddr() {
+MemoryAddr Memory::GetLastAddr() {
     return (_base + _length) - 1;
 }
 
 // wipe without parameters is a shortcut to wipeing
 // the whole memory
-void UMemory::Wipe() {
+void Memory::Wipe() {
     this->Wipe(_base, _length);
 }
 
-void UMemory::Wipe(MemoryAddr base, uint32_t size) {
+void Memory::Wipe(MemoryAddr base, uint32_t size) {
     #ifdef MEMORY_WRITE_ADDRESS_CHECKING
     // base must be less than the last address
     if (base < _base)
@@ -219,7 +219,7 @@ void UMemory::Wipe(MemoryAddr base, uint32_t size) {
         range_ptr[i] = 0;
 }
 
-void UMemory::LoadBin(std::string filename, uint32_t base, uint32_t size) {
+void Memory::LoadBin(std::string filename, uint32_t base, uint32_t size) {
     // try to open the file
     std::ifstream f(filename, std::ios::binary | std::ios::in | std::ios::out);
 
@@ -237,7 +237,7 @@ void UMemory::LoadBin(std::string filename, uint32_t base, uint32_t size) {
     }
 }
 
-void UMemory::SaveBin(std::string filename, uint32_t base, uint32_t size) {
+void Memory::SaveBin(std::string filename, uint32_t base, uint32_t size) {
     std::ofstream f(filename, std::ifstream::binary);
 
     if (f.is_open()) {
@@ -252,11 +252,11 @@ void UMemory::SaveBin(std::string filename, uint32_t base, uint32_t size) {
 }
 
 // Dump is a shorthand for Dump(x, y)
-void UMemory::Dump() {
+void Memory::Dump() {
     this->Dump(0, _length);
 }
 
-void UMemory::Dump(uint32_t base, uint32_t length) {
+void Memory::Dump(uint32_t base, uint32_t length) {
     uint32_t k, l;
 
     // mask is necessary to correct a bug(?) when printing
@@ -286,7 +286,7 @@ void UMemory::Dump(uint32_t base, uint32_t length) {
     }
 }
 
-UMemory::~UMemory() {
+Memory::~Memory() {
     // delete all cells
     delete [] _mem;
 

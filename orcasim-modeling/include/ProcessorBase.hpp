@@ -23,22 +23,18 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef ORCASIM_MODELING_INCLUDE_TPROCESSORBASE_HPP_
-#define ORCASIM_MODELING_INCLUDE_TPROCESSORBASE_HPP_
+#ifndef ORCASIM_MODELING_INCLUDE_PROCESSORBASE_HPP_
+#define ORCASIM_MODELING_INCLUDE_PROCESSORBASE_HPP_
 
 #include <string>
 
-#ifdef ORCA_ENABLE_GDBRSP
-#include "RspServer.hpp"
-#endif
-
 #include "TimedModel.hpp"
-#include "UMemory.hpp"
+#include "Memory.hpp"
 #include "ProcessorState.hpp"
 
 using orcasim::base::TimedModel;
 using orcasim::base::SimulationTime;
-using orcasim::modeling::UMemory;
+using orcasim::modeling::Memory;
 
 namespace orcasim::modeling {
 
@@ -48,7 +44,7 @@ namespace orcasim::modeling {
  * registers (registers are limited to have the 
  * same size) */
 template <typename T>
-class TProcessorBase : public TimedModel{
+class ProcessorBase : public TimedModel{
  private:
     /** struct that represent the state of a processor. 
      * All processor share the same state model, which 
@@ -59,23 +55,17 @@ class TProcessorBase : public TimedModel{
     /** We assume that every processor is attached to a 
      * memory core. For now, the only core available is 
      * untimed. */
-    UMemory* _memory;
-
-    #ifdef ORCA_ENABLE_GDBRSP
-    RspServer<T>* _gdbserver;
-    static uint32_t GDBSERVER_PORT;
-    char _buffer[2000];
-    #endif
+    Memory* _memory;
 
  public:
     /** Default constructor.
      * @param name A short name or description of the instance
      * @param initial_pc Memory address to which the PC
         register will point to at the startup. */
-    TProcessorBase(std::string name, MemoryAddr initial_pc, UMemory* mem);
+    ProcessorBase(std::string name, MemoryAddr initial_pc, Memory* mem);
 
     /** Destructor. */
-    ~TProcessorBase();
+    ~ProcessorBase();
 
     /** Run method from the base TimedModel class, overloaded. 
      * We include in the overloading external components that 
@@ -94,20 +84,20 @@ class TProcessorBase : public TimedModel{
      * the memory core. It is made private to avoid being changed 
      * by the processor core implementation.
      * @returns a pointers to the memory model */
-    UMemory* GetMemory();
+    Memory* GetMemory();
 };
 
 // Some of the most used instances. More can be added later.
-template class TProcessorBase<uint8_t>;
-template class TProcessorBase<uint16_t>;
-template class TProcessorBase<uint32_t>;
-template class TProcessorBase<uint64_t>;
+template class ProcessorBase<uint8_t>;
+template class ProcessorBase<uint16_t>;
+template class ProcessorBase<uint32_t>;
+template class ProcessorBase<uint64_t>;
 
 // Some of the most used instances. More can be added later.
-template class TProcessorBase<int8_t>;
-template class TProcessorBase<int16_t>;
-template class TProcessorBase<int32_t>;
-template class TProcessorBase<int64_t>;
+template class ProcessorBase<int8_t>;
+template class ProcessorBase<int16_t>;
+template class ProcessorBase<int32_t>;
+template class ProcessorBase<int64_t>;
 
 }  // namespace orcasim::modeling
-#endif  // ORCASIM_MODELING_INCLUDE_TPROCESSORBASE_HPP_
+#endif  // ORCASIM_MODELING_INCLUDE_PROCESSORBASE_HPP_

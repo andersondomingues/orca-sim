@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef ORCASIM_MODELING_INCLUDE_USIGNALSET_HPP_
-#define ORCASIM_MODELING_INCLUDE_USIGNALSET_HPP_
+#ifndef ORCASIM_MODELING_INCLUDE_SIGNALSET_HPP_
+#define ORCASIM_MODELING_INCLUDE_SIGNALSET_HPP_
 
 // lib dependent includes
 #include <stdint.h>
@@ -41,10 +41,10 @@ using orcasim::base::UntimedModel;
 namespace orcasim::modeling {
 
 /**
- * The USignalSet class models a generic set of busses of type T.
+ * The SignalSet class models a generic set of busses of type T.
  * */
 template <typename T>
-class USignalSet : public UntimedModel {
+class SignalSet : public UntimedModel {
  private:
     /** number of signals in the set. Cannot be changed runtime. **/
     uint32_t _num_signals;
@@ -56,7 +56,7 @@ class USignalSet : public UntimedModel {
 
     /** a pointer to the first signal. An array will be instantiated 
      * to store signals in that pointer. **/
-    USignal<T>** _signals;
+    Signal<T>** _signals;
 
     /** an optional name to identify this model during runtime */
     std::string _t_name;
@@ -67,21 +67,21 @@ class USignalSet : public UntimedModel {
      * @param name An arbitrary name for the instance.
      * @param nsig Number of signals to be created
      */
-    USignalSet(std::string name, uint32_t nsig);
+    SignalSet(std::string name, uint32_t nsig);
 
     /**
      * @brief Destructor.
      * @note DO NOT free _t_ptr by any means as this pointer must be 
      * freed by the class which allocated the space. 
      */
-    ~USignalSet();
+    ~SignalSet();
 
     /**
      * @brief Get the a signal from the set. 
      * @param index The identifier of the signal to be returned.
      * @return A pointer to the requested signal.
      */
-    USignal<T>* GetSignal(uint32_t index);
+    Signal<T>* GetSignal(uint32_t index);
 
     /**
      * @brief Maps the signal set to a given memory address. Signals'
@@ -94,16 +94,16 @@ class USignalSet : public UntimedModel {
 };
 
 // Some of the most used instances. More can be added later.
-// for larger data size, consider using a UMemory instead.
-template class USignalSet<bool>;  // wire
-template class USignalSet<uint8_t>;   // mem word
-template class USignalSet<uint16_t>;  // dmni/noc word
-template class USignalSet<uint32_t>;  // proc word
-template class USignalSet<uint64_t>;  // double word
-template class USignalSet<int8_t>;   // mem word
-template class USignalSet<int16_t>;  // dmni/noc word
-template class USignalSet<int32_t>;  // proc word
-template class USignalSet<int64_t>;  // double word
+// for larger data size, consider using a Memory instead.
+template class SignalSet<bool>;  // wire
+template class SignalSet<uint8_t>;   // mem word
+template class SignalSet<uint16_t>;  // dmni/noc word
+template class SignalSet<uint32_t>;  // proc word
+template class SignalSet<uint64_t>;  // double word
+template class SignalSet<int8_t>;   // mem word
+template class SignalSet<int16_t>;  // dmni/noc word
+template class SignalSet<int32_t>;  // proc word
+template class SignalSet<int64_t>;  // double word
 
 }  // namespace orcasim::modeling
-#endif  // ORCASIM_MODELING_INCLUDE_USIGNALSET_HPP_
+#endif  // ORCASIM_MODELING_INCLUDE_SIGNALSET_HPP_

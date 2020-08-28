@@ -34,34 +34,34 @@
 
 // api includes
 #include "UntimedModel.hpp"
-#include "USignal.hpp"
-#include "USignalSet.hpp"
-#include "UMemory.hpp"
+#include "Signal.hpp"
+#include "SignalSet.hpp"
+#include "Memory.hpp"
 
-using orcasim::modeling::USignalSet;
-using orcasim::modeling::USignal;
+using orcasim::modeling::SignalSet;
+using orcasim::modeling::Signal;
 
 // ctor.
 template <typename T>
-USignalSet<T>::USignalSet(std::string name, uint32_t nsig): UntimedModel(name) {
+SignalSet<T>::SignalSet(std::string name, uint32_t nsig): UntimedModel(name) {
     // set internal variables
     _num_signals = nsig;
-    _signals = new USignal<T>*[_num_signals];
+    _signals = new Signal<T>*[_num_signals];
 
     // create a new vector of signals. Signals are no mapped yep, use MapTo.
     for (uint32_t i = 0; i < _num_signals; i++)
-        _signals[i] = new USignal<T>(this->GetName() + "." + std::to_string(i));
+        _signals[i] = new Signal<T>(this->GetName() + "." + std::to_string(i));
 }
 
 // dtor.
 template <typename T>
-USignalSet<T>::~USignalSet() {
+SignalSet<T>::~SignalSet() {
     delete[] _signals;
 }
 
 // mapping function
 template <typename T>
-void USignalSet<T>::MapTo(MemoryType* memptr, MemoryAddr addr) {
+void SignalSet<T>::MapTo(MemoryType* memptr, MemoryAddr addr) {
     MemoryAddr address = addr;
     MemoryType* memtype = memptr;
 
@@ -80,7 +80,7 @@ void USignalSet<T>::MapTo(MemoryType* memptr, MemoryAddr addr) {
 
 // getters
 template <typename T>
-USignal<T>* USignalSet<T>::GetSignal(uint32_t index) {
+Signal<T>* SignalSet<T>::GetSignal(uint32_t index) {
     if (index > _num_signals - 1 || index < 0) {
         std::cout << "warn: requested signals is out of the bounds of the set"
             << std::endl;

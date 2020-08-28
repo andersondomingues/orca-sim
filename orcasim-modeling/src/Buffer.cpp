@@ -23,16 +23,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "UBuffer.hpp"
+#include "Buffer.hpp"
 
-using orcasim::modeling::UBuffer;
+using orcasim::modeling::Buffer;
 
 /**
  * @brief Instantiate a new buffer
  * @param name A unique name for the buffer (optional)
  */
 template <typename T>
-UBuffer<T>::UBuffer(std::string name, uint32_t capacity) : UntimedModel(name) {
+Buffer<T>::Buffer(std::string name, uint32_t capacity) : UntimedModel(name) {
     _name = name;
     _size = 0;
     _queue = new std::queue<T>();
@@ -43,7 +43,7 @@ UBuffer<T>::UBuffer(std::string name, uint32_t capacity) : UntimedModel(name) {
  * @brief Dtor.
  */
 template <typename T>
-UBuffer<T>::~UBuffer() {
+Buffer<T>::~Buffer() {
     // the underlying queue is the only object
     // with dynamic allocation
     delete(_queue);
@@ -53,7 +53,7 @@ UBuffer<T>::~UBuffer() {
  * @brief Remove the element at the top of the buffer.
  */
 template <typename T>
-void UBuffer<T>::pop() {
+void Buffer<T>::pop() {
     // prevents underflow
     #ifdef BUFFER_UNDERFLOW_CHECKING
     if (_size == 0) {
@@ -71,7 +71,7 @@ void UBuffer<T>::pop() {
  * @param e
  */
 template <typename T>
-void UBuffer<T>::push(T e) {
+void Buffer<T>::push(T e) {
     #ifdef BUFFER_OVERFLOW_CHECKING
     // prevents overflow
     if (_size == _capacity)
@@ -88,7 +88,7 @@ void UBuffer<T>::push(T e) {
  * @return the element
  */
 template <typename T>
-uint32_t UBuffer<T>::capacity() {
+uint32_t Buffer<T>::capacity() {
     return _capacity;
 }
 
@@ -97,7 +97,7 @@ uint32_t UBuffer<T>::capacity() {
  * @return the element
  */
 template <typename T>
-T UBuffer<T>::top() {
+T Buffer<T>::top() {
     return _queue->front();
 }
 
@@ -106,7 +106,7 @@ T UBuffer<T>::top() {
  * @return Number of elements
  */
 template <typename T>
-uint32_t UBuffer<T>::size() {
+uint32_t Buffer<T>::size() {
     return _size;
 }
 
@@ -115,6 +115,6 @@ uint32_t UBuffer<T>::size() {
  * @return Number of elements
  */
 template <typename T>
-uint32_t UBuffer<T>::full() {
+uint32_t Buffer<T>::full() {
     return _size == _capacity;
 }

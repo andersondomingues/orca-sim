@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef ORCASIM_MODELING_INCLUDE_UMEMORY_HPP_
-#define ORCASIM_MODELING_INCLUDE_UMEMORY_HPP_
+#ifndef ORCASIM_MODELING_INCLUDE_MEMORY_HPP_
+#define ORCASIM_MODELING_INCLUDE_MEMORY_HPP_
 
 // std API
 #include <iostream>
@@ -41,7 +41,7 @@
 
 // counter-specific definitions
 #ifdef MEMORY_ENABLE_COUNTERS
-#include "USignal.hpp"
+#include "Signal.hpp"
 #endif
 
 using orcasim::base::UntimedModel;
@@ -52,7 +52,7 @@ namespace orcasim::modeling {
  * @brief This class models a memory module. The module 
  * has no clock as it is an UntimedModel *
  */
-class UMemory: public UntimedModel {
+class Memory: public UntimedModel {
  private:
     /**
      * @brief The _mem attribute is an array of 
@@ -85,7 +85,7 @@ class UMemory: public UntimedModel {
      * of load operations performed by the module. The 
      * counter can be reset by writing zero to it.
      */
-    USignal<uint32_t>* _counter_nload;
+    Signal<uint32_t>* _counter_nload;
     #endif
 
     #ifdef MEMORY_ENABLE_COUNTERS
@@ -94,12 +94,12 @@ class UMemory: public UntimedModel {
      * of store operations performed by the module. The
      * counter can be reset by writing zero to it.
      */
-    USignal<uint32_t>* _counter_nstore;
+    Signal<uint32_t>* _counter_nstore;
     #endif
 
  public:
     /**
-     * @brief Construct a new UMemory object.
+     * @brief Construct a new Memory object.
      * @param name A string name to identify the object. There is no 
      * restriction on object names.
      * @param size The number of cells to be emulated. The size of cell 
@@ -110,13 +110,13 @@ class UMemory: public UntimedModel {
      * instantiation, writing zero to each cell. Default behavior
      * @param binname (optional)
      */
-    UMemory(std::string name, uint32_t size, uint32_t base = 0,
+    Memory(std::string name, uint32_t size, uint32_t base = 0,
         bool wipe = false, std::string binname = "");
 
     /**
-     * @brief Destroy the UMemory object
+     * @brief Destroy the Memory object
      */
-    ~UMemory();
+    ~Memory();
 
     /**
      * @brief Writes data to the memory. 
@@ -230,20 +230,20 @@ class UMemory: public UntimedModel {
     /**
      * @brief (getter) Gets the signal object handling the 
      * counter for number of performed load operations.
-     * @return USignal<uint32_t>* a pointer to the signal object.
+     * @return Signal<uint32_t>* a pointer to the signal object.
      */
-    USignal<uint32_t>* GetSignalCounterLoad();
+    Signal<uint32_t>* GetSignalCounterLoad();
     #endif
 
     #ifdef MEMORY_ENABLE_COUNTERS
     /**
      * @brief (getter) Gets the signal object handling the 
      * counter for number of performed store operations.
-     * @return USignal<uint32_t>* a pointer to the signal object.
+     * @return Signal<uint32_t>* a pointer to the signal object.
      */
-    USignal<uint32_t>* GetSignalCounterStore();
+    Signal<uint32_t>* GetSignalCounterStore();
     #endif
 };
 
 }  // namespace orcasim::modeling
-#endif  // ORCASIM_MODELING_INCLUDE_UMEMORY_HPP_
+#endif  // ORCASIM_MODELING_INCLUDE_MEMORY_HPP_

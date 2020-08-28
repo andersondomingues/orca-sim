@@ -18,11 +18,11 @@ CXXFLAGS := \
 	-I$(HEADERDIR) $(DEPS_INCLUDE)
 
 TARGET_DEPS := \
-	$(OUTPUTDIR)/TProcessorBase.o \
-	$(OUTPUTDIR)/USignal.o \
-	$(OUTPUTDIR)/USignalSet.o \
-	$(OUTPUTDIR)/UMemory.o \
-	$(OUTPUTDIR)/UBuffer.o \
+	$(OUTPUTDIR)/ProcessorBase.o \
+	$(OUTPUTDIR)/Signal.o \
+	$(OUTPUTDIR)/SignalSet.o \
+	$(OUTPUTDIR)/Memory.o \
+	$(OUTPUTDIR)/Buffer.o
 
 # Pack object code into a static library
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)

@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef ORCASIM_MODELING_INCLUDE_UBUFFER_HPP_
-#define ORCASIM_MODELING_INCLUDE_UBUFFER_HPP_
+#ifndef ORCASIM_MODELING_INCLUDE_BUFFER_HPP_
+#define ORCASIM_MODELING_INCLUDE_BUFFER_HPP_
 
 #include <stdint.h>
 
@@ -55,7 +55,7 @@ namespace orcasim::modeling {
  * @param T The type of data being buffered.
  * the underlying type. */
 template <typename T>
-class UBuffer : public UntimedModel{
+class Buffer : public UntimedModel{
  private:
     std::string _name;
     std::queue<T>* _queue;
@@ -66,11 +66,11 @@ class UBuffer : public UntimedModel{
     /**
      * @brief Constructor. 
      * @param name (optional) An arbitrary name for the instance of Buffer.*/
-    UBuffer(std::string name, uint32_t capacity);
+    Buffer(std::string name, uint32_t capacity);
 
     /**
      * @brief Destructor. Cleans dynamic allocated memory before disposing the object.*/
-    ~UBuffer();
+    ~Buffer();
 
     /**
      * @brief Peeks at the top of the buffer.
@@ -100,9 +100,9 @@ class UBuffer : public UntimedModel{
 };
 
 // Some of the most used instances. More can be added later.
-template class UBuffer<uint8_t>;   // mem word
-template class UBuffer<uint16_t>;  // dmni/noc word
-template class UBuffer<uint32_t>;  // proc word
+template class Buffer<uint8_t>;   // mem word
+template class Buffer<uint16_t>;  // dmni/noc word
+template class Buffer<uint32_t>;  // proc word
 
 }  // namespace orcasim::modeling
-#endif  // ORCASIM_MODELING_INCLUDE_UBUFFER_HPP_
+#endif  // ORCASIM_MODELING_INCLUDE_BUFFER_HPP_
