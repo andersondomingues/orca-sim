@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef GDBRSP_INCLUDE_UDPASYNCSERVER_HPP_
-#define GDBRSP_INCLUDE_UDPASYNCSERVER_HPP_
+#ifndef ORCASIM_GDBRSP_INCLUDE_UDPASYNCSERVER_HPP_
+#define ORCASIM_GDBRSP_INCLUDE_UDPASYNCSERVER_HPP_
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -40,6 +40,8 @@
 
 #define MAX_LENGTH 1024
 #define SERVER_PORT 5000
+
+namespace orcasim::gdbrsp {
 
 enum class UdpAsyncError{
     SOCKET_OPEN,  // socket could not be opened, see fd limit or permission
@@ -94,4 +96,5 @@ class UdpAsyncServer{
     void Error(UdpAsyncError err);
 };
 
-#endif  // GDBRSP_INCLUDE_UDPASYNCSERVER_HPP_
+}  // namespace orcasim::gdbrsp
+#endif  // ORCASIM_GDBRSP_INCLUDE_UDPASYNCSERVER_HPP_

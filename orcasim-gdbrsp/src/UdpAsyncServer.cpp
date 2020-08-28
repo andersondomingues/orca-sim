@@ -27,6 +27,8 @@
 
 #include <iostream>
 
+using orcasim::gdbrsp::UdpAsyncServer;
+
 void UdpAsyncServer::Error(UdpAsyncError err) {
     std::string message = "UdpAsyncErro: ";
 

@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef GDBRSP_INCLUDE_RSPSERVER_HPP_
-#define GDBRSP_INCLUDE_RSPSERVER_HPP_
+#ifndef ORCASIM_GDBRSP_INCLUDE_RSPSERVER_HPP_
+#define ORCASIM_GDBRSP_INCLUDE_RSPSERVER_HPP_
 
 // base API includes
 #include <iostream>
@@ -41,6 +41,11 @@
 
 #define RSP_BUFFER_SIZE 5000
 #define RSP_EMPTY_RESPONSE ""
+
+using orcasim::modeling::UMemory;
+using orcasim::modeling::ProcessorState;
+
+namespace orcasim::gdbrsp {
 
 template <typename T>
 class RspServer{
@@ -122,4 +127,6 @@ template class RspServer<int16_t>;
 template class RspServer<int32_t>;
 template class RspServer<int64_t>;
 
-#endif  // GDBRSP_INCLUDE_RSPSERVER_HPP_
+}  // namespace orcasim::gdbrsp
+#endif  // ORCASIM_GDBRSP_INCLUDE_RSPSERVER_HPP_
+

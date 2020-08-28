@@ -28,7 +28,7 @@
 #include <iomanip>
 
 // string hex to int
-int strhti(char* buffer, int length) {
+int orcasim::gdbrsp::strhti(char* buffer, int length) {
     char tmp[length];
 
     for (int i = 0; i < length; i++)
@@ -50,7 +50,7 @@ int strhti(char* buffer, int length) {
 }
 
 // find first occurrence of a character, returns index
-int strfind(char* buffer, char find, int limit) {
+int orcasim::gdbrsp::strfind(char* buffer, char find, int limit) {
     for (int i = 0; i < limit; i++)
         if (buffer[i] == find) return i;
 
@@ -58,7 +58,7 @@ int strfind(char* buffer, char find, int limit) {
 }
 
 // byte array to hexa
-void hexstr(char* output, char* input, uint32_t integers) {
+void orcasim::gdbrsp::hexstr(char* output, char* input, uint32_t integers) {
     uint32_t mask = 0xFFFFFFFF;
 
     uint32_t* input_i = (uint32_t*)input;
@@ -74,7 +74,7 @@ void hexstr(char* output, char* input, uint32_t integers) {
     }
 }
 
-uint32_t endswap(uint32_t value) {
+uint32_t orcasim::gdbrsp::endswap(uint32_t value) {
     uint32_t tmp;
 
     tmp = ((value << 8) & 0xFF00FF00) | ((value >> 8) & 0xFF00FF);

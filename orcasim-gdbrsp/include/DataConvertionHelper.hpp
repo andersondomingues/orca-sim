@@ -23,10 +23,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef GDBRSP_INCLUDE_DATACONVERTIONHELPER_HPP_
-#define GDBRSP_INCLUDE_DATACONVERTIONHELPER_HPP_
+#ifndef ORCASIM_GDBRSP_INCLUDE_DATACONVERTIONHELPER_HPP_
+#define ORCASIM_GDBRSP_INCLUDE_DATACONVERTIONHELPER_HPP_
 
 #include <stdint.h>
+
+namespace orcasim::gdbrsp {
 
 /**
  * String-to-int
@@ -48,4 +50,5 @@ void hexstr(char* output, char* input, uint32_t integers);
  */
 uint32_t endswap(uint32_t value);
 
-#endif  // GDBRSP_INCLUDE_DATACONVERTIONHELPER_HPP_
+}  // namespace orcasim::gdbrsp
+#endif  // ORCASIM_GDBRSP_INCLUDE_DATACONVERTIONHELPER_HPP_

@@ -30,6 +30,10 @@
 
 #define RSP_DEBUG 1
 
+using orcasim::gdbrsp::RspServer;
+using orcasim::modeling::ProcessorState;
+using orcasim::modeling::UMemory;
+
 template <typename T>
 RspServer<T>::RspServer(ProcessorState<T>* state, UMemory* mem,
     std::string ipaddr, uint32_t udpport) {
