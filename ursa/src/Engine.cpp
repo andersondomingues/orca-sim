@@ -23,17 +23,15 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "Simulator.hpp"
+#include "Engine.hpp"
 
-// #include <future>
-// #include <thread>
-// #include <chrono>
-// #include <functional>
+using orcasim::ursa::Engine;
+using orcasim::ursa::SimulationTime;
 
 /**
  * Defaul constructor
  */
-Simulator::Simulator() {
+Engine::Engine() {
     _globalTime = 0;
     _epochs = 0;
     _timeout = 1;
@@ -44,7 +42,7 @@ Simulator::Simulator() {
   * @param time Number of cycles to run
   * @return the time in which the last event was executed. Should
   * roughly correspond to <time>. */
-SimulationTime Simulator::Run(SimulationTime time) {
+SimulationTime Engine::Run(SimulationTime time) {
     _globalTime = 0;
     _timeout = time;
 
@@ -78,7 +76,7 @@ SimulationTime Simulator::Run(SimulationTime time) {
 /**
   * @brief Generate the next epoch for a simulation session.
   * @return ? */
-SimulationTime Simulator::NextEpoch() {
+SimulationTime Engine::NextEpoch() {
     // get the number of elements scheduled
     int queue_size = static_cast<int>(_queue.size());
 
@@ -107,19 +105,19 @@ SimulationTime Simulator::NextEpoch() {
     return _globalTime;
 }
 
-SimulationTime Simulator::GetGlobalTime() {
+SimulationTime Engine::GetGlobalTime() {
     return _globalTime;
 }
 
 
-SimulationTime Simulator::GetEpochs() {
+SimulationTime Engine::GetEpochs() {
     return _epochs;
 }
 
 /**
  * @brief Schedule an event to run in a certain period of time
  * @param e Event to run.*/
-void Simulator::Schedule(const Event& e) {
+void Engine::Schedule(const Event& e) {
     #ifdef URSA_ZERO_TIME_CHECKING
     if (e.time == 0) {
         throw std::runtime_error("Simulator: unable to schedule "
@@ -132,6 +130,6 @@ void Simulator::Schedule(const Event& e) {
 
 /**
  * @brief Dtor. */
-Simulator::~Simulator() {
+Engine::~Engine() {
     // nothing to do
 }

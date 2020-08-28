@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef URSA_INCLUDE_SIMULATOR_HPP_
-#define URSA_INCLUDE_SIMULATOR_HPP_
+#ifndef URSA_INCLUDE_ENGINE_HPP_
+#define URSA_INCLUDE_ENGINE_HPP_
 
 // lib dependencies
 #include <iostream>
@@ -36,14 +36,22 @@
 #include "Event.hpp"
 #include "SimulationTime.hpp"
 
-class Simulator{
+namespace orcasim::ursa {
+
+/**
+ * This class implements an event queue to schedule and 
+ * execute hardware modules. The <priority_queue> from 
+ * the std lib is used to sort elements by time.
+ */
+class Engine{
  private:
+    /** number of cycles to simulate before reseting the queue */
     SimulationTime _epochs;
 
     /** queue that stores all events */
     std::priority_queue<Event> _queue;
 
-    /** current simulated time */
+    /** The global clock, stores current simulation time. */
     SimulationTime _globalTime;
 
     /** max time the simulation can reach */
@@ -53,27 +61,50 @@ class Simulator{
     void executeNext();
 
  public:
-    /* ctor. */
-    Simulator();
+    /**
+     * Default constructor, takes no parameters. 
+     */
+    Engine();
 
     /* run the simulation for <time> cycles. */
+    /**
+     * Executes the simulator until the internal clock reaches <time> cycles.
+     * @param time Maximum cycles to simulate
+     * @return the time in which the clock ended the simulation.
+     */
     SimulationTime Run(SimulationTime time = 100000);
 
-    /* return current global time */
+    /**
+     * Gets the current global time.
+     * @return value of _globalTime
+     */
     SimulationTime GetGlobalTime();
 
-    /* return total epochs */
+    /**
+     * Gets the number of cycles to simulate before reseting
+     * the simulation clock.
+     * @return value of __epochs 
+     */
     SimulationTime GetEpochs();
 
-    /* reset time, increment epochs and realign events */
+    /**
+     * Resets the simulation clock and advance simulation to the next epoch.
+     * @return The time in which the simulation clock was before advancing
+     *     to the next epoch.
+     */
     SimulationTime NextEpoch();
 
-    /** schedules a event */
+    /**
+     * Adds an event to the simulation queue.
+     * @param e Event to be added
+     */
     void Schedule(const Event& e);
 
-    /** Dtor. */
-    ~Simulator();
+    /**
+     * Destructor.
+     */
+    ~Engine();
 };
 
-
-#endif  // URSA_INCLUDE_SIMULATOR_HPP_
+}  // namespace orcasim::ursa
+#endif  // URSA_INCLUDE_ENGINE_HPP_

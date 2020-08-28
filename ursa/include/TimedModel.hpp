@@ -32,6 +32,8 @@
 #include "Model.hpp"
 #include "SimulationTime.hpp"
 
+namespace orcasim::ursa {
+
 /**
  * This class models a TimedModel. In this project, a TimedModel
  * is an abstraction which can execute an action in a given point
@@ -57,4 +59,5 @@ class TimedModel : public Model{
     virtual void Reset() = 0;
 };
 
+}  // namespace orcasim::ursa
 #endif  // URSA_INCLUDE_TIMEDMODEL_HPP_

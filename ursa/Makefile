@@ -8,15 +8,17 @@ OUTPUTDIR :=bin
 
 #libname
 LIBNAME := libursa.a 
+URSAOPT := -O3 -march=native -mtune=native
 
-CXXFLAGS := -I$(HEADERDIR) -c $(MAIN_COMPLINE) $(URSA_COMPLINE) 
+
+CXXFLAGS := -I$(HEADERDIR) -c $(MAIN_COMPLINE) $(URSA_COMPLINE) $(URSAOPT)
 
 TARGET_DEPS := \
 	$(OUTPUTDIR)/Event.o \
 	$(OUTPUTDIR)/Model.o \
 	$(OUTPUTDIR)/TimedModel.o \
 	$(OUTPUTDIR)/UntimedModel.o \
-	$(OUTPUTDIR)/Simulator.o 
+	$(OUTPUTDIR)/Engine.o 
 
 #pack file into a static library to be used later
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)

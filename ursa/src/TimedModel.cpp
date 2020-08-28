@@ -25,6 +25,8 @@
 ******************************************************************************/
 #include "TimedModel.hpp"
 
+using orcasim::ursa::TimedModel;
+
 TimedModel::TimedModel(const std::string name) : Model(name) {
     // nothing to do
 }

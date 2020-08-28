@@ -25,6 +25,8 @@
 ******************************************************************************/
 #include "UntimedModel.hpp"
 
+using orcasim::ursa::UntimedModel;
+
 UntimedModel::UntimedModel(const std::string name) : Model(name) {
     // nothing to do
 }

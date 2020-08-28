@@ -28,6 +28,8 @@
 
 #include <string>
 
+namespace orcasim::ursa {
+
 /**
  * Models a generic hardware model. Models usually correspond to modules, which
  * can be include any kind of hardware. Since not all the hardware behaviour is 
@@ -35,7 +37,7 @@
  * obey to some clock domain, or untimed, when their clock is irrelevant for the
  * simulation. See <TimedModel> and <UntimedModel>.
  */
-class Model{
+class Model {
  private:
     /**
      * A name for the model. Users may name models without any restriction, 
@@ -63,4 +65,5 @@ class Model{
     void SetName(std::string s);
 };
 
+}  // namespace orcasim::ursa
 #endif  // URSA_INCLUDE_MODEL_HPP_

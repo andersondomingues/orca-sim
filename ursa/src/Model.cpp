@@ -25,6 +25,8 @@
 ******************************************************************************/
 #include "Model.hpp"
 
+using orcasim::ursa::Model;
+
 Model::Model(const std::string name) {
     _name = name;
 }

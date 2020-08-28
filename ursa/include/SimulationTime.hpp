@@ -26,6 +26,8 @@
 #ifndef URSA_INCLUDE_SIMULATIONTIME_HPP_
 #define URSA_INCLUDE_SIMULATIONTIME_HPP_
 
+namespace orcasim::ursa {
+
 #include <stdint.h>
 #ifdef __WORDSIZE
 
@@ -39,4 +41,5 @@ typedef uint32_t SimulationTime;
 typedef uint32_t SimulationTime;
 #endif
 
+}  // namespace orcasim::ursa
 #endif  // URSA_INCLUDE_SIMULATIONTIME_HPP_

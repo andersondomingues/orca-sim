@@ -25,17 +25,32 @@
 ******************************************************************************/
 #include "Event.hpp"
 
+using orcasim::ursa::Event;
+
+/**
+ * Operator overload for '<'. Use by the internal queue for sorting events
+ * by time.
+ * @param e Event to be compared with the instance
+ * @return true if the instance happens later in time than event <e>.
+ */
 bool Event::operator<(const Event& e) const {
     return (this->time > e.time);
 }
 
+/**
+ * Default constructor. 
+ * @param t point in time to execute the event
+ * @param p a pointer to the associated hardware module
+ */
 Event::Event(SimulationTime t, TimedModel* p) {
     this->time = t;
     this->timedModel = p;
 }
 
-// ctor required for arrays, intentionally left blank
+/**
+ * Alternative constructor, required for creating arrays of Event elements. Do 
+ * not use this constructor.
+ */
 Event::Event() {
-    this->time = 0;
-    this->timedModel = nullptr;
+    // Fields are left unintialized intentionally.
 }

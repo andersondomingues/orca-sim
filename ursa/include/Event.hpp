@@ -29,10 +29,17 @@
 #include "TimedModel.hpp"
 #include "SimulationTime.hpp"
 
+namespace orcasim::ursa {
+
+/**
+ * This class models a discrete event. In orca-sim, events have a reference
+ * (a pointer) to the <cycle> funcion of the associated hardware model, which
+ * will be executed at time <time> by the simulation engine. Events occur once.
+ */
 class Event{
  public:
     /**
-     * Point in time when the event will trigger
+     * Point in time when the event will trigger. 
      * */
     SimulationTime time;
 
@@ -53,4 +60,5 @@ class Event{
     bool operator<(const Event& e) const;
 };
 
+}  // namespace orcasim::ursa
 #endif  // URSA_INCLUDE_EVENT_HPP_

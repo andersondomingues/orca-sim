@@ -30,6 +30,8 @@
 
 #include "Model.hpp"
 
+namespace orcasim::ursa {
+
 /**
  * Untimed models represent hardware models whose clock period is irrelevant for
  * the simulation.
@@ -44,4 +46,5 @@ class UntimedModel : public Model{
     virtual ~UntimedModel() = 0;
 };
 
+}  // namespace orcasim::ursa
 #endif  // URSA_INCLUDE_UNTIMEDMODEL_HPP_
