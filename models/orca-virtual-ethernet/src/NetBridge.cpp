@@ -41,9 +41,9 @@
 
 // simulator API
 #include "TimedModel.hpp"
-#include "UBuffer.hpp"
+#include "Buffer.hpp"
 
-#include "TNetBridge.hpp"
+#include "NetBridge.hpp"
 
 /**
  * @brief Default ctor. Name of the module must be informed.
@@ -58,7 +58,7 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
 
     // create a new signal so that the module can be interrupted by
     // the external network when a new packet arrives
-    _signal_recv = new USignal<int8_t>(&_recv_val, 0,
+    _signal_recv = new Signal<int8_t>(&_recv_val, 0,
         this->GetName() + ".signalUdpIntr");
     _signal_recv->Write(0);
 
@@ -90,8 +90,8 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
         << NETSOCKET_CLIENT_PORT << std::endl;
 
     // instantiate a new input buffer (only input is buferred)
-    _ib = new UBuffer<FlitType>(this->GetName() + ".buffer.in",
-        BUFFER_CAPACITY);
+    _ib = new Buffer<FlitType>(this->GetName() + ".buffer.in",
+        HWBUFFER_LEN);
 
     this->Reset();
 
@@ -102,7 +102,7 @@ TNetBridge::TNetBridge(std::string name) : TimedModel(name) {
     }
 }
 
-USignal<int8_t>* TNetBridge::GetSignalRecv() {
+Signal<int8_t>* TNetBridge::GetSignalRecv() {
     return _signal_recv;
 }
 
@@ -133,11 +133,11 @@ void TNetBridge::Reset() {
     // TODO(ad): missing reset method
 }
 
-UBuffer<FlitType>* TNetBridge::GetInputBuffer() {
+Buffer<FlitType>* TNetBridge::GetInputBuffer() {
     return _ib;
 }
 
-void TNetBridge::SetOutputBuffer(UBuffer<FlitType>* b) {
+void TNetBridge::SetOutputBuffer(Buffer<FlitType>* b) {
     _ob = b;
 }
 

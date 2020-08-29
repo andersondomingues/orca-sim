@@ -23,11 +23,14 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef MODELS_INCLUDE_TDMANETIF_HPP_
-#define MODELS_INCLUDE_TDMANETIF_HPP_
+#ifndef MODELS_ORCA_NETWORK_INTERFACE_INCLUDE_DMANETIF_HPP_
+#define MODELS_ORCA_NETWORK_INTERFACE_INCLUDE_DMANETIF_HPP_
 
 // usually equals to routers' buffer len
+#ifndef NI_BUFFER_LEN
 #define NI_BUFFER_LEN 16
+#pragma message "NI buffer length undefined, defaulting to 16"
+#endif
 
 // std API
 #include <iostream>
@@ -35,14 +38,23 @@
 
 // simulator API
 #include "TimedModel.hpp"
-#include "UBuffer.hpp"
-#include "UMemory.hpp"
-#include "USignal.hpp"
+#include "Buffer.hpp"
+#include "Memory.hpp"
+#include "Signal.hpp"
+
+using orcasim::base::TimedModel;
+using orcasim::base::SimulationTime;
+using orcasim::modeling::Memory;
+using orcasim::modeling::Signal;
+using orcasim::modeling::Buffer;
+
+namespace orcasim::models::orcanetworkinterface {
 
 /**
  * @brief flit
  * 
  */
+// @todo(ad): maybe make it generic<T>
 typedef uint16_t FlitType;
 
 /**
@@ -80,9 +92,9 @@ enum class DmaNetifSendState{
 class TDmaNetif: public TimedModel{
  private:
     // Pointer to main memory, recv mem, and send mem
-    UMemory* _mem0;
-    UMemory* _mem1;  // recv_mem
-    UMemory* _mem2;  // send_mem
+    Memory* _mem0;
+    Memory* _mem1;  // recv_mem
+    Memory* _mem2;  // send_mem
 
     // States for send and recv processes
     DmaNetifRecvState _recv_state;
@@ -93,20 +105,20 @@ class TDmaNetif: public TimedModel{
     FlitType _send_reg;
 
     // OUT: stalls cpu while copying from/to main memory
-    USignal<uint8_t>* _sig_stall;
+    Signal<uint8_t>* _sig_stall;
     // OUT: request cpu interruption signal (same for both processes)
-    USignal<uint8_t>* _sig_intr;
+    Signal<uint8_t>* _sig_intr;
 
     // OUT: 0x0 when in ready state
-    USignal<uint8_t>* _sig_send_status;
+    Signal<uint8_t>* _sig_send_status;
     // OUT: 0x0 when in ready state, updated but unused
-    USignal<uint32_t>* _sig_recv_status;
+    Signal<uint32_t>* _sig_recv_status;
 
-    USignal<uint8_t>*  _sig_prog_send;   // IN
-    USignal<uint8_t>*  _sig_prog_recv;   // IN
+    Signal<uint8_t>*  _sig_prog_send;   // IN
+    Signal<uint8_t>*  _sig_prog_recv;   // IN
 
-    USignal<uint32_t>* _sig_prog_addr;   // IN
-    USignal<uint32_t>* _sig_prog_size;   // IN
+    Signal<uint32_t>* _sig_prog_addr;   // IN
+    Signal<uint32_t>* _sig_prog_size;   // IN
 
     // recv specific vars
     uint32_t _recv_payload_size;       // total size of the payload (flits)
@@ -119,8 +131,8 @@ class TDmaNetif: public TimedModel{
     uint32_t _send_address;          // memory position to which to read from
 
     // NOC router interface. Both the NI and Router has buffers at the input
-    UBuffer<FlitType>* _ib;
-    UBuffer<FlitType>* _ob;
+    Buffer<FlitType>* _ib;
+    Buffer<FlitType>* _ob;
 
  public:
     // getters
@@ -128,30 +140,30 @@ class TDmaNetif: public TimedModel{
     DmaNetifSendState GetSendState();
 
     // getters
-    USignal<uint8_t>*  GetSignalStall();
-    USignal<uint8_t>*  GetSignalIntr();
+    Signal<uint8_t>*  GetSignalStall();
+    Signal<uint8_t>*  GetSignalIntr();
 
-    USignal<uint8_t>*  GetSignalSendStatus();
-    USignal<uint32_t>*  GetSignalRecvStatus();
+    Signal<uint8_t>*  GetSignalSendStatus();
+    Signal<uint32_t>*  GetSignalRecvStatus();
 
-    USignal<uint8_t>*  GetSignalProgSend();
-    USignal<uint8_t>*  GetSignalProgRecv();
+    Signal<uint8_t>*  GetSignalProgSend();
+    Signal<uint8_t>*  GetSignalProgRecv();
 
-    USignal<uint32_t>* GetSignalProgAddr();
-    USignal<uint32_t>* GetSignalProgSize();
+    Signal<uint32_t>* GetSignalProgAddr();
+    Signal<uint32_t>* GetSignalProgSize();
 
     // setters
-    void SetSignalStall(USignal<uint8_t>*);
-    void SetSignalIntr(USignal<uint8_t>*);
+    void SetSignalStall(Signal<uint8_t>*);
+    void SetSignalIntr(Signal<uint8_t>*);
 
-    void SetSignalSendStatus(USignal<uint8_t>*);
-    void SetSignalRecvStatus(USignal<uint32_t>*);
+    void SetSignalSendStatus(Signal<uint8_t>*);
+    void SetSignalRecvStatus(Signal<uint32_t>*);
 
-    void SetSignalProgSend(USignal<uint8_t>*);
-    void SetSignalProgRecv(USignal<uint8_t>*);
+    void SetSignalProgSend(Signal<uint8_t>*);
+    void SetSignalProgRecv(Signal<uint8_t>*);
 
-    void SetSignalProgAddr(USignal<uint32_t>*);
-    void SetSignalProgSize(USignal<uint32_t>*);
+    void SetSignalProgAddr(Signal<uint32_t>*);
+    void SetSignalProgSize(Signal<uint32_t>*);
 
     // internal processes
     void sendProcess();
@@ -163,13 +175,13 @@ class TDmaNetif: public TimedModel{
     void Reset();
 
     // memories
-    void SetMem0(UMemory*);
-    void SetMem1(UMemory*);
-    void SetMem2(UMemory*);
+    void SetMem0(Memory*);
+    void SetMem1(Memory*);
+    void SetMem2(Memory*);
 
     // buffers
-    void SetOutputBuffer(UBuffer<FlitType>* ob);  // packets go to router
-    UBuffer<FlitType>* GetInputBuffer();         // packets come from router
+    void SetOutputBuffer(Buffer<FlitType>* ob);  // packets go to router
+    Buffer<FlitType>* GetInputBuffer();         // packets come from router
 
     // ctor./dtor.
     explicit TDmaNetif(std::string name);
@@ -177,4 +189,5 @@ class TDmaNetif: public TimedModel{
 };
 
 
-#endif  // MODELS_INCLUDE_TDMANETIF_HPP_
+}  // namespace orcasim::models::orcanetworkinterface
+#endif  // MODELS_ORCA_NETWORK_INTERFACE_INCLUDE_DMANETIF_HPP_

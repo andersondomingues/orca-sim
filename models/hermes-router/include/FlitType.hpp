@@ -23,12 +23,15 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef MODELS_INCLUDE_MEMORYTYPE_HPP_
-#define MODELS_INCLUDE_MEMORYTYPE_HPP_
+#ifndef MODELS_HERMES_ROUTER_INCLUDE_FLITTYPE_HPP_
+#define MODELS_HERMES_ROUTER_INCLUDE_FLITTYPE_HPP_
 
-// Remeber: a memory is an arrays of int8_t, and
-// addresses are 32-bit length
-#define MemoryType int8_t
-#define MemoryAddr uint32_t
+#include <stdint.h>
 
-#endif  // MODELS_INCLUDE_MEMORYTYPE_HPP_
+namespace orcasim::models::hermesrouter {
+
+// @todo(ad): maybe make this model generic<T>
+typedef uint16_t FlitType;
+
+}  // namespace orcasim::models::hermesrouter
+#endif  // MODELS_HERMES_ROUTER_INCLUDE_FLITTYPE_HPP_

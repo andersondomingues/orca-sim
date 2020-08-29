@@ -31,10 +31,14 @@
 
 // simulator API
 #include "TimedModel.hpp"
-#include "UBuffer.hpp"
-#include "TDmaNetif.hpp"
+#include "Buffer.hpp"
+#include "DmaNetif.hpp"
 
-int _number_of_goddamn_packets = 0;
+using orcasim::modeling::Buffer;
+using orcasim::models::orcanetworkinterface::TDmaNetif;
+using orcasim::models::orcanetworkinterface::DmaNetifRecvState;
+using orcasim::models::orcanetworkinterface::DmaNetifSendState;
+using orcasim::models::orcanetworkinterface::FlitType;
 
 TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
     _sig_stall = nullptr;
@@ -46,7 +50,7 @@ TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
     _sig_prog_send = nullptr;
     _sig_prog_recv = nullptr;
 
-    _ib = new UBuffer<FlitType>(name + ".IN", BUFFER_CAPACITY);
+    _ib = new Buffer<FlitType>(name + ".IN", NI_BUFFER_LEN);
 
     this->Reset();
 }
@@ -60,11 +64,11 @@ void TDmaNetif::Reset() {
     _send_state = DmaNetifSendState::WAIT_CONFIG_STALL;
 }
 
-void TDmaNetif::SetOutputBuffer(UBuffer<FlitType>* ob) {
+void TDmaNetif::SetOutputBuffer(Buffer<FlitType>* ob) {
     _ob = ob;
 }
 
-UBuffer<FlitType>* TDmaNetif::GetInputBuffer() {
+Buffer<FlitType>* TDmaNetif::GetInputBuffer() {
     return _ib;
 }
 
@@ -78,52 +82,52 @@ DmaNetifSendState TDmaNetif::GetSendState() {
 }
 
 // main mem
-void TDmaNetif::SetMem0(UMemory* m0) {
+void TDmaNetif::SetMem0(Memory* m0) {
     _mem0 = m0;
 }
 
 // recv mem
-void TDmaNetif::SetMem1(UMemory* m1) {
+void TDmaNetif::SetMem1(Memory* m1) {
     _mem1 = m1;
 }
 
 // send mem
-void TDmaNetif::SetMem2(UMemory* m2) {
+void TDmaNetif::SetMem2(Memory* m2) {
     _mem2 = m2;
 }
 
 // getters
-USignal<uint8_t>*  TDmaNetif::GetSignalStall() { return _sig_stall; }
-USignal<uint8_t>*  TDmaNetif::GetSignalIntr() { return _sig_intr; }
+Signal<uint8_t>*  TDmaNetif::GetSignalStall() { return _sig_stall; }
+Signal<uint8_t>*  TDmaNetif::GetSignalIntr() { return _sig_intr; }
 
-USignal<uint8_t>*  TDmaNetif::GetSignalSendStatus() { return _sig_send_status; }
-USignal<uint32_t>*  TDmaNetif::GetSignalRecvStatus() {
+Signal<uint8_t>*  TDmaNetif::GetSignalSendStatus() { return _sig_send_status; }
+Signal<uint32_t>*  TDmaNetif::GetSignalRecvStatus() {
     return _sig_recv_status;
 }
 
-USignal<uint8_t>*  TDmaNetif::GetSignalProgSend() { return _sig_prog_send; }
-USignal<uint8_t>*  TDmaNetif::GetSignalProgRecv() { return _sig_prog_recv; }
+Signal<uint8_t>*  TDmaNetif::GetSignalProgSend() { return _sig_prog_send; }
+Signal<uint8_t>*  TDmaNetif::GetSignalProgRecv() { return _sig_prog_recv; }
 
-USignal<uint32_t>* TDmaNetif::GetSignalProgAddr() { return _sig_prog_addr; }
-USignal<uint32_t>* TDmaNetif::GetSignalProgSize() { return _sig_prog_size; }
+Signal<uint32_t>* TDmaNetif::GetSignalProgAddr() { return _sig_prog_addr; }
+Signal<uint32_t>* TDmaNetif::GetSignalProgSize() { return _sig_prog_size; }
 
 // setters
-void TDmaNetif::SetSignalStall(USignal<uint8_t>* c) { _sig_stall = c; }
-void TDmaNetif::SetSignalIntr(USignal<uint8_t>* c) { _sig_intr = c; }
+void TDmaNetif::SetSignalStall(Signal<uint8_t>* c) { _sig_stall = c; }
+void TDmaNetif::SetSignalIntr(Signal<uint8_t>* c) { _sig_intr = c; }
 
-void TDmaNetif::SetSignalSendStatus(USignal<uint8_t>* c) {
+void TDmaNetif::SetSignalSendStatus(Signal<uint8_t>* c) {
     _sig_send_status = c;
 }
 
-void TDmaNetif::SetSignalRecvStatus(USignal<uint32_t>* c) {
+void TDmaNetif::SetSignalRecvStatus(Signal<uint32_t>* c) {
     _sig_recv_status = c;
 }
 
-void TDmaNetif::SetSignalProgSend(USignal<uint8_t>* c) { _sig_prog_send = c; }
-void TDmaNetif::SetSignalProgRecv(USignal<uint8_t>* c) { _sig_prog_recv = c; }
+void TDmaNetif::SetSignalProgSend(Signal<uint8_t>* c) { _sig_prog_send = c; }
+void TDmaNetif::SetSignalProgRecv(Signal<uint8_t>* c) { _sig_prog_recv = c; }
 
-void TDmaNetif::SetSignalProgAddr(USignal<uint32_t>* c) { _sig_prog_addr = c; }
-void TDmaNetif::SetSignalProgSize(USignal<uint32_t>* c) { _sig_prog_size = c; }
+void TDmaNetif::SetSignalProgAddr(Signal<uint32_t>* c) { _sig_prog_addr = c; }
+void TDmaNetif::SetSignalProgSize(Signal<uint32_t>* c) { _sig_prog_size = c; }
 
 SimulationTime TDmaNetif::Run() {
     // independent processes, can run parallel

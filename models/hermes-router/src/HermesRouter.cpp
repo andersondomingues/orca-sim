@@ -27,13 +27,18 @@
 #include <sstream>
 #include <iomanip>
 
-#include "TRouter.hpp"
+#include "HermesRouter.hpp"
+
+using orcasim::models::hermesrouter::FlitType;
+using orcasim::models::hermesrouter::HermesRouter;
+using orcasim::base::SimulationTime;
+using orcasim::modeling::Buffer;
 
 /**
  * @brief Get the name of the port of id equals to <port>
  * @param port the id of the port
  * @return and instance of std::string containing port's name */
-std::string TRouter::GetPortName(int port) {
+std::string HermesRouter::GetPortName(int port) {
     switch (port) {
         case SOUTH: return "SOUTH";
         case NORTH: return "NORTH";
@@ -49,7 +54,7 @@ std::string TRouter::GetPortName(int port) {
  * @param name Name of the instance (proccess impl)
  * @param x_pos X coordinate (first part of router addr)
  * @param y_pos Y coordinate (second part of router addr) */
-TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos):
+HermesRouter::HermesRouter(std::string name, uint32_t x_pos, uint32_t y_pos):
     TimedModel(name) {
     _x = x_pos;
     _y = y_pos;
@@ -59,13 +64,13 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos):
     for (int i = 0; i < 5; i++) {
         std::string bname = GetName() +  ".IN-" + this->GetPortName(i);
         _ob[i] = nullptr;
-        _ib[i] = new UBuffer<FlitType>(bname, BUFFER_CAPACITY);
+        _ib[i] = new Buffer<FlitType>(bname, BUFFER_CAPACITY);
     }
 
     #ifdef ROUTER_ENABLE_COUNTERS
     // if counters are enabled, initiate the respective signals
     // please note that these signals are not mapped to anywhere yet
-    _counter_active = new USignal<uint32_t>(GetName() + ".counters.active");
+    _counter_active = new Signal<uint32_t>(GetName() + ".counters.active");
     #endif
 
     this->Reset();
@@ -74,7 +79,7 @@ TRouter::TRouter(std::string name, uint32_t x_pos, uint32_t y_pos):
 /**
  * @brief Free allocated memory if any
  */
-TRouter::~TRouter() {
+HermesRouter::~HermesRouter() {
     #ifdef ROUTER_ENABLE_COUNTERS
     delete _counter_active;
     #endif
@@ -83,7 +88,7 @@ TRouter::~TRouter() {
         delete(_ib[i]);
 }
 
-void TRouter::Reset() {
+void HermesRouter::Reset() {
     _round_robin = LOCAL;  // starts checking on local port
 
     for (int i = 0; i < 5; i++) {
@@ -94,7 +99,7 @@ void TRouter::Reset() {
     // TODO(ad): reset buffers
 }
 
-uint32_t TRouter::GetRR() {
+uint32_t HermesRouter::GetRR() {
     return _round_robin;
 }
 
@@ -102,7 +107,7 @@ uint32_t TRouter::GetRR() {
  * @brief Implementation of the Run method from
  * the Proccess abstract class.
  * @return The next time to schedule the event.*/
-SimulationTime TRouter::Run() {
+SimulationTime HermesRouter::Run() {
     // CROSSBAR CONTROL: connect priority port to destination if it has any
     // packet to send but is waiting for the destination to free
     if (_ib[_round_robin]->size() > 0 && _switch_control[_round_robin] == -1) {
@@ -196,7 +201,7 @@ SimulationTime TRouter::Run() {
 }
 
 #ifdef ROUTER_ENABLE_COUNTERS
-USignal<uint32_t>* TRouter::GetSignalCounterActive() {
+Signal<uint32_t>* TRouter::GetSignalCounterActive() {
     return this->_counter_active;
 }
 
@@ -206,7 +211,7 @@ USignal<uint32_t>* TRouter::GetSignalCounterActive() {
  * @brief Calculate the port to route a given flit
  * @param flit to be routed
  * @return the port to where te packet must go*/
-uint32_t TRouter::GetRouteXY(FlitType flit) {
+uint32_t HermesRouter::GetRouteXY(FlitType flit) {
     FlitType tx = (flit & 0x00F0) >> 4;
     FlitType ty = flit & 0x000F;
 
@@ -229,19 +234,19 @@ uint32_t TRouter::GetRouteXY(FlitType flit) {
  * @brief Get a pointer to one of the output buffers.
  * @param r The port from which get the pointer.
  * @return A pointer to the buffer.*/
-UBuffer<FlitType>* TRouter::GetOutputBuffer(uint32_t r) {
+Buffer<FlitType>* HermesRouter::GetOutputBuffer(uint32_t r) {
     return _ob[r];
 }
 
-UBuffer<FlitType>* TRouter::GetInputBuffer(uint32_t r) {
+Buffer<FlitType>* HermesRouter::GetInputBuffer(uint32_t r) {
     return _ib[r];
 }
 
-void TRouter::SetOutputBuffer(UBuffer<FlitType>* b, uint32_t port) {
+void HermesRouter::SetOutputBuffer(Buffer<FlitType>* b, uint32_t port) {
     _ob[port] = b;
 }
 
-std::string TRouter::ToString() {
+std::string HermesRouter::ToString() {
     std::stringstream ss;
     ss << this->GetName() + ": ";
 

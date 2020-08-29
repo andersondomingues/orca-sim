@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef MODELS_INCLUDE_TROUTER_HPP_
-#define MODELS_INCLUDE_TROUTER_HPP_
+#ifndef MODELS_HERMES_ROUTER_INCLUDE_HERMESROUTER_HPP_
+#define MODELS_HERMES_ROUTER_INCLUDE_HERMESROUTER_HPP_
 
 // std API
 #include <iostream>
@@ -32,10 +32,16 @@
 
 // simulator API
 #include "TimedModel.hpp"
-#include "UBuffer.hpp"
-#include "USignal.hpp"
+#include "Buffer.hpp"
+#include "Signal.hpp"
+#include "FlitType.hpp"
 
-typedef uint16_t FlitType;
+#ifndef BUFFER_CAPACITY
+#define BUFFER_CAPACITY 8
+#pragma message "Buffer capacity not defined in HermesRouter, set to 8 flits"
+#endif
+
+namespace orcasim::models::hermesrouter {
 
 enum class RouterState{
     ROUNDROBIN, FORWARD1, PKTLEN, BURST
@@ -46,13 +52,16 @@ enum class RouterState{
 #define WEST  1
 #define SOUTH 2
 #define EAST  3
-
 #define LOCAL 4
 
-class TRouter: public TimedModel{
+using orcasim::base::TimedModel;
+using orcasim::base::SimulationTime;
+using orcasim::modeling::Buffer;
+
+class HermesRouter: public TimedModel{
  private:
     #ifdef ROUTER_ENABLE_COUNTERS
-    USignal<uint32_t>* _counter_active;
+    Signal<uint32_t>* _counter_active;
     #endif
 
     #ifdef ROUTER_ENABLE_COUNTERS
@@ -75,22 +84,22 @@ class TRouter: public TimedModel{
     uint32_t _x, _y;
 
     // output buffers
-    UBuffer<FlitType>* _ob[5];
+    Buffer<FlitType>* _ob[5];
 
     // input buffers
-    UBuffer<FlitType>* _ib[5];
+    Buffer<FlitType>* _ib[5];
 
  public:
     #ifdef ROUTER_ENABLE_COUNTERS
-    USignal<uint32_t>* GetSignalCounterActive();
+    Signal<uint32_t>* GetSignalCounterActive();
     #endif
 
     uint32_t GetRR();
 
-    UBuffer<FlitType>* GetOutputBuffer(uint32_t p);
-    UBuffer<FlitType>* GetInputBuffer(uint32_t p);
+    Buffer<FlitType>* GetOutputBuffer(uint32_t p);
+    Buffer<FlitType>* GetInputBuffer(uint32_t p);
 
-    void SetOutputBuffer(UBuffer<FlitType>* b, uint32_t port);
+    void SetOutputBuffer(Buffer<FlitType>* b, uint32_t port);
 
     /** Implementation of the Process' interface
       * @return time taken for perming next cycle */
@@ -100,10 +109,10 @@ class TRouter: public TimedModel{
     uint32_t GetRouteXY(FlitType flit);
 
     /** Ctor. **/
-    TRouter(std::string name, uint32_t x_pos, uint32_t y_pos);
+    HermesRouter(std::string name, uint32_t x_pos, uint32_t y_pos);
 
     /** Dtor. **/
-    ~TRouter();
+    ~HermesRouter();
 
     /**
      * @brief Get the name of the port of id equals to <port>
@@ -115,4 +124,5 @@ class TRouter: public TimedModel{
     std::string ToString();
 };
 
-#endif  // MODELS_INCLUDE_TROUTER_HPP_
+}  // namespace orcasim::models::hermesrouter
+#endif  // MODELS_HERMES_ROUTER_INCLUDE_HERMESROUTER_HPP_

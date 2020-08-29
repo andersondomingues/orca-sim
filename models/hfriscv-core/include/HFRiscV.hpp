@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef MODELS_INCLUDE_THFRISCV_HPP_
-#define MODELS_INCLUDE_THFRISCV_HPP_
+#ifndef MODELS_HFRISCV_CORE_INCLUDE_HFRISCV_HPP_
+#define MODELS_HFRISCV_CORE_INCLUDE_HFRISCV_HPP_
 
 // std libraries
 #include <stdio.h>
@@ -35,11 +35,11 @@
 #include <string>
 
 // simulator libs
-#include "TProcessorBase.hpp"
+#include "ProcessorBase.hpp"
 
 // models libs
-#include "UMemory.hpp"
-#include "USignal.hpp"
+#include "Memory.hpp"
+#include "Signal.hpp"
 
 #define HFRISCV_PC_MEMBASE 0x40000000
 
@@ -59,6 +59,11 @@
 #define UART_READ       0xf00000e0
 #define UART_DIVISOR    0xf00000f0
 
+using orcasim::modeling::ProcessorBase;
+using orcasim::modeling::Signal;
+using orcasim::modeling::Memory;
+
+namespace orcasim::models::hfriscv {
 
 typedef struct {
     int32_t r[32];
@@ -68,13 +73,13 @@ typedef struct {
 } risc_v_state;
 
 // inherits for a 32-bit processor
-class THFRiscV : public TProcessorBase<uint32_t>{
+class HFRiscV : public ProcessorBase<uint32_t>{
  private:
     uint32_t _last_pc;
 
     // interruption wire
-    USignal<uint8_t>* _signal_intr;
-    USignal<uint8_t>* _signal_stall;
+    Signal<uint8_t>* _signal_intr;
+    Signal<uint8_t>* _signal_stall;
 
     // context
     risc_v_state* s;
@@ -84,32 +89,32 @@ class THFRiscV : public TProcessorBase<uint32_t>{
     #ifdef HFRISCV_ENABLE_COUNTERS
     void UpdateCounters(int opcode, int funct3);
 
-    USignal<uint32_t>* _counter_iarith;
-    USignal<uint32_t>* _counter_ilogical;
-    USignal<uint32_t>* _counter_ishift;
-    USignal<uint32_t>* _counter_ibranches;
-    USignal<uint32_t>* _counter_ijumps;
-    USignal<uint32_t>* _counter_iloadstore;
+    Signal<uint32_t>* _counter_iarith;
+    Signal<uint32_t>* _counter_ilogical;
+    Signal<uint32_t>* _counter_ishift;
+    Signal<uint32_t>* _counter_ibranches;
+    Signal<uint32_t>* _counter_ijumps;
+    Signal<uint32_t>* _counter_iloadstore;
 
-    USignal<uint32_t>* _counter_cycles_total;
-    USignal<uint32_t>* _counter_cycles_stall;
+    Signal<uint32_t>* _counter_cycles_total;
+    Signal<uint32_t>* _counter_cycles_stall;
 
-    USignal<uint32_t>* _counter_hosttime;
+    Signal<uint32_t>* _counter_hosttime;
     #endif
 
  public:
     #ifdef HFRISCV_ENABLE_COUNTERS
-    USignal<uint32_t>* GetSignalCounterArith();
-    USignal<uint32_t>* GetSignalCounterLogical();
-    USignal<uint32_t>* GetSignalCounterShift();
-    USignal<uint32_t>* GetSignalCounterBranches();
-    USignal<uint32_t>* GetSignalCounterJumps();
-    USignal<uint32_t>* GetSignalCounterLoadStore();
+    Signal<uint32_t>* GetSignalCounterArith();
+    Signal<uint32_t>* GetSignalCounterLogical();
+    Signal<uint32_t>* GetSignalCounterShift();
+    Signal<uint32_t>* GetSignalCounterBranches();
+    Signal<uint32_t>* GetSignalCounterJumps();
+    Signal<uint32_t>* GetSignalCounterLoadStore();
 
-    USignal<uint32_t>* GetSignalCounterCyclesTotal();
-    USignal<uint32_t>* GetSignalCounterCyclesStall();
+    Signal<uint32_t>* GetSignalCounterCyclesTotal();
+    Signal<uint32_t>* GetSignalCounterCyclesStall();
 
-    USignal<uint32_t>* GetSignalHostTime();
+    Signal<uint32_t>* GetSignalHostTime();
     #endif
 
     void dumpregs();
@@ -119,12 +124,12 @@ class THFRiscV : public TProcessorBase<uint32_t>{
         uint32_t value);
 
     // ctor./dtor.
-    THFRiscV(std::string name, USignal<uint8_t>* intr, USignal<uint8_t>* stall,
-        UMemory* mem);
-    ~THFRiscV();
+    HFRiscV(std::string name, Signal<uint8_t>* intr, Signal<uint8_t>* stall,
+        Memory* mem);
+    ~HFRiscV();
 
-    USignal<uint8_t>* GetSignalStall();
-    USignal<uint8_t>* GetSignalIntr();
+    Signal<uint8_t>* GetSignalStall();
+    Signal<uint8_t>* GetSignalIntr();
 
     SimulationTime Run();
 
@@ -135,4 +140,5 @@ class THFRiscV : public TProcessorBase<uint32_t>{
     void Reset();
 };
 
-#endif  // MODELS_INCLUDE_THFRISCV_HPP_
+}  // namespace orcasim::models::hfriscv
+#endif  // MODELS_HFRISCV_CORE_INCLUDE_HFRISCV_HPP_

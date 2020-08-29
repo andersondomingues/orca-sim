@@ -27,10 +27,10 @@
 #include <sstream>
 #include <chrono>
 
-#include "THFRiscV.hpp"
-#include "USignal.hpp"
-
 #include "sys/time.h"
+
+#include "HFRiscV.hpp"
+#include "Signal.hpp"
 
 #define RISCV_INVALID_OPCODE 0x0
 
@@ -39,7 +39,9 @@
 #define PC_NEXT GetState()->pc_next
 #define R GetState()->regs
 
-void THFRiscV::dumpregs() {
+using orcasim::models::hfriscv::HFRiscV;
+
+void HFRiscV::dumpregs() {
     for (uint32_t i = 0; i < 32; i += 4) {
         printf("r%02d [%08x] r%02d [%08x] r%02d [%08x] r%02d [%08x]\n", \
         i, R[i], i+1, R[i+1], i+2, R[i+2], i+3, R[i+3]);
@@ -48,7 +50,7 @@ void THFRiscV::dumpregs() {
     printf("pc: %08x\n\n", PC);
 }
 
-void THFRiscV::bp(risc_v_state *s, uint32_t ir) {
+void HFRiscV::bp(risc_v_state *s, uint32_t ir) {
     printf("Breakpoint reached at 0x%x (ir: %08x)", PC, ir);
     printf("irq_status: %08x, irq_cause: %08x, irq_mask: %08x\n", s->status,
         s->cause, s->mask);
@@ -66,7 +68,7 @@ void THFRiscV::bp(risc_v_state *s, uint32_t ir) {
  * @param address Starting address to read from
  * @return Data read
  */
-int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address) {
+int32_t HFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address) {
     uint32_t data;
 
     // Check whether the address belongs to the main memory
@@ -148,11 +150,11 @@ int32_t THFRiscV::mem_read(risc_v_state *s, int32_t size, uint32_t address) {
     }
 }
 
-USignal<uint8_t>* THFRiscV::GetSignalStall() {
+Signal<uint8_t>* HFRiscV::GetSignalStall() {
     return _signal_stall;
 }
 
-USignal<uint8_t>* THFRiscV::GetSignalIntr() {
+Signal<uint8_t>* HFRiscV::GetSignalIntr() {
     return _signal_intr;
 }
 
@@ -163,7 +165,7 @@ USignal<uint8_t>* THFRiscV::GetSignalIntr() {
  * @param address Starting address of data
  * @param value Value to be written to the address
  */
-void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address,
+void HFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address,
     uint32_t value) {
     // if the address belong to some memory range, write to it
     if (address <= GetMemory()->GetLastAddr()) {
@@ -284,33 +286,33 @@ void THFRiscV::mem_write(risc_v_state *s, int32_t size, uint32_t address,
 #ifdef HFRISCV_ENABLE_COUNTERS
 
 // Counters' getters
-USignal<uint32_t>* THFRiscV::GetSignalCounterArith() {
+Signal<uint32_t>* HFRiscV::GetSignalCounterArith() {
     return _counter_iarith;
 }
-USignal<uint32_t>* THFRiscV::GetSignalCounterLogical() {
+Signal<uint32_t>* HFRiscV::GetSignalCounterLogical() {
     return _counter_ilogical;
 }
-USignal<uint32_t>* THFRiscV::GetSignalCounterShift() {
+Signal<uint32_t>* HFRiscV::GetSignalCounterShift() {
     return _counter_ishift;
 }
-USignal<uint32_t>* THFRiscV::GetSignalCounterBranches() {
+Signal<uint32_t>* HFRiscV::GetSignalCounterBranches() {
     return _counter_ibranches;
 }
-USignal<uint32_t>* THFRiscV::GetSignalCounterJumps() {
+Signal<uint32_t>* HFRiscV::GetSignalCounterJumps() {
     return _counter_ijumps;
 }
-USignal<uint32_t>* THFRiscV::GetSignalCounterLoadStore() {
+Signal<uint32_t>* HFRiscV::GetSignalCounterLoadStore() {
     return _counter_iloadstore;
 }
 
 // cycles
-USignal<uint32_t>* THFRiscV::GetSignalCounterCyclesTotal() {
+Signal<uint32_t>* HFRiscV::GetSignalCounterCyclesTotal() {
     return _counter_cycles_total;
 }
-USignal<uint32_t>* THFRiscV::GetSignalCounterCyclesStall() {
+Signal<uint32_t>* HFRiscV::GetSignalCounterCyclesStall() {
     return _counter_cycles_stall;
 }
-USignal<uint32_t>* THFRiscV::GetSignalHostTime() {
+Signal<uint32_t>* HFRiscV::GetSignalHostTime() {
     return _counter_hosttime;
 }
 
@@ -320,7 +322,7 @@ USignal<uint32_t>* THFRiscV::GetSignalHostTime() {
  * is executed. Please note that NOP and MOVE instructions are
  * ignored as riscv32i does not generate them.
 */
-void THFRiscV::UpdateCounters(int opcode, int funct3) {
+void HFRiscV::UpdateCounters(int opcode, int funct3) {
     switch (opcode) {
         case 0x37:  // LUI
         case 0x17:  // ALUI
@@ -363,10 +365,10 @@ void THFRiscV::UpdateCounters(int opcode, int funct3) {
 }
 #endif /* HFRISCV_ENABLE_COUNTERS */
 
-SimulationTime THFRiscV::Run() {
+SimulationTime HFRiscV::Run() {
     // call ancestor method which handles
     // generic tasks all processor models
-    TProcessorBase::Run();
+    ProcessorBase::Run();
 
     #ifdef ORCA_ENABLE_GDBRSP
     // When operating with GDB support, the pause flags indicates
@@ -733,9 +735,9 @@ fail:
     #endif
 }
 
-THFRiscV::THFRiscV(std::string name, USignal<uint8_t>* intr,
-    USignal<uint8_t>* stall, UMemory* mainmem)
-    : TProcessorBase(name, HFRISCV_PC_MEMBASE, mainmem) {
+HFRiscV::HFRiscV(std::string name, Signal<uint8_t>* intr,
+    Signal<uint8_t>* stall, Memory* mainmem)
+    : ProcessorBase(name, HFRISCV_PC_MEMBASE, mainmem) {
 
     s = new risc_v_state;
     memset(s, 0, sizeof(risc_v_state));
@@ -767,24 +769,24 @@ THFRiscV::THFRiscV(std::string name, USignal<uint8_t>* intr,
         + "_uart.log", std::ofstream::out | std::ofstream::trunc);
 
     #ifdef HFRISCV_ENABLE_COUNTERS
-    _counter_iarith = new USignal<uint32_t>(GetName() + ".counters.iarith");
-    _counter_ilogical = new USignal<uint32_t>(GetName() + ".counters.ilogical");
-    _counter_ishift = new USignal<uint32_t>(GetName() + ".counters.ishift");
+    _counter_iarith = new Signal<uint32_t>(GetName() + ".counters.iarith");
+    _counter_ilogical = new Signal<uint32_t>(GetName() + ".counters.ilogical");
+    _counter_ishift = new Signal<uint32_t>(GetName() + ".counters.ishift");
     _counter_ibranches =
-        new USignal<uint32_t>(GetName() + ".counters.ibranches");
-    _counter_ijumps = new USignal<uint32_t>(GetName() + ".counters.ijumps");
+        new Signal<uint32_t>(GetName() + ".counters.ibranches");
+    _counter_ijumps = new Signal<uint32_t>(GetName() + ".counters.ijumps");
     _counter_iloadstore =
-        new USignal<uint32_t>(GetName() + ".counters.iloadstore");
+        new Signal<uint32_t>(GetName() + ".counters.iloadstore");
     _counter_cycles_total =
-        new USignal<uint32_t>(GetName() + ".counters.cycles_total");
+        new Signal<uint32_t>(GetName() + ".counters.cycles_total");
     _counter_cycles_stall =
-        new USignal<uint32_t>(GetName() + ".counters.cycles_stall");
+        new Signal<uint32_t>(GetName() + ".counters.cycles_stall");
 
-    _counter_hosttime = new USignal<uint32_t>(GetName() + ".counters.hosttime");
+    _counter_hosttime = new Signal<uint32_t>(GetName() + ".counters.hosttime");
     #endif
 }
 
-THFRiscV::~THFRiscV() {
+HFRiscV::~HFRiscV() {
     #ifdef HFRISCV_ENABLE_COUNTERS
     delete _counter_iarith;
     delete _counter_ilogical;
@@ -801,7 +803,7 @@ THFRiscV::~THFRiscV() {
     #endif
 }
 
-void THFRiscV::Reset() {
+void HFRiscV::Reset() {
     // TODO(ad): to be implemented
     return;
 }

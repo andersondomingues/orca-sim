@@ -23,8 +23,8 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef MODELS_INCLUDE_TNETBRIDGE_HPP_
-#define MODELS_INCLUDE_TNETBRIDGE_HPP_
+#ifndef MODELS_ORCA_VIRTUAL_ETHERNET_INCLUDE_NETBRIDGE_HPP_
+#define MODELS_ORCA_VIRTUAL_ETHERNET_INCLUDE_NETBRIDGE_HPP_
 
 // std API
 #include <pthread.h>
@@ -33,27 +33,35 @@
 
 // ursa API
 #include "TimedModel.hpp"
-
-// dependency models
-#include "UBuffer.hpp"
-#include "UMemory.hpp"
-#include "USignal.hpp"
+#include "Buffer.hpp"
+#include "Memory.hpp"
+#include "Signal.hpp"
 
 #ifndef NETSOCKET_CLIENT_ADDRESS
 #define NETSOCKET_CLIENT_ADDRESS "127.0.0.1"
+#pragma message "ip address for socket client undefined, default is localhost"
 #endif
 
 #ifndef NETSOCKET_CLIENT_PORT
 #define NETSOCKET_CLIENT_PORT 5000
+#pragma message "port number for socket client undefined, default is 5000"
 #endif
 
 #ifndef NETSOCKET_SERVER_ADDRESS
 #define NETSOCKET_SERVER_ADDRESS "127.0.0.1"
+#pragma message "ip address for socket server undefined, default is localhost"
 #endif
 
 #ifndef NETSOCKET_SERVER_PORT
 #define NETSOCKET_SERVER_PORT 5001
+#pragma message "port number for socket server undefined, default is 5001"
 #endif
+
+using orcasim::base::TimedModel;
+using orcasim::base::SimulationTime;
+using orcasim::modeling::Buffer;
+using orcasim::modeling::Signal;
+
 
 class udp_client_server_runtime_error : public std::runtime_error{
  public:
@@ -109,6 +117,8 @@ enum class TNetBridgeSendState{ READY, SEND_LEN, SEND_PAYLOAD};
 #define RECV_BUFFER_LEN 128
 #define SEND_BUFFER_LEN 128
 
+#define HWBUFFER_LEN 16
+
 /**
  * @class TNetBridge
  * @author Anderson Domingues
@@ -131,7 +141,7 @@ class TNetBridge: public TimedModel{
     // thread. The signal below is used to signalunicated  between threads.
     // TODO(ad): replace by the non-blocking model
     int8_t _recv_val;
-    USignal<int8_t>* _signal_recv;
+    Signal<int8_t>* _signal_recv;
 
     std::ofstream output_debug;
     std::ofstream output_uart;
@@ -170,8 +180,8 @@ class TNetBridge: public TimedModel{
     uint8_t _send_buffer[SEND_BUFFER_LEN];
 
     // in and out buffer (noc side)
-    UBuffer<FlitType>* _ib;
-    UBuffer<FlitType>* _ob;
+    Buffer<FlitType>* _ib;
+    Buffer<FlitType>* _ob;
 
     // flag to gracefully terminate the subthread
     volatile int udpRecvThread_terminate;
@@ -200,10 +210,10 @@ class TNetBridge: public TimedModel{
     explicit TNetBridge(std::string name);
     ~TNetBridge();
 
-    USignal<int8_t>* GetSignalRecv();
+    Signal<int8_t>* GetSignalRecv();
 
-    UBuffer<FlitType>* GetInputBuffer();
-    void SetOutputBuffer(UBuffer<FlitType>*);
+    Buffer<FlitType>* GetInputBuffer();
+    void SetOutputBuffer(Buffer<FlitType>*);
 };
 
-#endif  // MODELS_INCLUDE_TNETBRIDGE_HPP_
+#endif  // MODELS_ORCA_VIRTUAL_ETHERNET_INCLUDE_NETBRIDGE_HPP_
