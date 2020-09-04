@@ -69,7 +69,7 @@ enum class DmaState{
 class TDmaMult: public TimedModel{
  private:
     // pointer to the main memory
-    UMemory* _mem0;
+    Memory* _mem0;
     // base address of the weight memory channel. Once set, it does not change
     // in runtime. it can only be changed in design time.
     uint32_t _memW[SIMD_SIZE];
@@ -84,19 +84,19 @@ class TDmaMult: public TimedModel{
 
     // control signals.
     // (OUT): stalls cpu while the DMA is copying from the memories.
-    USignal<uint8_t>*  _sig_stall;
+    Signal<uint8_t>*  _sig_stall;
     // (IN): processor writes 1 to start the DMA.
-    USignal<uint8_t>*  _sig_dma_prog;
+    Signal<uint8_t>*  _sig_dma_prog;
 
     // data sent from the processor to program the DMA.
     // IN: number of MACs ops to be executed in burst mode.
-    USignal<uint32_t>* _sig_burst_size;
+    Signal<uint32_t>* _sig_burst_size;
     // IN: (not used) amount of memory configured for each channel.
     // 1 means NN_MEM_SIZE_PER_CHANNEL bytes, 2 means 2*NN_MEM_SIZE_PER
     // CHANNEL bytes, ...
-    USignal<uint32_t>* _sig_nn_size;
+    Signal<uint32_t>* _sig_nn_size;
     // IN: (not used) number of expected output data.
-    USignal<uint32_t>* _sig_out_size;
+    Signal<uint32_t>* _sig_out_size;
 
     // internal registers between the pipeline stages.
     // data 'register' pf the 1st pipeline stage, i.e. the operands of the
@@ -143,10 +143,10 @@ class TDmaMult: public TimedModel{
      * @param base_mac_out_addr: base address to the array with the output of the MACs.
      * @param mac: pointer to the MAC module.
      * */
-    TDmaMult(std::string name, USignal<uint8_t>* stall,
-        USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size,
-        USignal<uint32_t>* nn_size, USignal<uint32_t>* out_size,
-        uint32_t base_mac_out_addr, UMemory* main_mem);
+    TDmaMult(std::string name, Signal<uint8_t>* stall,
+        Signal<uint8_t>* dma_start, Signal<uint32_t>* burst_size,
+        Signal<uint32_t>* nn_size, Signal<uint32_t>* out_size,
+        uint32_t base_mac_out_addr, Memory* main_mem);
 
     /** dtor
      * */

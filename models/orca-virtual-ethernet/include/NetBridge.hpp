@@ -62,6 +62,8 @@ using orcasim::base::SimulationTime;
 using orcasim::modeling::Buffer;
 using orcasim::modeling::Signal;
 
+namespace orcasim::models::orca {
+
 
 class udp_client_server_runtime_error : public std::runtime_error{
  public:
@@ -110,9 +112,9 @@ class udp_server{
 
 typedef uint16_t FlitType;
 
-enum class TNetBridgeRecvState{ READY, READ_LEN, RECV_PAYLOAD};
+enum class NetBridgeRecvState{ READY, READ_LEN, RECV_PAYLOAD};
 
-enum class TNetBridgeSendState{ READY, SEND_LEN, SEND_PAYLOAD};
+enum class NetBridgeSendState{ READY, SEND_LEN, SEND_PAYLOAD};
 
 #define RECV_BUFFER_LEN 128
 #define SEND_BUFFER_LEN 128
@@ -120,21 +122,21 @@ enum class TNetBridgeSendState{ READY, SEND_LEN, SEND_PAYLOAD};
 #define HWBUFFER_LEN 16
 
 /**
- * @class TNetBridge
+ * @class NetBridge
  * @author Anderson Domingues
  * @date 11/19/18
- * @file TNetBridge.h
+ * @file NetBridge.h
  * @brief This class defines a model for a "fake" network adapter 
  * that uses of UDP datagrams at one side and on-chip network's
  * flits on the other side of the USignalunication.
  */
-class TNetBridge: public TimedModel{
+class NetBridge: public TimedModel{
  private:
     // This module supports sending and receiving
     // packet simultaneously, so we keep the states
     // of two state machines below.
-    TNetBridgeSendState _send_state;
-    TNetBridgeRecvState _recv_state;
+    NetBridgeSendState _send_state;
+    NetBridgeRecvState _recv_state;
 
     // Control wire for the receiving thread. This module uses
     // an additional thread that treats UDP packets outside the simulation
@@ -207,8 +209,8 @@ class TNetBridge: public TimedModel{
     void Reset();
 
     // ctor./dtor.
-    explicit TNetBridge(std::string name);
-    ~TNetBridge();
+    explicit NetBridge(std::string name);
+    ~NetBridge();
 
     Signal<int8_t>* GetSignalRecv();
 
@@ -216,4 +218,5 @@ class TNetBridge: public TimedModel{
     void SetOutputBuffer(Buffer<FlitType>*);
 };
 
+}  // namespace orcasim::models::orca
 #endif  // MODELS_ORCA_VIRTUAL_ETHERNET_INCLUDE_NETBRIDGE_HPP_

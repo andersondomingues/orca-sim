@@ -88,13 +88,13 @@ int main(int __attribute__((unused)) argc, char** argv){
 	std::cout << "URSA/ORCA Platform " << std::endl;
 
 	//create new control signals
-	USignal<uint8_t> *signal_stall, *signal_intr;
-	signal_stall = new USignal<uint8_t>(SIGNAL_CPU_STALL, "cpu.stall");
-	signal_intr  = new USignal<uint8_t>(SIGNAL_CPU_INTR,  "cpu.intr");
+	Signal<uint8_t> *signal_stall, *signal_intr;
+	signal_stall = new Signal<uint8_t>(SIGNAL_CPU_STALL, "cpu.stall");
+	signal_intr  = new Signal<uint8_t>(SIGNAL_CPU_INTR,  "cpu.intr");
 	
 	//create a cpu and memory 
-	UMemory* mem = new UMemory("main-memory", MEM_SIZE, MEM_BASE);
-	THFRiscV* cpu = new THFRiscV("cpu", signal_intr, signal_stall, mem);
+	Memory* mem = new Memory("main-memory", MEM_SIZE, MEM_BASE);
+	HFRiscV* cpu = new HFRiscV("cpu", signal_intr, signal_stall, mem);
 
 	//bind control signals to memory space
 	signal_stall->MapTo(mem->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);

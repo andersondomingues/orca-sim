@@ -4,9 +4,16 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/ursa/include",
-                "${workspaceFolder}/gdbrsp/include",
-                "${workspaceFolder}/models/include",
+
+                "${workspaceFolder}/orcasim-base/include",
+                "${workspaceFolder}/orcasim-gdbrsp/include",
+                "${workspaceFolder}/orcasim-modeling/include",
+
+                "${workspaceFolder}/models/hermes-router/include",
+                "${workspaceFolder}/models/hfriscv-core/include",
+                "${workspaceFolder}/models/orca-network-interface/include",
+                "${workspaceFolder}/models/orca-virtual-ethernet/include",
+
                 "${default}"
             ],
             "defines": [],

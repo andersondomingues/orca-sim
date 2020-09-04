@@ -119,61 +119,61 @@ where, for instance:
 class ProcessingTile{
  private:
     // the hfrisv-core.
-    THFRiscV* _cpu;
+    HFRiscV* _cpu;
     // the main memory.
-    UMemory* _mem0;
+    Memory* _mem0;
     // DMA unit reponsible to transfer weight and input data from the main
     // memory directly to the vector multipliers
     TDmaMult* _dma;
 
     // hosttime magic wire
     uint32_t _shosttime;
-    USignal<uint32_t>* _signal_hosttime;
+    Signal<uint32_t>* _signal_hosttime;
 
     // control signals.
     // stalls cpu while copying from the memories
-    USignal<uint8_t>*  _sig_stall;
+    Signal<uint8_t>*  _sig_stall;
 
     // flag to start the DMA
-    USignal<uint8_t>*  _sig_dma_prog;
+    Signal<uint8_t>*  _sig_dma_prog;
 
     // dummy signal required by the CPU. not really used since we dont have
     // interrupts in this design
-    USignal<uint8_t>*  _sig_intr;
+    Signal<uint8_t>*  _sig_intr;
 
     // data sent from the processor to program the DMA.
     // number of MACs ops to be executed in burst mode.
-    USignal<uint32_t>* _sig_burst_size;
+    Signal<uint32_t>* _sig_burst_size;
 
     // (not used) amount of memory configured for each channel.
     // 1 means NN_MEM_SIZE_PER_CHANNEL bytes,
     // 2 means 2*NN_MEM_SIZE_PER_CHANNEL bytes, ...
-    USignal<uint32_t>* _sig_nn_size;
+    Signal<uint32_t>* _sig_nn_size;
 
     // (not used) number of expected output data.
-    USignal<uint32_t>* _sig_out_size;
+    Signal<uint32_t>* _sig_out_size;
 
  public:
     ProcessingTile();
     ~ProcessingTile();
 
     // getters
-    USignal<uint8_t>*  GetSignalStall();
-    USignal<uint8_t>*  GetSignalDmaProg();
+    Signal<uint8_t>*  GetSignalStall();
+    Signal<uint8_t>*  GetSignalDmaProg();
     // required only by the cpu and orca. not really usefull
-    USignal<uint8_t>*  GetSignalIntr();
+    Signal<uint8_t>*  GetSignalIntr();
 
     // getters
-    UMemory* GetMem0();
+    Memory* GetMem0();
     /// getters for the scheduler
-    THFRiscV* GetCpu();
+    HFRiscV* GetCpu();
     TDmaMult* GetDma();
 
     /**
      * @brief Get current signal for systime signal
      * @return A pointer to the instance of signal
      */
-    USignal<uint32_t>* GetSignalHostTime();
+    Signal<uint32_t>* GetSignalHostTime();
 
     std::string ToString();
     std::string GetName();

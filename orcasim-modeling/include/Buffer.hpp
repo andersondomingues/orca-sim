@@ -36,11 +36,6 @@
 // api includes
 #include "UntimedModel.hpp"
 
-#ifndef BUFFER_CAPACITY
-#warning "BUFFER_CAPACITY not defined, defaulting to 16"
-#define BUFFER_CAPACITY 16
-#endif
-
 using orcasim::base::UntimedModel;
 
 namespace orcasim::modeling {

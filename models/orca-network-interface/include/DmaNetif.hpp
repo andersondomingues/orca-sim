@@ -48,7 +48,7 @@ using orcasim::modeling::Memory;
 using orcasim::modeling::Signal;
 using orcasim::modeling::Buffer;
 
-namespace orcasim::models::orcanetworkinterface {
+namespace orcasim::models::orca {
 
 /**
  * @brief flit
@@ -82,14 +82,14 @@ enum class DmaNetifSendState{
 };
 
 /**
- * @class TDmaNetif
+ * @class DmaNetif
  * @author Anderson Domingues
  * @date 10/03/18
  * @file TDmaNetif.h
  * @brief This class models the behaviour of a network
  * interface assuming dma tranferring
  */
-class TDmaNetif: public TimedModel{
+class DmaNetif: public TimedModel{
  private:
     // Pointer to main memory, recv mem, and send mem
     Memory* _mem0;
@@ -184,10 +184,10 @@ class TDmaNetif: public TimedModel{
     Buffer<FlitType>* GetInputBuffer();         // packets come from router
 
     // ctor./dtor.
-    explicit TDmaNetif(std::string name);
-    ~TDmaNetif();
+    explicit DmaNetif(std::string name);
+    ~DmaNetif();
 };
 
 
-}  // namespace orcasim::models::orcanetworkinterface
+}  // namespace orcasim::models::orca
 #endif  // MODELS_ORCA_NETWORK_INTERFACE_INCLUDE_DMANETIF_HPP_

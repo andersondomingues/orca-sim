@@ -72,7 +72,7 @@ class ProcessorBase : public TimedModel{
      * would apply to all processors. Examples include energy 
      * estimation (through counters) and GDBRSP. 
      * @returns the number of cycles to skip until next schedule. */
-    SimulationTime Run();
+    virtual SimulationTime Run() = 0;
 
     /** This method returns the state model of the processor. This
      * is ideally used from the top level simulator to report 

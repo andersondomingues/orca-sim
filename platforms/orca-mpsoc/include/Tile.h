@@ -47,8 +47,8 @@ private:
 
 	std::string _name;
 
-	TRouter* _router; //hermes router
-	USignal<uint32_t>* _signal_id; //	//self-id wire
+	HermesRouter* _router; //hermes router
+	Signal<uint32_t>* _signal_id; //	//self-id wire
 
 public: 
 
@@ -57,8 +57,8 @@ public:
 	~Tile();
 	
 	/*** getters ***/
-	TRouter*   GetRouter();
-	USignal<uint32_t>* GetSignalId();
+	HermesRouter*   GetRouter();
+	Signal<uint32_t>* GetSignalId();
 	std::string GetName();
 	
 	/*** setters ***/

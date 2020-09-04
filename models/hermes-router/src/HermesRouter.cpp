@@ -29,8 +29,8 @@
 
 #include "HermesRouter.hpp"
 
-using orcasim::models::hermesrouter::FlitType;
-using orcasim::models::hermesrouter::HermesRouter;
+using orcasim::models::hermes::FlitType;
+using orcasim::models::hermes::HermesRouter;
 using orcasim::base::SimulationTime;
 using orcasim::modeling::Buffer;
 

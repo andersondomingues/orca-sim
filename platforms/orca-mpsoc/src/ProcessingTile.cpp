@@ -37,19 +37,19 @@
 ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 
 	//ni sig wires
-	_signal_stall       = new USignal<uint8_t>(this->GetName() + ".stall");
-	_signal_intr        = new USignal<uint8_t>(this->GetName() + ".intr");
-	_signal_send_status = new USignal<uint8_t>(this->GetName() + ".send_status");
-	_signal_recv_status = new USignal<uint32_t>(this->GetName() + ".recv_status");
-	_signal_prog_send   = new USignal<uint8_t>(this->GetName() + ".progr_send");
-	_signal_prog_recv   = new USignal<uint8_t>(this->GetName() + ".progr_recv");
-	_signal_prog_addr   = new USignal<uint32_t>(this->GetName() + ".progr_addr");
-	_signal_prog_size   = new USignal<uint32_t>(this->GetName() + ".progr_size");
+	_signal_stall       = new Signal<uint8_t>(this->GetName() + ".stall");
+	_signal_intr        = new Signal<uint8_t>(this->GetName() + ".intr");
+	_signal_send_status = new Signal<uint8_t>(this->GetName() + ".send_status");
+	_signal_recv_status = new Signal<uint32_t>(this->GetName() + ".recv_status");
+	_signal_prog_send   = new Signal<uint8_t>(this->GetName() + ".progr_send");
+	_signal_prog_recv   = new Signal<uint8_t>(this->GetName() + ".progr_recv");
+	_signal_prog_addr   = new Signal<uint32_t>(this->GetName() + ".progr_addr");
+	_signal_prog_size   = new Signal<uint32_t>(this->GetName() + ".progr_size");
 
 	//create a cpu and memory in addition to current tile hardware
-	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu   = new THFRiscV(this->GetName() + ".cpu", _signal_intr, _signal_stall, _mem0);
-	_netif  = new TDmaNetif (this->GetName() + ".netif");
+	_mem0  = new Memory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
+	_cpu   = new HFRiscV(this->GetName() + ".cpu", _signal_intr, _signal_stall, _mem0);
+	_netif  = new DmaNetif (this->GetName() + ".netif");
 
 	//binds netif to mem
 	_netif->SetMem0(_mem0);
@@ -69,8 +69,8 @@ ProcessingTile::ProcessingTile(uint32_t x, uint32_t y) : Tile(x, y) {
 	_netif->SetOutputBuffer(this->GetRouter()->GetInputBuffer(LOCAL));
 
 	//create new memories for the NI
-	_mem1 = new UMemory(this->GetName() + ".mem1", MEM1_SIZE, 0); //read from noc 
-	_mem2 = new UMemory(this->GetName() + ".mem2", MEM2_SIZE, 0); //write to noc
+	_mem1 = new Memory(this->GetName() + ".mem1", MEM1_SIZE, 0); //read from noc 
+	_mem2 = new Memory(this->GetName() + ".mem2", MEM2_SIZE, 0); //write to noc
 
 	//bind memories
 	_netif->SetMem1(_mem1);	
@@ -158,7 +158,7 @@ ProcessingTile::~ProcessingTile(){
 	delete(_signal_prog_size);	
 }
 
-THFRiscV* ProcessingTile::GetCpu(){
+HFRiscV* ProcessingTile::GetCpu(){
 	return _cpu;
 } 
 
@@ -167,7 +167,7 @@ THFRiscV* ProcessingTile::GetCpu(){
  * @brief Get current NI module
  * @return A pointer to the instance of NI
  */
-TDmaNetif*  ProcessingTile::GetDmaNetif(){
+DmaNetif*  ProcessingTile::GetDmaNetif(){
 	return _netif;
 }
 
@@ -175,7 +175,7 @@ TDmaNetif*  ProcessingTile::GetDmaNetif(){
  * @brief Get sender memory module 
  * @return A pointer to the instance of memory
  */
-UMemory* ProcessingTile::GetMem1(){
+Memory* ProcessingTile::GetMem1(){
 	return _mem1;
 }
 
@@ -183,32 +183,32 @@ UMemory* ProcessingTile::GetMem1(){
  * @brief Get recv memory module
  * @return A pointer to the instance of memory
  */
-UMemory* ProcessingTile::GetMem2(){
+Memory* ProcessingTile::GetMem2(){
 	return _mem2;
 }
 
 /************************************* GETTERS **************************************/
-USignal<uint8_t>*  ProcessingTile::GetSignalStall(){ return _signal_stall; }
-USignal<uint8_t>*  ProcessingTile::GetSignalIntr(){ return _signal_intr; }
+Signal<uint8_t>*  ProcessingTile::GetSignalStall(){ return _signal_stall; }
+Signal<uint8_t>*  ProcessingTile::GetSignalIntr(){ return _signal_intr; }
 
-USignal<uint8_t>*  ProcessingTile::GetSignalSendStatus(){ return _signal_send_status; }
-USignal<uint32_t>*  ProcessingTile::GetSignalRecvStatus(){ return _signal_recv_status; }
+Signal<uint8_t>*  ProcessingTile::GetSignalSendStatus(){ return _signal_send_status; }
+Signal<uint32_t>*  ProcessingTile::GetSignalRecvStatus(){ return _signal_recv_status; }
 
-USignal<uint8_t>*  ProcessingTile::GetSignalProgSend(){ return _signal_prog_send; }
-USignal<uint8_t>*  ProcessingTile::GetSignalProgRecv(){ return _signal_prog_recv; }
+Signal<uint8_t>*  ProcessingTile::GetSignalProgSend(){ return _signal_prog_send; }
+Signal<uint8_t>*  ProcessingTile::GetSignalProgRecv(){ return _signal_prog_recv; }
 
-USignal<uint32_t>* ProcessingTile::GetSignalProgAddr(){ return _signal_prog_addr; }
-USignal<uint32_t>* ProcessingTile::GetSignalProgSize(){ return _signal_prog_size; }
+Signal<uint32_t>* ProcessingTile::GetSignalProgAddr(){ return _signal_prog_addr; }
+Signal<uint32_t>* ProcessingTile::GetSignalProgSize(){ return _signal_prog_size; }
 
 /**
  * @brief Get current signal for systime signal
  * @return A pointer to the instance of signal
  */
-USignal<uint32_t>* ProcessingTile::GetSignalHostTime(){
+Signal<uint32_t>* ProcessingTile::GetSignalHostTime(){
 	return _signal_hosttime;
 }
 
-UMemory* ProcessingTile::GetMem0(){
+Memory* ProcessingTile::GetMem0(){
 	return _mem0;
 }
 

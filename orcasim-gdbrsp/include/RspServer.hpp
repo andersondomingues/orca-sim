@@ -35,15 +35,15 @@
 #include "UdpAsyncServer.hpp"
 
 // off-package includes
-#include "ProcessorState.hpp"
+#include "GdbProcessorState.hpp"
 #include "MemoryType.hpp"
-#include "UMemory.hpp"
+#include "Memory.hpp"
 
 #define RSP_BUFFER_SIZE 5000
 #define RSP_EMPTY_RESPONSE ""
 
-using orcasim::modeling::UMemory;
-using orcasim::modeling::ProcessorState;
+using orcasim::modeling::Memory;
+using orcasim::gdbrsp::GdbProcessorState;
 
 namespace orcasim::gdbrsp {
 
@@ -58,8 +58,8 @@ class RspServer{
     int _udpport;
 
     // state of the target processor and memory reference
-    ProcessorState<T>* _state;
-    UMemory* _memory;
+    GdbProcessorState<T>* _state;
+    Memory* _memory;
 
     // output and input buffers
     char _output_buffer[RSP_BUFFER_SIZE];
@@ -72,7 +72,7 @@ class RspServer{
     /**
      * Ctor.
      */
-    RspServer(ProcessorState<T>* state, UMemory* mem, std::string ipaddr,
+    RspServer(GdbProcessorState<T>* state, Memory* mem, std::string ipaddr,
         uint32_t udpport);
 
     /**

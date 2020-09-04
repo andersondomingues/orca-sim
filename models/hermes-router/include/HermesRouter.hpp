@@ -41,7 +41,7 @@
 #pragma message "Buffer capacity not defined in HermesRouter, set to 8 flits"
 #endif
 
-namespace orcasim::models::hermesrouter {
+namespace orcasim::models::hermes {
 
 enum class RouterState{
     ROUNDROBIN, FORWARD1, PKTLEN, BURST
@@ -124,5 +124,5 @@ class HermesRouter: public TimedModel{
     std::string ToString();
 };
 
-}  // namespace orcasim::models::hermesrouter
+}  // namespace orcasim::models::hermes
 #endif  // MODELS_HERMES_ROUTER_INCLUDE_HERMESROUTER_HPP_

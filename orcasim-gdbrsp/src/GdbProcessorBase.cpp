@@ -23,66 +23,35 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#include "TimedModel.hpp"
 #include "ProcessorBase.hpp"
-
-#ifdef ORCA_ENABLE_GDBRSP
-template <typename T>
-uint32_t TProcessorBase<T>::GDBSERVER_PORT = ORCA_GDBRSP_PORT;
-#endif
+#include "GdbProcessorBase.hpp"
 
 using orcasim::modeling::ProcessorBase;
-using orcasim::modeling::ProcessorState;
 using orcasim::modeling::Memory;
 using orcasim::base::SimulationTime;
-using orcasim::base::TimedModel;
+using orcasim::gdbrsp::GdbProcessorBase;
+using orcasim::gdbrsp::GdbProcessorState;
+
 
 template <typename T>
-ProcessorBase<T>::ProcessorBase(std::string name,
-    MemoryAddr initial_pc, Memory* mem) : TimedModel(name) {
-
-    // set mem ptr
-    _memory = mem;
-
-    // reset registers
-    for (int i = 0; i < NUMBER_OF_REGISTERS; i++)
-        _state.regs[i] = 0;
-
-    // reset PC
-    _state.pc_prev = initial_pc;
-    _state.pc = initial_pc;
-    _state.pc_next = _state.pc + sizeof(T);
-
-    // reset flags
-    #ifdef ORCA_ENABLE_GDBRSP
-    _state.bp = 0;  // no breakpoint reached yet
-    _state.pause = 1;  // starts paused in gdb mode
-    _state.steps = 0;  // no steps to be performed, wait for gdb
-    _gdbserver = new RspServer<T>(&_state,
-        _memory, "127.0.0.1", GDBSERVER_PORT++);
-    #endif
-
-    // reset special flags
-    _state.terminated = false;
+GdbProcessorBase<T>::GdbProcessorBase(std::string name, MemoryAddr initial_pc,
+     Memory* mem, std::string gdb_ip, int gdb_port)
+        : ProcessorBase<T>(name, initial_pc, mem) {
+    _state = new GdbProcessorState<T>();
+    _gdbserver = new RspServer<T>(_state, mem, gdb_ip, gdb_port);
 }
 
 template <typename T>
-ProcessorBase<T>::~ProcessorBase() {
-    #ifdef ORCA_ENABLE_GDBRSP
-    delete _gdbserver;
-    #endif
-}
+SimulationTime GdbProcessorBase<T>::Run() {
+    _gdbserver->UpdateCpuState();
 
-/**
- * Access the current state of the processor.
- * @return A pointer to the state of the processor.
- */
-template <typename T>
-inline ProcessorState<T>* ProcessorBase<T>::GetState() {
-    return &_state;
+    // check whether the gdb client has sent any packet.
+    // if so, treat the packet.
+    _gdbserver->Receive();
+    return 1;
 }
 
 template <typename T>
-inline Memory* ProcessorBase<T>::GetMemory() {
-    return _memory;
+GdbProcessorState<T>* GdbProcessorBase<T>::GetState() {
+    return _state;
 }

@@ -23,15 +23,38 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef MODELS_HERMES_ROUTER_INCLUDE_FLITTYPE_HPP_
-#define MODELS_HERMES_ROUTER_INCLUDE_FLITTYPE_HPP_
+#ifndef ORCASIM_GDBRSP_INCLUDE_GDBPROCESSORSTATE_HPP_
+#define ORCASIM_GDBRSP_INCLUDE_GDBPROCESSORSTATE_HPP_
+
+#define NUMBER_OF_REGISTERS 32
 
 #include <stdint.h>
+#include "ProcessorState.hpp"
 
-namespace orcasim::models::hermes {
+using orcasim::modeling::ProcessorState;
 
-// @todo(ad): maybe make this model generic<T>
-typedef uint16_t FlitType;
+namespace orcasim::gdbrsp {
 
-}  // namespace orcasim::models::hermes
-#endif  // MODELS_HERMES_ROUTER_INCLUDE_FLITTYPE_HPP_
+/** Defines a generic state model 
+  * for use within processor models. */
+template <typename T>
+struct GdbProcessorState : ProcessorState<T> {
+    T bp;
+    T pause;
+    T steps;
+};
+
+// Some of the most used instances. More can be added later.
+template struct GdbProcessorState<uint8_t>;
+template struct GdbProcessorState<uint16_t>;
+template struct GdbProcessorState<uint32_t>;
+template struct GdbProcessorState<uint64_t>;
+
+// Some of the most used instances. More can be added later.
+template struct GdbProcessorState<int8_t>;
+template struct GdbProcessorState<int16_t>;
+template struct GdbProcessorState<int32_t>;
+template struct GdbProcessorState<int64_t>;
+
+}  // namespace orcasim::gdbrsp
+#endif  // ORCASIM_GDBRSP_INCLUDE_GDBPROCESSORSTATE_HPP_

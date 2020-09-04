@@ -72,7 +72,7 @@ static void sig_handler(int _){
 }
 
 //connect routers to each other
-void connect_routers(TRouter* r1, uint32_t p1, TRouter* r2, uint32_t p2){
+void connect_routers(HermesRouter* r1, uint32_t p1, HermesRouter* r2, uint32_t p2){
 	
 	r1->SetOutputBuffer(r2->GetInputBuffer(p2), p1);
 	r2->SetOutputBuffer(r1->GetInputBuffer(p1), p2);
@@ -224,7 +224,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 	for(int x = 0; x < ORCA_NOC_WIDTH; x++){
 		for(int y = 0; y < ORCA_NOC_HEIGHT; y++){
 		
-			TRouter* r = tiles[x][y]->GetRouter();
+			HermesRouter* r = tiles[x][y]->GetRouter();
 			std::cout << r->GetName() << ":"
 				<< " S=" << r->GetInputBuffer(SOUTH)->size()
 				<< " N=" << r->GetInputBuffer(NORTH)->size() 
@@ -243,7 +243,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 		
 			if(x == 0 && y == 0) continue;
 		
-			TDmaNetif* n = ((ProcessingTile*)(tiles[x][y]))->GetDmaNetif();
+			DmaNetif* n = ((ProcessingTile*)(tiles[x][y]))->GetDmaNetif();
 			std::cout << n->GetName() << ":"
 				<< " SEND_STATE=" << static_cast<unsigned int>(n->GetSendState())
 				<< " RECV_STATE=" << static_cast<unsigned int>(n->GetRecvState())
@@ -261,7 +261,7 @@ int main(int __attribute__((unused)) argc, char** argv){
 				continue;
 			
 			ProcessingTile* t = (ProcessingTile*)(tiles[x][y]);
-			THFRiscV* n = t->GetCpu();
+			HFRiscV* n = t->GetCpu();
 			std::cout 
 				<< n->GetName() 
 				<< ": INTR=" << (int)(n->GetSignalIntr()->Read()) 

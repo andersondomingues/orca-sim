@@ -41,7 +41,7 @@ NetworkTile::NetworkTile(uint32_t x, uint32_t y) : Tile(x, y){
 	this->GetRouter()->SetName(this->GetName() + ".router");
 	
 	//peripherals	
-	_socket = new TNetBridge(this->GetName() + ".bridge");
+	_socket = new NetBridge(this->GetName() + ".bridge");
 	
 	_socket->SetOutputBuffer(this->GetRouter()->GetInputBuffer(LOCAL));
 	this->GetRouter()->SetOutputBuffer(_socket->GetInputBuffer(), LOCAL);
@@ -52,7 +52,7 @@ NetworkTile::~NetworkTile(){
 	delete(_socket);
 }
 
-TNetBridge* NetworkTile::GetSocket(){
+NetBridge* NetworkTile::GetSocket(){
 	return _socket;
 } 
 

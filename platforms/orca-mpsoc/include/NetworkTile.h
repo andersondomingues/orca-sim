@@ -47,7 +47,7 @@ class NetworkTile : public Tile{
 private:
 
 	std::string _name;
-	TNetBridge* _socket; //hfrisv-core
+	NetBridge* _socket; //hfrisv-core
 	
 public: 
 
@@ -55,7 +55,7 @@ public:
 	~NetworkTile();
 	
 	//getters
-	TNetBridge* GetSocket();
+	NetBridge* GetSocket();
 	
 	std::string ToString();
 };

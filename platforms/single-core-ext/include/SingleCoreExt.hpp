@@ -23,7 +23,38 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
-#ifndef PLATFORMS_HFRISCV_WITH_EXTCOMM_INCLUDE_ORCA_HPP_
-#define PLATFORMS_HFRISCV_WITH_EXTCOMM_INCLUDE_ORCA_HPP_
+#ifndef PLATFORMS_SINGLE_CORE_EXT_INCLUDE_SINGLECOREEXT_HPP_
+#define PLATFORMS_SINGLE_CORE_EXT_INCLUDE_SINGLECOREEXT_HPP_
 
-#endif  // PLATFORMS_HFRISCV_WITH_EXTCOMM_INCLUDE_ORCA_HPP_
+#include "Simulator.hpp"
+
+using orcasim::modeling::Simulator;
+
+using orcasim::modeling::Memory;
+using orcasim::models::hfriscv::HFRiscV;
+using orcasim::models::orca::NetBridge;
+using orcasim::models::orca::DmaNetif;
+
+namespace orcasim::platforms::singlecoreext {
+
+class SingleCoreExt : Simulator {
+ private:
+    // signal list
+    Signal<uint8_t> *signal_stall, *signal_intr, *signal_send_status,
+        *signal_send, *signal_recv;
+    Signal<uint32_t> *signal_addr, *signal_size, *signal_recv_status;
+
+    // "big modules"
+    Memory *mem, *mem1, *mem2;  // main memory, plus two buffer for the ni
+    HFRiscV* cpu;
+    NetBridge* bridge;
+    DmaNetif* netif;
+ public:
+    void Startup();  // model instantiation
+    void Simulate();  // simulation
+    void Report();   // statistics
+    void Cleanup();  // delete instances
+};
+
+}  // namespace orcasim::platforms::singlecoreext
+#endif  // PLATFORMS_SINGLE_CORE_EXT_INCLUDE_SINGLECOREEXT_HPP_

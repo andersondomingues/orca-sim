@@ -45,11 +45,11 @@ Tile::Tile(uint32_t x, uint32_t y){
 	
 	_name = ss.str();
 	
-	_signal_id = new USignal<uint32_t>(MAGIC_TILE_ID, this->GetName() + ".id");
+	_signal_id = new Signal<uint32_t>(MAGIC_TILE_ID, this->GetName() + ".id");
 	_signal_id->Write(id);
 	
 	//peripherals	
-	_router = new TRouter(this->GetName() + ".router", x, y);
+	_router = new HermesRouter(this->GetName() + ".router", x, y);
 }
 
 /**
@@ -66,21 +66,21 @@ Tile::~Tile(){
 
 /*
 	//setters
-    void SetSignalStall(USignal<int8_t>*);
-	void SetSignalIntr(USignal<int8_t>*);
-	void SetSignalSendStatus(USignal<int8_t>*);
-	void SetSignalRecvStatus(USignal<int8_t>*);
-	void SetSignalProgAddr(USignal<int32_t>*);
-	void SetSignalProgSize(USignal<int32_t>*);
-	void SetSignalProgSend(USignal<int8_t>*);
-	void SetSignalProgRecv(USignal<int8_t>*);
+    void SetSignalStall(Signal<int8_t>*);
+	void SetSignalIntr(Signal<int8_t>*);
+	void SetSignalSendStatus(Signal<int8_t>*);
+	void SetSignalRecvStatus(Signal<int8_t>*);
+	void SetSignalProgAddr(Signal<int32_t>*);
+	void SetSignalProgSize(Signal<int32_t>*);
+	void SetSignalProgSend(Signal<int8_t>*);
+	void SetSignalProgRecv(Signal<int8_t>*);
 */
 
 /**
  * @brief Get current router of the PE
  * @return A pointer to the instance of router
  */
-TRouter* Tile::GetRouter(){ 
+HermesRouter* Tile::GetRouter(){ 
 	return _router; 
 }
 
@@ -97,7 +97,7 @@ std::string Tile::GetName(){
  * @brief Get current signal for tile ID
  * @return A pointer to the instance of signal
  */
-USignal<uint32_t>* Tile::GetSignalId(){ 
+Signal<uint32_t>* Tile::GetSignalId(){ 
 	return _signal_id; 
 }
 

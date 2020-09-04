@@ -27,30 +27,59 @@
 #define ORCASIM_MODELING_INCLUDE_SIMULATOR_HPP_
 
 #include <list>
+#include <string>
 
 #include "TimedModel.hpp"
+#include "UntimedModel.hpp"
 #include "Engine.hpp"
+#include "Signal.hpp"
+#include "SimulationTime.hpp"
 
 using orcasim::base::TimedModel;
+using orcasim::base::UntimedModel;
 using orcasim::base::Engine;
 using orcasim::base::SimulationTime;
+using orcasim::modeling::Signal;
 
 namespace orcasim::modeling {
 
+void sig_handler(int _);  // interruption handler
+
+enum class SimulatorInterruptionStatus {
+    RUNNING,      // application is running
+    INTERRUPTED,  // app have been interrupted once
+    ABORTED       // app have been interrupted twice, aborting
+};
+
 class Simulator {
  private:
-    std::list<TimedModel> _models;
-    Engine _engine;
+    std::list<std::string> _params;  // argc+argv
+
+    std::list<TimedModel> _tmodels;    // all timed models under simulation
+    std::list<UntimedModel> _umodels;  // aal untimed models under simulation
+    Engine _engine;  // the simulation engine
+
+    int _exit_status;
+
+    static volatile SimulatorInterruptionStatus _interruption_status;
 
  public:
-    void Startup();  // model instantiation
-    void Simulate();  // simulation
-    void Report();   // statistics
-    void Cleanup();  // delete instances
+    static void SetInterruptionStatus(SimulatorInterruptionStatus status);
+    static SimulatorInterruptionStatus GetInterruptionStatus();
+
+    Simulator(int argc, char** argv);
+    Simulator();
+
+    void virtual Startup() = 0;  // model instantiation
+    void virtual Simulate() = 0;  // simulation
+    void virtual Report() = 0;   // statistics
+    void virtual Cleanup() = 0;  // delete instances
 
     void Register(TimedModel* m);
     void Register(TimedModel* m, SimulationTime t);
-    void Unregister(TimedModel* m);
+
+    int GetExitStatus();
+    void SetExitStatus(int status);
 };
 
 }  // namespace orcasim::modeling

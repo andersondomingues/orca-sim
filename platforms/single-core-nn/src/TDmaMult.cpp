@@ -33,8 +33,8 @@
 
 TDmaMult::TDmaMult(std::string name,  
 	//signals
-	USignal<uint8_t>* stall, USignal<uint8_t>* dma_start, USignal<uint32_t>* burst_size, USignal<uint32_t>* nn_size, 
-	USignal<uint32_t>* out_size, uint32_t base_mac_out_addr, UMemory* main_mem) : TimedModel(name) {
+	Signal<uint8_t>* stall, Signal<uint8_t>* dma_start, Signal<uint32_t>* burst_size, Signal<uint32_t>* nn_size, 
+	Signal<uint32_t>* out_size, uint32_t base_mac_out_addr, Memory* main_mem) : TimedModel(name) {
     
 	int i;
 

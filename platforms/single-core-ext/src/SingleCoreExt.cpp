@@ -36,81 +36,43 @@
 #include "Simulator.hpp"
 
 // models
-#include "UMemory.hpp"
-#include "THFRiscV.hpp"
-#include "TNetBridge.hpp"
-#include "TDmaNetif.hpp"
+#include "Memory.hpp"
+#include "HFRiscV.hpp"
+#include "NetBridge.hpp"
+#include "DmaNetif.hpp"
 
 // orca-specific hardware
-#include <MemoryMap.h>
+#include "MemoryMap.h"
+#include "SingleCoreExt.hpp"
 
-// interrupt signal catcher
-static volatile sig_atomic_t interruption = 0;
+using orcasim::platforms::singlecoreext::SingleCoreExt;
 
-/**
- * @brief Signal handler. This handler captures
- * interruption from the keyboard (CTRL+C) and
- * flag the simulation to end in the current
- * epoch. If pressed CTRL+C again, simulation will
- * abort.
- * @param _ This param is unused (must be here to
- * comply with system's API)
- */
-static void sig_handler(int _) {
-    (void)_;
-
-    switch (interruption) {
-    case 0:
-        interruption = 1;
-        std::cout << std::endl
-            << "Simulation interrupted. Wait for the current epoch to finish "
-            << "or press CTRL+C again to force quit." << std::endl;
-        break;
-    case 1:
-        exit(0);
-        break;
-    }
+SingleCoreExt::SingleCoreExt(int argc, char** argv) : Simulator(argc, argv) {
+    
 }
 
+
 /**
- * @brief Main routine. Instantiate simulator, hardware models, 
- * connect these models, and start simulation.
- * @param argc Should be always equals 2
- * @param argv One-dimensional array containing the name of binary file 
- * to load in the program
- * @return int Simulation status (termination)
+ * This routine regards the instantiation of hardware for the simulation. In 
+ * this method we set all the private fields which corresponds to hardware 
+ * modules and signals.
  */
-int main(int __attribute__((unused)) argc, char** argv) {
-    // show usage and abort if an image file is not informed
-    if (argc != 2) {
-        std::cout << "Usage: " << argv[0] << " <software-image>" << std::endl;
-        abort();
-    }
-
-    // register interruption handler
-    signal(SIGINT, sig_handler);
-
-    std::cout << "URSA/ORCA Platform " << std::endl;
-
-    // create control wires
-    USignal<uint8_t> *signal_stall, *signal_intr, *signal_send_status,
-        *signal_send, *signal_recv;
-    USignal<uint32_t> *signal_addr, *signal_size, *signal_recv_status;
-
-    signal_stall = new USignal<uint8_t>(SIGNAL_CPU_STALL, "cpu.stall");
-    signal_intr  = new USignal<uint8_t>(SIGNAL_CPU_INTR,  "cpu.intr");
-    signal_send = new USignal<uint8_t>(SIGNAL_PROG_SEND, "cpu.sig-send");
-    signal_recv = new USignal<uint8_t>(SIGNAL_PROG_RECV, "cpu.sig-recv");
-    signal_addr = new USignal<uint32_t>(SIGNAL_PROG_ADDR, "cou.sig-addr");
-    signal_size = new USignal<uint32_t>(SIGNAL_PROG_SIZE, "cou.sig-size");
-    signal_recv_status = new USignal<uint32_t>(
+void SingleCoreExt::Startup() {
+    // instantiate signals
+    signal_stall = new Signal<uint8_t>(SIGNAL_CPU_STALL, "cpu.stall");
+    signal_intr  = new Signal<uint8_t>(SIGNAL_CPU_INTR,  "cpu.intr");
+    signal_send = new Signal<uint8_t>(SIGNAL_PROG_SEND, "cpu.sig-send");
+    signal_recv = new Signal<uint8_t>(SIGNAL_PROG_RECV, "cpu.sig-recv");
+    signal_addr = new Signal<uint32_t>(SIGNAL_PROG_ADDR, "cou.sig-addr");
+    signal_size = new Signal<uint32_t>(SIGNAL_PROG_SIZE, "cou.sig-size");
+    signal_recv_status = new Signal<uint32_t>(
         SIGNAL_RECV_STATUS, "cpu.sig-recv-status");
-    signal_send_status = new USignal<uint8_t>(
+    signal_send_status = new Signal<uint8_t>(
         SIGNAL_SEND_STATUS, "cpu.sig-send-status");
 
-    // create a cpu and memory
-    UMemory* mem = new UMemory("main-memory", MEM_SIZE, MEM_BASE);
-    THFRiscV* cpu = new THFRiscV("cpu", signal_intr, signal_stall, mem);
+    // instantiate modules
+    mem = new Memory("main-memory", MEM_SIZE, MEM_BASE);
+    cpu = new HFRiscV("cpu", signal_intr, signal_stall, mem);
 
     // bind control signals to memory space
     signal_stall->MapTo(mem->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
@@ -135,8 +97,8 @@ int main(int __attribute__((unused)) argc, char** argv) {
     signal_recv_status->Write(0);
 
     // create a dma and off-chip comm modules
-    TNetBridge* bridge = new TNetBridge("comm");
-    TDmaNetif* netif = new TDmaNetif("dma");
+    bridge = new NetBridge("comm");
+    netif = new DmaNetif("dma");
 
     // connect the dma and netif to each other (via buffers)
     bridge->SetOutputBuffer(netif->GetInputBuffer());
@@ -153,9 +115,8 @@ int main(int __attribute__((unused)) argc, char** argv) {
     netif->SetSignalSendStatus(signal_send_status);
 
     // create additional memory for send/recv processes
-    UMemory *mem1, *mem2;
-    mem1 = new UMemory("netif-mem-1", ORCA_MEMORY_SIZE_1, 0);
-    mem2 = new UMemory("netif-mem-2", ORCA_MEMORY_SIZE_2, 0);
+    mem1 = new Memory("netif-mem-1", ORCA_MEMORY_SIZE_1, 0);
+    mem2 = new Memory("netif-mem-2", ORCA_MEMORY_SIZE_2, 0);
 
     // connect netif to memories
     netif->SetMem0(mem);
@@ -207,16 +168,24 @@ int main(int __attribute__((unused)) argc, char** argv) {
     // load software image into memory
     mem->LoadBin(std::string(argv[1]), MEM_BASE, MEM_SIZE);
 
-    // instantiate a new simulation
-    Simulator* s = new Simulator();
+}
 
+/**
+ * In this method, we add hardware models to the simulation queue. Please note
+ * that not all models are added to the queue. See the documentation of proper
+ * models to determine whether the model must be scheduled or not. 
+ */
+void SingleCoreExt::Schedule() {
     // schedule cpu
     // cpu starts at the 3rd cycle due to its the first
     // having one instruction coming out of the pipeline
-    s->Schedule(Event(3, cpu));
-    s->Schedule(Event(1, bridge));
-    s->Schedule(Event(1, netif));
+    Register(this->cpu, 3);
+    Register(this->bridge);
+    Register(this->netif);
+}
 
+void SingleCoreExt::Simulate() {
+    
     std::cout << "Epoch set to " << ORCA_EPOCH_LENGTH
         << " cycles." << std::endl;
     std::cout << "Please wait..." << std::endl;
@@ -253,7 +222,10 @@ int main(int __attribute__((unused)) argc, char** argv) {
         std::cout << e.what() << std::endl;
         return -1;  // abnormal termination, simulation failed
     }
+}
 
+void SingleCoreExt::Report() {
+    
     // minimal reporting
     std::cout << "cpu: INTR=" << static_cast<int>(signal_intr->Read())
         << ", STALL=" << static_cast<int>(signal_stall->Read())
@@ -295,15 +267,21 @@ int main(int __attribute__((unused)) argc, char** argv) {
         "\tstores\t\t" << static_cast<int>(mem->GetSignalCounterLoad()->Read())
         << std::endl;
     #endif
+}
 
-    int exit_status = cpu->GetState()->terminated;
+
+int Cleanup() override{
+
+    Simulator::Cleanup();
+
+    // get cpu status whether it terminated suceffuly
+    int exit_status = _cpu->GetState()->terminated;
 
     // free resources
-    delete(s);
     delete(cpu);
     delete(mem);
     delete(signal_intr);
-    delete(signal_stall);
+    delete(signal_stall); //missing signals here
 
     delete(mem1);
     delete(mem2);
@@ -314,5 +292,14 @@ int main(int __attribute__((unused)) argc, char** argv) {
 }
 
 
+__attribute__((unused))
 
-
+/**
+ * This is the main routine for your application. This basically instantiates
+ * a new simulator and starts the simulation by calling its <Simulate> method.
+ */
+int main(int argc, char** argv) {
+    SingleCoreExt simulator = SingleCoreExt(argc, argv);
+    simulator.Simulate();
+    return simulator.GetExitStatus();
+}

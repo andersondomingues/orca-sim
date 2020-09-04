@@ -31,11 +31,11 @@
 #define RSP_DEBUG 1
 
 using orcasim::gdbrsp::RspServer;
-using orcasim::modeling::ProcessorState;
-using orcasim::modeling::UMemory;
+using orcasim::gdbrsp::GdbProcessorState;
+using orcasim::modeling::Memory;
 
 template <typename T>
-RspServer<T>::RspServer(ProcessorState<T>* state, UMemory* mem,
+RspServer<T>::RspServer(GdbProcessorState<T>* state, Memory* mem,
     std::string ipaddr, uint32_t udpport) {
 
     _udpport = udpport;

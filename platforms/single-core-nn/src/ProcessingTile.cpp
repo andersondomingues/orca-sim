@@ -31,19 +31,19 @@
  * other. */
 ProcessingTile::ProcessingTile() {
 	//DMA control signals
-	_sig_stall      = new USignal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
-	_sig_dma_prog   = new USignal<uint8_t>(SIGNAL_DMA_PROG, this->GetName() + ".dma_prog");
+	_sig_stall      = new Signal<uint8_t>(SIGNAL_CPU_STALL, this->GetName() + ".stall");
+	_sig_dma_prog   = new Signal<uint8_t>(SIGNAL_DMA_PROG, this->GetName() + ".dma_prog");
 	// dummy signal required by the cpu
-	_sig_intr       = new USignal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
+	_sig_intr       = new Signal<uint8_t>(SIGNAL_CPU_INTR,  this->GetName() + ".intr");
 
 	//DMA data signals
-	_sig_burst_size  = new USignal<uint32_t>(DMA_BURST_SIZE, this->GetName() + ".burst_size");
-	_sig_nn_size     = new USignal<uint32_t>(DMA_NN_SIZE, this->GetName() + ".weight_mem_addr");
-	_sig_out_size    = new USignal<uint32_t>(DMA_OUT_SIZE, this->GetName() + ".input_mem_addr");
+	_sig_burst_size  = new Signal<uint32_t>(DMA_BURST_SIZE, this->GetName() + ".burst_size");
+	_sig_nn_size     = new Signal<uint32_t>(DMA_NN_SIZE, this->GetName() + ".weight_mem_addr");
+	_sig_out_size    = new Signal<uint32_t>(DMA_OUT_SIZE, this->GetName() + ".input_mem_addr");
 
 	//create a cpu and memory in addition to current tile hardware
-	_mem0  = new UMemory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
-	_cpu   = new THFRiscV(this->GetName() + ".cpu", _sig_intr, _sig_stall, _mem0);
+	_mem0  = new Memory(this->GetName() + ".mem0", MEM0_SIZE, MEM0_BASE); //main
+	_cpu   = new HFRiscV(this->GetName() + ".cpu", _sig_intr, _sig_stall, _mem0);
 
 	// configurable DMA controller which is able to feed multiple MACs in parallel
 	_dma  = new TDmaMult(this->GetName() + ".dma_mult", _sig_stall, _sig_dma_prog, _sig_burst_size,
@@ -106,7 +106,7 @@ void ProcessingTile::Reset(){
 	_sig_out_size->Write(0);
 }
 
-THFRiscV* ProcessingTile::GetCpu(){
+HFRiscV* ProcessingTile::GetCpu(){
 	return _cpu;
 } 
 TDmaMult* ProcessingTile::GetDma(){
@@ -114,16 +114,16 @@ TDmaMult* ProcessingTile::GetDma(){
 }
 
 /************************************* GETTERS **************************************/
-USignal<uint8_t>*  ProcessingTile::GetSignalStall(){ return _sig_stall; }
-USignal<uint8_t>*  ProcessingTile::GetSignalDmaProg(){ return _sig_dma_prog; }
-USignal<uint8_t>*  ProcessingTile::GetSignalIntr(){ return _sig_intr; }
+Signal<uint8_t>*  ProcessingTile::GetSignalStall(){ return _sig_stall; }
+Signal<uint8_t>*  ProcessingTile::GetSignalDmaProg(){ return _sig_dma_prog; }
+Signal<uint8_t>*  ProcessingTile::GetSignalIntr(){ return _sig_intr; }
 
 
-USignal<uint32_t>* ProcessingTile::GetSignalHostTime(){
+Signal<uint32_t>* ProcessingTile::GetSignalHostTime(){
 	return _signal_hosttime;
 }
 
-UMemory* ProcessingTile::GetMem0(){	return _mem0;}
+Memory* ProcessingTile::GetMem0(){	return _mem0;}
 
 std::string ProcessingTile::ToString(){
 	stringstream ss;

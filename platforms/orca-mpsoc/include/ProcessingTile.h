@@ -74,13 +74,13 @@ class ProcessingTile : private Tile{
 
 private:
 
-	TDmaNetif* _netif;
-	THFRiscV* _cpu; //hfrisv-core
+	DmaNetif* _netif;
+	HFRiscV* _cpu; //hfrisv-core
 
 	//main memory
-	UMemory* _mem0;
-	UMemory* _mem1;
-	UMemory* _mem2;
+	Memory* _mem0;
+	Memory* _mem1;
+	Memory* _mem2;
 	
 	//NOTE: other hardware is defined in Tile.h as 
 	//we use inheritance to derive multiple tiles 
@@ -88,55 +88,55 @@ private:
 	
 	//hosttime magic wire
 	uint32_t _shosttime;
-	USignal<uint32_t>* _signal_hosttime;
+	Signal<uint32_t>* _signal_hosttime;
 	
-	USignal<uint8_t>*  _signal_stall;
-	USignal<uint8_t>*  _signal_intr;
-	USignal<uint8_t>*  _signal_send_status;
-	USignal<uint32_t>* _signal_recv_status;
-	USignal<uint32_t>* _signal_prog_addr;
-	USignal<uint32_t>* _signal_prog_size;
-	USignal<uint8_t>*  _signal_prog_send;
-	USignal<uint8_t>*  _signal_prog_recv;
+	Signal<uint8_t>*  _signal_stall;
+	Signal<uint8_t>*  _signal_intr;
+	Signal<uint8_t>*  _signal_send_status;
+	Signal<uint32_t>* _signal_recv_status;
+	Signal<uint32_t>* _signal_prog_addr;
+	Signal<uint32_t>* _signal_prog_size;
+	Signal<uint8_t>*  _signal_prog_send;
+	Signal<uint8_t>*  _signal_prog_recv;
 	
 public: 
 
 	ProcessingTile(uint32_t x, uint32_t y);
 	~ProcessingTile();
 	
-	TDmaNetif* GetDmaNetif();
+	DmaNetif* GetDmaNetif();
 
-	UMemory* GetMem1();
-	UMemory* GetMem2();
+	Memory* GetMem1();
+	Memory* GetMem2();
 	
 	//getters
-    USignal<uint8_t>*  GetSignalStall();
-	USignal<uint8_t>*  GetSignalIntr();
-	USignal<uint8_t>*  GetSignalSendStatus();
-	USignal<uint32_t>* GetSignalRecvStatus();
-	USignal<uint32_t>* GetSignalProgAddr();
-	USignal<uint32_t>* GetSignalProgSize();
-	USignal<uint8_t>*  GetSignalProgSend();
-	USignal<uint8_t>*  GetSignalProgRecv();
+    Signal<uint8_t>*  GetSignalStall();
+	Signal<uint8_t>*  GetSignalIntr();
+	Signal<uint8_t>*  GetSignalSendStatus();
+	Signal<uint32_t>* GetSignalRecvStatus();
+	Signal<uint32_t>* GetSignalProgAddr();
+	Signal<uint32_t>* GetSignalProgSize();
+	Signal<uint8_t>*  GetSignalProgSend();
+	Signal<uint8_t>*  GetSignalProgRecv();
 
 	//setters
-    void SetSignalStall(USignal<uint8_t>*);
-	void SetSignalIntr(USignal<uint8_t>*);
-	void SetSignalSendStatus(USignal<uint8_t>*);
-	void SetSignalRecvStatus(USignal<uint32_t>*);
-	void SetSignalProgAddr(USignal<uint32_t>*);
-	void SetSignalProgSize(USignal<uint32_t>*);
-	void SetSignalProgSend(USignal<uint8_t>*);
-	void SetSignalProgRecv(USignal<uint8_t>*);
+    void SetSignalStall(Signal<uint8_t>*);
+	void SetSignalIntr(Signal<uint8_t>*);
+	void SetSignalSendStatus(Signal<uint8_t>*);
+	void SetSignalRecvStatus(Signal<uint32_t>*);
+	void SetSignalProgAddr(Signal<uint32_t>*);
+	void SetSignalProgSize(Signal<uint32_t>*);
+	void SetSignalProgSend(Signal<uint8_t>*);
+	void SetSignalProgRecv(Signal<uint8_t>*);
 	
 	//getters
-	THFRiscV* GetCpu();
-	UMemory* GetMem0();
+	HFRiscV* GetCpu();
+	Memory* GetMem0();
 	
 	//getters for mems
-	void SetMem0(UMemory*);
+	void SetMem0(Memory*);
 	
-	USignal<uint32_t>* GetSignalHostTime();
+	Signal<uint32_t>* GetSignalHostTime();
 	
 	std::string ToString();
 };

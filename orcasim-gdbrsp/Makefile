@@ -14,11 +14,12 @@ DEPS_INCLUDE = -I$(ORCASIM_BASE_DIR)/include -I$(ORCASIM_MODELING_DIR)/include
 TARGET_DEPS := \
 	$(OUTPUTDIR)/UdpAsyncServer.o \
 	$(OUTPUTDIR)/RspServer.o \
-	$(OUTPUTDIR)/DataConvertionHelper.o 
+	$(OUTPUTDIR)/DataConvertionHelper.o \
+	$(OUTPUTDIR)/GdbProcessorBase.o 
 
 # Add optimization and include flags to the compilation. Compilation 
 # optimizations favor performance over code size.
-CXXFLAGS := \
+CXXFLAGS := -fmax-errors=10 \
 	-O3 -march=native -mtune=native \
 	-I$(HEADERDIR) $(DEPS_INCLUDE)
 

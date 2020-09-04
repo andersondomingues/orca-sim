@@ -35,12 +35,12 @@
 #include "DmaNetif.hpp"
 
 using orcasim::modeling::Buffer;
-using orcasim::models::orcanetworkinterface::TDmaNetif;
+using orcasim::models::orcanetworkinterface::DmaNetif;
 using orcasim::models::orcanetworkinterface::DmaNetifRecvState;
 using orcasim::models::orcanetworkinterface::DmaNetifSendState;
 using orcasim::models::orcanetworkinterface::FlitType;
 
-TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
+DmaNetif::DmaNetif(std::string name) : TimedModel(name) {
     _sig_stall = nullptr;
     _sig_intr  = nullptr;
     _sig_send_status = nullptr;
@@ -55,81 +55,81 @@ TDmaNetif::TDmaNetif(std::string name) : TimedModel(name) {
     this->Reset();
 }
 
-TDmaNetif::~TDmaNetif() {
+DmaNetif::~DmaNetif() {
     delete _ib;
 }
 
-void TDmaNetif::Reset() {
+void DmaNetif::Reset() {
     _recv_state = DmaNetifRecvState::WAIT_ADDR_FLIT;
     _send_state = DmaNetifSendState::WAIT_CONFIG_STALL;
 }
 
-void TDmaNetif::SetOutputBuffer(Buffer<FlitType>* ob) {
+void DmaNetif::SetOutputBuffer(Buffer<FlitType>* ob) {
     _ob = ob;
 }
 
-Buffer<FlitType>* TDmaNetif::GetInputBuffer() {
+Buffer<FlitType>* DmaNetif::GetInputBuffer() {
     return _ib;
 }
 
 // state getters
-DmaNetifRecvState TDmaNetif::GetRecvState() {
+DmaNetifRecvState DmaNetif::GetRecvState() {
     return _recv_state;
 }
 
-DmaNetifSendState TDmaNetif::GetSendState() {
+DmaNetifSendState DmaNetif::GetSendState() {
     return _send_state;
 }
 
 // main mem
-void TDmaNetif::SetMem0(Memory* m0) {
+void DmaNetif::SetMem0(Memory* m0) {
     _mem0 = m0;
 }
 
 // recv mem
-void TDmaNetif::SetMem1(Memory* m1) {
+void DmaNetif::SetMem1(Memory* m1) {
     _mem1 = m1;
 }
 
 // send mem
-void TDmaNetif::SetMem2(Memory* m2) {
+void DmaNetif::SetMem2(Memory* m2) {
     _mem2 = m2;
 }
 
 // getters
-Signal<uint8_t>*  TDmaNetif::GetSignalStall() { return _sig_stall; }
-Signal<uint8_t>*  TDmaNetif::GetSignalIntr() { return _sig_intr; }
+Signal<uint8_t>*  DmaNetif::GetSignalStall() { return _sig_stall; }
+Signal<uint8_t>*  DmaNetif::GetSignalIntr() { return _sig_intr; }
 
-Signal<uint8_t>*  TDmaNetif::GetSignalSendStatus() { return _sig_send_status; }
-Signal<uint32_t>*  TDmaNetif::GetSignalRecvStatus() {
+Signal<uint8_t>*  DmaNetif::GetSignalSendStatus() { return _sig_send_status; }
+Signal<uint32_t>*  DmaNetif::GetSignalRecvStatus() {
     return _sig_recv_status;
 }
 
-Signal<uint8_t>*  TDmaNetif::GetSignalProgSend() { return _sig_prog_send; }
-Signal<uint8_t>*  TDmaNetif::GetSignalProgRecv() { return _sig_prog_recv; }
+Signal<uint8_t>*  DmaNetif::GetSignalProgSend() { return _sig_prog_send; }
+Signal<uint8_t>*  DmaNetif::GetSignalProgRecv() { return _sig_prog_recv; }
 
-Signal<uint32_t>* TDmaNetif::GetSignalProgAddr() { return _sig_prog_addr; }
-Signal<uint32_t>* TDmaNetif::GetSignalProgSize() { return _sig_prog_size; }
+Signal<uint32_t>* DmaNetif::GetSignalProgAddr() { return _sig_prog_addr; }
+Signal<uint32_t>* DmaNetif::GetSignalProgSize() { return _sig_prog_size; }
 
 // setters
-void TDmaNetif::SetSignalStall(Signal<uint8_t>* c) { _sig_stall = c; }
-void TDmaNetif::SetSignalIntr(Signal<uint8_t>* c) { _sig_intr = c; }
+void DmaNetif::SetSignalStall(Signal<uint8_t>* c) { _sig_stall = c; }
+void DmaNetif::SetSignalIntr(Signal<uint8_t>* c) { _sig_intr = c; }
 
-void TDmaNetif::SetSignalSendStatus(Signal<uint8_t>* c) {
+void DmaNetif::SetSignalSendStatus(Signal<uint8_t>* c) {
     _sig_send_status = c;
 }
 
-void TDmaNetif::SetSignalRecvStatus(Signal<uint32_t>* c) {
+void DmaNetif::SetSignalRecvStatus(Signal<uint32_t>* c) {
     _sig_recv_status = c;
 }
 
-void TDmaNetif::SetSignalProgSend(Signal<uint8_t>* c) { _sig_prog_send = c; }
-void TDmaNetif::SetSignalProgRecv(Signal<uint8_t>* c) { _sig_prog_recv = c; }
+void DmaNetif::SetSignalProgSend(Signal<uint8_t>* c) { _sig_prog_send = c; }
+void DmaNetif::SetSignalProgRecv(Signal<uint8_t>* c) { _sig_prog_recv = c; }
 
-void TDmaNetif::SetSignalProgAddr(Signal<uint32_t>* c) { _sig_prog_addr = c; }
-void TDmaNetif::SetSignalProgSize(Signal<uint32_t>* c) { _sig_prog_size = c; }
+void DmaNetif::SetSignalProgAddr(Signal<uint32_t>* c) { _sig_prog_addr = c; }
+void DmaNetif::SetSignalProgSize(Signal<uint32_t>* c) { _sig_prog_size = c; }
 
-SimulationTime TDmaNetif::Run() {
+SimulationTime DmaNetif::Run() {
     // independent processes, can run parallel
     this->recvProcess();
     this->sendProcess();
@@ -137,7 +137,7 @@ SimulationTime TDmaNetif::Run() {
     return 1;  // takes only 1 cycle to change both states
 }
 
-void TDmaNetif::recvProcess() {
+void DmaNetif::recvProcess() {
     // recv state machine
     switch (_recv_state) {
         // wait some flit to arrive at the local port
@@ -322,7 +322,7 @@ void TDmaNetif::recvProcess() {
     }
 }
 
-void TDmaNetif::sendProcess() {
+void DmaNetif::sendProcess() {
     // send state machine
     switch (_send_state) {
         // wait the cpu to configure the ni
