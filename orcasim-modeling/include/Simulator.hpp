@@ -26,6 +26,7 @@
 #ifndef ORCASIM_MODELING_INCLUDE_SIMULATOR_HPP_
 #define ORCASIM_MODELING_INCLUDE_SIMULATOR_HPP_
 
+#include <vector>
 #include <list>
 #include <string>
 
@@ -41,6 +42,7 @@ using orcasim::base::Engine;
 using orcasim::base::SimulationTime;
 using orcasim::modeling::Signal;
 
+
 namespace orcasim::modeling {
 
 void sig_handler(int _);  // interruption handler
@@ -53,7 +55,8 @@ enum class SimulatorInterruptionStatus {
 
 class Simulator {
  private:
-    std::list<std::string> _params;  // argc+argv
+    std::chrono::high_resolution_clock::time_point t1, t2;  // time measurement
+    std::vector<std::string> _params;  // argc+argv
 
     std::list<TimedModel> _tmodels;    // all timed models under simulation
     std::list<UntimedModel> _umodels;  // aal untimed models under simulation
@@ -71,6 +74,7 @@ class Simulator {
     Simulator();
 
     void virtual Startup() = 0;  // model instantiation
+    void virtual Schedule() = 0;
     void virtual Simulate() = 0;  // simulation
     void virtual Report() = 0;   // statistics
     void virtual Cleanup() = 0;  // delete instances
@@ -80,6 +84,8 @@ class Simulator {
 
     int GetExitStatus();
     void SetExitStatus(int status);
+
+    std::string GetParam(int index);
 };
 
 }  // namespace orcasim::modeling

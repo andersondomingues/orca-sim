@@ -19,9 +19,9 @@ ORCA_MEMORY_SIZE := 0x0041FFFF
 #================================================================#
 
 #MEMORY
-PLAT_COMPLINE := \
+CONFIG_MEMORY := \
 	-DORCA_MEMORY_BASE=$(ORCA_MEMORY_BASE) \
 	-DORCA_MEMORY_SIZE=$(ORCA_MEMORY_SIZE)
 
 #NOC dimensions must be exported separately
-export PLAT_COMPLINE
+export CONFIG_MEMORY

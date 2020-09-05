@@ -24,7 +24,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA. 
 ******************************************************************************/
 #include <signal.h>
+
+#include <chrono>
+
 #include "Simulator.hpp"
+
+#define ORCA_EPOCH_LENGTH 100000
+#define ORCA_EPOCHS_TO_SIM 10000
 
 using orcasim::modeling::Simulator;
 using orcasim::modeling::SimulatorInterruptionStatus;
@@ -55,6 +61,10 @@ static void sig_handler(int _) {
     }
 }
 
+std::string Simulator::GetParam(int index) {
+    return _params[index];
+}
+
 Simulator::Simulator(int argc, char** argv) {
     _exit_status = 0;  // if not overwritten, exist status is zero (EXIT_OK)
     _interruption_status = SimulatorInterruptionStatus::RUNNING;
@@ -62,12 +72,49 @@ Simulator::Simulator(int argc, char** argv) {
 
     // parse params
     if (argc > 0) {
-        _params = std::list<std::string>();
+        _params = std::vector<std::string>();
         for (int i = 0; i < argc; i++) {
             char* param = argv[i];
             _params.push_back(std::string(param));
         }
     }
+}
+
+void Simulator::Simulate() {
+    try {
+        while (_interruption_status == SimulatorInterruptionStatus::RUNNING) {
+            t1 = std::chrono::high_resolution_clock::now();
+
+            _engine.Run(ORCA_EPOCH_LENGTH);
+
+            t2 = std::chrono::high_resolution_clock::now();
+
+            auto duration =
+                std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1)
+                    .count();
+            _engine.NextEpoch();
+
+            // converts mili to seconds before calculating the frequency
+            double hertz = static_cast<double>(ORCA_EPOCH_LENGTH) /
+                (static_cast<double>(duration) / 1000.0);
+
+            // divide frequency by 1k (Hz -> KHz)
+            std::cout << "notice: epoch #" << _engine.GetEpochs() << " took ~"
+                << duration << "ms (running @ " << (hertz / 1000000.0)
+                << " MHz)" << std::endl;
+
+            #ifdef ORCA_EPOCHS_TO_SIM
+            // simulate until reach the limit of pulses
+            if (_engine.GetEpochs() >= ORCA_EPOCHS_TO_SIM)
+                break;
+            #endif
+        }
+    } catch(std::runtime_error& e) {
+        std::cout << e.what() << std::endl;
+        _exit_status = -1;  // abnormal termination, simulation failed
+    }
+
+    Report();
 }
 
 int Simulator::GetExitStatus() {

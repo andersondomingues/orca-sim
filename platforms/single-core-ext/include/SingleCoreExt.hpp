@@ -37,7 +37,7 @@ using orcasim::models::orca::DmaNetif;
 
 namespace orcasim::platforms::singlecoreext {
 
-class SingleCoreExt : Simulator {
+class SingleCoreExt : public Simulator {
  private:
     // signal list
     Signal<uint8_t> *signal_stall, *signal_intr, *signal_send_status,
@@ -49,8 +49,12 @@ class SingleCoreExt : Simulator {
     HFRiscV* cpu;
     NetBridge* bridge;
     DmaNetif* netif;
+
  public:
+    SingleCoreExt(int argc, char** argv);
+
     void Startup();  // model instantiation
+    void Schedule();
     void Simulate();  // simulation
     void Report();   // statistics
     void Cleanup();  // delete instances

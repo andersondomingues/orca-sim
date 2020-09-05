@@ -45,12 +45,15 @@
 #include "MemoryMap.h"
 #include "SingleCoreExt.hpp"
 
+#define ORCA_EPOCHS_TO_SIM 10
+#define ORCA_EPOCH_LENGTH 10
+
 using orcasim::platforms::singlecoreext::SingleCoreExt;
+using orcasim::modeling::SimulatorInterruptionStatus;
 
-SingleCoreExt::SingleCoreExt(int argc, char** argv) : Simulator(argc, argv) {
-    
+SingleCoreExt::SingleCoreExt(int argc, char** argv): Simulator(argc, argv) {
+    // nothing to do here
 }
-
 
 /**
  * This routine regards the instantiation of hardware for the simulation. In 
@@ -166,8 +169,7 @@ void SingleCoreExt::Startup() {
     #endif
 
     // load software image into memory
-    mem->LoadBin(std::string(argv[1]), MEM_BASE, MEM_SIZE);
-
+    mem->LoadBin(GetParam(1), MEM_BASE, MEM_SIZE);
 }
 
 /**
@@ -184,48 +186,7 @@ void SingleCoreExt::Schedule() {
     Register(this->netif);
 }
 
-void SingleCoreExt::Simulate() {
-    
-    std::cout << "Epoch set to " << ORCA_EPOCH_LENGTH
-        << " cycles." << std::endl;
-    std::cout << "Please wait..." << std::endl;
-
-    try {
-        std::chrono::high_resolution_clock::time_point t1, t2;
-
-        while (!interruption && !cpu->GetState()->terminated) {
-            t1 = std::chrono::high_resolution_clock::now();
-            s->Run(ORCA_EPOCH_LENGTH);
-            t2 = std::chrono::high_resolution_clock::now();
-
-            auto duration =
-                std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1)
-                    .count();
-            s->NextEpoch();
-
-            // converts mili to seconds before calculating the frequency
-            double hertz = static_cast<double>(ORCA_EPOCH_LENGTH) /
-                (static_cast<double>(duration) / 1000.0);
-
-            // divide frequency by 1k (Hz -> KHz)
-            std::cout << "notice: epoch #" << s->GetEpochs() << " took ~"
-                << duration << "ms (running @ " << (hertz / 1000000.0)
-                << " MHz)" << std::endl;
-
-            #ifdef ORCA_EPOCHS_TO_SIM
-            // simulate until reach the limit of pulses
-            if (s->GetEpochs() >= ORCA_EPOCHS_TO_SIM)
-                break;
-            #endif
-        }
-    } catch(std::runtime_error& e) {
-        std::cout << e.what() << std::endl;
-        return -1;  // abnormal termination, simulation failed
-    }
-}
-
 void SingleCoreExt::Report() {
-    
     // minimal reporting
     std::cout << "cpu: INTR=" << static_cast<int>(signal_intr->Read())
         << ", STALL=" << static_cast<int>(signal_stall->Read())
@@ -270,29 +231,24 @@ void SingleCoreExt::Report() {
 }
 
 
-int Cleanup() override{
-
+void SingleCoreExt::Cleanup() {
     Simulator::Cleanup();
 
     // get cpu status whether it terminated suceffuly
-    int exit_status = _cpu->GetState()->terminated;
+    int exit_status = cpu->GetState()->terminated;
 
     // free resources
     delete(cpu);
     delete(mem);
     delete(signal_intr);
-    delete(signal_stall); //missing signals here
+    delete(signal_stall);  // missing signals here
 
     delete(mem1);
     delete(mem2);
     delete(netif);
-
-    // return existing code to upper system
-    return exit_status;
 }
 
-
-__attribute__((unused))
+// __attribute__((unused))
 
 /**
  * This is the main routine for your application. This basically instantiates
@@ -301,5 +257,6 @@ __attribute__((unused))
 int main(int argc, char** argv) {
     SingleCoreExt simulator = SingleCoreExt(argc, argv);
     simulator.Simulate();
-    return simulator.GetExitStatus();
+    // int ret = simulator.GetExitStatus();
+    return 1;
 }
