@@ -3,7 +3,7 @@ HEADERDIR :=include
 OUTPUTDIR :=bin
 
 # Name of the package
-LIBNAME := hfriscv-core.a 
+LIBNAME := libhfriscv-core.a 
 
 # Dependencies
 DEPS_INCLUDE := \

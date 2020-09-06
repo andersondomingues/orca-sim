@@ -3,20 +3,20 @@ HEADERDIR :=include
 OUTPUTDIR :=bin
 
 # Name of the package
-LIBNAME := orca-network-interface.a 
+LIBNAME := liborca-network-interface.a 
 
 # Dependencies
 DEPS_INCLUDE := \
 	-I"../../orcasim-base/include" \
 	-I"../../orcasim-modeling/include" \
-	-I"../../orcasim-gdbrsp/include"
+	-I"../../orcasim-gdbrsp/include" 
 
 DEPS_LINKAGE := -lorcasim-base -lorcasim-modeling -lorcasim-gdbrsp
 
 # Add optimization and include flags to the compilation. Compilation 
 # optimizations favor performance over code size.
 CXXFLAGS := \
-	-O3 -march=native -mtune=native \
+	-O3 -march=native -mtune=native -fmax-errors=5\
 	-I$(HEADERDIR) $(DEPS_INCLUDE)
 
 TARGET_DEPS := $(OUTPUTDIR)/DmaNetif.o

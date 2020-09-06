@@ -3,7 +3,7 @@ HEADERDIR :=include
 OUTPUTDIR :=bin
 
 # Name of the package
-LIBNAME := liborca-gdbrsp.a 
+LIBNAME := liborcasim-gdbrsp.a 
 
 # Dependencies
 ORCASIM_BASE_DIR =../orcasim-base

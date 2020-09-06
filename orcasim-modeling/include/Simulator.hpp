@@ -27,7 +27,6 @@
 #define ORCASIM_MODELING_INCLUDE_SIMULATOR_HPP_
 
 #include <vector>
-#include <list>
 #include <string>
 
 #include "TimedModel.hpp"
@@ -58,8 +57,6 @@ class Simulator {
     std::chrono::high_resolution_clock::time_point t1, t2;  // time measurement
     std::vector<std::string> _params;  // argc+argv
 
-    std::list<TimedModel> _tmodels;    // all timed models under simulation
-    std::list<UntimedModel> _umodels;  // aal untimed models under simulation
     Engine _engine;  // the simulation engine
 
     int _exit_status;

@@ -3,7 +3,7 @@ HEADERDIR :=include
 OUTPUTDIR :=bin
 
 # Name of the package
-LIBNAME := liborca-base.a 
+LIBNAME := liborcasim-base.a 
 
 TARGET_DEPS := \
 	$(OUTPUTDIR)/Event.o \

@@ -3,7 +3,7 @@ HEADERDIR :=include
 OUTPUTDIR :=bin
 
 # Name of the package
-LIBNAME := hermes-router.a 
+LIBNAME := libhermes-router.a 
 
 # Dependencies
 DEPS_INCLUDE := \

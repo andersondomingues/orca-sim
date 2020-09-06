@@ -45,6 +45,15 @@
 
 #include "NetBridge.hpp"
 
+using orcasim::models::orca::NetBridge;
+using orcasim::models::orca::NetBridgeRecvState;
+using orcasim::models::orca::NetBridgeSendState;
+using orcasim::models::orca::FlitType;
+
+using orcasim::models::orca::udp_client;
+using orcasim::models::orca::udp_server;
+using orcasim::models::orca::udp_client_server_runtime_error;
+
 /**
  * @brief Default ctor. Name of the module must be informed.
  * @param name A name to identify this module.

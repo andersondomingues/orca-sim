@@ -5,7 +5,7 @@ HEADERDIR :=include
 OUTPUTDIR :=bin
 
 # Name of the package
-LIBNAME := liborca-modeling.a 
+LIBNAME := liborcasim-modeling.a 
 
 # Dependencies
 DEPS_INCLUDE := -I"../orcasim-base/include"
@@ -14,7 +14,7 @@ DEPS_LINKAGE := -lorcasim-base
 # Add optimization and include flags to the compilation. Compilation 
 # optimizations favor performance over code size.
 CXXFLAGS := \
-	-O3 -march=native -mtune=native \
+	-O3 -march=native -mtune=native -fmax-errors=5\
 	-I$(HEADERDIR) $(DEPS_INCLUDE)
 
 TARGET_DEPS := \
@@ -22,7 +22,8 @@ TARGET_DEPS := \
 	$(OUTPUTDIR)/Signal.o \
 	$(OUTPUTDIR)/SignalSet.o \
 	$(OUTPUTDIR)/Memory.o \
-	$(OUTPUTDIR)/Buffer.o
+	$(OUTPUTDIR)/Buffer.o \
+	$(OUTPUTDIR)/Simulator.o
 
 # Pack object code into a static library
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
@@ -30,7 +31,7 @@ $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
 
 # Compile classes into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp $(HEADERDIR)/%.hpp 
-	$(Q)g++ $(CXXFLAGS) $< -o $@ -c
+	$(Q)g++ $(CXXFLAGS) $< -o $@ -c 
 	
 # Remove generated object files and library
 clean:

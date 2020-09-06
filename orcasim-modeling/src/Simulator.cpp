@@ -28,10 +28,13 @@
 #include <chrono>
 
 #include "Simulator.hpp"
+#include "Event.hpp"
 
 #define ORCA_EPOCH_LENGTH 100000
 #define ORCA_EPOCHS_TO_SIM 10000
 
+
+using orcasim::base::Event;
 using orcasim::modeling::Simulator;
 using orcasim::modeling::SimulatorInterruptionStatus;
 
@@ -78,6 +81,10 @@ Simulator::Simulator(int argc, char** argv) {
             _params.push_back(std::string(param));
         }
     }
+}
+
+void Simulator::Register(TimedModel* model, SimulationTime time) {
+    _engine.Schedule(Event(time, model));
 }
 
 void Simulator::Simulate() {

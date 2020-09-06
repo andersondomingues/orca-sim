@@ -35,10 +35,10 @@
 #include "DmaNetif.hpp"
 
 using orcasim::modeling::Buffer;
-using orcasim::models::orcanetworkinterface::DmaNetif;
-using orcasim::models::orcanetworkinterface::DmaNetifRecvState;
-using orcasim::models::orcanetworkinterface::DmaNetifSendState;
-using orcasim::models::orcanetworkinterface::FlitType;
+using orcasim::models::orca::DmaNetif;
+using orcasim::models::orca::DmaNetifRecvState;
+using orcasim::models::orca::DmaNetifSendState;
+using orcasim::models::orca::FlitType;
 
 DmaNetif::DmaNetif(std::string name) : TimedModel(name) {
     _sig_stall = nullptr;
