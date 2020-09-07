@@ -13,5 +13,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: make
-      run: cd platforms/single-core-ext; make
+    - name: make (single-core-ext)
+      working-directory: cd platforms/single-core-ext
+      run: make
