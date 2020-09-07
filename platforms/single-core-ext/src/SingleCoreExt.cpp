@@ -31,10 +31,6 @@
 #include <chrono>
 #include <cmath>
 
-// simulation artifacts (from URSA)
-#include "Event.hpp"
-#include "Simulator.hpp"
-
 // models
 #include "Memory.hpp"
 #include "HFRiscV.hpp"
@@ -45,10 +41,23 @@
 #include "MemoryMap.h"
 #include "SingleCoreExt.hpp"
 
+// simulation artifacts (from URSA)
+#include "Event.hpp"
+#include "Simulator.hpp"
+
+#ifndef ORCA_MEMORY_BASE
+#define ORCA_MEMORY_BASE 0x40000000
+#endif
+
+#ifndef ORCA_MEMORY_SIZE
+#define ORCA_MEMORY_SIZE 0x0F
+#endif
+
 #define ORCA_EPOCHS_TO_SIM 10
 #define ORCA_EPOCH_LENGTH 10
 
 using orcasim::platforms::singlecoreext::SingleCoreExt;
+using orcasim::modeling::Simulator;
 using orcasim::modeling::SimulatorInterruptionStatus;
 
 SingleCoreExt::SingleCoreExt(int argc, char** argv): Simulator(argc, argv) {
@@ -74,7 +83,7 @@ void SingleCoreExt::Startup() {
         SIGNAL_SEND_STATUS, "cpu.sig-send-status");
 
     // instantiate modules
-    mem = new Memory("main-memory", MEM_SIZE, MEM_BASE);
+    mem = new Memory("main-memory", ORCA_MEMORY_SIZE, ORCA_MEMORY_BASE);
     cpu = new HFRiscV("cpu", signal_intr, signal_stall, mem);
 
     // bind control signals to memory space
@@ -169,7 +178,7 @@ void SingleCoreExt::Startup() {
     #endif
 
     // load software image into memory
-    mem->LoadBin(GetParam(1), MEM_BASE, MEM_SIZE);
+    mem->LoadBin(GetParam(1), ORCA_MEMORY_BASE, ORCA_MEMORY_SIZE);
 }
 
 /**
@@ -228,15 +237,11 @@ void SingleCoreExt::Report() {
         "\tstores\t\t" << static_cast<int>(mem->GetSignalCounterLoad()->Read())
         << std::endl;
     #endif
+
+    SetExitStatus(0);
 }
 
-
-void SingleCoreExt::Cleanup() {
-    Simulator::Cleanup();
-
-    // get cpu status whether it terminated suceffuly
-    int exit_status = cpu->GetState()->terminated;
-
+SingleCoreExt::~SingleCoreExt() {
     // free resources
     delete(cpu);
     delete(mem);
@@ -248,15 +253,17 @@ void SingleCoreExt::Cleanup() {
     delete(netif);
 }
 
-// __attribute__((unused))
-
 /**
  * This is the main routine for your application. This basically instantiates
  * a new simulator and starts the simulation by calling its <Simulate> method.
  */
+
 int main(int argc, char** argv) {
-    SingleCoreExt simulator = SingleCoreExt(argc, argv);
-    simulator.Simulate();
+    SingleCoreExt* simulator = new SingleCoreExt(argc, argv);
+    simulator->Simulate();
     // int ret = simulator.GetExitStatus();
     return 1;
 }
+
+
+    

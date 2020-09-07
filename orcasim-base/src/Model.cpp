@@ -38,3 +38,7 @@ std::string Model::GetName() {
 void Model::SetName(const std::string name) {
     _name = name;
 }
+
+Model::~Model() {
+    // nothing to do
+}

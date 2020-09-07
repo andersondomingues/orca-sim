@@ -63,6 +63,11 @@ class Model {
      * @param s Value to be set
      */
     void SetName(std::string s);
+
+    /**
+     * Virtual destructor, must implement by subclass 
+     */
+    virtual ~Model() = 0;
 };
 
 }  // namespace orcasim::base

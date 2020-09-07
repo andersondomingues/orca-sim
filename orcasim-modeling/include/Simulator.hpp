@@ -44,7 +44,7 @@ using orcasim::modeling::Signal;
 
 namespace orcasim::modeling {
 
-void sig_handler(int _);  // interruption handler
+static void sig_handler(int _);  // interruption handler
 
 enum class SimulatorInterruptionStatus {
     RUNNING,      // application is running
@@ -72,9 +72,8 @@ class Simulator {
 
     void virtual Startup() = 0;  // model instantiation
     void virtual Schedule() = 0;
-    void virtual Simulate() = 0;  // simulation
+    void virtual Simulate();  // simulation
     void virtual Report() = 0;   // statistics
-    void virtual Cleanup() = 0;  // delete instances
 
     void Register(TimedModel* m);
     void Register(TimedModel* m, SimulationTime t);

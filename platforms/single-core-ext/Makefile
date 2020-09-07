@@ -10,28 +10,29 @@ HEADERDIR :=include
 
 #-Wl,--start-group 
 LINKING := \
-	-lorcasim-base \
-	-lorcasim-modeling \
-	-lorcasim-gdbrsp \
 	-lhfriscv-core \
 	-lorca-network-interface \
 	-lorca-virtual-ethernet \
+	-lorcasim-modeling \
+	-lorcasim-gdbrsp \
+	-lorcasim-base \
 	-lpthread 
 
 INCLUDES := \
-	-I../../orcasim-base/include \
-	-I../../orcasim-modeling/include \
-	-I../../orcasim-gdbrsp/include \
 	-I../../models/hfriscv-core/include \
 	-I../../models/orca-network-interface/include \
 	-I../../models/orca-virtual-ethernet/include \
+	-I../../orcasim-gdbrsp/include \
+	-I../../orcasim-modeling/include \
+	-I../../orcasim-base/include \
 	-Iinclude
 
 #Flags to be used during compilation of the platform. Note 
 #that they may be different form flags used for compiling
 #dependencies.
-CXX_FLAGS += $(INCLUDES) -O3 -march=native -mtune=native -fmax-errors=5
-LD_FLAGS += -Lbin $(CONFIG_MEMORY) $(LINKING)
+CXX_FLAGS += -O3 -march=native -mtune=native -fmax-errors=5 -std=c++17 \
+	$(CONFIG_MEMORY) $(INCLUDES) 
+LD_FLAGS += -Lbin $(LINKING)
 
 # include headers in the dependecy check
 HEADER_FILES := $(wildcard $(HEADERDIR)/*.hpp) $(wildcard $(HEADERDIR)/*.h)
@@ -51,8 +52,10 @@ $(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCE_FILES) $(HEADER_FILES)
 	cp ../../models/orca-virtual-ethernet/bin/*.a ./bin
 	cp ../../models/hfriscv-core/bin/*.a ./bin
 	cp ../../models/orca-network-interface/bin/*.a ./bin
-	ar crs ./bin/*.a
-	$(Q)g++ $(SOURCE_FILES) -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe $(CXX_FLAGS) $(LD_FLAGS) 
+	g++ $(CXX_FLAGS) -Lbin -o $(OUTPUTDIR)/$(PLATFORM_NAME).exe $(SOURCE_FILES) \
+		-Wl,--start-group $(LINKING)
+#ld --start-group $(OUTPUTDIR)/$(PLATFORM_NAME).o bin/*.a --end-group \
+#		-o $(OUTPUTDIR)/$(PLATFORM_NAME).exe
 
 #remove previously generated files
 clean:

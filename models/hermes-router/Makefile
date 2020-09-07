@@ -15,7 +15,7 @@ DEPS_LINKAGE := -lorcasim-base -lorcasim-modeling
 # Add optimization and include flags to the compilation. Compilation 
 # optimizations favor performance over code size.
 CXXFLAGS := \
-	-O3 -march=native -mtune=native \
+	-O3 -march=native -mtune=native -std=c++17 \
 	-I$(HEADERDIR) $(DEPS_INCLUDE)
 
 TARGET_DEPS := $(OUTPUTDIR)/HermesRouter.o

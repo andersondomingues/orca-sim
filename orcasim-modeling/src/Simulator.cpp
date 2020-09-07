@@ -38,6 +38,9 @@ using orcasim::base::Event;
 using orcasim::modeling::Simulator;
 using orcasim::modeling::SimulatorInterruptionStatus;
 
+volatile SimulatorInterruptionStatus Simulator::_interruption_status
+    = SimulatorInterruptionStatus::RUNNING;
+
 void Simulator::SetInterruptionStatus(SimulatorInterruptionStatus status) {
     Simulator::_interruption_status = status;
 }
@@ -85,6 +88,10 @@ Simulator::Simulator(int argc, char** argv) {
 
 void Simulator::Register(TimedModel* model, SimulationTime time) {
     _engine.Schedule(Event(time, model));
+}
+
+void Simulator::Register(TimedModel* model) {
+    Simulator::Register(model, 1);
 }
 
 void Simulator::Simulate() {

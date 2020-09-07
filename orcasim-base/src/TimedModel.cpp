@@ -26,6 +26,7 @@
 #include "TimedModel.hpp"
 
 using orcasim::base::TimedModel;
+using orcasim::base::Model;
 
 TimedModel::TimedModel(const std::string name) : Model(name) {
     // nothing to do

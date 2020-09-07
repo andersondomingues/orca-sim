@@ -55,9 +55,9 @@ class SingleCoreExt : public Simulator {
 
     void Startup();  // model instantiation
     void Schedule();
-    void Simulate();  // simulation
     void Report();   // statistics
-    void Cleanup();  // delete instances
+
+    ~SingleCoreExt();
 };
 
 }  // namespace orcasim::platforms::singlecoreext

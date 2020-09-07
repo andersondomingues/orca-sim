@@ -14,21 +14,21 @@ TARGET_DEPS := \
 
 # Add optimization and include flags to the compilation. Compilation 
 # optimizations favor performance over code size.
-CXXFLAGS := \
-	-O3 -march=native -mtune=native \
-	-I$(HEADERDIR)
+CXXFLAGS := -O3 -march=native -mtune=native -std=c++17 -fmax-errors=5
 
 #pack file into a static library to be used later
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
-	$(Q)ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
+	@ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
+	@ar -t $(OUTPUTDIR)/$(LIBNAME)
+
 
 #compile all classes into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp $(HEADERDIR)/%.hpp 
-	$(Q)g++ $(CXXFLAGS) $< -o $@ -c
+	@g++ $(CXXFLAGS) $< -o $@ -c -I$(HEADERDIR)
 
 # Remove generated object files and library
 clean:
-	$(Q)rm -rf $(OUTPUTDIR)/*.o $(OUTPUTDIR)/*.a
+	@rm -rf $(OUTPUTDIR)/*.o $(OUTPUTDIR)/*.a
 
 
 
