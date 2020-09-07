@@ -86,3 +86,9 @@ template <typename T>
 inline Memory* ProcessorBase<T>::GetMemory() {
     return _memory;
 }
+
+template <typename T>
+SimulationTime ProcessorBase<T>::Run() {
+    return 0;
+    // nothing todo
+}

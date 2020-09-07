@@ -38,18 +38,7 @@ using orcasim::base::Event;
 using orcasim::modeling::Simulator;
 using orcasim::modeling::SimulatorInterruptionStatus;
 
-volatile SimulatorInterruptionStatus Simulator::_interruption_status
-    = SimulatorInterruptionStatus::RUNNING;
-
-void Simulator::SetInterruptionStatus(SimulatorInterruptionStatus status) {
-    Simulator::_interruption_status = status;
-}
-
-SimulatorInterruptionStatus Simulator::GetInterruptionStatus() {
-    return Simulator::_interruption_status;
-}
-
-static void sig_handler(int _) {
+static void orcasim::modeling::sig_handler(int _) {
     (void)_;
 
     switch (Simulator::GetInterruptionStatus()) {
@@ -65,6 +54,17 @@ static void sig_handler(int _) {
         exit(0);
         break;
     }
+}
+
+volatile SimulatorInterruptionStatus Simulator::_interruption_status
+    = SimulatorInterruptionStatus::RUNNING;
+
+void Simulator::SetInterruptionStatus(SimulatorInterruptionStatus status) {
+    Simulator::_interruption_status = status;
+}
+
+SimulatorInterruptionStatus Simulator::GetInterruptionStatus() {
+    return Simulator::_interruption_status;
 }
 
 std::string Simulator::GetParam(int index) {
