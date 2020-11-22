@@ -68,10 +68,16 @@ SimulatorInterruptionStatus Simulator::GetInterruptionStatus() {
 }
 
 std::string Simulator::GetParam(int index) {
-    return _params[index];
+    return std::string(_params[index]);
 }
 
 Simulator::Simulator(int argc, char** argv) {
+
+    std::cout << "param list:" << std::endl;
+    for(int i = 0; i < argc; ++i){
+        std::cout << i << "\t" << argv[i] << std::endl;
+    }
+
     _exit_status = 0;  // if not overwritten, exist status is zero (EXIT_OK)
     _interruption_status = SimulatorInterruptionStatus::RUNNING;
     signal(SIGINT, sig_handler);  // register interruption handler
@@ -95,37 +101,36 @@ void Simulator::Register(TimedModel* model) {
 }
 
 void Simulator::Simulate() {
-    try {
-        while (_interruption_status == SimulatorInterruptionStatus::RUNNING) {
-            t1 = std::chrono::high_resolution_clock::now();
 
-            _engine.Run(ORCA_EPOCH_LENGTH);
+    Startup();
+    Schedule();
 
-            t2 = std::chrono::high_resolution_clock::now();
+    while (_interruption_status == SimulatorInterruptionStatus::RUNNING) {
+        t1 = std::chrono::high_resolution_clock::now();
 
-            auto duration =
-                std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1)
-                    .count();
-            _engine.NextEpoch();
+        _engine.Run(ORCA_EPOCH_LENGTH);
 
-            // converts mili to seconds before calculating the frequency
-            double hertz = static_cast<double>(ORCA_EPOCH_LENGTH) /
-                (static_cast<double>(duration) / 1000.0);
+        t2 = std::chrono::high_resolution_clock::now();
 
-            // divide frequency by 1k (Hz -> KHz)
-            std::cout << "notice: epoch #" << _engine.GetEpochs() << " took ~"
-                << duration << "ms (running @ " << (hertz / 1000000.0)
-                << " MHz)" << std::endl;
+        auto duration =
+            std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1)
+                .count();
+        _engine.NextEpoch();
 
-            #ifdef ORCA_EPOCHS_TO_SIM
-            // simulate until reach the limit of pulses
-            if (_engine.GetEpochs() >= ORCA_EPOCHS_TO_SIM)
-                break;
-            #endif
-        }
-    } catch(std::runtime_error& e) {
-        std::cout << e.what() << std::endl;
-        _exit_status = -1;  // abnormal termination, simulation failed
+        // converts mili to seconds before calculating the frequency
+        double hertz = static_cast<double>(ORCA_EPOCH_LENGTH) /
+            (static_cast<double>(duration) / 1000.0);
+
+        // divide frequency by 1k (Hz -> KHz)
+        std::cout << "notice: epoch #" << _engine.GetEpochs() << " took ~"
+            << duration << "ms (running @ " << (hertz / 1000000.0)
+            << " MHz)" << std::endl;
+
+        #ifdef ORCA_EPOCHS_TO_SIM
+        // simulate until reach the limit of pulses
+        if (_engine.GetEpochs() >= ORCA_EPOCHS_TO_SIM)
+            break;
+        #endif
     }
 
     Report();

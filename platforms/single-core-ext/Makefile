@@ -1,45 +1,60 @@
 include Configuration.mk
-#This is the name of the platform. It is used only 
-#to name the generated executable file and to be
-#displayed during execution of this makefile
-PLATFORM_NAME :=SingleCoreExt
 
+# This is the name of the platform, which will be used 
+# to name the generated executable file.
+PLATFORM_NAME :=single-core-ext
+
+# You can append other folders here if your project 
+# depends on external libraries
 OUTPUTDIR :=bin
 SOURCEDIR :=src
 HEADERDIR :=include
 
-#-Wl,--start-group 
+# ===================================================== LINKAGE
+# Hardware modules to be linked to your project (the
+# ones that will take part in the simulation)
 LINKING := \
 	-lhfriscv-core \
 	-lorca-network-interface \
-	-lorca-virtual-ethernet \
+	-lorca-virtual-ethernet
+
+# Orcasim modules that will be linked to your application.
+LINKING += \
 	-lorcasim-modeling \
 	-lorcasim-gdbrsp \
-	-lorcasim-base \
-	-lpthread 
+	-lorcasim-base
 
+# Other linking
+LINKING += -lpthread
+
+# ===================================================== INCLUDING
 INCLUDES := \
 	-I../../models/hfriscv-core/include \
 	-I../../models/orca-network-interface/include \
-	-I../../models/orca-virtual-ethernet/include \
+	-I../../models/orca-virtual-ethernet/include
+
+INCLUDES += \
 	-I../../orcasim-gdbrsp/include \
 	-I../../orcasim-modeling/include \
 	-I../../orcasim-base/include \
-	-Iinclude
 
-#Flags to be used during compilation of the platform. Note 
-#that they may be different form flags used for compiling
-#dependencies.
-CXX_FLAGS += -O3 -march=native -mtune=native -fmax-errors=5 -std=c++17 \
-	$(CONFIG_MEMORY) $(INCLUDES) 
+INCLUDES += -Iinclude
+
+# ===================================================== FLAGS
+#CXX_FLAGS += -O3 -march=native -mtune=native -fmax-errors=5 -std=c++17 \
+#	$(CONFIG_MEMORY) $(INCLUDES) -flto
+
+CXX_FLAGS += $(CONFIG_MEMORY) $(INCLUDES) -ggdb
+
 LD_FLAGS += -Lbin $(LINKING)
 
 # include headers in the dependecy check
 HEADER_FILES := $(wildcard $(HEADERDIR)/*.hpp) $(wildcard $(HEADERDIR)/*.h)
 SOURCE_FILES := $(wildcard $(SOURCEDIR)/*.cpp)
 
-#compiler an instance of the simulator 
+# ===================================================== 
 $(OUTPUTDIR)/$(PLATFORM_NAME).exe: $(SOURCE_FILES) $(HEADER_FILES)
+	#compile libraries
 	make -C ../../orcasim-base
 	make -C ../../orcasim-modeling
 	make -C ../../orcasim-gdbrsp

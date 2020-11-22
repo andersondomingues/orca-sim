@@ -13,9 +13,11 @@ DEPS_LINKAGE := -lorcasim-base
 
 # Add optimization and include flags to the compilation. Compilation 
 # optimizations favor performance over code size.
-CXXFLAGS := \
-	-O3 -march=native -mtune=native -fmax-errors=5 -std=c++17 \
-	-I$(HEADERDIR) $(DEPS_INCLUDE)
+#CXXFLAGS := \
+#	-O3 -march=native -mtune=native -fmax-errors=5 -std=c++17 \
+
+CXXFLAGS := -fmax-errors=5 -std=c++17 -I$(HEADERDIR) $(DEPS_INCLUDE) -ggdb
+
 
 TARGET_DEPS := \
 	$(OUTPUTDIR)/ProcessorBase.o \
@@ -27,12 +29,13 @@ TARGET_DEPS := \
 
 # Pack object code into a static library
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
-	$(Q)ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
+	@ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
+	@ar -t $(OUTPUTDIR)/$(LIBNAME)
 
 # Compile classes into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp $(HEADERDIR)/%.hpp 
-	$(Q)g++ $(CXXFLAGS) $< -o $@ -c 
+	@g++ $(CXXFLAGS) $< -o $@ -c 
 	
 # Remove generated object files and library
 clean:
-	$(Q)rm -rf $(OUTPUTDIR)/*.o $(OUTPUTDIR)/*.a
+	rm -rf $(OUTPUTDIR)/*.o $(OUTPUTDIR)/*.a

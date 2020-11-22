@@ -16,8 +16,9 @@ DEPS_LINKAGE := -lorcasim-base -lorcasim-modeling -lorcasim-gdbrsp
 # Add optimization and include flags to the compilation. Compilation 
 # optimizations favor performance over code size.
 CXXFLAGS := \
-	-O3 -march=native -mtune=native -fmax-errors=5 -std=c++17 \
+	-fmax-errors=5 -std=c++17 -ggdb \
 	-I$(HEADERDIR) $(DEPS_INCLUDE)
+#-O3 -march=native -mtune=native -fmax-errors=5 -std=c++17 \
 
 TARGET_DEPS := $(OUTPUTDIR)/DmaNetif.o
 

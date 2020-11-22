@@ -62,6 +62,12 @@ typedef uint16_t FlitType;
  * 
  */
 enum class DmaNetifRecvState{
+
+    RELOAD_WAIT,       // wait for a flit to "wake up" the ni
+    RELOAD_SIZE,       // wait for the size of the burst
+    RELOAD_COPY,       // copy raw payload into memory
+    RELOAD_FLUSH,      // ?
+
     WAIT_ADDR_FLIT,     // wait some flit to arrive at the local port
     WAIT_SIZE_FLIT,     // read size flit to determine how many will come next
     WAIT_PAYLOAD,       // wait for remaining flits to arrive, and interrupt
@@ -104,21 +110,19 @@ class DmaNetif: public TimedModel{
     FlitType _recv_reg;
     FlitType _send_reg;
 
-    // OUT: stalls cpu while copying from/to main memory
-    Signal<uint8_t>* _sig_stall;
-    // OUT: request cpu interruption signal (same for both processes)
-    Signal<uint8_t>* _sig_intr;
+    // CPU interface
+    Signal<uint8_t>* _sig_stall;  // IN
+    Signal<uint8_t>* _sig_intr;   // IN
+    Signal<uint8_t>* _sig_recv_reload;  // IN
+    Signal<uint8_t>* _sig_prog_send;  // IN
+    Signal<uint8_t>* _sig_prog_recv;  // IN
+    Signal<uint8_t>* _sig_send_status;  // OUT
 
-    // OUT: 0x0 when in ready state
-    Signal<uint8_t>* _sig_send_status;
-    // OUT: 0x0 when in ready state, updated but unused
-    Signal<uint32_t>* _sig_recv_status;
+    Signal<uint32_t>* _sig_recv_status;  // OUT
+    Signal<uint32_t>* _sig_prog_addr;  // IN
+    Signal<uint32_t>* _sig_prog_size;  // IN
 
-    Signal<uint8_t>*  _sig_prog_send;   // IN
-    Signal<uint8_t>*  _sig_prog_recv;   // IN
-
-    Signal<uint32_t>* _sig_prog_addr;   // IN
-    Signal<uint32_t>* _sig_prog_size;   // IN
+    Signal<uint16_t>* _sig_prog_dest;  // IN
 
     // recv specific vars
     uint32_t _recv_payload_size;       // total size of the payload (flits)
@@ -130,40 +134,42 @@ class DmaNetif: public TimedModel{
     uint32_t _send_payload_remaining;  // number of flits to copy to the noc
     uint32_t _send_address;          // memory position to which to read from
 
-    // NOC router interface. Both the NI and Router has buffers at the input
+    // NoC router interface. Both the NI and Router have buffers at the input
     Buffer<FlitType>* _ib;
     Buffer<FlitType>* _ob;
 
  public:
-    // getters
+    // state getters
     DmaNetifRecvState GetRecvState();
     DmaNetifSendState GetSendState();
 
     // getters
     Signal<uint8_t>*  GetSignalStall();
     Signal<uint8_t>*  GetSignalIntr();
-
-    Signal<uint8_t>*  GetSignalSendStatus();
-    Signal<uint32_t>*  GetSignalRecvStatus();
-
     Signal<uint8_t>*  GetSignalProgSend();
     Signal<uint8_t>*  GetSignalProgRecv();
-
+    Signal<uint8_t>*  GetSignalRecvReload();
+    Signal<uint8_t>*  GetSignalSendStatus();
+    
+    Signal<uint32_t>* GetSignalRecvStatus();
     Signal<uint32_t>* GetSignalProgAddr();
     Signal<uint32_t>* GetSignalProgSize();
+
+    Signal<uint16_t>* GetSignalProgDest();
 
     // setters
     void SetSignalStall(Signal<uint8_t>*);
     void SetSignalIntr(Signal<uint8_t>*);
-
     void SetSignalSendStatus(Signal<uint8_t>*);
-    void SetSignalRecvStatus(Signal<uint32_t>*);
-
     void SetSignalProgSend(Signal<uint8_t>*);
     void SetSignalProgRecv(Signal<uint8_t>*);
+    void SetSignalRecvReload(Signal <uint8_t>*);
 
+    void SetSignalRecvStatus(Signal<uint32_t>*);
     void SetSignalProgAddr(Signal<uint32_t>*);
     void SetSignalProgSize(Signal<uint32_t>*);
+
+    void SetSignalProgDest(Signal<uint16_t>*);
 
     // internal processes
     void sendProcess();
@@ -171,7 +177,6 @@ class DmaNetif: public TimedModel{
 
     // other
     SimulationTime Run();
-
     void Reset();
 
     // memories

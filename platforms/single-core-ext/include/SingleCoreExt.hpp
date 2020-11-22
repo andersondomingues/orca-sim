@@ -40,9 +40,10 @@ namespace orcasim::platforms::singlecoreext {
 class SingleCoreExt : public Simulator {
  private:
     // signal list
-    Signal<uint8_t> *signal_stall, *signal_intr, *signal_send_status,
-        *signal_send, *signal_recv;
+    Signal<uint8_t> *signal_stall, *signal_intr, *signal_recv_reload,
+        *signal_prog_send, *signal_prog_recv, *signal_send_status;
     Signal<uint32_t> *signal_addr, *signal_size, *signal_recv_status;
+    Signal<uint16_t> *signal_dist;
 
     // "big modules"
     Memory *mem, *mem1, *mem2;  // main memory, plus two buffer for the ni

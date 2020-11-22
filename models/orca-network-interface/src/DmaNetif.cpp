@@ -43,12 +43,17 @@ using orcasim::models::orca::FlitType;
 DmaNetif::DmaNetif(std::string name) : TimedModel(name) {
     _sig_stall = nullptr;
     _sig_intr  = nullptr;
+
     _sig_send_status = nullptr;
     _sig_recv_status = nullptr;
+
+    _sig_recv_reload = nullptr;
+
     _sig_prog_addr = nullptr;
     _sig_prog_size = nullptr;
     _sig_prog_send = nullptr;
     _sig_prog_recv = nullptr;
+    _sig_prog_dest = nullptr;
 
     _ib = new Buffer<FlitType>(name + ".IN", NI_BUFFER_LEN);
 
@@ -73,61 +78,40 @@ Buffer<FlitType>* DmaNetif::GetInputBuffer() {
 }
 
 // state getters
-DmaNetifRecvState DmaNetif::GetRecvState() {
-    return _recv_state;
-}
+DmaNetifRecvState DmaNetif::GetRecvState() { return _recv_state; }
+DmaNetifSendState DmaNetif::GetSendState() { return _send_state; }
 
-DmaNetifSendState DmaNetif::GetSendState() {
-    return _send_state;
-}
-
-// main mem
-void DmaNetif::SetMem0(Memory* m0) {
-    _mem0 = m0;
-}
-
-// recv mem
-void DmaNetif::SetMem1(Memory* m1) {
-    _mem1 = m1;
-}
-
-// send mem
-void DmaNetif::SetMem2(Memory* m2) {
-    _mem2 = m2;
-}
+void DmaNetif::SetMem0(Memory* m0) { _mem0 = m0; }  // main mem
+void DmaNetif::SetMem1(Memory* m1) { _mem1 = m1; }  // recv mem
+void DmaNetif::SetMem2(Memory* m2) { _mem2 = m2; }  // send mem
 
 // getters
 Signal<uint8_t>*  DmaNetif::GetSignalStall() { return _sig_stall; }
 Signal<uint8_t>*  DmaNetif::GetSignalIntr() { return _sig_intr; }
-
 Signal<uint8_t>*  DmaNetif::GetSignalSendStatus() { return _sig_send_status; }
-Signal<uint32_t>*  DmaNetif::GetSignalRecvStatus() {
-    return _sig_recv_status;
-}
-
 Signal<uint8_t>*  DmaNetif::GetSignalProgSend() { return _sig_prog_send; }
 Signal<uint8_t>*  DmaNetif::GetSignalProgRecv() { return _sig_prog_recv; }
+Signal<uint8_t>*  DmaNetif::GetSignalRecvReload() { return _sig_recv_reload; }
 
+Signal<uint32_t>*  DmaNetif::GetSignalRecvStatus() { return _sig_recv_status; }
 Signal<uint32_t>* DmaNetif::GetSignalProgAddr() { return _sig_prog_addr; }
 Signal<uint32_t>* DmaNetif::GetSignalProgSize() { return _sig_prog_size; }
+
+Signal<uint16_t>*  DmaNetif::GetSignalProgDest() { return _sig_prog_dest; }
 
 // setters
 void DmaNetif::SetSignalStall(Signal<uint8_t>* c) { _sig_stall = c; }
 void DmaNetif::SetSignalIntr(Signal<uint8_t>* c) { _sig_intr = c; }
-
-void DmaNetif::SetSignalSendStatus(Signal<uint8_t>* c) {
-    _sig_send_status = c;
-}
-
-void DmaNetif::SetSignalRecvStatus(Signal<uint32_t>* c) {
-    _sig_recv_status = c;
-}
-
+void DmaNetif::SetSignalSendStatus(Signal<uint8_t>* c) { _sig_send_status = c; }
 void DmaNetif::SetSignalProgSend(Signal<uint8_t>* c) { _sig_prog_send = c; }
 void DmaNetif::SetSignalProgRecv(Signal<uint8_t>* c) { _sig_prog_recv = c; }
+void DmaNetif::SetSignalRecvReload(Signal<uint8_t>* c) { _sig_recv_reload = c; }
 
+void DmaNetif::SetSignalRecvStatus(Signal<uint32_t>* c) { _sig_recv_status = c; }
 void DmaNetif::SetSignalProgAddr(Signal<uint32_t>* c) { _sig_prog_addr = c; }
 void DmaNetif::SetSignalProgSize(Signal<uint32_t>* c) { _sig_prog_size = c; }
+
+void DmaNetif::SetSignalProgDest(Signal<uint16_t>* c) { _sig_prog_dest = c; }
 
 SimulationTime DmaNetif::Run() {
     // independent processes, can run parallel
@@ -140,6 +124,45 @@ SimulationTime DmaNetif::Run() {
 void DmaNetif::recvProcess() {
     // recv state machine
     switch (_recv_state) {
+
+        // wait for the leading flit do start the loading process
+        case DmaNetifRecvState::RELOAD_WAIT: {
+            if (_ib->size() > 0) {
+                _ib->pop(); // discard first flit 
+                _recv_state = DmaNetifRecvState::RELOAD_SIZE;
+                _recv_address = _mem0->GetBase(); //write to 1st position
+            }
+        } break;
+        
+        // collect the size of data to be loaded into memory
+        case DmaNetifRecvState::RELOAD_SIZE: {
+            if (_ib->size() > 0) {
+                _recv_reg = _ib->top();
+                _recv_payload_size = _recv_reg;
+                _recv_payload_remaining = _recv_reg;
+                _ib->pop();
+                _recv_state = DmaNetifRecvState::RELOAD_SIZE;
+            }
+        } break;
+
+        case DmaNetifRecvState::RELOAD_COPY:
+            if (_ib->size() > 0) {
+                _recv_reg = _ib->top();
+                _ib->pop();
+                _mem1->Write(_recv_address,
+                    reinterpret_cast<int8_t*>(&_recv_reg), sizeof(FlitType));
+                _recv_payload_remaining--;
+                _recv_address += sizeof(FlitType);
+
+                if(_recv_payload_remaining == 0)
+                    _recv_state = DmaNetifRecvState::RELOAD_FLUSH;
+            }
+            break;
+
+        case DmaNetifRecvState::RELOAD_FLUSH:
+
+            break;
+
         // wait some flit to arrive at the local port
         case DmaNetifRecvState::WAIT_ADDR_FLIT: {
             // If buffer has any flit, copy that flit to internal

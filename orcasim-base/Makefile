@@ -1,3 +1,5 @@
+include Configuration.mk
+
 SOURCEDIR :=src
 HEADERDIR :=include
 OUTPUTDIR :=bin
@@ -14,13 +16,14 @@ TARGET_DEPS := \
 
 # Add optimization and include flags to the compilation. Compilation 
 # optimizations favor performance over code size.
-CXXFLAGS := -O3 -march=native -mtune=native -std=c++17 -fmax-errors=5
+#CXXFLAGS := -O3 -march=native -mtune=native -std=c++17 -fmax-errors=5 -flto
+
+CXXFLAGS := -std=c++17 -ggdb
 
 #pack file into a static library to be used later
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
 	@ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
 	@ar -t $(OUTPUTDIR)/$(LIBNAME)
-
 
 #compile all classes into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp $(HEADERDIR)/%.hpp 

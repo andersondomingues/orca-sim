@@ -41,27 +41,19 @@
 #include "MemoryMap.h"
 #include "SingleCoreExt.hpp"
 
-// simulation artifacts (from URSA)
+// simulation artifacts
 #include "Event.hpp"
 #include "Simulator.hpp"
-
-#ifndef ORCA_MEMORY_BASE
-#define ORCA_MEMORY_BASE 0x40000000
-#endif
-
-#ifndef ORCA_MEMORY_SIZE
-#define ORCA_MEMORY_SIZE 0x0F
-#endif
-
-#define ORCA_EPOCHS_TO_SIM 10
-#define ORCA_EPOCH_LENGTH 10
 
 using orcasim::platforms::singlecoreext::SingleCoreExt;
 using orcasim::modeling::Simulator;
 using orcasim::modeling::SimulatorInterruptionStatus;
 
 SingleCoreExt::SingleCoreExt(int argc, char** argv): Simulator(argc, argv) {
-    // nothing to do here
+    if(argc != 2){
+        std::cout << "Usage: " << std::endl;
+        std::cout << "\t" << argv[0] << " <software image>" << std::endl;
+    }
 }
 
 /**
@@ -70,44 +62,38 @@ SingleCoreExt::SingleCoreExt(int argc, char** argv): Simulator(argc, argv) {
  * modules and signals.
  */
 void SingleCoreExt::Startup() {
-    // instantiate signals
-    signal_stall = new Signal<uint8_t>(SIGNAL_CPU_STALL, "cpu.stall");
-    signal_intr  = new Signal<uint8_t>(SIGNAL_CPU_INTR,  "cpu.intr");
-    signal_send = new Signal<uint8_t>(SIGNAL_PROG_SEND, "cpu.sig-send");
-    signal_recv = new Signal<uint8_t>(SIGNAL_PROG_RECV, "cpu.sig-recv");
-    signal_addr = new Signal<uint32_t>(SIGNAL_PROG_ADDR, "cou.sig-addr");
-    signal_size = new Signal<uint32_t>(SIGNAL_PROG_SIZE, "cou.sig-size");
-    signal_recv_status = new Signal<uint32_t>(
-        SIGNAL_RECV_STATUS, "cpu.sig-recv-status");
-    signal_send_status = new Signal<uint8_t>(
-        SIGNAL_SEND_STATUS, "cpu.sig-send-status");
+    // instantiate signals (note that only signals that could be accessed
+    // through memory must have associated address)
+    signal_stall =  new Signal<uint8_t>("sig.stall");
+    signal_intr  = new Signal<uint8_t>("sig.intr");
+    signal_addr  = new Signal<uint32_t>(SIGNAL_PROG_ADDR, "sig.prog-addr");
+    signal_size  = new Signal<uint32_t>(SIGNAL_PROG_SIZE, "sig.prog-size");
+    signal_dist  = new Signal<uint16_t>(SIGNAL_PROG_DEST, "sig.prog-dest");
+ 
+    signal_recv_reload = new Signal<uint8_t>("sig.recv-reload");
+    signal_prog_send = new Signal<uint8_t>("sig.prog-send");
+    signal_prog_recv = new Signal<uint8_t>("sig.prog-recv");
+    signal_send_status = new Signal<uint8_t>("sig.send-status");
+    signal_recv_status =  new Signal<uint32_t>("sig.recv-status");
 
     // instantiate modules
     mem = new Memory("main-memory", ORCA_MEMORY_SIZE, ORCA_MEMORY_BASE);
     cpu = new HFRiscV("cpu", signal_intr, signal_stall, mem);
 
-    // bind control signals to memory space
-    signal_stall->MapTo(mem->GetMap(SIGNAL_CPU_STALL), SIGNAL_CPU_STALL);
-    signal_intr->MapTo(mem->GetMap(SIGNAL_CPU_INTR), SIGNAL_CPU_INTR);
-    signal_send->MapTo(mem->GetMap(SIGNAL_PROG_SEND), SIGNAL_PROG_SEND);
-    signal_recv->MapTo(mem->GetMap(SIGNAL_PROG_RECV), SIGNAL_PROG_RECV);
+    // map control signals to memory space so that software can access them
     signal_addr->MapTo(mem->GetMap(SIGNAL_PROG_ADDR), SIGNAL_PROG_ADDR);
     signal_size->MapTo(mem->GetMap(SIGNAL_PROG_SIZE), SIGNAL_PROG_SIZE);
-    signal_send_status->MapTo(mem->GetMap(SIGNAL_SEND_STATUS),
-        SIGNAL_SEND_STATUS);
-    signal_recv_status->MapTo(mem->GetMap(SIGNAL_RECV_STATUS),
-        SIGNAL_RECV_STATUS);
+    signal_dist->MapTo(mem->GetMap(SIGNAL_PROG_DEST), SIGNAL_PROG_DEST);
+    signal_prog_send->MapTo(mem->GetMap(SIGNAL_PROG_SEND), SIGNAL_PROG_SEND);
+    signal_prog_recv->MapTo(mem->GetMap(SIGNAL_PROG_RECV), SIGNAL_PROG_RECV);
 
     // reset control wires
     signal_stall->Write(0);
     signal_intr->Write(0);
-    signal_send->Write(0);
-    signal_recv->Write(0);
     signal_addr->Write(0);
     signal_size->Write(0);
-    signal_send_status->Write(0);
-    signal_recv_status->Write(0);
-
+    signal_dist->Write(0);
+    
     // create a dma and off-chip comm modules
     bridge = new NetBridge("comm");
     netif = new DmaNetif("dma");
@@ -121,8 +107,10 @@ void SingleCoreExt::Startup() {
     netif->SetSignalStall(signal_stall);
     netif->SetSignalProgAddr(signal_addr);
     netif->SetSignalProgSize(signal_size);
-    netif->SetSignalProgSend(signal_send);
-    netif->SetSignalProgRecv(signal_recv);
+    netif->SetSignalProgDest(signal_dist);
+    netif->SetSignalRecvReload(signal_recv_reload);
+    netif->SetSignalProgSend(signal_prog_send);
+    netif->SetSignalProgRecv(signal_prog_recv);
     netif->SetSignalRecvStatus(signal_recv_status);
     netif->SetSignalSendStatus(signal_send_status);
 
@@ -257,12 +245,11 @@ SingleCoreExt::~SingleCoreExt() {
  * This is the main routine for your application. This basically instantiates
  * a new simulator and starts the simulation by calling its <Simulate> method.
  */
-
 int main(int argc, char** argv) {
     SingleCoreExt* simulator = new SingleCoreExt(argc, argv);
     simulator->Simulate();
-    // int ret = simulator.GetExitStatus();
-    return 1;
+    int ret = simulator->GetExitStatus();
+    return ret;
 }
 
 

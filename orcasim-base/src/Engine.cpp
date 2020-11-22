@@ -32,6 +32,7 @@ using orcasim::base::SimulationTime;
  * Defaul constructor
  */
 Engine::Engine() {
+    _queue = std::priority_queue<Event>();
     _globalTime = 0;
     _epochs = 0;
     _timeout = 1;
@@ -47,9 +48,10 @@ SimulationTime Engine::Run(SimulationTime time) {
     _timeout = time;
 
     while (_globalTime <= _timeout) {
-        #ifdef URSA_QUEUE_SIZE_CHECKING
-        if (_queue.size() <= 0)
-            break;
+        #ifdef ORCA_BASE_CHECK_FOR_EMPTY_QUEUE
+        if (_queue.size() <= 0) {
+            throw std::runtime_error("Simulation queue is empty");
+        }
         #endif
 
         // get next event to be processed. Since we use a priority

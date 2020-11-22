@@ -21,7 +21,7 @@ URSA_ZERO_TIME_CHECKING := NO
 # queue is unecessary. Set this option to YES to force checking 
 # the queue size at every cycle. Turning this option on depletes
 # simulation performance.
-URSA_QUEUE_SIZE_CHECKING := NO
+ORCA_BASE_CHECK_FOR_EMPTY_QUEUE := YES
 
 # Size of the scheduling queue. Adjust the value to match the 
 # number of events being simultaneously simulated. If set below 
@@ -44,6 +44,10 @@ endif
 
 ifeq ($(URSA_QUEUE_SIZE_CHECKING), YES)
 	URSA_COMPLINE := $(URSA_COMPLINE) -DURSA_QUEUE_SIZE_CHECKING
+endif
+
+ifeq ($(ORCA_BASE_CHECK_FOR_EMPTY_QUEUE), YES)
+	URSA_COMPLINE += -DORCA_BASE_CHECK_FOR_EMPTY_QUEUE
 endif
 
 export URSA_COMPLINE

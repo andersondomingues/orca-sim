@@ -19,13 +19,15 @@ TARGET_DEPS := \
 
 # Add optimization and include flags to the compilation. Compilation 
 # optimizations favor performance over code size.
-CXXFLAGS := -fmax-errors=5 -O3 -march=native -mtune=native -std=c++17 \
-	-I$(HEADERDIR) $(DEPS_INCLUDE)
+#CXXFLAGS := -fmax-errors=5 -O3 -march=native -mtune=native -std=c++17 \
+
+CXXFLAGS := -fmax-errors=5 -std=c++17 -I$(HEADERDIR) $(DEPS_INCLUDE) -ggdb
+
 
 #pack file into a static library to be used later
 $(OUTPUTDIR)/$(LIBNAME): $(TARGET_DEPS)
-	ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
-	ar -t $(OUTPUTDIR)/$(LIBNAME) 
+	@ar rcs $(OUTPUTDIR)/$(LIBNAME) $(TARGET_DEPS)
+	@ar -t $(OUTPUTDIR)/$(LIBNAME)
 
 #compile all classes into %.o files
 $(OUTPUTDIR)/%.o: $(SOURCEDIR)/%.cpp $(HEADERDIR)/%.hpp 
